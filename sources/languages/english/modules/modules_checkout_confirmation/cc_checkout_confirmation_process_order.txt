@@ -1,0 +1,6 @@
+
+ module_checkout_confirmation_process_order_title = Do you want to display the process order button to allowat the customer to validate this order ?
+ module_checkout_confirmation_process_order_description = display the process order button to allowat the customer to validate this order
+
+ module_checkout_confirmation_process_order_button_pay = Confirm the order with payment
+

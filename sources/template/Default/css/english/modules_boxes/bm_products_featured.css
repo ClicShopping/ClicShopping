@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.card.boxeContainerFeatured {
+  margin-top: 0.625rem;
+  border-radius: 0.25rem;
+}
+
+.card-img-top.boxeBannerContentsFeatured {
+  text-align: center;
+}
+
+.card-header.boxeHeadingFeatured {
+
+
+  padding-left: 3px;
+  overflow: hidden;
+  text-transform: uppercase;
+
+
+}
+
+.card-header.boxeHeadingFeatured A {
+  text-transform: uppercase;
+
+}
+
+.card-title.boxeTitleFeatured {
+  overflow: hidden;
+  padding: 3px;
+  text-transform: uppercase;
+
+
+}
+
+.card-title.boxeTitleFeatured A {
+}
+
+span.boxeTitleFeatured {
+
+}
+
+.card-text.boxeContentFeatured {
+  overflow: hidden;
+
+  text-align: center;
+  padding-bottom: 0.625rem;
+  padding-top: 0.625rem;
+  padding-right: 0.1rem;
+}
+
+.card-text.boxeContentsFeatured a {
+  text-decoration: none;
+  text-align: center;
+}
+
+.card-footer.boxeBottomContentsFeatured {
+  border-top: none;
+  padding: 0;
+}
+
+
+.card-block.boxeContentArroundFeatured {
+  overflow: hidden;
+  /* border: 1px solid #e5e5e5!important;*/
+  padding-right: 0.1rem;
+  padding-left: 0.1rem;
+  text-align: center;
+}
+
+.card-img-top.boxeImageFeatured {
+}
+
+div.boxeProductTitleFeatured {
+  text-align: center;
+}
+
+div.boxeProductTitleFeatured A {
+  text-transform: none;
+}

@@ -1,0 +1,12 @@
+module_admin_dashboard_orders_app_title = Souhaitez-vous installer les Commandes
+module_admin_dashboard_orders_app_description = Voir les dernières commandes
+module_admin_dashboard_orders_app_order = Commandes
+module_admin_dashboard_orders_app_total = Total
+module_admin_dashboard_orders_app_date = Date
+module_admin_dashboard_orders_app_order_status = Statut
+module_admin_dashboard_orders_app_order_action = Action
+module_admin_dashboard_orders_app_erp_status = ERP
+module_admin_dashboard_orders_app_language = Langue
+module_admin_dashboard_orders_app_icon_edit_order = Editer commande
+module_admin_dashboard_orders_app_icon_edit_customer = Editer client
+module_admin_dashboard_orders_app_icon_view_customers_all_orders = Voir toutes les commandes

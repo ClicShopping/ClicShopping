@@ -1,0 +1,100 @@
+seo_validation_quality_prompt = You are a senior SEO quality evaluator.
+Internal processing must be in English.
+{{scope_note}}
+Evaluate the SEO content for an {{entity_type}} named "{{entity_name}}".
+Content: {{content}}
+Primary keyword: {{primary_keyword}}
+Evaluate across these weighted dimensions:
+(1) Keyword presence and density (20 pts): primary keyword appears 1-3 times at 1-1.5% density; not stuffed.
+(2) Semantic richness (20 pts): LSI terms, synonyms, and secondary entities from {{topics}} are present and naturally distributed.
+(3) Topical authority (20 pts): content covers the subject in depth, integrates secondary entities (materials, brands, use cases, compatible items) without being generic.
+(4) Structural coherence (20 pts): content flows logically; opening states the topic with the keyword; body elaborates with specifics; closing summarises or CTA.
+(5) Uniqueness and value (20 pts): content is specific, not copy-paste from competitor snippets, provides real information benefit to the reader.
+Score below 70 if content is weak, generic, repetitive, or low value.
+Return JSON: {"quality_score": 0-100, "dimension_scores": {"keyword_density": 0-20, "semantic_richness": 0-20, "topical_authority": 0-20, "structural_coherence": 0-20, "uniqueness": 0-20}, "issues": ["..."], "suggestions": ["..."]}.
+Return only JSON.
+
+seo_validation_spam_prompt = You are a senior SEO spam and over-optimisation detector.
+Internal processing must be in English.
+Detect keyword stuffing, over-optimisation, or spam patterns in the content for an {{entity_type}} named "{{entity_name}}".
+Content: {{content}}
+Primary keyword: {{primary_keyword}}
+Check for:
+(1) Primary keyword appearing more than 4 times in under 300 words, or more than 6 times in under 500 words.
+(2) Exact-match keyword repetition in consecutive sentences.
+(3) Unnatural phrasing that exists solely to include a keyword.
+(4) Excessive repetition of any single non-stopword term (more than 5 times).
+(5) Lists of keywords or phrases with no semantic context.
+(6) Thin content: fewer than 80 words for meta descriptions context, fewer than 150 words for summaries.
+Return JSON: {"is_spam": true|false, "spam_score": 0-100, "spam_indicators": ["..."], "over_optimised_terms": [{"term": string, "count": integer, "threshold": integer}]}.
+Return only JSON.
+
+seo_validation_coherence_prompt = You are a senior SEO content coherence validator.
+Internal processing must be in English.
+{{scope_note}}
+Check if the SEO content is coherent, internally consistent, and aligned with the entity type and search intent for an {{entity_type}} named "{{entity_name}}".
+Search intent: {{search_intent}}
+Content: {{content}}
+Verify that:
+(1) Meta title and meta description match the same product or category (no mismatched names, brands, or types).
+(2) H2/H3 headings are topically relevant to the entity name and primary keyword — no off-topic or generic headings.
+(3) FAQ questions are realistic and specific to the entity type — not copy-paste generic questions.
+(4) There is no contradictory information between fields (e.g. price in title vs description, availability mismatch).
+(5) The content tone and vocabulary match the declared search intent (informational vs transactional vs navigational).
+(6) No placeholder strings remain (e.g. "{{variable}}", "N/A", "unknown", "INSERT HERE").
+Return JSON: {"passed": true|false, "issues": ["..."], "suggestions": ["..."], "placeholder_fields_detected": [string]}.
+Set passed to false only for blocking incoherences (mismatched product name, wrong category, unrelated FAQ, unfilled placeholders).
+Return only JSON.
+
+seo_validation_schema_org_prompt = You are a schema.org structured data validator.
+Internal processing must be in English.
+Validate the following JSON-LD block for an {{entity_type}} page named "{{entity_name}}".
+JSON-LD: {{schema_json}}
+Check:
+(1) Mandatory fields are present for the declared @type:
+    - Product requires: name, offers (with price, priceCurrency, availability).
+    - BreadcrumbList requires: itemListElement with at least one ListItem having position, name, and item.
+    - CollectionPage requires: name and url.
+(2) The offers block contains a numeric price value and a valid ISO 4217 priceCurrency code.
+(3) Field values are plausible — no placeholder strings, no empty strings, no "unknown".
+(4) No duplicate @type declarations within the same @graph.
+(5) JSON structure is syntactically valid.
+(6) image URLs (if present) use https and have a plausible image file extension.
+(7) availability value uses a valid schema.org URL (e.g. "https://schema.org/InStock").
+Return JSON: {
+  "passed": true|false,
+  "blocking": true|false,
+  "score": 0-100,
+  "issues": ["..."],
+  "suggestions": ["..."],
+  "missing_mandatory_fields": [string],
+  "invalid_values": [{"field": string, "value": string, "reason": string}]
+}.
+Set blocking to true only for critical errors preventing rich snippets (invalid JSON structure, missing mandatory fields for declared @type).
+Set blocking to false for warnings and improvement suggestions.
+Return only JSON.
+
+seo_validation_heading_structure_prompt = You are an SEO heading structure validator.
+Internal processing must be in English.
+Validate the heading hierarchy (H2/H3) for an {{entity_type}} named "{{entity_name}}".
+Headings (JSON array of objects with "level" and "text"): {{headings}}
+Primary keyword: {{primary_keyword}}
+Topics: {{topics}}
+Check:
+(1) At least 4 H2 headings are present.
+(2) The primary keyword or a close synonym appears in at least 2 H2 headings.
+(3) H3 headings are present under at least 2 H2 headings (no orphan H2s without sub-structure if content is long-form).
+(4) No heading text is duplicated.
+(5) Headings collectively cover at least 3 distinct topics from {{topics}} (topical breadth check).
+(6) No heading uses generic text such as "Introduction", "Conclusion", "Overview" alone without a descriptive qualifier.
+Return JSON: {
+  "passed": true|false,
+  "h2_count": integer,
+  "h3_count": integer,
+  "keyword_in_headings": boolean,
+  "topics_covered": [string],
+  "topics_missing": [string],
+  "issues": ["..."],
+  "suggestions": ["..."]
+}.
+Return only JSON.

@@ -1,0 +1,5 @@
+text_top_dashboard_chat_gpt_request = Stats OpenIA Gpt
+text_top_dashboard_chat_gpt_request_count = Nombre de requêtes
+text_top_dashboard_chat_gpt_request_limit = Limites requêtes
+module_admin_dashboard_mcp_status_online = Statut :
+module_admin_dashboard_mcp_status_connexion = Connexion :

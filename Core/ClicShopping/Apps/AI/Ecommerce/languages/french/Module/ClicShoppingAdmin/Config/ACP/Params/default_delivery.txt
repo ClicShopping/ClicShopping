@@ -1,0 +1,2 @@
+cfg_ecommerce_acp_default_delivery_title = Délai de livraison par défaut du produit
+cfg_ecommerce_acp_default_delivery_description = Délai de livraison par défaut du produit en jours.

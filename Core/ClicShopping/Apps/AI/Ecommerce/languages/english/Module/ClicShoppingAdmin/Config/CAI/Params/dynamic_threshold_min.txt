@@ -1,0 +1,3 @@
+cfg_ecommerce_cockpit_ai_dynamic_threshold_min_title = Dynamic threshold minimum (count)
+cfg_ecommerce_cockpit_ai_dynamic_threshold_min_description = Minimum number of historical analyzes required for a product to activate the calculation of dynamic thresholds.
+- If number of analyzes ≥ 10: use of dynamic thresholds (calculated from the distribution of product scores) otherwise T_low and T_high

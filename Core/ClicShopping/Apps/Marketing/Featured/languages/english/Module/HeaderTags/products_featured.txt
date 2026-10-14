@@ -1,0 +1,2 @@
+module_header_tags_products_featured_title = Do you want to use Featured meta tag ?
+module_header_tags_products_featured_description = Add the meta tag balise in the Featured page

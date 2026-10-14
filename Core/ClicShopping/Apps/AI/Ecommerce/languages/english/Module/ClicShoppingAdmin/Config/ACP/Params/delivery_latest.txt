@@ -1,0 +1,2 @@
+cfg_ecommerce_acp_delivery_latest_title = Standard Latest Delivery
+cfg_ecommerce_acp_delivery_latest_description =  Standard Latest Delivery

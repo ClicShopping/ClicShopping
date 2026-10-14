@@ -1,0 +1,61 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.card.boxeContainerPageManager {
+  margin-top: 0.625rem;
+  border-radius: 0.25rem;
+}
+
+.card-img-top.boxeBannerContentsPageManager {
+  text-align: center;
+}
+
+.card-header.boxeHeadingPageManager {
+  padding-left: 3px;
+  overflow: hidden;
+  text-transform: uppercase;
+}
+
+.card-title.boxeTitlePageManager {
+  overflow: hidden;
+  padding: 3px;
+  text-transform: uppercase;
+}
+
+.card-text.boxeContentsPageManager {
+}
+
+.card-footer.boxeBottomPageManager {
+  border-top: none;
+  padding: 0;
+}
+
+.card-block.boxeContentArroundPageManager {
+}
+
+ul.boxeListManagerPageManager {
+  padding-left: 0rem;
+}
+
+li.boxeContentsPageManager {
+}
+
+li.boxeContentsPageManager a {
+}
+
+span.boxeListManagerPageManager {
+}
+
+li.boxeListManagerPageManager {
+}
+
+li.boxeListManagerPageManager a {
+}
+
+div.boxeListManagerPageManager {
+}

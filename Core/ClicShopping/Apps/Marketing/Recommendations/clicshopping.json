@@ -1,0 +1,46 @@
+{
+  "title": "Recommendations Products App",
+  "app": "Recommendations",
+  "vendor": "Marketing",
+  "version": "1.0.0",
+  "req_core_version": "3.4",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "Recommendations": "Module\\HeaderTags\\Recommendations"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/TopDashboard": {
+        "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\DashboardTopRecommendations"
+      },
+      "ClicShoppingAdmin/Products": {
+        "RemoveProduct": "Module\\Hooks\\ClicShoppingAdmin\\Products\\RemoveProduct"
+      },
+      "ClicShoppingAdmin/CustomersGroup": {
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\CustomersGroup\\Delete"
+      },
+      "Shop/Reviews": {
+        "SaveEntry": "Module\\Hooks\\Shop\\Reviews\\SaveEntry"
+      }
+    }
+  },
+  "canonical": {
+    "Shop": {
+      "parameters": []
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "Products&Recommendations": "Sites\\Shop\\Pages\\Recommendations"
+    }
+  }
+}

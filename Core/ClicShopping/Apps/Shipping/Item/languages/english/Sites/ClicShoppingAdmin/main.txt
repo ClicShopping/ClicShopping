@@ -1,0 +1,32 @@
+heading_title = Item
+module_item_title = Configuration
+
+text_item =  Shipping by Item
+text_configure =  Configure App Module
+
+text_intro = This app allow you to include a new shipping on your shop. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Configuration / Shipping<br />
+
+module_item_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_sort_order = Sort order
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_cancel = Cancel
+button_delete = Delete
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_warning_group = Please update our customers group to see this module inside the catalog

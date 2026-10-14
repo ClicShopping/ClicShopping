@@ -1,0 +1,49 @@
+text_product_name = [Nom du produit]
+text_product_id = [Nom du product ID]
+text_product_model = [Modèle de produit]
+text_categories_name = [Nom catégorie du produit]
+text_product_brand_name = [Nom de marque du produit]
+text_product_ean = [Produit ean du produit]
+text_product_sku = [Produit sku du produit]
+text_product_date_added = [Date du produit ajouté]
+text_product_enable = [Produit Activé]
+text_product_disable = [Désactiver le produit]
+text_product_status = [Statut de produit]
+text_product_ordered = [Produit commandé]
+text_product_stock_reorder = [Alerte / niveau de renouvellement du stocks de produits pour tous les produits (fixe)]
+text_product_stock = [Stock actuel du produit]
+text_product_stock_alert = [Alerte concernant le stock de produit (fixe)]
+text_product_stock_dynamic_alert = [Alerte dynamique concernant le stock de produits basé sur le nombre de requête de commande]
+text_product_description = [Description du produit]
+text_product_description_summary = [Résumé description du produit]
+text_product_seo_title = [Titre SEO de produit]
+text_product_seo_description = [Description seo du produit]
+text_product_seo_keywords = [Mots-clés SEO de produit]
+text_product_seo_tag = [Balise / Tag SEO de produit]
+text_product_taxonomy = [Taxonomie du produit]
+
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à un produit e-commerce.
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine]: Domaine général du produit (ex. Maison, Mode, Électronique)
+[sous_domaine]: Segment ou spécialisation au sein du domaine (ex. Arts de la table, Informatique, Mobilier)
+[type_produit]: Type d’élément ou produit (ex. Composant, Vaisselle, Chaussure)
+[subject_produit]: Produit spécifique ou référence (ex. Assiette en porcelaine, Carte mère X, Sneakers modèle Y)
+[theme]: Thématique conceptuelle ou fonctionnelle associée (ex. Convivialité, Performance, Décoration)
+[type_usage]: Type d’usage visé (ex. Domestique, Professionnel, Extérieur)
+[subject_usage]: Contexte d’utilisation détaillé (ex. Salle à manger, Bureau, Jardin)
+[style]: Style, tendance ou identité esthétique (ex. Minimaliste, Vintage, Contemporain)
+[criteria]: Critères ou attributs techniques / qualitatifs (ex. Qualité, Élégance, Fréquence, Taille, Version)
+[dimension_symbolique]: Valeurs ou représentations associées (ex. Luxe, Partage, Tradition)
+[dimension_sensorielle]: Aspects sensoriels si évoqués (ex. Texture, Couleur, Finition)
+[composition]: Composants ou éléments constitutifs du produit (ex. Porcelaine, Cristal, Métal, Plastique)
+[objectif]: Finalité du produit ou bénéfice attendu (ex. Améliorer l’expérience de repas, Assurer confort, Optimiser performance)
+[source]: Origine ou fournisseur si mentionné
+[tags]: Liste libre de mots-clés pertinents dérivés du texte, séparés par virgules
+
+Texte : {{document_text}}

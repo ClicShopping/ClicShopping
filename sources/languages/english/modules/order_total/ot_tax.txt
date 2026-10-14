@@ -1,0 +1,2 @@
+ module_order_total_tax_title = Tax
+ module_order_total_tax_description = Order Tax<br /><br /><font color="#FF0000"> <strong> Warning! </strong> Disabling this module will restore the default values</font>

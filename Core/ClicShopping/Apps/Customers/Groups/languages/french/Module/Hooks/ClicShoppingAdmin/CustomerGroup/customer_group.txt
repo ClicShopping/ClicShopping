@@ -1,0 +1,32 @@
+text_group = Groupes B2B
+text_customer_group = Groupe clients
+visitor_name = client normal
+
+text_customer_group_b2b = Groupe Client B2B
+text_discount_coupons_warning_b2b = Attention ! Vous avez déjà défini un coupon pour les clients qui ontcrée un compte.  Si vous vous cocher cette, le coupon aura une nouvelle valeur.
+
+tax_excluded = taxes inclues
+tax_included = taxes exclues
+text_products_model_group = Références
+text_products_quantity_fixed_group = Nbr de qté fixe /
+text_products_min_order_quantity_group = Type d'achat
+
+text_cust_groups = Prix groupe clients B2B
+text_override_on = Prix + %group;
+text_override_on1 = Prix - %group
+text_override_off = Manuel
+
+text_all_groups = Tous les groupes
+
+tab_price_group_view = Actif : Affiche le prix du groupe - Non Actif : Affiche le prix public
+tab_products_group_view = Autoriser l'affichage du produit pour les clients du groupe
+tab_orders_group_view = Autoriser la commande du produit pour les clients du groupe
+
+title_help_price = Notes sur l'utilisation des options d'affichage sur les produits
+help_price_group_view = <strong>Activé :</strong> Affiche le prix du groupe - <strong>Non Activé :</strong> Affiche le prix public
+help_products_view = <strong>Activé :</strong> Autorise l'affichage du produit aux clients.
+help_orders_view = <strong>Activé :</strong> Autorise aux clients de commander le produit.
+help_others_group = Attention Nbr de qté fixe / Type d'achat n'est pas relié à la quantité de commande. ex : pour 1 qté on a 3 produits par lot<br><br>
+Si vous avez une promotion et que vous changé le prix, veuillez modifier votre promotions manuellement
+
+help_price_group_view_note = Inclus les tarifs promotionnels.

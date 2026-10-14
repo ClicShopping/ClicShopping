@@ -1,0 +1,76 @@
+heading_title = Pays
+module_ct_title = Pays
+module_ct_short_title = Pays
+
+text_countries = Pays
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des pays <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_ct_introduction = Le processus d'installation installe la base de données et le menu
+module_ct_short_title = Products quantities units
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_countries = Pays
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour Statut
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+text_set_default = Défaut
+
+text_info_delete_info = Souhaitez vous supprimer ce pays ?
+text_info_delete_country = Suppression d'un pays
+
+text_info_heading_new_county = Pays
+table_heading_country_name = Pays
+table_heading_country_code2 = Codes ISO 2
+table_heading_country_code3 = Codes ISO 3
+table_heading_action = Action
+table_heading_country_status = Statut
+table_heading_country_currency_code = Code devise
+
+text_info_edit_intro = Merci de faire les changements nécessaires
+text_info_country_name = Nom :
+text_info_country_code_2 = Code ISO (2) :
+text_info_country_code_3 = Code ISO (3) :
+text_info_address_format = Format de l'adresse :
+text_info_insert_intro = Merci d'entrer le nouveau pays avec ses données liées
+text_info_delete_intro = Etes vous sur de vouloir supprimer ce pays ?
+text_info_delete_info = Supprimer le pays
+text_info_heading_new_country = Nouveau pays
+text_info_heading_edit_country = Editer pays
+text_info_heading_delete_country = Supprimer pays
+text_info_country_currency_code = Code devises
+
+text_format = Format :
+
+text_format = Format :
+title_help_general = Aide
+help_general =  1 - Default<br />
+                2 - USA<br />
+                3 - Espagne<br />
+                4 - Singapour<br />
+                5 - Allemagne<br />

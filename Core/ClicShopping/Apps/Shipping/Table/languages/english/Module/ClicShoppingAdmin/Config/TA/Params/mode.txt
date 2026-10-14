@@ -1,0 +1,6 @@
+cfg_table_mode_title = Mode
+cfg_table_mode_description = The shipping cost is based on the order total or the total weight of the items ordered
+
+cfg_table_mode_weight = weight
+cfg_table_mode_price = price
+

@@ -1,0 +1,11 @@
+module_login_mode_b2b_b2c = Souhaitez-vous afficher les boutons B2B B2C pour la création de compte client ?
+module_login_mode_b2b_b2c_description = Affiche les boutons B2B B2C  pour la création de compte client<br>Note : Attention ce mode dépend de la configuration que vous avez effectuée dans la section configuration de la boutique Gestion des clients B2B / configuration
+
+text_open_account = S'enregistrer et ouvrir un compte
+text_b2b = Ourvrir compte professionel
+text_b2c = Ouvrir un compte client
+text_intro_b2b = Vous êtes une entreprise et vous souhaitez achetez nos produits pour les revendre, veuillez cliquez sur le boutton et suivre la procédure
+text_intro_b2c = Vous êtes un client et avoir un compte. C'est simple et facile. Vous aurez accès à tous nos services et recevrez peut être un coupon de réduction
+
+button_retailers =  Professionels / Revendeurs
+button_customers =  Clients / Particuliers

@@ -1,0 +1,13 @@
+banners_history_id int not_null auto_increment comment(Primary key - unique identifier for each banner history entry)
+banners_id int not_null comment(FK to banners table - banner being tracked)
+banners_shown int(5) default(0) not_null comment(Number of times banner was displayed/shown)
+banners_clicked int(5) default(0) not_null comment(Number of times banner was clicked)
+banners_history_date datetime not_null comment(Date for this history entry - typically daily aggregation)
+--
+primary banners_history_id
+idx_banners_history_banners_id banners_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Impressions and clicks of an advertising banner, one row per banner and per date. It measures the display of the banner itself.

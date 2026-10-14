@@ -1,0 +1,115 @@
+heading_title = Clients
+module_cs_title = Clients
+module_cs_short_title = Clients
+
+text_products_favorites =  Clients
+text_configure =  Configurer App Module
+
+text_intro = Cette App vous permet une page de gestion des Clients. <br />
+
+module_cs_introduction = Le processus d'installation installe la base de données et le menu
+
+module_cs_short_title = Clients
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_favorites = Coups de Coeur
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = mettre à jour
+button_create_account = Créer un compte
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_field_required = requis
+
+category_personal = Données personnelles
+category_address = Adresse
+category_address_default = Adresse principale
+category_contact = Contact téléphoniques
+category_company = Détail sur la société
+category_options = Options
+category_newsletter = Inscription aux newsletters
+
+
+tab_general = General
+tab_orders = Paiement
+tab_societe = Société
+tab_adresse_book = Carnet d'adresses
+tab_shipping = Expéditions
+
+
+entry_gender = Civilité :
+entry_gender_error = &nbsp;<span class="errorText">requis</span>
+entry_first_name = Prénom :
+entry_first_name_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_last_name = Nom :
+entry_last_name_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_date_of_birth = Date de naissance :
+entry_date_of_birth_error = &nbsp;<span class="errorText">Format : JJ/MM/AAAA</span>
+entry_email_address = E-Mail :
+entry_email_address_error = &nbsp;<span class="errorText">Votre adresse email n'est pas correcte </span>
+entry_email_address_check_error = &nbsp;<span class="errorText">L'adresse électronique ne semble pas être valide!</span>
+entry_email_address_error_exists = &nbsp;<span class="errorText">Cette adresse électronique existe déjà!</span>
+entry_company = Nom de la société :
+entry_company_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_street_address = Adresse :
+entry_street_address_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_suburb = Complément d'adresse :
+entry_suburb_error =
+entry_post_code = Code postal :
+entry_post_code_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_city = Ville :
+entry_city_error = &nbsp;<span class="errorText">min. {{min_length}} caractères</span>
+entry_state = Département ou Etat :
+entry_state_error = &nbsp;<span class="errorText">requis</span>
+entry_country = Pays :
+entry_country_error =
+entry_telephone_number = Numéro de téléphone:
+entry_telephone_number_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+
+entry_cellular_phone_number = Numéro de téléphone cellulaire:
+entry_cellular_phone_number_error =
+entry_telephone = Téléphone
+
+entry_newsletter = Bulletin d'informations :
+entry_newsletter_yes = Abonné
+entry_newsletter_no = Non abonné
+entry_newsletter_error =
+entry_newsletter_language = Langue de correspondance
+
+entry_address_number = No Adresse
+entry_adress_default = (Adresse principale)
+entry_siret = Numéro d'immatriculation :
+entry_siret_exemple = (ex : No immatricultion SIRET de la société)
+entry_ape = Numéro de nomenclature (ou autre) :
+entry_ape_exemple = (ex : Autre numeéro immatriculation (ex code APE)
+entry_tva = Numéro de TVA Intracom (Europe) :
+entry_tva_iso_error = &nbsp;<span class="errorText">Le code pays de deux lettres ne semble pas être correct.</span>
+
+entry_customers_group_name = Groupe client :
+entry_groups_name = Nom :
+
+entry_customers_email = Souhaitez-vous envoyer un email pour la création du compte à votre client ?
+
+entry_customers_modify_company = Autoriser le client à modifier cette information
+entry_customers_modify_address_default = Autoriser le client à modifier l'adresse par défaut
+entry_customers_add_address = Autoriser le client à ajouter une autre adresse
+
+tva_intracom_verify = Verifer TVA
+title_help_customers_tva = Note sur TVA Intracom
+title_help_tva_customers = Ceuillez valider le document avant de vérifier le code de TVA de la société

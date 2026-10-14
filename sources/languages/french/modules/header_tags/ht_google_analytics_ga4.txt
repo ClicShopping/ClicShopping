@@ -1,0 +1,2 @@
+module_header_tags_google_analytics_ga4_title = Google Analytic V4 GA
+module_header_tags_google_analytics_ga4_description = Google Analytic V4 GA

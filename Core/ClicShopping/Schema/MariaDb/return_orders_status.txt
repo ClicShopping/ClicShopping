@@ -1,0 +1,11 @@
+return_status_id int default(0) not_null comment(Primary key - unique identifier for each return status)
+language_id int default(1) not_null comment(FK to languages table - language for status name)
+name varchar(128) not_null comment(Status name - e.g. Pending, Approved, Rejected, Refunded, Exchanged)
+--
+primary return_status_id language_id
+idx_name name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language label of a return status. Lookup table: join it for the label, never count returns here - the returns are in return_orders.

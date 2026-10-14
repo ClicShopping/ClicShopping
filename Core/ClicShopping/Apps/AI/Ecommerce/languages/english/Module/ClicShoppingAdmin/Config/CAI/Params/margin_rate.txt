@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_margin_rate_title = Minimum margin rate
+cfg_ecommerce_cockpit_ai_margin_rate_description = Minimum margin rate accepted by the AI. It cannot go below this.

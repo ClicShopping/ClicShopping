@@ -1,0 +1,3 @@
+
+module_order_total_tax_title = Taxes
+module_order_total_tax_description = Inclure les Taxes <br /><br /><font color="#FF0000"><strong>Attention!</strong> La désactivation de ce module rétablira les valeurs par défaut</font>

@@ -1,0 +1,5 @@
+cfg_chatgpt_rag_manager_title = Enable RAG (Retrieval-Augmented Generation)
+cfg_chatgpt_rag_manager_description = Enable RAG to allow the AI to search and retrieve information from your ClicShopping database. When enabled, the chatbot can answer questions about products, orders, customers, and other data by querying the database. Requires embeddings to be activated for semantic search capabilities. Recommended: True to enable AI-powered business intelligence.
+
+cfg_chatgpt_rag_manager_status_true = True
+cfg_chatgpt_rag_manager_status_false = False

@@ -1,0 +1,21 @@
+module_account_product_return_history_info_title = Souhaitez-vous installer les historiques de retour produit du client ?
+module_account_product_return_history_info_description = Installe les historiques de retour produit du client  ?
+
+
+module_account_product_return_history_info_heading_title_info = Détails du Statut du support de demande de retour produit
+module_account_product_return_history_summary = Information produit
+module_account_product_return_history_write_comment = Ecrire un commentaire
+
+module_account_product_return_history_status = Status de traitement
+module_account_product_return_history_status_name = Statut :
+module_account_product_return_history_date_added = Date :
+module_account_product_return_history_info_comment = Commentaire :
+module_account_product_return_history_product_name = Nom du produit :
+module_account_product_return_history_product_model = Référence produit :
+module_account_product_return_history_return_ref = Référence demande :
+module_account_product_return_history_return_qty = Quantité retournée :
+module_account_product_return_history_return_oder_id = Référence commande :
+module_account_product_return_history_return_date_added = date de la demande :
+
+module_account_product_return_history_button_back = Retour
+module_account_product_return_history_button_send = Envoyer

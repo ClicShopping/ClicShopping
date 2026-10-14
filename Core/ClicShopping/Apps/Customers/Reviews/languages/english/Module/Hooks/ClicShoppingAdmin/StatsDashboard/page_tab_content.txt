@@ -1,0 +1,1 @@
+box_entry_reviews = Comments number in pending

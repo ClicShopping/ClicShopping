@@ -1,0 +1,14 @@
+title_tab_payment = Payment
+entry_customers_group_name = Customer group
+category_group_customer = Type of customer
+category_order_taxe = Mode of invoicing
+category_order_taxe_group = Mode of invoicing authorized on the group
+category_shipping_customer = Mode of delivery authorized
+category_shipping_customer_group = Mode of delivery authorized on the group
+category_order_customer = Mode of payment authorized
+category_order_customer_group = Mode of payment authorized on the group
+
+options_order_taxe = With tax
+options_order_no_taxe = Without tax
+
+visitor_name = Normal customer

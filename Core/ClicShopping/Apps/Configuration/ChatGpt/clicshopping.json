@@ -1,0 +1,50 @@
+{
+  "title": "ChatGpt App",
+  "app": "ChatGpt",
+  "vendor": "Configuration",
+  "version": "1.2",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "AdminDashboard": {
+      "TotalToken": "Module\\ClicShoppingAdmin\\Dashboard\\TotalToken",
+      "CheckAPI": "Module\\ClicShoppingAdmin\\Dashboard\\CheckAPI",
+      "SumTotalTokenByMonth": "Module\\ClicShoppingAdmin\\Dashboard\\SumTotalTokenByMonth",
+      "CostEstimation": "Module\\ClicShoppingAdmin\\Dashboard\\CostEstimation"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/Cronjob": {
+        "Process": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\Process",
+        "ReputationDecay": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationDecay",
+        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor"
+      },
+      "Shop/Cronjob": {
+        "Process": "Module\\Hooks\\Shop\\Cronjob\\Process",
+        "ReputationDecay": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationDecay",
+        "ReputationUpdateProcessor": "Module\\Hooks\\ClicShoppingAdmin\\Cronjob\\ReputationUpdateProcessor"
+      },
+      "ClicShoppingAdmin/Language": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm"
+      },
+      "ClicShoppingAdmin/PageManager": {
+        "PageTab": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\SeoChatGpt",
+        "Save": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\Save",
+        "DeleteAll": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\DeleteAll"
+      },
+      "ClicShoppingAdmin/SEO": {
+        "PageTab": "Module\\Hooks\\ClicShoppingAdmin\\SEO\\SeoChatGpt"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

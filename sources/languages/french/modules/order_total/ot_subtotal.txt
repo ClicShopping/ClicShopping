@@ -1,0 +1,3 @@
+
+module_order_total_subtotal_title = Sous-Total
+module_order_total_subtotal_description = Commande Sous-Total<br /><br /><font color="#FF0000"><strong>Attention!</strong> La désactivation de ce module rétablira les valeurs par défaut</font>

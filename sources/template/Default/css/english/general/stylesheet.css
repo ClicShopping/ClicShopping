@@ -1,0 +1,333 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+/*
+16px ==> 1rem
+10px => 0.625rem
+*/
+
+body {
+  margin: 0rem;
+}
+
+#bodyWrapper {
+  position: relative;
+}
+
+#bodyContent {
+  /*   background-color:#ffffff;*/
+  padding-bottom: 0.625rem;
+}
+
+.frameWork {
+}
+
+#frameWork {
+}
+
+.wrapper {
+}
+
+#wrapper {
+}
+
+.wrapper_w {
+}
+
+form {
+  display: inline;
+}
+
+@font-face {
+  font-family: 'Arvo';
+  font-display: auto;
+  src: local('Arvo'), url(https://fonts.gstatic.com/s/arvo/v9/rC7kKhY-eUDY-ucISTIf5PesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+}
+
+/****************/
+/* style facture */
+/****************/
+.mainFacture {
+  background-color: #DCDCDC;
+}
+
+/****************/
+/* Order Total  */
+/****************/
+.orderEdit {
+  font-size: 0.625rem;
+  color: #0544d3;
+  text-decoration: underline;
+}
+
+.OrderTotalTitle {
+  text-align: left;
+}
+
+.OrderTotalText {
+  text-align: right;
+}
+
+/* *************************************************************** */
+/* Prix  de la boutique */
+/* *************************************************************** */
+
+span.normalPrice {
+  font-weight: normal;
+  color: #595959;
+}
+
+span.specialPrice {
+  font-weight: bold;
+  padding-left: 0.5125rem;
+  color: #ce060b;
+}
+
+div.EndDateFlashDiscount, span.EndDateFlashDiscount {
+  font: 700 10px/8px Arial, Helvetica, sans-serif;
+  color: #FFF;
+  background: #c4071b none repeat scroll 0% 0%;
+  text-transform: uppercase;
+  padding: 0.375rem 0px 0.4375rem;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.24);
+  line-height: 1rem;
+  text-align: center;
+  display: block;
+  /*  position: relative;*/
+  right: 1rem;
+}
+
+div.EndDateFlashDiscountBoxe {
+  color: #c4071b;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+span.markProductOutOfStock {
+  color: #c76170;
+  font-weight: bold;
+}
+
+.separator {
+  height: 0.625rem !important;
+}
+
+.HistoyInfoPDF {
+  color: #E6290B;
+  font-size: 2rem;
+}
+
+/*************************************
+         introduction
+*************************************/
+div.Pageintroduction {
+  padding-left: 0.625rem;
+}
+
+div.PageintroductionAccessCatalog {
+  /*  background-color: #fff;*/
+  text-align: center;
+  padding-top: 0.625rem;
+}
+
+div.PageintroductionAccessCatalog A {
+  color: #000;
+}
+
+.wrapperIntroduction {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -2.5rem; /* the bottom margin is the negative value of the footer's height */
+  /*  background-color: #fff;*/
+}
+
+.footerIntroduction, .push {
+  height: 2.5rem; /* .push must be the same height as .footer */
+}
+
+/********************************
+// Ticker Stock
+********************************/
+span.ModulesTickerBootstrapTickerStockGood {
+  font: 700 0.625rem/0.5rem Arial, Helvetica, sans-serif;
+  color: #FFF;
+  background: #449D44 none repeat scroll 0% 0%;
+  text-transform: uppercase;
+  padding: 0.400rem 0.400rem 0.400rem 0.400rem;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.24);
+  width: 5rem;
+  text-align: center;
+  display: -moz-deck;
+}
+
+span.ModulesTickerBootstrapTickerStockWarning {
+  font: 700 0.625rem/0.5rem Arial, Helvetica, sans-serif;
+  color: #FFF;
+  background: #EC971F none repeat scroll 0% 0%;
+  text-transform: uppercase;
+  padding: 0.400rem 0.400rem 0.400rem 0.400rem;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.24);
+  width: 5rem;
+  text-align: center;
+  display: -moz-deck;
+}
+
+span.ModulesTickerBootstrapTickerStockDanger {
+  font: 700 0.625rem/0.5rem Arial, Helvetica, sans-serif;
+  color: #FFF;
+  background: #E6290B none repeat scroll 0% 0%;
+  text-transform: uppercase;
+  padding: 0.400rem 0.400rem 0.400rem 0.400rem;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.24);
+  width: 5rem;
+  text-align: center;
+  display: -moz-deck;
+}
+
+
+/*********************************
+// Checkout process step
+/*********************************/
+
+.stepwizard-step p {
+  margin-top: 10px;
+}
+
+.stepwizard-row {
+  display: table-row;
+}
+
+.stepwizard {
+  display: table;
+  width: 100%;
+  position: relative;
+}
+
+.stepwizard-step button[disabled] {
+  opacity: 1 !important;
+  filter: alpha(opacity=100) !important;
+}
+
+.stepwizard-row:before {
+  top: 14px;
+  bottom: 0;
+  position: absolute;
+  content: " ";
+  width: 100%;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.stepwizard-step {
+  display: table-cell;
+  text-align: center;
+  position: relative;
+  text-transform: uppercase;
+  font-size: 0.695rem;
+}
+
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 1rem;
+  line-height: 1.428571429;
+  border-radius: 15px;
+}
+
+/*********************************
+// Captcha
+/*********************************/
+.hiddenRecaptcha {
+  display: none;
+}
+
+span.ModulesReviews {
+  color: #f0a42a;
+  font-size: medium;
+  text-align: center;
+}
+
+/*****************************
+Stars rate
+*****************************/
+fieldset, label {
+  margin: 0;
+  padding: 0;
+}
+
+.rating {
+  border: none;
+  float: left;
+}
+
+.rating > input {
+  display: none;
+}
+
+.rating > label:before {
+  margin: 5px;
+  font-size: 2.50rem;
+  display: inline-block;
+  content: "\2605";
+}
+
+.rating > .half:before {
+  content: "\2BE8";
+  position: absolute;
+}
+
+.rating > label {
+  color: #ddd;
+  float: right;
+}
+
+.rating > input:checked ~ label, /* show gold star when clicked */
+.rating:not(:checked) > label:hover, /* hover current star */
+.rating:not(:checked) > label:hover ~ label {
+  color: #FFD700;
+}
+
+/* hover previous stars in list */
+
+.rating > input:checked + label:hover, /* hover current star when changing rating */
+.rating > input:checked ~ label:hover,
+.rating > label:hover ~ input:checked ~ label, /* lighten current selection */
+.rating > input:checked ~ label:hover ~ label {
+  color: #FFED85;
+}
+
+/* ===== Products listing toolbar (sort dropdown + grid/line view switch) ===== */
+/* Shared by every front-office listing via ProductsListingRenderer::renderSortBar() */
+.ProductsListingToolbar {
+  margin-bottom: .75rem;
+}
+
+.ProductsListingToolbar .ProductsListingSortBar .dropdown-menu li {
+  list-style: none;
+}
+
+.ProductsListingToolbar .ProductsListingSortBar .dropdown-menu li > a {
+  display: block;
+  padding: .25rem 1rem;
+  white-space: nowrap;
+  text-decoration: none;
+  color: inherit;
+}
+
+.ProductsListingToolbar .ProductsListingSortBar .dropdown-menu li > a:hover {
+  background-color: var(--bs-tertiary-bg, #e9ecef);
+}
+
+.ProductsListingToolbar .ProductsListingViewSwitch .btn.active {
+  z-index: 1;
+}
+
+.ModulesCartQuantity {}

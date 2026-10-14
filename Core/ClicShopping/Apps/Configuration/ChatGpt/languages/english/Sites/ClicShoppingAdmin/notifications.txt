@@ -1,0 +1,27 @@
+text_notifications = MCP Notifications
+text_all = All
+text_errors = Errors
+text_warnings = Warnings
+text_just_now = Just now
+text_minutes_ago = %d minutes ago
+text_hours_ago = %d hours ago
+text_days_ago = %d days ago
+text_no_notifications = No notifications found
+text_confirm_clear = Are you sure you want to clear all notifications?
+error_clear_failed = Failed to clear notifications
+
+button_clear = Clear All
+button_refresh = Refresh
+
+text_error = Error
+text_warning = Warning
+text_hook = Hook
+text_timestamp = Time
+text_context = Context
+text_copy_context = Copy context
+text_copied = Copied!
+
+text_load_more = Load More
+text_loading = Loading...
+text_auto_refresh = Auto-refresh enabled
+text_manual_refresh = Manual refresh only

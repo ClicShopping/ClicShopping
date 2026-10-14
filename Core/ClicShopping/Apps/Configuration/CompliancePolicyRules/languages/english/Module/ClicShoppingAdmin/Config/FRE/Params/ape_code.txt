@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_ape_code_title = Nomenclature number (or otherwise) of the company
+cfg_configuration_compliance_policy_rules_ape_code_description = Please specify the number of the Nomenclature of your company (ex : Code APE : 721z). - Leave blank if it does not apply to you.

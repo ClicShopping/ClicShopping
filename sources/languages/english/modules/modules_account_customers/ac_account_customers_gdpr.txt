@@ -1,0 +1,37 @@
+module_account_customers_gdpr_title = Access and rectifications of my data
+module_account_customers_gdpr_account_intro = Concerning your data privacy, we are trying to help you to configure the confidentiality of your data that you want to share with us.<br />
+This section can evoluate anytime and if a features has an impact on your personnal data, we can configure in this section. We are trying to be transparent with you about yor data
+Your customer account allows you to enable and disable a certain number of features. In order to better serve you, we advise you to think carefully before taking any action. <br /><br />
+<strong>Some actions can be irreversible because it will erase all your data.</strong>
+module_account_customers_gdpr_no_ip_address = Do not store my IP address and the name of my provider
+module_account_customers_gdpr_delete_all_reviews = Delete all comments until now
+module_account_customers_gdpr_count_customers_reviews = Number of comments
+module_account_customers_gdpr_delete_customers_info = Delete all informations about my connections until now
+module_account_customers_gdpr_delete_my_orders_feedback = Delete my comments on the orders placed until now
+module_account_customers_gdpr_count_orders_feedback = Number of comments
+module_account_customers_more_info = If you want us to take action on your personal data, do not hesitate to contact us. We will be pleased to study your request and see how it can be achieved.
+module_account_customers_contact_us = Contact us
+module_account_customers_gdpr_delete_action_recorder = Delete all the records of my actions until now
+module_account_customers_gdpr_customer_bidth = Delete my birthday
+module_account_customers_gdpr_account_delete_title = Delete my account
+module_account_customers_gdpr_account_intro_delete = By confirming this action, your account and your data will be permanently deleted.<br />
+- You must not have any orders being processed. <br />
+- You will receive an account confirmation email. <br />
+- For any problem, please contact us. <br />
+- Thank you for your confidence and looking forward to seeing you again.
+
+module_account_customers_gdpr_account_checkbox = Confirm you request to delete your account :
+
+module_account_customers_gdpr_email_text_subject = Account deleted
+module_account_customers_gdpr_email_text_message = We confirm you that your request has been realised.<br /><br />We hope to see you soon.<br /><br />Regards, team
+
+module_account_customers_gdpr_checkbox = Please, confirm your choice
+
+module_account_customers_gdpr_text_error_delete = Error during treatment Please check that you have no orders being processed. <br /> If the error persists, please contact us.
+
+
+module_account_customers_gdpr_delete_code_label = Confirmation number received by e-mail :
+module_account_customers_gdpr_delete_code_sent = A confirmation number has been sent to your e-mail address. Type it in the "Delete my account" section within {{minutes}} minutes: your account is deleted only then.
+module_account_customers_gdpr_delete_code_invalid = The confirmation number is wrong or has expired. After {{attempts}} wrong numbers, ask for a new one.
+module_account_customers_gdpr_delete_code_email_subject = Confirm the deletion of your account
+module_account_customers_gdpr_delete_code_email_message = You asked to delete your customer account. Your confirmation number is: <strong>{{code}}</strong><br /><br />Type it within {{minutes}} minutes in the "Delete my account" section of this page: {{link}}<br /><br />If you did not ask for it, ignore this e-mail: nothing will be deleted. We advise you to change your password.

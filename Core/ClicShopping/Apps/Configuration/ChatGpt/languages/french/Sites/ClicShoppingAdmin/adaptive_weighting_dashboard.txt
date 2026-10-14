@@ -1,0 +1,101 @@
+heading_title_adaptive_weighting = Tableau de Bord Pondération Adaptive
+button_refresh = Actualiser
+button_back_dashboard = Retour au Tableau de Bord
+button_export_csv = Exporter CSV
+button_export_json = Exporter JSON
+button_run_anomaly_scan = Lancer un scan d'anomalies
+
+text_overview = Vue d'Ensemble Pondération Adaptive
+text_weight_stats = Statistiques de Pondération
+text_total_weight_calculations = Total Calculs de Poids
+text_avg_weight = Poids Moyen
+text_min_weight = Poids Minimum
+text_max_weight = Poids Maximum
+text_weight_stddev = Écart-Type des Poids
+text_total_evaluations = Total Évaluations
+text_active_critics = Critiques Actifs
+
+text_weight_distribution = Distribution des Poids
+text_weight_bucket = Plage de Poids
+text_count = Nombre
+
+text_critic_weight_history = Historique des Poids des Critiques
+text_critic_id = ID Critique
+text_evaluation_id = ID Évaluation
+text_weight = Poids
+text_timestamp = Horodatage
+
+text_weights_by_domain = Poids par Domaine
+text_domain = Domaine
+text_avg_weight_domain = Poids Moyen
+text_weight_count = Nombre de Poids
+text_critic_count = Nombre de Critiques
+
+text_domain_match_quality = Qualité de Correspondance de Domaine
+text_match_quality_distribution = Distribution Qualité de Correspondance
+text_high_match = Correspondance Élevée
+text_medium_match = Correspondance Moyenne
+text_low_match = Correspondance Faible
+text_no_match = Aucune Correspondance
+text_recent_matches = Correspondances Récentes de Domaine
+text_domain_match = Correspondance Domaine
+text_created_at = Créé le
+
+text_consensus_comparison = Comparaison Consensus (Dynamique vs Statique)
+text_total_comparisons = Total Comparaisons
+text_avg_dynamic_consensus = Consensus Dynamique Moyen
+text_avg_static_consensus = Consensus Statique Moyen
+text_avg_difference = Différence Moyenne
+text_avg_abs_difference = Différence Absolue Moyenne
+text_dynamic_better_count = Nombre Dynamique Meilleur
+text_static_better_count = Nombre Statique Meilleur
+text_dynamic_better_percentage = Pourcentage Dynamique Meilleur
+text_recent_comparisons = Comparaisons Récentes
+text_consensus_id = ID Consensus
+text_dynamic_consensus = Consensus Dynamique
+text_static_consensus = Consensus Statique
+text_difference = Différence
+
+text_weight_anomalies = Anomalies de Poids
+text_anomaly_id = ID Anomalie
+text_anomaly_type = Type d'Anomalie
+text_severity = Sévérité
+text_llm_analysis = Analyse LLM
+text_detected_at = Détecté le
+text_no_anomalies = Aucune anomalie détectée
+text_anomaly_scan_running = Analyse en cours…
+text_anomaly_scan_error = Échec du scan d'anomalies
+
+text_weight_trends = Tendances des Poids dans le Temps
+text_date = Date
+text_weight_stddev_trend = Écart-Type Poids
+
+text_top_weighted_critics = Critiques les Plus Pondérés
+text_evaluations = Évaluations
+
+text_critic_domain_performance = Performance des Critiques par Domaine
+text_domains = Domaines
+text_evaluation_count = Nombre d'Évaluations
+
+text_weight_explanation = Explication des Poids
+text_weight_id = ID Poids
+text_raw_weight = Poids Brut
+text_normalized_weight = Poids Normalisé
+text_llm_explanation = Explication LLM
+text_factor_analysis = Analyse des Facteurs
+
+text_export_metrics = Exporter Métriques
+text_filter_by_domain = Filtrer par Domaine
+text_filter_by_period = Filtrer par Période
+text_7_days = 7 Jours
+text_30_days = 30 Jours
+text_90_days = 90 Jours
+
+text_no_data = Aucune donnée disponible
+text_loading = Chargement...
+text_error_loading_data = Erreur lors du chargement des données
+
+text_chart_weight_distribution = Graphique Distribution des Poids
+text_chart_consensus_comparison = Graphique Comparaison Consensus
+text_chart_weight_trends = Graphique Tendances des Poids
+text_chart_domain_performance = Graphique Performance par Domaine

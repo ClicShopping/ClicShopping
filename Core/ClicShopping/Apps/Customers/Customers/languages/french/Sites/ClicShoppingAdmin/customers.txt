@@ -1,0 +1,113 @@
+heading_title = Clients
+heading_title_edit = Code client No
+heading_title_search = Rechercher
+
+table_heading_customers_id = Référence
+table_heading_firstname = Prénom
+table_heading_lastname = Nom
+table_heading_account_created = Compte créé
+table_heading_action = Actions
+table_heading_country = Provenance
+table_heading_number_of_reviews = Nbr de commentaires
+table_heading_entry_email_validation = Email valide
+table_heading_entry_company = Société
+table_entry_groups_name = Groupes Clients
+table_heading_entry_company_b2b = Société(B2B)
+text_date_account_created = Compte cré&eacute :
+text_date_account_last_modified = Dernière modification :
+text_info_date_last_logon = Dernière connexion :
+text_info_number_of_logons = Nombre de connexions :
+text_info_country = Pays :
+text_info_number_of_reviews = Nombre d'avis du client :
+text_delete_intro = Etes vous sur de vouloir supprimer ce client ?
+text_delete_reviews = Supprimer %s le commentaire
+text_info_heading_delete_customer = Supprimer le client
+text_help_wysiwyg = wysiwyg
+
+text_customers = Clients
+text_male = Hommes
+text_female = Femmes
+text_average_age = Moyenne Age
+text_average_newsletter = Newsletter
+text_b2b = B2B
+text_b2c = B2C
+text_customer_no_registred_completly = Compte partiel crée - Vous ne pouvez pas voir les informations concernant ce compte jusqu'à qu'il soit créé complètement.
+text_customer_partial_registred = Compte partiel créé
+
+category_shipping_customer = Shipping allowed
+
+type_below = Type ci-dessous
+text_selected = Choisissez en un
+
+text_allow_customer_add_address = Permettre au client d'ajouter une adresse
+
+text_info_number_of_orders = Nombre de commandes réalisé :
+
+text_customer_info = Information Client
+text_newsletter = Newsletter
+text_customer_ip = Adresse IP Enregistrement client
+text_customer_provider = Provider enregistrement client
+
+table_entry_validate = Approuvé
+approved_client = Client B2B Non validé
+
+icon_email = E-mail
+image_customer = Nouveau client
+image_email_approved = Email du client valide
+image_email_not_approved =  Email du client non valide
+
+email_pass = Votre mot de passe :
+email_network = Suivez nous en temps réel sur :<br />
+email_twitter = http://www.twitter.com/
+email_facebook = http://www.facebook.com/
+
+customers_note = Notes spécifiques concernant le client
+customers_note_summary = Notes
+tab_notes = Notes Client
+
+entry_contact_customer = Souhaitez vous informer le client de la création du compte par email ?
+entry_coupon_customer = Souhaitez vous offrir un coupon de réduction au client ?
+entry_customers_yes = Oui
+entry_customers_no = Non
+text_contact_email = Informer le client
+
+entry_address_default = (Adresse principale)
+entry_customers_modify_company = Autoriser le client à modifier ses informations
+entry_customers_modify_address_default = Autoriser le client à modifier l'adresse principale
+entry_customers_add_address = Autoriser le client à ajouter d'autres adresses
+entry_customer_location = Localiser
+
+error_entry_customers_modify_yes = Autorisé
+error_entry_customers_modify_no = Refusé
+
+tva_intracom_verify = Vérifier
+title_help_customers_tva = Note sur la TVA intracommunautaire
+title_help_tva_customers = Veuillez valider la fiche avant de vérifier le numéro de TVA Intracommunautaire de la société
+
+title_help_customers_image = Aide
+title_help_customers_default_address = Note sur les autorisations de modifications des clients
+text_help_customers_default_address = <u>Autoriser le client à ajouter d'autres adresses</u> :<ul><li>Désactivé il interdit le client d'ajouter de nouvelles adresses dans son carnet.</li><li>Option true dans la zone <i><strong>Mon Compte</strong></i> du client et lors des <i><strong>procédures de commandes</strong></i>.</li></ul><br /><u>Autoriser le client à modifier l'adresse principale</u> :<ul><li>Désactivé il interdit le client de modifier ou supprimer l'adresse par défaut dans son carnet.</li><li>Désactivé il interdit également <i><strong>la possibilité de choisir une autre adresse de facturation</i></strong> lors de la procèdure d'une commande.</li></ul>
+
+text_edit_group_customer = Modifier le groupe
+icon_edit_customer = Editer la fiche client
+icon_edit_orders = Rechercher les commandes du client
+icon_edit_customers_group = Editer le groupe client
+icon_edit_new_password = Envoyer un nouveau mot de passe
+
+visitor_name = Client normal
+
+entry_pappers_lookup = Vérification entreprise (Pappers)
+entry_pappers_fill = Remplir les champs
+entry_pappers_view = Voir sur Pappers
+entry_pappers_manager = Dirigeant
+entry_pappers_company_closed = Entreprise cessée
+entry_pappers_not_found = Entreprise non trouvée sur Pappers
+
+category_shipping_customer_group = Group B2B Expédition
+button_export_customer_info = Exporter CSV
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+title_help_company_warning = Aucune information à afficher
+text_help_compaby_warning = Veuillez vois la configuration B2B pour afficher des éléments complémentaires

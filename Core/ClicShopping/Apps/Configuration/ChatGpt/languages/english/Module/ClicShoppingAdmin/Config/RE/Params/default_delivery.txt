@@ -1,0 +1,2 @@
+cfg_chatgpt_default_delivery_title = Standard Product Delivery Time
+cfg_chatgpt_default_delivery_description = Standard product delivery time in days.

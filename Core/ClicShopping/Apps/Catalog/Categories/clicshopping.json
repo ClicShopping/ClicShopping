@@ -1,0 +1,44 @@
+{
+  "title": "Categories App",
+  "app": "Categories",
+  "vendor": "Catalog",
+  "version": "1.0.3",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "Categories": "Module\\HeaderTags\\Categories"
+    },
+    "Hooks": {
+      "Shop/SiteUrl": {
+        "Canonical": "Module\\Hooks\\Shop\\SiteUrl\\Canonical"
+      },
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      },
+      "ClicShoppingAdmin/Stats": {
+        "StatsCategories": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsCategories"
+      },
+      "ClicShoppingAdmin/Products": {
+        "ProductsContentTab1": "Module\\Hooks\\ClicShoppingAdmin\\Products\\ProductsContentTab1",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Update"
+      },
+      "ClicShoppingAdmin/DashboardShortCut": {
+        "DashboardShortCut": "Module\\Hooks\\ClicShoppingAdmin\\DashboardShortCut\\DashboardShortCutCategories"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

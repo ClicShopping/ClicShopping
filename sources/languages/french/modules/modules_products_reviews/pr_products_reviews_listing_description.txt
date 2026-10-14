@@ -1,0 +1,2 @@
+modules_products_reviews_listing_description_title = Listing Commentaire : Souhaitez vous afficher la description et le titre du produit ?
+modules_products_reviews_listing_description_title = Listing Commentaire : Afficher la description et le titre du produit

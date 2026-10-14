@@ -1,0 +1,2 @@
+cfg_ecommerce_web_sort_order_title = Ordre de tri
+cfg_ecommerce_web_sort_order_description = Ordre d'affichage. Les valeurs les plus basses apparaissent en premier.

@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_promo_p1_title = Promotion at threshold P1
+cfg_ecommerce_cockpit_ai_promo_p1_description = Promotion applied by the AI at the defined threshold

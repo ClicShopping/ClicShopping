@@ -1,0 +1,2 @@
+cfg_moneyorder_pay_to_title = Pay To
+cfg_moneyorder_pay_to_desc = Please indicate where the amount must be sent

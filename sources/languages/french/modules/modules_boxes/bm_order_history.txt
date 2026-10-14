@@ -1,0 +1,3 @@
+module_boxes_order_history_title = Souhaitez-vous afficher l'historique des commandes dans la boutique ?
+module_boxes_order_history_description = Affiche les anciennes commandes passées par le client
+module_boxes_order_history_box_title = Historique des commandes

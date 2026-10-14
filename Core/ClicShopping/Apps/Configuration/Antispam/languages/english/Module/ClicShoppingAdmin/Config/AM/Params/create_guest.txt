@@ -1,0 +1,7 @@
+cfg_antispam_create_guest_title = Create guest account
+cfg_antispam_create_guest_description = Set True to enable or not the module
+<br /><strong>option: You must install the module or Apps to use it</strong>
+
+cfg_antispam_create_guest_true = True
+cfg_antispam_create_guest_false = False
+

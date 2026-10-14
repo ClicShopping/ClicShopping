@@ -1,0 +1,40 @@
+heading_title = Modules Service APPs
+module_sv_title = Modules Service APPs
+module_sv_short_title = Modules Service APPs
+
+text_modules_hooks = Modules Service APPs
+text_configure =  configure App Module
+
+text_intro = This app allow you to dislay service. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_sv_introduction = The install process create Modules ServiceAPPs and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_modules_service_access = Modules ServiceAPPs
+button_reset = Reset
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+table_heading_services = Services list used
+table_heading_class = Class
+text_modules_service_directory = Directory
+
+button_service_shop = ClicShopping Shop service
+button_service_admin = ClicShopping Admin service

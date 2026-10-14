@@ -1,0 +1,100 @@
+heading_title = ReturnOrders produits
+module_ro_title = ReturnOrders produits
+module_ro_short_title = ReturnOrders produits
+
+text_products_return_orders =  ReturnOrders produits
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'installer unsystème de gestion de retour de produit d'une commande. <br /><br />
+- Activer ce module. Pour y accéder, veuillez aller dans le Menus Orders/ReturnOrders
+
+module_ro_introduction = Le processus d'installation installe le menu
+module_ro_short_title = ReturnOrders
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall = Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_return_orders = Retour des produits
+button_cancel = Annuler
+button_new = Nouveau
+button_unpack = Désarchiver
+button_reset = Reset
+button_update = Mettre à jour
+button_archive = Archiver
+button_insert = Insérer
+button_return_action_status = Statuts actions
+button_return_status = Statuts retours
+button_return_reason_status = Statuts Raisons
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+icon_unpack = Désarchiver
+icon_archive_to = Archiver
+
+heading_title = Gestion des produits retournés
+heading_title_search = Rechercher
+tab_general = Général
+tab_history = Historique
+text_user_name = Nom Administrateur
+text_ref = Informations retour produit
+
+table_heading_return_orders_id = Id
+table_heading_return_orders_ref = Réf Id Retour
+table_heading_return_orders_order_id = Réf Id commande
+table_heading_return_orders_model = Réf produit
+table_heading_return_orders_customer = Client
+table_heading_return_orders_products_name = Produit
+table_heading_return_orders_status = Statut
+table_heading_return_orders_date_added = Date ajout
+table_heading_return_orders_date_modified = Date modifiée
+table_heading_return_orders_archive = Archive
+table_heading_return_orders_action = Actions
+table_heading_return_orders_date_opened = Statut ticket
+
+table_heading_orders_status = Statuts
+text_info_edit_intro = Merci de faire les changements nécessaires
+text_info_orders_status_name = Nom des statuts
+
+text_ref_return_orders_id = Commande Id
+text_ref_return_orders_date = Date commande
+text_ref_return_orders_customer_firstname = Prénom
+text_ref_return_orders_customer_lastname = Nom
+text_ref_return_orders_customer_email = Email
+
+text_description_customer = Informations client
+text_description_order_return = Information produit et raison du retour
+
+text_ref_return_orders_product_name = Nom du produit
+text_ref_return_orders_product_model = Référence produit
+text_ref_return_orders_return_reason = Return reason
+text_ref_return_orders_opened = Statut retour commande
+text_ref_return_orders_return_action = Retour action
+text_ref_return_orders_customer_phone = téléphone
+
+text_ref_return_orders_add_history = Ajouter un historique
+text_ref_return_orders_notify = Notifier le client
+text_ref_return_orders_comment = Commentaire sur le retour de commande
+
+text_opened = Ouvert
+text_unopened = Clôturé
+
+table_heading_date_added = Date ajout
+table_heading_comment = Commentaires
+table_heading_status = Statut
+table_heading_notified = Notification email
+table_heading_admin = Traité par
+
+warning_order_not_updated = Mise à jour non éffectuée
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

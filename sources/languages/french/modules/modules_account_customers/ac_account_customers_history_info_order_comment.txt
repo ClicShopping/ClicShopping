@@ -1,0 +1,7 @@
+module_account_customers_history_info_order_comment_title = Historique Info : Souhaitez-vous permettre au client de voir les commentaires d'évolution de sa commande?
+module_account_customers_history_info_order_comment_description = permettre au client de voir les commentaires d'évolution de sa commande
+
+module_account_customers_history_info_order_comment_heading_history = Etat de la commande / facture :
+module_account_customers_history_info_order_comment_invoice_heading_comment = Commentaires
+module_account_customers_history_info_order_comment_invoice_text_no_comments_available = Aucun commentaires disponibles.
+module_account_customers_history_info_order_comment_support = Statut support :

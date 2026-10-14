@@ -1,0 +1,1 @@
+text_suppliers_suppliers_name = Fournisseurs

@@ -1,0 +1,87 @@
+heading_title = Groupe Clients
+heading_title_edit = Edition du Groupe Clients
+heading_title_new = Nouveau Groupe Clients
+
+heading_title_search = Rechercher
+
+tab_general = General
+tab_orders = Payment
+tab_shipping = Shipping
+tab_categorie = Categories
+
+table_heading_name = Nom
+
+heading_title_categorie_b2b = Categorie Markup
+entry_categories_discount_b2b = Categoroe Markup:
+table_heading_discount_b2b = Markup par défaut
+
+heading_title_categorie = Remise categorie
+entry_categories_discount = Remise categorie
+table_heading_discount = Discount par défaut
+
+title_default_discount = Markup by default on the products
+title_categorie_discount = Markup by default on the category
+table_heading_categories_discount = Markup on category
+
+table_heading_quantity_default = Quantité de commande du groupe
+table_heading_color = Code couleur
+table_heading_action = Action
+entry_group_categories = Catégorie :
+select_category = 1- Séléctionner une Catégorie
+
+text_categories = Catégories
+text_categories_no_new = Après enregistrement de ce nouveau groupe clients vous aurez la possibilité de personnaliser des remises différentes sur les catégories de votre choix
+text_products_updated = Tarifs mis à jour
+text_qty_updated = Prix mis à jour concernant le groupe
+
+title_default_quantity = Quantité minimale de commande
+entry_text_quantity_default = Quantité minimale de commande de ce groupe
+entry_text_quantity_note = &nbsp;<span class="errorText">* Voir note</span>
+entry_groups_name = Nom du groupe
+entry_groups_name_error = Aucun enregistrement n'a pu être effectué car vous n'aviez pas informer de nom pour le groupe
+entry_groups_name_error_zero = Attention % champs est/sont exigé(s) et doit être différent de zéro
+entry_groups_categorie_error = Aucun enregistrement n'a plus être effectué car vous n'avez pas sélectionné de catégorie
+
+text_delete_intro = Etes vous certain de vouloir supprimer ce groupe ?
+text_info_heading_delete_customer = Suppression du groupe
+text_impossible_delete = Vous ne pouvez pas supprimer le groupe suivant !
+type_below = Type
+text_selected = Sélectionner
+entry_color_bar = Code couleur :
+text_no_delete_group = Impossibe de supprimer ce groupe
+
+title_group_tax = Mode d'affichage des prix sur les produits
+entry_group_tax = Affichage des prix :
+text_group_tax_inc = Toutes taxes
+text_group_tax_ex = Hors Taxes
+entry_group_tax_note = &nbsp;<span class="errorText">* Veuillez lire la note ci-dessous</span>
+
+title_group_name = Nom et code couleur du groupe clients
+entry_valeur_discount = Valeur <i>(%)</i> :
+entry_valeur_discount_note = &nbsp;<span class="errorText">* Veuillez ne pas ajouter les symboles suivants : + - ou %</span>
+
+title_order_customer_default = Mode de facturation par défaut
+title_group_paiement_default = Mode de paiement à autoriser par défaut
+title_group_shipping_default = Mode de livraison à autoriser par défaut
+title_list_categories_discount = Liste des catégories en action
+
+help_title_onglet_general = Note sur la gestion des groupes B2B
+help_group_tax = <li>En sélectionnant " <i>Non assujettie à la Taxe</i> " dans l'onglet facturation, la sélection du mode d'affichage des prix produits ce positionnera automatiquement en mode Hors Taxes à l'enregistrement.</li>
+<li>si la quantité minimale de commande est égale à 0, ce sera la quantité par défaut générale qui sera prise en compte. La quantité minimale par produit ne s'applique pas dans le cadre du mode B2B</li>
+
+help_title_onglet_facturation = Note sur la gestion des groupes B2B
+help_order_tax = <li>En sélectionnant " <i>Non assujettie à la Taxe</i> ", la sélection du mode d'affichage des prix produits dans l'onglet général ce positionnera automatiquement en mode Hors Taxes à l'enregistrement.</li>
+
+entry_groups_name_success = la mise à jour a été réalisée avec succès
+entry_groups_name_error = Erreur, veuillez vérifier vos données
+entry_groups_categorie_error = Erreur sur la catégorie
+
+options_order_taxe = avec taxes
+options_order_no_taxe = Sans taxes
+text_price_success = Tarifs du groupe mis à jour avec succès
+
+text_result_page = Page {{listing_from}} à {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_update = Mettre à jour
+icon_edit = Editer

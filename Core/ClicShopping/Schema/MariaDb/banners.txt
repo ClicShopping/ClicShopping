@@ -1,0 +1,24 @@
+banners_id int not_null auto_increment comment(Primary key - unique identifier for each banner)
+banners_title varchar(255) null comment(Banner title for display - visible to customers)
+banners_url varchar(255) null comment(Target URL when banner is clicked)
+banners_image varchar(255) null comment(Path to banner image file)
+banners_group varchar(255) null comment(Banner group for placement - header, sidebar, footer, etc)
+banners_target varchar(6) not_null comment(Link target - _blank for new window, _self for same window)
+banners_html_text text comment(HTML content for text-based banners - alternative to image)
+expires_impressions int(7) default(0) comment(Maximum number of impressions before banner expires - 0 for unlimited)
+expires_date datetime comment(Expiration date when banner stops displaying - null for no expiration)
+date_scheduled datetime comment(Future date when banner becomes active - null for immediate)
+date_added datetime not_null comment(Timestamp when banner was created)
+date_status_change datetime comment(Timestamp when status was last changed)
+status int(1) default(1) not_null comment(Banner status - 0: inactive, 1: active and displaying)
+languages_id int default(0) not_null comment(FK to languages table - language for this banner, 0: all languages)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group who sees banner, 0: all groups)
+banners_title_admin varchar(255) not_null comment(Internal admin title for banner management)
+banners_theme varchar(50) null comment(Theme or campaign name for banner grouping)
+--
+primary banners_id
+idx_banners_group banners_group
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

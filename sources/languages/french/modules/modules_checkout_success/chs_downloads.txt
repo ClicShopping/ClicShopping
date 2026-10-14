@@ -1,0 +1,6 @@
+module_checkout_success_downloads_title = Souhaitez-vous permettre au client de pouvoir télécharger des options proposées lors sa commande ?
+module_checkout_success_downloads_description = Module permettant au client de télécharger une options d\un produit
+table_heading_download_date = date d'expiration :
+table_heading_download_count =  téléchargements restant
+heading_download = Zone de téléchargement de vos produits :
+footer_download = Vous pouvez aussi télécharger vos produits plus tard à {{url}}

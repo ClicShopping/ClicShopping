@@ -1,0 +1,19 @@
+id BIGINT not_null auto_increment comment(Primary key - unique identifier for each memory retention record)
+user_id VARCHAR(255) not_null comment(User identifier for memory tracking)
+interaction_id VARCHAR(255) not_null comment(Unique interaction identifier - prevents duplicates)
+timestamp_recorded TIMESTAMP default(current_timestamp) comment(When the memory was first recorded)
+timestamp_migrated TIMESTAMP default(NULL) comment(When the memory was migrated to a different level)
+level ENUM('working','short_term','long_term') default('short_term') comment(Memory retention level - working: active session - short_term: recent history - long_term: permanent storage)
+status ENUM('pending','short_term_stored','long_term_stored','archived') default('pending') comment(Processing status - pending: awaiting storage - short_term_stored: in short-term memory - long_term_stored: in long-term memory - archived: moved to archive)
+--
+primary id
+unique idx_interaction_id interaction_id
+idx_user_id user_id
+idx_status status
+idx_status_level status level
+idx_user_status user_id status
+idx_timestamp_recorded timestamp_recorded
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,2 @@
+error_no_default_currency_defined = Error: There is currently no default currency set. Please set one at: Configuration / others / Currencies
+default_currency = Default currency

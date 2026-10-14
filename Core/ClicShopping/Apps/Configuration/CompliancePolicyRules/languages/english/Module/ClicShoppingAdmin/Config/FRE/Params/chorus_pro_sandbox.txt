@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_title = Chorus Pro Sandbox Mode
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_description = Uses the Chorus Pro test environment (True | False).
+
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_true = True
+cfg_configuration_compliance_policy_rules_chorus_pro_sandbox_false = False

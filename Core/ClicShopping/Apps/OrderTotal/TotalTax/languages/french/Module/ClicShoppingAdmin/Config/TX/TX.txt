@@ -1,0 +1,3 @@
+module_tx_title = Total taxes
+module_tx_short_title = Total taxes
+module_tx_public_title = Total taxes

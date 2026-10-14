@@ -1,0 +1,37 @@
+text_rag_semantic_results_for = Results for:
+text_rag_semantic_response = Response:
+text_rag_semantic_source = Source
+text_rag_semantic_sources = Sources
+text_rag_semantic_and = and
+text_rag_semantic_quality_metrics = Quality and Security Metrics:
+text_rag_semantic_hallucination_detected = Hallucination Detection:
+text_rag_semantic_hallucination_message = The original response was rejected due to insufficient reliability score. The system returned an insufficient information message instead.
+text_rag_semantic_reliability_score = Reliability Score:
+text_rag_semantic_accepted = ACCEPTED
+text_rag_semantic_flagged = FLAGGED
+text_rag_semantic_rejected = REJECTED
+
+text_rag_analytics_results_for = Results for:
+text_rag_analytics_interpretation = Interpretation:
+text_rag_analytics_sql_query = SQL Query:
+text_rag_analytics_data = Data:
+text_rag_analytics_note = Note:
+text_rag_analytics_detailed_data_available = Detailed data is available in the interpretation above.
+text_rag_analytics_multiple_queries_note = This query contains {count} sub-queries. Results are displayed separately below.
+text_rag_analytics_query = Query
+text_rag_analytics_sub_query = Sub-query
+text_rag_analytics_error = Error:
+text_rag_analytics_unknown_error = Unknown error
+text_rag_analytics_no_data_found = No data found for this query.
+text_rag_analytics_all_sql_queries = All executed SQL queries:
+text_rag_analytics_result_count = Number of results:
+
+text_rag_ambiguous_multiple_interpretations = Multiple Interpretations Detected
+text_rag_ambiguous_explanation = Your query could mean different things. Here are the results for each interpretation:
+text_rag_ambiguous_recommendation = Recommendation:
+text_rag_ambiguous_view_sql = View SQL Query
+text_rag_ambiguous_no_results = No results found
+text_rag_ambiguous_analytics_database = Analytics Database
+text_rag_ambiguous_interpretations = interpretations
+
+text_rag_analytics_note_multiple_queries = This query contains {count} sub-queries. Results are displayed separately below.

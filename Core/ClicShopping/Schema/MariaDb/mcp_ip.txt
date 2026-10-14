@@ -1,0 +1,13 @@
+mcp_ip_id int(11) not_null auto_increment comment(Primary key - unique identifier for each MCP IP whitelist entry)
+mcp_id int(11) not_null comment(FK to mcp table - MCP configuration this IP is allowed for)
+ip varchar(40) not_null comment(Whitelisted IP address - IPv4 or IPv6 format)
+comment varchar(255) default null comment(Optional description of this IP whitelist entry)
+--
+primary mcp_ip_id
+idx_mcp_ip_id mcp_ip_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment IP address whitelist for MCP server access control and security
+ai_schema = exclude

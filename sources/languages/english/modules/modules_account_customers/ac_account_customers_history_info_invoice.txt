@@ -1,0 +1,14 @@
+module_account_customers_history_info_invoice_title = History Info : Do you want to display the order detail ?
+module_account_customers_history_info_invoice_description = Display the order detail
+
+module_account_customers_history_info_invoice_action = Actions
+module_account_customers_history_info_invoice_products = products
+module_account_customers_history_info_invoice_tax = Tax
+module_account_customers_history_info_invoice_total = Total
+
+module_account_customers_history_info_invoice_order_number = N  #{{order_id}}
+module_account_customers_history_info_invoice_order_date = Date of the order :
+module_account_customers_history_info_invoice_order_total = Amount Total :
+
+module_account_customers_history_info_invoice_heading_billing_information = Informations order / invoice
+button_return_product = Product return

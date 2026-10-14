@@ -1,0 +1,14 @@
+entry_customers_group_name = Groupe client
+
+category_group_customer = Type de client
+category_order_taxe = Mode de facturation
+category_order_taxe_group = Mode de facturation autorisé sur le groupe
+category_shipping_customer = Mode de livraison autorisé
+category_shipping_customer_group = Mode de livraison autorisé sur le groupe
+category_order_customer = Mode de paiement autorisé
+category_order_customer_group = Mode de paiement autorisé sur le groupe
+
+options_order_taxe = Avec taxes
+options_order_no_taxe = Sans taxes
+
+visitor_name = Client normal

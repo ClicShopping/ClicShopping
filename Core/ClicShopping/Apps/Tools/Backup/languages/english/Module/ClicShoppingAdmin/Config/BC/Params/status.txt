@@ -1,0 +1,6 @@
+cfg_backup_status_title = Status
+cfg_backup_status_description = Set True to enable or not the module
+
+cfg_backup_status_true = True
+cfg_backup_status_false = False
+

@@ -1,0 +1,3 @@
+title_orders_customers_status = Process orders
+text_orders_pending = Pending
+text_orders_processing = Processing

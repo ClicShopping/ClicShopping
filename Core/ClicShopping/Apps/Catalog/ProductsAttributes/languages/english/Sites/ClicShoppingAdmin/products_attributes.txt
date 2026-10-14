@@ -1,0 +1,66 @@
+
+heading_title = Product Options
+
+heading_title_opt = Step 1 : Product options name
+heading_title_val = Step 2 : Option values for the product
+heading_title_attributes = Step 3 : Define the products Attributes
+
+table_heading_id = ID
+table_heading_type = Type
+table_heading_ref_attributes = Attribut Model
+
+table_heading_product = Product Name
+table_heading_opt_name = Option Name
+table_heading_opt_value = Option Value
+table_heading_opt_price = Value Price
+table_heading_opt_price_prefix = Prefix
+table_heading_opt_order = Catalog display order
+table_heading_opt_b2b = B2B / B2C
+table_heading_image = Image
+table_heading_opt_tatus = Status
+table_heading_action = Action
+table_heading_download = Downloadable products:
+table_heading_opt_status = Status
+
+table_text_filename = Filename:
+table_text_max_days = Expiry days:
+table_text_max_count = Maximum download count:
+
+heading_title_clone_products_attributes = Step 4 :Clone / Copy attributs
+clone_products_from = from
+clone_products_to = to
+
+title_help_attributs = Note on the Attributs
+
+text_help_attributs = <ul><strong><u>Attributs Prefix </u></strong> :<br /><br /><li> - The syntax "+" allow to multiply the attribut by the quantity and add to the price</li> <li> - The syntax "-" allow to multiply  the attribut by the quantity and add the price</li><br /><li> - Don't forget to configure the order status concerning the upload files.</li><li> - The upload file can't exceed  : {{upload_max_filesize}}</li>
+text_filename = Nom du fichier
+
+title_help_clone = Note on the Clone
+text_help_clone = <ul><strong><u>Copy/ Clone attributs</u></strong> : <br /><br /><li>You can copy one or several products attributs created (step 3) on one or several others products</li><li>To delete one or several attributs, you must choose a product and select one or several products.<br />Click on delete and the attributs will be deleted</li></ul>
+
+text_warning_of_delete = This option has products and values linked to it - it is not safe to delete it.
+text_ok_to_delete = This option has no products and values linked to it - it is safe to delete it.
+text_option_id = Option ID
+text_option_name = Option Name
+
+text_all_groups = All groups
+visitor_name = Normal customer
+text_select = Select
+text_radio = Radio
+text_checkbox = Checkbox
+text_text = Text
+text_textarea = Textarea
+text_color_picker = Color picker
+
+tab_step1 = Step 1 Products options name
+tab_step2 = Step 2 Value option values
+tab_step3 = Step 3 Define the products Attributes
+tab_step4 = Options
+
+button_edit = Edit
+button_copy = Copy
+
+error_catalog_download_directory_not_writeable = Download directory not writeable : Download/Private
+error_file_not_supported = File image format not supported
+
+text_clone_download_not_cloned = Attributes were cloned successfully. Note: download files were not copied — please reconfigure them manually for the cloned products.

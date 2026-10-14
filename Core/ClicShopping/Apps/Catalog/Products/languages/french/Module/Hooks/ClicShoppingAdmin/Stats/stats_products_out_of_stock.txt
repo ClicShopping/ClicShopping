@@ -1,0 +1,3 @@
+text_products_stock = Stock
+text_products_out_of_stock = Rupture stock
+text_products_offline = Produits hors ligne

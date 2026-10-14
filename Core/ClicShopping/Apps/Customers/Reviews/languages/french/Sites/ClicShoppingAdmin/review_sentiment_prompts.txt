@@ -1,0 +1,23 @@
+text_sentiment = TÂCHE : Analyse les commentaires clients pour le produit "{{products_name}}" et renvoie UNIQUEMENT un objet JSON, sans prose, sans balises de code.
+CONTRAINTES :
+  - Base-toi UNIQUEMENT sur les commentaires fournis. Aucune spéculation. Aucun nom d'utilisateur ni donnée personnelle.
+  - Pondère davantage les commentaires annotés avec plus de votes "[helpful: X yes / Y no]".
+  - Réponds en français.
+FORME JSON (renvoie exactement cette forme) :
+{"dominant_sentiment":"positive|negative|neutral|mixed","strengths":["..."],"issues":["..."],"themes":[{"label":"...","frequency":0,"sentiment":"positive|neutral|negative"}],"quotes":{"positive":["..."],"negative":["..."]},"summary":"paragraphe de 3 à 5 phrases"}
+=== COMMENTAIRES CLIENTS ===
+{{text_reviews}}
+
+
+
+text_fidelity_check = TÂCHE : Tu es un vérificateur de faits strict. Les COMMENTAIRES CLIENTS ci-dessous sont la SEULE vérité terrain. Pour les AFFIRMATIONS D'ANALYSE, renvoie UNIQUEMENT un objet JSON, sans prose, sans balises de code.
+CONTRAINTES :
+  - Une affirmation est « supportée » seulement si les commentaires l'énoncent ou l'impliquent clairement.
+  - Liste chaque affirmation qui n'est PAS supportée par les commentaires.
+  - Réponds en français.
+FORME JSON (renvoie exactement cette forme) :
+{"supported_fraction":0.0,"unsupported_claims":["..."]}
+=== COMMENTAIRES CLIENTS ===
+{{text_reviews}}
+=== AFFIRMATIONS D'ANALYSE ===
+{{claims}}

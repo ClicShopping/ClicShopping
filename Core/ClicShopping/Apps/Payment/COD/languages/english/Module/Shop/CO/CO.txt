@@ -1,0 +1,4 @@
+module_cod_title = Cash on Delivery
+module_cod_short_title = Cash on Delivery
+module_cod_public_title = Cash on Delivery
+module_cod_public_description = Cash on Delivery

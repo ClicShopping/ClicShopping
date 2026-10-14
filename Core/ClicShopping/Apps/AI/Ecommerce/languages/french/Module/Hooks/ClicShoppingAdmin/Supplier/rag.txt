@@ -1,0 +1,48 @@
+text_supplier_id = [L'identifiant du fournisseur {{supplier_name}}]
+text_supplier_name = [Nom du fournisseur]
+text_supplier_image = [Image associée au fournisseur {{supplier_name}}]
+text_supplier_date_added = [Date d'enregistrement du fournisseur {{supplier_name}}]
+text_supplier_last_modified = [Dernière modification des informations de {{supplier_name}}]
+text_suppliers_manager = [Contact principal chez {{supplier_name}}]
+text_suppliers_phone = [Numéro de téléphone de {{supplier_name}}]
+text_suppliers_email_address = [Adresse email de contact de {{supplier_name}}]
+text_suppliers_address = [Adresse postale de {{supplier_name}}]
+text_supplier_suburb = [Zone/Quartier de {{supplier_name}}]
+text_suppliers_postcode = [Code postal de {{supplier_name}}]
+text_supplier_city = [Ville de {{supplier_name}}]
+text_suppliers_states = [Région/État de {{supplier_name}}]
+text_supplier_country_id = [Pays de {{supplier_name}}]
+text_suppliers_notes = [Informations complémentaires sur {{supplier_name}}]
+text_supplier_status = [État actuel du compte {{supplier_name}}]
+text_suppliers_payment_terms = [Conditions de paiement pour {{supplier_name}}]
+text_status_active = [Actif]
+text_status_inactive = [Inactif]
+
+
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à un profil de fournisseur ou de fabricant dans un contexte e-commerce.
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine]: Domaine général de l’activité du fournisseur (ex. Maison, Mode, Électronique)
+[sous_domaine]: Segment ou spécialisation au sein du domaine (ex. Arts de la table, Informatique, Mobilier)
+[type_entreprise]: Nature de l’entreprise (ex. Fabricant, Distributeur, Grossiste, Marque)
+[nom_entreprise]: Nom officiel du fournisseur ou de la marque
+[portefeuille_marques]: Principales marques ou gammes gérées par le fournisseur, si mentionné
+[perimetre_produits]: Éventail de produits ou catégories fournis (ex. Arts de la maison, Éclairage, Textile)
+[perimetre_marche]: Couverture géographique ou de marché (ex. National, Européen, Mondial)
+[type_client]: Type de clients ciblés (ex. B2B, B2C, Détaillants, Professionnels)
+[valeurs]: Valeurs d’entreprise déclarées ou implicites (ex. Durabilité, Innovation, Qualité)
+[certifications]: Normes ou certifications obtenues (ex. ISO 9001, Commerce équitable)
+[criteres]: Attributs ou points forts distinctifs (ex. Fiabilité, Réactivité, Expertise)
+[pratique]: Pratiques opérationnelles ou méthodes commerciales (ex. Production, Distribution, Logistique)
+[objectif]: Objectif commercial principal (ex. Développer la distribution, Renforcer les partenariats)
+[dimension_symbolique]: Dimension symbolique ou de marque (ex. Prestige, Confiance, Héritage)
+[dimension_sensorielle]: Aspects esthétiques ou d’expérience, si mentionnés (ex. Design, Emballage)
+[source]: Origine ou identification légale, si mentionnée (ex. Pays, Numéro d’enregistrement)
+[mots_cles]: Liste libre de mots-clés pertinents extraits du texte
+
+Texte : {{document_text}}

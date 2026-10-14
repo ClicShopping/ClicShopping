@@ -1,0 +1,39 @@
+
+entry_sold_to = VENDU A :
+entry_ship_to = LIVRE A :
+
+entry_payment_method = Mode de paiement :
+payment_method = Mode de paiement :
+entry_numero_invoice = Numéro de facture :
+entry_numero_order = Numéro de commande :
+entry_date_invoice = Date facture :
+entry_date_order = date commande :
+entry_invoice = Facture
+entry_order = Commande
+print_order_date = Date
+
+entry_http_site = Site Internet :
+
+entry_phone = Téléphone :
+entry_email = Adresse e-mail :
+entry_customer_information = Informations Client
+entry_customer_number = Référence Client :
+
+thank_you_customer = Nous vous remercions d'avoir passé une commande chez nous. Nous espérons vous revoir bientôt
+
+reserve_propriete = Réserve de propriété : Selon la loi en vigueur  {{store_name}} se réserve la propriété des marchandises livrées jusqu'au paiement intégral du prix.
+reserve_propriete_next = Il pourra en demander la restitution par lettre recommandée. Pour tout autre information, veuillez consulter nos conditions générales de vente
+reserve_propriete_next1 = disponible sur le site à l'adresse suivante : {{sell_conditions_url}}
+
+entry_info_societe = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next = {{tva_shop_intracom}}
+entry_info_societe1 = {{shop_code_capital}}{{shop_code_rcs}} - {{shop_code_ape}}
+entry_info_societe_next1 = {{tva_shop_provincial}} - {{tva_shop_federal}}
+
+table_heading_qte = Qté
+table_heading_products_model = Modèle
+table_heading_products = Produits
+table_heading_tax = Taxe
+table_heading_price_excluding_tax = Prix (HT)
+table_heading_total_excluding_tax = Total (HT)
+entry_total_excluding_tax = Total HT

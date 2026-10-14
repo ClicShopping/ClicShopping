@@ -1,0 +1,4 @@
+cfg_configuration_compliance_policy_rules_display_order_acceptance_title = Do you want to display the acceptance of the order by the consumer
+cfg_configuration_compliance_policy_rules_display_order_acceptance_description = Confirmation button process requires the consumer to accept its order. Do you want to display ?
+cfg_configuration_compliance_policy_rules_display_order_acceptance_true = True
+cfg_configuration_compliance_policy_rules_display_order_acceptance_false = False

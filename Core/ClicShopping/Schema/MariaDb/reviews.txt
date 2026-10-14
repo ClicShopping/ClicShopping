@@ -1,0 +1,20 @@
+reviews_id int not_null auto_increment comment(Primary key - unique identifier for each review)
+products_id int not_null comment(FK to products table - product being reviewed)
+customers_id int comment(FK to customers table - customer who wrote the review, null for guest reviews)
+customers_name text not_null comment(Customer name displayed with review - preserved even if account deleted)
+reviews_rating int(1) comment(Product rating - typically 1 to 5 stars)
+date_added datetime comment(Timestamp when review was submitted)
+last_modified datetime comment(Timestamp of last modification to review)
+reviews_read int(5) default(0) not_null comment(Number of times this review has been viewed)
+status tinyint(1) default(0) not_null comment(Review status - 0: pending approval, 1: approved and visible)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group at time of review)
+customers_tag varchar(255) comment(Customer tag or badge - verified buyer, top reviewer, etc)
+--
+primary reviews_id
+idx_reviews_products_id products_id
+idx_reviews_customers_id customers_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment CUSTOMER REVIEWS - one row per review of a product, with its rating (reviews_rating) and its author. Use it for satisfaction, average rating and review volume. The review text itself is in reviews_description, the computed sentiment in reviews_sentiment.

@@ -1,0 +1,20 @@
+currencies_id int not_null auto_increment comment(Primary key - unique identifier for each currency)
+title varchar(255) not_null comment(Full currency name - e.g. US Dollar, Euro)
+code char(3) not_null comment(ISO 4217 currency code - e.g. USD, EUR, GBP)
+symbol_left varchar(12) comment(Currency symbol displayed before amount - e.g. $, €)
+symbol_right varchar(12) comment(Currency symbol displayed after amount)
+decimal_point char(1) comment(Character used as decimal separator - e.g. . or ,)
+thousands_point char(1) comment(Character used as thousands separator - e.g. , or .)
+decimal_places char(1) comment(Number of decimal places to display - typically 2)
+value float(13,8) comment(Exchange rate relative to base currency - 1.00000000 for base currency)
+last_updated datetime comment(Timestamp of last exchange rate update)
+status tinyint(1) not_null default(1) comment(Currency status - 0: inactive, 1: active for selection)
+surcharge float(15,4) comment(Additional surcharge percentage applied when using this currency)
+--
+primary currencies_id
+idx_currencies_code code
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Multi-currency support with exchange rates and formatting rules

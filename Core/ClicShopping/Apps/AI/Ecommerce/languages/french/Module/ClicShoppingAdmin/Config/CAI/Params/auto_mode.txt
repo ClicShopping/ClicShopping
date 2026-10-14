@@ -1,0 +1,5 @@
+cfg_ecommerce_cockpit_ai_auto_mode_title = Permettre a l'IA de prendre des décision
+cfg_ecommerce_cockpit_ai_auto_mode_description = En moe True, l'IA peut prendre des decisions marketing pour créer des promotions, featured, favorites, ajouts, modification, suppressions
+
+cfg_ecommerce_cockpit_ai_auto_mode_true = True
+cfg_ecommerce_cockpit_ai_auto_mode_false = False

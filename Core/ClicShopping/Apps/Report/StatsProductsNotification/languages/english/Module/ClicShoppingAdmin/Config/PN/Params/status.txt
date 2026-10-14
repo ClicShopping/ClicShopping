@@ -1,0 +1,6 @@
+cfg_stats_products_notification_status_title = Status
+cfg_stats_products_notification_status_description = Set True to enable or not the module
+
+cfg_stats_products_notification_status_true = True
+cfg_stats_products_notification_status_false = False
+

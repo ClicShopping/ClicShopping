@@ -1,0 +1,3 @@
+module_admin_dashboard_total_gpt_token_app_title = View OpenAi gpt API consumption
+module_admin_dashboard_total_gpt_token_app_description = OpenAi gpt API consumption
+module_admin_dashboard_total_gpt_token_app_chart_link = OpenAi gpt API consumption

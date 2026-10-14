@@ -1,0 +1,50 @@
+heading_title = Actions recorder
+module_ar_title = Actions recorder
+module_ar_short_title = Actions recorder
+
+text_actions_recorder =  Actions recorder
+text_configure = Configure App Module
+
+text_intro = This app allow you to include an actions recorder pages. <br /><br />
+- Activate this module located in the Tools menu
+
+module_ar_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_actions_recorder = Actions recorder
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Delete
+button_update = Update
+button_new_category =  New menu
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Tools parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+text_filter_search = Search:
+text_all_modules = -- All modules --
+table_heading_module = Module
+table_heading_customer = Customers
+table_heading_date_added = Date added
+table_heading_action = Action
+table_heading_identifier = Information customer :
+text_info_date_added = Date added
+success_expired_entries = Success
+
+success_expired_entries = Success: {{expired_entries}} expired entries were removed.

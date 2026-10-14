@@ -1,0 +1,74 @@
+llm_prompt_insights_summary = You are an order insights analyst for an e-commerce platform.
+Analyze the following order data and provide a concise summary:
+{order_data}
+
+Provide insights including:
+1. Order value and product count
+2. Customer information
+3. Order status and timeline
+4. Key highlights or concerns
+
+Return your analysis in JSON format:
+{
+    "insights": ["insight1", "insight2", ...],  
+    "confidence": 0.95,
+    "recommendations": ["recommendation1", "recommendation2", ...],
+    "summary": "Brief summary"
+}
+
+llm_prompt_insights_trends = You are an order insights analyst for an e-commerce platform.
+Analyze the following order data and identify trends and patterns:
+
+{{order_data}}
+
+Identify:
+1. Product category preferences
+2. Price point analysis
+3. Ordering behavior patterns
+4. Comparison with typical orders
+
+Return your analysis in JSON format:
+{
+     "insights": ["insight1", "insight2", ...],
+     "confidence": 0.95,
+     "recommendations": ["recommendation1", "recommendation2", ...],
+     "summary": "Brief summary"
+}
+
+llm_prompt_insights_anomalies = You are an order insights analyst for an e-commerce platform.
+Analyze the following order data and detect any anomalies or unusual aspects:
+
+{{order_data}}
+
+Detect:
+1. Unusual product combinations
+2. Unexpected order value
+3. Suspicious patterns
+4. Risk indicators
+
+Return your analysis in JSON format:
+{
+      "insights": ["insight1", "insight2", ...],
+      "confidence": 0.95,\n  
+      "recommendations": ["recommendation1", "recommendation2", ...],
+      "summary": "Brief summary"
+}
+
+llm_prompt_insights_recommendations = You are an order insights analyst for an e-commerce platform.
+Analyze the following order data and provide actionable recommendations:
+
+{{order_data}}
+
+Provide recommendations for:
+1. Upsell opportunities
+2. Cross-sell suggestions
+3. Customer retention strategies
+4. Fulfillment optimization
+
+Return your analysis in JSON format:
+{  
+    "insights": ["insight1", "insight2", ...],
+    "confidence": 0.95,
+    "recommendations": ["recommendation1", "recommendation2", ...],
+    "summary": "Brief summary"
+}

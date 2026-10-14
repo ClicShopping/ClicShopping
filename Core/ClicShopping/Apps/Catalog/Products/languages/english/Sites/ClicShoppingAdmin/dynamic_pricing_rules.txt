@@ -1,0 +1,34 @@
+
+heading_title = Dynamic Pricing Rules
+text_info_heading_rules = Dynamic Pricing Rules
+button_delete = Delete
+
+table_heading_rules_name = Rule Name
+table_heading_rules_condition = Rule Condition
+table_heading_rules_action = Rule Action
+table_heading_date_added = Date Added
+table_heading_last_modified = Last Modified
+table_heading_rules_type = Rule Type
+table_heading_rules_value = Rule Value
+table_heading_rules_status = Rule Status
+table_heading_rules_priority = Rule Priority
+table_heading_rules_action = Rule Action
+text_rules_status_special = Status Applied to price promotions
+text_rules_status_promotion = Allow to create / delete a specials
+table_help_rules_condition = (e.g., stock <= 10)
+table_heading_rules_customer_group = Customer Group
+table_heading_rules_special = Specials
+
+text_rules_type_percentage_decrease = Percentage Decrease
+text_rules_type_percentage_increase = Percentage Increase
+text_rules_type_fixed_price = Fixed Amount
+
+text_info = <li>Rule Name: A descriptive name for the rule (e.g., "End of Stock Price").</li>
+<li> Note that the rule applies to all products meeting the condition (this may evolve in future versions).</li>
+<li>Rule Condition: The logic that determines when the rule applies. This condition is based on stock level and sales.</li>
+  - Currently, you can only use a single condition per rule (stock < 10, stock >= 10 AND stock <= 50, sales <= 100, or a combination such as stock > 50 AND sales == 0, stock between 10 AND 20).<br />
+  - More complex conditions may be considered for future versions.<br />
+<li>Rule Type: The type of price modification to apply. This refers to the kind of price adjustment (e.g., percentage decrease, fixed price, etc.).<br />
+<li>Rule Value: The numerical value of the price modification. For example, if the rule type is percentage_decrease, the value will be a percentage.<br />
+<li>Rule Priority: A number determining the order in which rules should be applied. A higher priority (e.g., a larger number) means the rule will be processed before others. This is essential for resolving conflicts when multiple rules apply to the same product simultaneously.<li>
+<li>Status Applied to Promotions: Indicates whether the rule should apply to products already on promotion. If enabled, the rule will also affect products currently on sale.</li>

@@ -1,0 +1,25 @@
+heading_title = Brands
+
+title_manufacturer_general = General informations
+text_manufacturers_description = Description
+title_manufacturer_image = Image
+
+text_image_nonexistent = IMAGE DOES NOT EXIST
+text_products_image_vignette = Image
+
+tab_description = Description
+tab_visuel = Image
+tab_seo = Metadatas
+
+text_manufacturers_name = Brands name:
+text_manufacturers_new_image = New brands Image:
+text_manufacturers_image = Brands Image:
+text_manufacturers_delete_image = Not display image brand
+text_manufacturers_url = Brands URL:
+
+title_manufacturers_seo = Metadatas for the brand
+text_manufacturer_seo_title = Title
+title_manufacturer_seo_description = Description
+title_manufacturer_seo_keywords = keywords
+
+text_delete_image = Delete brand image?

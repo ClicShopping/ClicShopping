@@ -1,0 +1,6 @@
+cfg_mcp_display_browser_json_title = Affichage du json dans le browser
+cfg_mcp_display_browser_json_description = En mode test, choisissez False, en Mode production, choisissez True.<br>
+Ce paramétre permet d'afficher le resulat de la requete de l'API en mode json dans le navigateur.
+
+cfg_chatgpt_display_browser_json_status_true = True
+cfg_chatgpt_display_browser_json_status_false = False

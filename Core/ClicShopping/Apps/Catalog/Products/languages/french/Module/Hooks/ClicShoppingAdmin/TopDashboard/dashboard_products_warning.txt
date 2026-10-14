@@ -1,0 +1,2 @@
+text_number_products_stock_warning = Alerte stock produits
+text_view = - Plus d'informations

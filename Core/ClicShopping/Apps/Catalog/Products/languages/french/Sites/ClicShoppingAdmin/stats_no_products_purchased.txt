@@ -1,0 +1,14 @@
+heading_title = Produits non achetés
+module_sn_title = Produits non achetés
+module_sn_short_title =  Produits non achetés
+
+
+table_heading_products_id = ID
+table_heading_products = Produits
+table_heading_no_purchased = Non Acheté
+table_heading_clear = Effacer
+
+text_preview = Prévisualiser
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

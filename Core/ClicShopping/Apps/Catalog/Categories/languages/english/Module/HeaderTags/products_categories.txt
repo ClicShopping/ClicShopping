@@ -1,0 +1,2 @@
+module_header_tags_products_categories_title = Do  you want use Categories meta tag ?
+module_header_tags_products_categories_description = Add the meta tag balise in the Categories page

@@ -1,0 +1,20 @@
+
+navbar_title_1 = Mon compte
+navbar_title_2 = Carnet d'adresses
+
+heading_title = Carnet d'adresses personnel
+
+heading_description = Créer les adresses que vous souhaitez : votre résidence principale, votre lieu de travail, etc... Elle vous servira à chaque commande et vous évitera de ressaisir l'ensemble de vos coordonnées.
+
+primary_address_title = Adresse par défaut
+primary_address_description = Cette adresse est utilisée par défaut concernant l'expédition ou les commandes passées sur {{store_name}}.<br /><br />Elle est également utilisée concernant le calcul sur les taxes et les frais d'envois.
+
+address_book_title = Ajouter ou modifier des adresses
+
+primary_address = (Adresse par défaut)
+primary_book_title = Adresse
+text_maximum_entries = <p style="color:#ff0000;"><strong>NOTE:</strong></font> Un maximum de {{max_entries}} adresses différentes vous est permis.</p>
+
+button_edit = Editer
+button_delete = Supprimer
+button_back = Retour

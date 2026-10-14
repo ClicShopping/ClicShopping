@@ -1,0 +1,5 @@
+cfg_chatgpt_security_expert_status_title = Enable Security Expert Critic
+cfg_chatgpt_security_expert_status_description = Activate the Security Expert critic for evaluating security implications, data protection, and compliance. Specializes in assessing security risks and regulatory requirements.
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

@@ -1,0 +1,3 @@
+text_categories_alert = Alerte catégories
+text_categories_on = Catégories On
+text_categories_off = Catégories Off

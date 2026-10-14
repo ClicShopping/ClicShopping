@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+A {
+  color: #4F4F4F;
+  text-decoration: none;
+}
+
+
+/*Couleurs des liens en survole*/
+A:hover {
+  text-decoration: underline;
+}
+
+.A H1 {
+  color: #682b0e !important;
+  text-decoration: none;
+}
+
+.A H2 {
+  color: #682b0e !important;
+  text-decoration: none;
+}
+
+.A H3 {
+  color: #682b0e !important;
+  text-decoration: none;
+}
+
+.A H4 {
+  color: #682b0e !important;
+  text-decoration: none;
+}
+
+.A H5 {
+  color: #682b0e !important;
+  text-decoration: none;
+}
+
+.A H6 {
+  color: #682b0e !important;
+  text-decoration: none;
+}
+
+.pageHeading A:hover {
+  text-decoration: none;
+}
+
+.pageHeading {
+  font-weight: bold;
+  color: #ff7d00;
+}
+
+
+.pageHeading A {
+  font-weight: bold;
+  color: #ff7d00;
+  text-decoration: none
+}

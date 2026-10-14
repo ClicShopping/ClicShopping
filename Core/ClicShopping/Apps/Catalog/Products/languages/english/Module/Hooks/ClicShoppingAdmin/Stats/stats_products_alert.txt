@@ -1,0 +1,3 @@
+text_products_alert_stock = Alert
+text_products_alert_quantity = Quantity alert
+text_products_not_view = Products no viewed

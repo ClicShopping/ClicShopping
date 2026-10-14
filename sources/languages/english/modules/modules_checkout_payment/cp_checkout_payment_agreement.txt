@@ -1,0 +1,8 @@
+
+module_checkout_payment_agreement_title = Do you want to display a checkbox to accept the term and condition ?
+module_checkout_payment_agreement_description = Display a checkbox to accept the term and condition
+
+module_checkout_payment_agreement_table_heading_conditions = Terms and Conditions
+module_checkout_payment_agreement_text_conditions_confirm = Please acnowledge the terms and conditions bound to this order by ticking the following box. The terms and conditions can be read <a href="{{shop_code_url_conditions_vente}}" target="_blank" rel="noopener"><u>here</u></a>.
+
+module_checkout_payment_agreement_text_conditions_description = <strong>I have read and agreed to the terms and conditions bound to this order</strong>.

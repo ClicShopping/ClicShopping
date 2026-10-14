@@ -1,0 +1,4 @@
+cfg_ecommerce_cron_seo_faq_status_title = FAQ cron default status
+cfg_ecommerce_cron_seo_faq_status_description = Please select the cron FAQ status
+cfg_ecommerce_cron_seo_faq_status_true = True
+cfg_ecommerce_cron_seo_faq_status_false = False

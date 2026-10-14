@@ -1,0 +1,5 @@
+
+ modules_tell_a_friend_customer_agreement_title = Souhaitez-vous afficher une acceptation client avant d'envoyer le message
+ modules_tell_a_friend_customer_aggreement_description = Afficher une acceptation client avant d'envoyer le message
+
+

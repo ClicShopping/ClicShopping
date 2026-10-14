@@ -1,0 +1,4 @@
+heading_title = SEO
+module_se_short_title = SEO
+
+title_menu = SEO

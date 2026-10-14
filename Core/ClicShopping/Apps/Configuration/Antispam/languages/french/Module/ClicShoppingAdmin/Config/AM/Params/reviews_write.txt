@@ -1,0 +1,7 @@
+cfg_antispam_reviews_write_title = Ecrire un Commentaire
+cfg_antispam_reviews_write_description = Sélectionnez True pour activer le module
+<br /><strong>Option: Vous devez installer le module ou l'APP correspondante et activer les modules</strong>
+
+cfg_antispam_reviews_write_true = True
+cfg_antispam_reviews_write_false = False
+

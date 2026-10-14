@@ -1,0 +1,8 @@
+
+ module_checkout_payment_address_title = Do you want to display the billing Address ?
+ module_checkout_payment_address_description = Display the billing Address
+ module_checkout_payment_address_title_payment_address = Billing Address
+ module_checkout_payment_address_text_choose_payment_destination = Please select the preferred payment method to use on this order.
+
+ module_checkout_payment_address_button_change_address = Change your adresse
+ button_modify = Modify

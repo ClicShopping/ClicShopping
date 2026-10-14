@@ -1,0 +1,2 @@
+cfg_ecommerce_web_overview_max_results_title = Display the results for Analysis google overview AI
+cfg_ecommerce_web_overview_max_results_description = Provide a max number to display result. SERAPI must be active

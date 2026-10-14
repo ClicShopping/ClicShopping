@@ -1,0 +1,4 @@
+
+ module_boxes_best_sellers_title = Best Sellers
+ module_boxes_best_sellers_description = Show global and category best sellers
+ module_boxes_best_sellers_box_title = Best sellers

@@ -1,0 +1,79 @@
+heading_title_agent_objectives = Gestion des objectifs des agents
+button_refresh = Actualiser
+button_back_dashboard = Retour au tableau de bord
+button_clear_filters = Effacer les filtres
+button_close = Fermer
+button_cancel = Annuler
+button_confirm = Confirmer
+
+text_filters = Filtres
+text_agent = Agent
+text_all_agents = Tous les agents
+text_status = Statut
+text_all_statuses = Tous les statuts
+text_pending = En attente
+text_approved = Approuve
+text_active = Actif
+text_completed = Termine
+text_failed = Echec
+text_cancelled = Annule
+text_priority = Priorite
+text_all_priorities = Toutes les priorites
+text_low = Faible
+text_medium = Moyen
+text_high = Eleve
+text_critical = Critique
+
+text_agent_objectives = Objectifs des agents
+text_loading = Chargement...
+text_id = ID
+text_goal = Objectif
+text_created = Cree
+text_estimated_completion = Fin estimee
+text_actions = Actions
+
+text_objective_details = Details de l'objectif
+text_confirm_action = Confirmer l'action
+text_reason = Raison :
+
+text_error_loading_objectives = Erreur lors du chargement des objectifs : 
+text_network_error = Erreur reseau : 
+text_no_objectives = Aucun objectif trouve
+text_approve = Approuver
+text_cancel = Annuler
+text_activate = Activer
+text_complete = Terminer
+text_fail = Echouer
+text_no_actions = Aucune action
+text_error_prefix = Erreur : 
+
+text_confirm_title_prefix = Confirmer 
+text_confirm_message_prefix = Voulez-vous vraiment 
+text_confirm_message_suffix =  cet objectif ?
+
+text_objective_id = ID de l'objectif
+text_success_criteria = Criteres de succes
+text_seconds = secondes
+text_metrics = Metriques
+text_failure_reason = Raison de l'echec
+text_previous = Precedent
+text_next = Suivant
+
+text_general_information = Informations générales
+text_deadline = Échéance
+text_timeline = Chronologie
+text_approved_at = Approuvé le
+text_started_at = Démarré le
+text_completed_at = Terminé le
+text_no_description = Aucune description
+text_objective_not_found = Objectif non trouvé
+text_error_loading_details = Erreur lors du chargement des détails
+text_objectives_refreshed = Objectifs actualisés
+text_action_success = Action effectuée avec succès
+
+help_title = Aide - Comprendre les objectifs des agents
+help_description = Cette page affiche les objectifs assignes aux agents IA du systeme. Chaque objectif represente une tache ou un but que l'agent doit accomplir.
+help_statuses = <strong>Statuts :</strong> Pending = en attente de validation, Approved = valide par un administrateur, Active = en cours d'execution, Completed = termine avec succes, Failed = echec, Cancelled = annule.
+help_priority = <strong>Priorite :</strong> Definit l'urgence de l'objectif. Critical et High sont traites en premier par le systeme.
+help_actions = <strong>Actions :</strong> Vous pouvez approuver, activer, terminer ou annuler un objectif selon son statut actuel.
+help_metrics = <strong>Metriques :</strong> Chaque objectif peut avoir des criteres de succes mesurables (temps de reponse, taux de reussite, etc.).

@@ -1,0 +1,45 @@
+ module_checkout_success_thank_you_title = Do you want to enable this module Thank you message?
+ module_checkout_success_thank_you_description = Display thank you message ?
+
+ module_checkout_success_text_thanks_for_shopping = Thank you for your confidence and making your purchases at {{store_name}}.<br />We hope to see you soon !
+ module_checkout_success_text_success = <strong>Your order has been successfully taken into account. Please find enclosed some additional information</strong>
+
+module_checkout_success_text_order_history = Orders history
+module_checkout_success_text_contact = Contact us
+module_checkout_success_text_account = My account
+
+module_checkout_success_text_see_orders =
+<p class="blockquote">
+  <h3>your order</h3>
+  <br /><br />
+  <li>you can access your account via Page {{my_account}}.</li>
+  <li>you can access your order history through the page <strong>{{account_history}}</strong>.<br />You can print them your order or invoice by checking the details of your order.</li>
+  <li><strong>if you paid by check</strong>, we ask you to submit either a copy of your purchase order or the confirmation email you received. Upon receipt , we will process your request.
+  <br />Address If you paid by check {{store_name}} : {{store_name_address}}</li>
+</p>
+
+module_checkout_success_text_contact_store_owner =
+<p class="blockquote">
+  <h3>receive your package</h3>
+  <br /><br />
+  <li>to prevent future litigation , we ask you to check the contents of your package in the presence of the deliveryman and accept under any circumstances a package in poor condition, refurbished , surrounded by adhesive, too light or would have been opened during transit without first checking the contents.</li>
+  <li>in case your package is surrounded by a black film, we ask you to remove the film in the presence of the deliveryman to effectively check the status of your package before accepting.</li>
+  <li>for all others informations, please, go to see ours general conditions about the delivery order</li>
+</p>
+  <div class="hr"></div>
+<p class="blockquote">
+  <h3>How to contact us</h3>
+  <br /><br />
+  <li>if you are make a command: Please edit your order and click on Support. {{account_history}}</li>
+  <li>if it's an application or specific information , please fill this form : {{contact}}</li>
+</p>
+
+module_checkout_success_create_account_success =
+<p class="blockquote">
+<h3>Your order </h3>
+<br /><br />
+You have choosen to pay by creating a guest account, you can not access at your account history. <br />Only the e-mail will allow you to inform the situation of your order.<br /><br />
+<li><strong> if you paid by check </strong>, we ask you to send us either a copy of your purchase order or the confirmation email that you have received. Upon receipt, we will process your request.
+<br /><br /> Address of {{store_name}}. : {{store_name_address}} </li><br /><br />
+</p>
+

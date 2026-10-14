@@ -1,0 +1,2 @@
+ module_order_total_total_title = Total
+ module_order_total_total_description = Order Total<br /><br /><font color="#FF0000"> <strong> Warning! </strong> Disabling this module will restore the default values</font>

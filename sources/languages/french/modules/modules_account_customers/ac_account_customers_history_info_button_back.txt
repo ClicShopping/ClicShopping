@@ -1,0 +1,2 @@
+module_account_customers_history_info_button_back_title = Historique Info : Souhaitez-vous afficher le bouton retour au menu général ?
+module_account_customers_history_info_button_back_description = Affiche le bouton retour au menu général

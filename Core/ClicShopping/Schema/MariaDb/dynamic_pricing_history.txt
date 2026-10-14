@@ -1,0 +1,18 @@
+id INT auto_increment comment(Primary key - unique identifier for each pricing history entry)
+rules_id INT not_null comment(FK to dynamic_pricing_rules table - rule that was applied)
+products_id INT not_null comment(FK to products table - product that received dynamic pricing)
+base_price DECIMAL(10,2) not_null comment(Original product price before rule application)
+dynamic_price DECIMAL(10,2) not_null comment(Final price after rule application)
+rule_applied VARCHAR(255) not_null comment(Name or description of the rule that was applied)
+date_added DATETIME not_null default null comment(Timestamp when dynamic price was calculated and applied)
+source VARCHAR(50) not_null comment(Source of price calculation - manual, automatic, scheduled, api)
+--
+primary id
+idx_products_id products_id
+idx_date_added date_added
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment APPLIED dynamic pricing history: one row per price computed by a rule, with the base price, the resulting price, the rule applied and the source. It is OUR OWN price history - the current selling price is products_price in products, the price actually sold is in orders_products, and competitor prices are in web_search_product_price_tracking_history. Use it to follow how a price MOVED and which rule moved it.

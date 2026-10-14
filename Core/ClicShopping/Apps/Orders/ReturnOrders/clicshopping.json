@@ -1,0 +1,31 @@
+{
+  "title": "Return Orders App",
+  "app": "ReturnOrders",
+  "vendor": "Orders",
+  "version": "1.0.1",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "ClicShoppingAdmin/TopDashboard": {
+        "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\DashboardReturnOrders"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "Account&ProductReturnHistory": "Sites\\Shop\\Pages\\ProductReturnHistory",
+      "Account&ProductReturnHistoryInfo": "Sites\\Shop\\Pages\\ProductReturnHistoryInfo",
+      "Account&ProductReturn": "Sites\\Shop\\Pages\\ProductReturn"
+    }
+  }
+}

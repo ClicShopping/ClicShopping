@@ -1,0 +1,4 @@
+cfg_chatgpt_embedding_model_title = Default embedding model
+cfg_chatgpt_embedding_model_description = Please, please select the embedding model you want to apply. <br />
+All the embedding_models does not have the same parameters and can generate an error on the response. <br />
+Please before to use an embedding, please inform yourself and look the wiki on github.

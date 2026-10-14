@@ -1,0 +1,17 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier for each alert entry)
+alert_type varchar(32) not_null comment(Type of alert - error, warning, performance, security, or downtime)
+message text not_null comment(Alert message describing the issue or event)
+alert_timestamp datetime not_null comment(Timestamp when the alert was generated)
+severity_level int(11) not_null default 1 comment(Severity level - 1: low, 2: medium, 3: high, 4: critical)
+context text default null comment(Additional context data about the alert - JSON format with details)
+
+--
+primary id
+idx_alert_timestamp alert_timestamp
+idx_severity severity_level
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

@@ -1,0 +1,28 @@
+heading_help = Aide
+
+section_help = Questions Fréquemment Posées
+section_documentation = Documentation
+section_support = Support
+
+faq_1_question = Qu'est-ce que le Domaine IA E-Commerce?
+faq_1_answer = Le Domaine IA E-Commerce est une application de domaine spécialisée pour les opérations e-commerce. Il fournit des fonctionnalités alimentées par l'IA pour la gestion des produits, le traitement des commandes et l'analyse des clients.
+
+faq_2_question = Comment puis-je interroger le système?
+faq_2_answer = Vous pouvez interroger le système dans n'importe quelle langue. Le système traduira votre requête en anglais pour le traitement, exécutera la requête et traduira les résultats dans votre langue.
+
+faq_3_question = Quelles entités sont supportées?
+faq_3_answer = Le domaine e-commerce supporte quatre entités principales: Produits, Commandes, Clients et Catégories. Chaque entité a des attributs et des relations spécifiques.
+
+faq_4_question = Mes données sont-elles sécurisées?
+faq_4_answer = Oui, le système inclut des garde-fous de sécurité qui empêchent l'accès aux données sensibles comme les mots de passe, les informations de paiement et les détails de contact personnels.
+
+faq_5_question = Comment puis-je étendre le domaine?
+faq_5_answer = Vous pouvez étendre le domaine en ajoutant de nouvelles entités, en créant des hooks personnalisés ou en implémentant des aides spécifiques au domaine. Consultez la documentation du développeur pour des instructions détaillées.
+
+doc_architecture = Documentation d'Architecture
+doc_api = Référence API
+doc_examples = Exemples de Code
+
+support_contact = Contacter le Support
+support_email = Email: support@clicshopping.org
+support_forum = Forum: https://www.clicshopping.org/forum/

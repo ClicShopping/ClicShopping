@@ -1,0 +1,2 @@
+cfg_mcp_alert_notification_email_title = Alert recipient
+cfg_mcp_alert_notification_email_description = E-mail address receiving the MCP alerts. Leave empty to use the store owner address. One address only; use a distribution list if several people must be reached.

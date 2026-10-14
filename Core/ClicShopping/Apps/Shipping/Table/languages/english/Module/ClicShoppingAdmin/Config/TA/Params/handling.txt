@@ -1,0 +1,2 @@
+cfg_item_handling_title = Handling Cost
+cfg_item_handling_desc = The handling cost for this order

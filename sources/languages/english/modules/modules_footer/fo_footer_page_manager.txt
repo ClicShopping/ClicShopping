@@ -1,0 +1,2 @@
+module_footer_page_manager_title = Do you want to use the information page in the footer (only the main boxe) ?
+module_footer_page_manager_description = Add the information page in the catalog footer

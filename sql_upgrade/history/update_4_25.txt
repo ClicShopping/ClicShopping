@@ -1,0 +1,31 @@
+ALTER TABLE clic_customers ADD COLUMN customer_company_information text null default null comment(Company information, verification about the customer from Pappers)
+ALTER TABLE `clic_reviews_vote` ADD `date_added` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP comment(date creation of the review vote) AFTER `sentiment`;
+ALTER TABLE clic_reviews_sentiment_description  ADD COLUMN critique         TEXT    NULL COMMENT 'Agent critic result',  ADD COLUMN critique_verdict VARCHAR(30) NULL COMMENT 'reliable | partial | unreliable | ...';
+ALTER TABLE clic_reviews_sentiment  ADD COLUMN review_count INT UNSIGNED NOT NULL DEFAULT 0  COMMENT 'Comments number when the analyse start';
+
+
+
+
+-- English
+INSERT INTO clic_configuration VALUES(null, 'Pappers B2B company verification and information', 'PAPPERS_API_TOKEN', '', 'Insert the API token used to verify company information via the Pappers website (pappers.fr).<br><br><i>Enter your API token obtained from your Pappers account.</i>', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Chorus Pro Activation for B2B mode', 'CHORUSPRO_ENABLED', 'False', 'Enable or disable the Chorus Pro integration (True | False).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Chorus Pro Sandbox Mode', 'CHORUSPRO_SANDBOX', 'True', 'Use the Chorus Pro test environment (True | False).',25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'PISTE Client ID', 'CHORUSPRO_PISTE_CLIENT_ID', '', 'Client ID of the PISTE application.',25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'PISTE Client Secret', 'CHORUSPRO_PISTE_CLIENT_SECRET', '', 'Client Secret of the PISTE application.', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Chorus Pro Technical Login', 'CHORUSPRO_TECHNICAL_LOGIN', '', 'Technical account login for Chorus Pro.',25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Chorus Pro Technical Password', 'CHORUSPRO_TECHNICAL_PASSWORD', '', 'Technical account password for Chorus Pro.', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', 'clic_cfg_use_function_password', 'clic_cfg_set_input_password');
+INSERT INTO clic_configuration VALUES(null, 'Supplier SIRET', 'CHORUSPRO_SIRET_FOURNISSEUR', '','Your company SIRET number (14 digits).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Chorus Pro Supplier ID', 'CHORUSPRO_FOURNISSEUR_ID', '', 'Internal numeric identifier of your supplier entity in Chorus Pro (idFournisseur).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Chorus Pro Bank Account Code', 'CHORUSPRO_BANK_ACCOUNT_CODE', '', 'Numeric code of the bank account details registered in Chorus Pro (codeCoordonneesBancairesFournisseur).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+
+-- French
+INSERT INTO clic_configuration VALUES(null, 'Vérification des sociétés B2B via Pappers', 'PAPPERS_API_TOKEN', '', 'Token API utilisé pour vérifier les informations des entreprises via le site Pappers (pappers.fr).<br><br><i>Saisissez votre token API obtenu depuis votre compte Pappers.</i>', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Activation Chorus Pro pour le mode B2B', 'CHORUSPRO_ENABLED', 'False', 'Active ou désactive l''intégration avec Chorus Pro (True | False).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Mode Sandbox Chorus Pro', 'CHORUSPRO_SANDBOX', 'True', 'Utilise l''environnement de test Chorus Pro (True | False).',25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Client ID PISTE', 'CHORUSPRO_PISTE_CLIENT_ID', '', 'Identifiant Client (Client ID) de l''application PISTE.',25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Client Secret PISTE', 'CHORUSPRO_PISTE_CLIENT_SECRET', '', 'Client Secret associé à l''application PISTE.', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Login technique Chorus Pro', 'CHORUSPRO_TECHNICAL_LOGIN', '', 'Identifiant du compte technique Chorus Pro.',25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Mot de passe technique Chorus Pro', 'CHORUSPRO_TECHNICAL_PASSWORD', '', 'Mot de passe du compte technique Chorus Pro.', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', 'clic_cfg_use_function_password', 'clic_cfg_set_input_password');
+INSERT INTO clic_configuration VALUES(null, 'SIRET fournisseur', 'CHORUSPRO_SIRET_FOURNISSEUR', '','Numéro SIRET de votre entreprise (14 chiffres).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'ID fournisseur Chorus Pro', 'CHORUSPRO_FOURNISSEUR_ID', '', 'Identifiant interne numérique de votre structure fournisseur dans Chorus Pro (idFournisseur).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Code coordonnées bancaires Chorus Pro', 'CHORUSPRO_BANK_ACCOUNT_CODE', '', 'Code numérique des coordonnées bancaires enregistrées dans Chorus Pro (codeCoordonneesBancairesFournisseur).', 25, 161, '2006-10-23 01:16:20', '2006-04-09 16:13:48', NULL, NULL);

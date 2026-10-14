@@ -1,0 +1,67 @@
+products_id int not_null auto_increment comment(Primary key - unique identifier for each product)
+parent_id int default(0) not_null comment(FK to products table - parent product ID for variants, 0 for standalone products)
+has_children int default(0) not_null comment(Flag indicating if product has variants - 0: no variants, 1: has variants)
+products_quantity int(4) not_null comment(Current stock quantity available for sale)
+products_model varchar(255) null comment(Product model number)
+products_image varchar(255) null comment(Path to main product image file)
+products_ean varchar(15) null comment(EAN - European Article Number barcode)
+products_sku varchar(255) null comment(SKU - Stock Keeping Unit identifier)
+products_jan varchar(255) null comment(JAN - Japanese Article Number barcode)
+products_isbn varchar(255) null comment(ISBN - International Standard Book Number for books)
+products_mpn varchar(255) null comment(MPN - Manufacturer Part Number)
+products_upc varchar(255) null comment(UPC - Universal Product Code barcode)
+products_image_zoom varchar(255) comment(Path to high-resolution zoom image file)
+products_price decimal(15,4) default(0.0000) not_null comment(Base selling price before tax and discounts)
+products_date_added datetime not_null comment(Timestamp when product was created)
+products_last_modified datetime comment(Timestamp of last modification to product)
+products_date_available datetime comment(Date when product becomes available for sale)
+products_weight decimal(15,4) not_null comment(Product weight for shipping calculations)
+products_price_kilo char(1) default(0) not_null comment(Price per kilogram flag - 0: unit price, 1: price per kg)
+products_status tinyint(1) not_null comment(Product status - 0: inactive, 1: active and visible)
+products_tax_class_id int not_null comment(FK to tax_class table - tax rate applied to this product)
+manufacturers_id int comment(FK to manufacturers table - product manufacturer)
+products_ordered int default(0) not_null comment(Total number of times this product has been ordered)
+products_percentage tinyint(1) default(1) not_null comment(Percentage display flag - 0: hide, 1: show discount percentage)
+products_view char(1) default(1) not_null comment(Product visibility - 0: hidden, 1: visible in catalog)
+orders_view char(1) default(1) not_null comment(Order visibility - 0: hidden in orders, 1: visible in orders)
+suppliers_id int comment(FK to suppliers table - product supplier)
+products_archive tinyint(1) default(0) not_null comment(Archive status - 0: active, 1: archived)
+products_min_qty_order int(4) default(0) not_null comment(Minimum quantity required for order - 0: no minimum)
+products_price_comparison tinyint(1) default(0) not_null comment(Price comparison flag - 0: exclude, 1: include in price comparison)
+products_dimension_width decimal(5,2) default(0.00) not_null comment(Product width for shipping calculations)
+products_dimension_height decimal(5,2) default(0.00) not_null comment(Product height for shipping calculations)
+products_dimension_depth decimal(5,2) default(0.00) not_null comment(Product depth for shipping calculations)
+products_length_class_id int(11) default(2) not_null comment(FK to products_length_classes table - unit of measurement for dimensions)
+admin_user_name varchar(64) null comment(Administrator username who last modified the product)
+products_volume varchar(50) null comment(Product volume specification)
+products_quantity_unit_id int default(0) not_null comment(FK to products_quantity_unit table - unit of measurement for quantity)
+products_only_online tinyint(1) default(0) not_null comment(Online-only flag - 0: available everywhere, 1: online only)
+products_image_medium varchar(255) null, comment(Path to medium-sized product image file)
+products_image_small varchar(255) null, comment(Path to small thumbnail product image file)
+products_weight_class_id tinyint(2) default(2) not_null comment(FK to weight_classes table - unit of measurement for weight)
+products_cost decimal(15,2) default (0.00) not_null comment(Product supplier cost price for margin calculations)
+products_handling decimal(15,2) default(0.00) not_null comment(Handling fee that is part of the total cost basis for margin calculations together with products_cost)
+products_packaging tinyint(1) default(0) not_null comment(Packaging requirement - 0: standard, 1: special packaging)
+products_sort_order int default(0) not_null comment(Display sort order - lower numbers appear first)
+products_quantity_alert int(4) default(0) not_null comment(Low stock alert threshold - triggers notification when quantity falls below)
+products_only_shop tinyint(1) default(0) not_null comment(Shop-only flag - 0: available everywhere, 1: physical shop only)
+products_download_filename varchar(255) null comment(Filename for downloadable products)
+products_download_public tinyint(1) default(0) not_null comment(Download access - 0: requires purchase, 1: public download)
+products_type varchar(20) null comment(Product type - physical, digital, service, or subscription)
+
+--
+primary products_id
+idx_products_model products_model
+idx_products_date_added products_date_added
+idx_products_parent_id parent_id
+idx_products_weight_class_id products_weight_class_id
+idx_products_products_status products_status
+idx_products_products_archive products_archive
+idx_products_view products_view
+idx_has_children has_children
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment PRODUCT CATALOG - one row per sellable product. Authoritative source for the CURRENT SELLING PRICE (products_price), stock on hand (products_quantity), model/SKU/EAN and active status. The product NAME is not here, it is in products_description; the price actually sold and the quantities sold are in orders_products. Use it for catalogue questions (price of a product, stock, active products), never for sales figures.

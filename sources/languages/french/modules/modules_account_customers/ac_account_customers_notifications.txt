@@ -1,0 +1,14 @@
+module_account_customers_notifications_title = Souhaitez-vous afficher les informations concernant les notifications de produit ?
+module_account_customers_notifications_title_description = Affiche les informations concernant les notifications de produit que le client a faite
+modules_account_customers_email_notifications_title = Notifications produit pare mail
+modules_account_customers_email_notifications_newsletters = Souscrire or se désabonner de ce bulletin d'information.
+modules_account_customers_email_notifications_products = Voir ou changer la liste des notifications.
+
+my_notifications_description = La liste de surveillance de produit vous permet de veiller sur les produits qui vous intéressent.<br /><br />Pour être informé de tous changements sur les produits, choisissez les <strong>suveillance globale des produits</strong>.
+
+global_notifications_title = Surveillance globale des Produits
+global_notifications_description = Recevoir des emails sur tous les produits disponibles.
+
+notifications_title = Surveillance produits
+notifications_description = Pour supprimer une surveillance de produit, décochez la case &agrave cocher du produit et cliquez sur Continuer.
+notifications_non_existing = Il n'y a actuellement aucun produit.<br /><br />Pour ajouter des produits &agrave votre liste de surveillance de produit, cliquez sur le lien surveillance produit disponible sur la page d'information de produit détaillée..

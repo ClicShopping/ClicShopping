@@ -1,0 +1,5 @@
+cfg_ecommerce_ucp_public_catalog_title = Catalogue produits public (lecture seule)
+cfg_ecommerce_ucp_public_catalog_description = Mettre True pour permettre aux agents IA de lire le catalogue (?UCP&retailers/products) sans clé API, comme annoncé dans llms.txt. Le checkout exige toujours une clé Bearer ; le rate-limiting reste appliqué.
+
+cfg_ecommerce_ucp_public_catalog_true = True
+cfg_ecommerce_ucp_public_catalog_false = False

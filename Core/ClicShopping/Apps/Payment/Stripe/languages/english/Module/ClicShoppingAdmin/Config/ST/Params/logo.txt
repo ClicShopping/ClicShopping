@@ -1,0 +1,2 @@
+cfg_stripe_logo_title = Payment Logo
+cfg_stripe_logo_desc = Please, indicate the file of the logo with the extension(.gif, .jpg, etc...) to display in the payment page.<br /><strong>Note :</strong></font><br />The logo must be in the directory  sources/images/logos/payment/

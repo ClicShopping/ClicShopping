@@ -1,0 +1,21 @@
+heading_title = Gpt
+text_chatgpt = Gpt
+
+taxonomy_domain = Domaine
+taxonomy_product_type = Type de Produit
+taxonomy_product_subject = Sujet Produit
+taxonomy_usage_type = Type d'Usage
+taxonomy_usage_subject = Sujet d'Usage
+taxonomy_objective_type = Type d'Objectif
+taxonomy_objective_subject = Sujet d'Objectif
+taxonomy_articles = Articles
+
+taxonomy_domain_description = Classification du domaine principal
+taxonomy_product_type_description = Classification du type de produit
+taxonomy_usage_type_description = Classification du type d'usage
+taxonomy_objective_type_description = Classification du type d'objectif
+
+taxonomy_separator = ,
+taxonomy_not_available = N/D
+taxonomy_view_details = Voir les détails de la taxonomie
+taxonomy_hide_details = Masquer les détails de la taxonomie

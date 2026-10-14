@@ -1,0 +1,7 @@
+cfg_antispam_create_account_title = Créer un compte
+cfg_antispam_create_account_description = Sélectionnez True pour activer le module
+<br /><strong>Option: Vous devez installer le module ou l'APP correspondante et activer les modules</strong>
+
+cfg_antispam_create_account_true = True
+cfg_antispam_create_account_false = False
+

@@ -1,0 +1,11 @@
+products_length_class_id int(11) not_null comment(Primary key - unique identifier for each length/dimension class)
+products_length_class_key varchar(255) not_null comment(Unique key for length class - e.g. cm, m, in, ft)
+language_id int not_null comment(FK to languages table - language for this length class name)
+products_length_class_title varchar(255) not_null comment(Display name for length class - e.g. Centimeters, Meters, Inches, Feet)
+--
+primary products_length_class_id language_id
+idx_products_length_classes_language_id language_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

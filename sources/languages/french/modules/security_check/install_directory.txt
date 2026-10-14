@@ -1,0 +1,3 @@
+warning_install_directory_exists = Le répertoire d'installation n'a pas été supprimée. il se trouve :{{install_path}}. Veuillez supprimer ce répertoire install pour des raisons de sécurité.
+install_directory = Répertoire d'installation
+

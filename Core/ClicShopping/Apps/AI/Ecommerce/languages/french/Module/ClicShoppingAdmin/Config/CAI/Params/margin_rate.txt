@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_margin_rate_title = Taux de marge minimum
+cfg_ecommerce_cockpit_ai_margin_rate_description = Taux de marge minimum acceptée par l'IA. Elle ne pourra pas aller en dessous.

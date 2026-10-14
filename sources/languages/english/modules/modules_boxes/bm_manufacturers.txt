@@ -1,0 +1,8 @@
+module_boxes_manufacturers_title = Do you want to enable the brands box
+module_boxes_manufacturers_description = Enable the brands box in the product information page
+
+module_boxes_manufacturers_title = Brand
+module_boxes_manufacturers_description = Show brand information on the product information page
+pull_down_default = Please Select
+
+

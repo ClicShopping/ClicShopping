@@ -1,0 +1,2 @@
+cfg_item_cost_title = Couts d'expédition
+cfg_item_cost_desc = Couts d'expédition pour toutes les commandes liées à cette méthode d'expédition

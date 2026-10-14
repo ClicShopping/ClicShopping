@@ -1,0 +1,2 @@
+cfg_table_tax_class_title = Classe de taxes
+cfg_table_tax_class_desc = Sélectionner la classe de taxe que vous souhaitez appliquées

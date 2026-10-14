@@ -1,0 +1,2 @@
+module_header_tags_rss_title = Souhaitez vous utiliser les flux RSS ?
+module_header_tags_rss_description = Ajouter une balise flux rss

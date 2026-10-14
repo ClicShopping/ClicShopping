@@ -1,0 +1,12 @@
+template_email_id int not_null auto_increment comment(Primary key - unique identifier for each email template)
+template_email_variable varchar(255) not_null comment(Template variable name or identifier for email type)
+customers_group_id int(2) default(0) not_null comment(FK to customers_groups table - customer group this template applies to, 0 for all groups)
+template_email_type smallint(1) default(0) not_null comment(Email template type - 0: transactional, 1: marketing, 2: system notification)
+template_app_code varchar(255) null comment(Application module code this template belongs to)
+--
+primary template_email_id
+idx_customers_group_id customers_group_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

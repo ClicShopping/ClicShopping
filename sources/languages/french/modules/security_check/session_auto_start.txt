@@ -1,0 +1,2 @@
+warning_session_auto_start = session.auto_start est activé - veuillez le désactivé dans votre  .ini et redémarrer votre serveur web.
+

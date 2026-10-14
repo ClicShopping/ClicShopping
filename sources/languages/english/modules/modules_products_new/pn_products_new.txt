@@ -1,0 +1,49 @@
+module_products_new_title = Do you want to display products new Title
+module_products_new_description = Display products new Title
+
+text_heading_title = New products
+
+text_date_added = In sell since the :
+text_product_options = Options
+min_qty_order_product = Minimum quantity for a purchase :
+text_no_products = No products in this moment
+
+text_stock = Stock
+text_flash_discount = Flash discount
+text_customer_quantity = Qty
+text_products_quantity_type = Quantité type
+text_products_free = Free
+text_manufacturer = brands
+text_products_price_kilo = Px/Kg
+text_date_available = Date available
+text_only_shop = Only Shop
+text_only_web = Only web
+text_products_info_packaging_text = Product
+text_products_packaging_new = new
+text_products_packaging_repackaged = Repackaged
+text_products_packaging_used = Used
+text_display_shipping_delay = Shipping delay
+text_display_shipping_delay_out_of_stock = Shipping delay out of Stock
+text_products_volume = Volume
+text_display_products_weight = Kg
+text_price =
+text_sort_by = Sort by
+
+text_out_of_stock = Out of stock
+text_out_of_stock_pre_order = Only pre-order
+text_out_of_stock_allow_checkout = Order out of stock accepted
+
+text_alert_stock = Alert stock
+text_in_stock = In stock
+
+table_heading_price = Price
+table_heading_model = Model
+table_heading_quantity = Quantity
+table_heading_weight = Weight
+table_heading_date = Date
+
+button_details = Details
+button_buy_now = Buy
+button_sold_out =  Sold Out
+
+template_does_not_exist = Template does not exist, Please verify your template

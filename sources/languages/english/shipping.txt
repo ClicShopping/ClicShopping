@@ -1,0 +1,5 @@
+
+ navbar_title = Shipping and Returns
+ heading_title = Shipping and Returns
+
+ text_information = Put here your Shipping &amp; Returns information.

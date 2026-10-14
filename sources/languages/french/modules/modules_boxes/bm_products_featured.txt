@@ -1,0 +1,6 @@
+module_boxes_products_featured_title = Souhaitez-vous afficher les produits sélectionnés dans la boutique ?
+module_boxes_products_featured_description = Affiche les produits sélectionnés
+module_boxes_products_featured_box_title = Produits sélectionnés
+module_boxes_products_featured_all_products_featured = Tous les produits sélectionnés
+
+button_detail = Détails

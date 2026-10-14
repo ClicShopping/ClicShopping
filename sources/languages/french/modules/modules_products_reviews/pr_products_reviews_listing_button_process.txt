@@ -1,0 +1,7 @@
+modules_products_reviews_listing_button_process_title = Listing Commentaire : Souhaitez vous permettre au client d'afficher les boutons de process ?
+modules_products_reviews_lisitng_button_process_description = Permettre au client de lire les commentaires
+
+
+ button_write = Ecrire un commentaire
+ button_back = Retour
+

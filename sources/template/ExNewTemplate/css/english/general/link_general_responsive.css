@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+/*
+***************************
+résolution 320
+ ****************************/
+
+@media (max-width: 320px) {
+
+  div.pageHeading, span.pageHeading H1 {
+    font-size: x-small;
+  }
+}
+
+
+/***************************
+résolution 360
+ ****************************/
+
+@media (min-width: 320px) and (max-width: 360px) {
+
+  div.pageHeading, span.pageHeading H1 {
+    font-size: x-small;
+  }
+}
+
+
+/***************************
+résolution 480
+ ****************************/
+
+@media (min-width: 360px) and (max-width: 480px) {
+
+  div.pageHeading, span.pageHeading H1 {
+    font-size: small;
+  }
+}
+
+/***************************
+résolution 533
+ ****************************/
+
+@media (min-width: 480px) and (max-width: 533px) {
+
+}
+
+
+/***************************
+résolution 600
+ ****************************/
+
+@media (min-width: 533px) and (max-width: 600px) {
+
+}
+
+/***************************
+résolution 640
+ ****************************/
+
+@media (min-width: 600px) and (max-width: 640px) {
+
+}
+
+
+/***************************
+résolution 800
+ ****************************/
+
+@media (min-width: 640px) and (max-width: 800px) {
+
+}
+
+/***************************
+resolution 1024
+ ****************************/
+@media (min-width: 800px) and (max-width: 1024px) {
+
+}
+

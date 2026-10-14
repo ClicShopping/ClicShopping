@@ -1,0 +1,14 @@
+orders_products_download_id int not_null auto_increment comment(Primary key - unique identifier for each downloadable product in order)
+orders_id int default(0) not_null comment(FK to orders table - order containing downloadable product)
+orders_products_id int default(0) not_null comment(FK to orders_products table - order line item that is downloadable)
+orders_products_filename varchar(255) default('') not_null comment(Filename of downloadable product)
+download_maxdays int(2) default(0) not_null comment(Maximum days customer has to download - 0 for unlimited)
+download_count int(2) default(0) not_null comment(Number of times customer has downloaded this file)
+--
+primary orders_products_download_id
+idx_orders_products_download_orders_id orders_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Downloadable files delivered with an ordered line, with the download quota. Not a catalogue table: the file attached to an attribute is in products_attributes_download.

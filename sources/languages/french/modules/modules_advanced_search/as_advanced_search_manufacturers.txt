@@ -1,0 +1,6 @@
+module_advanced_search_manufacturers_title = Souhaitez-vous afficher le champs de recherche marque de fabricant ?
+module_advanced_search_manufacturers_description = Affiche un champ de recherche par marque de fabricant
+
+modules_advanced_search_manufacturers_entry_manufacturers = Marques :
+modules_advanced_search_manufacturers_text_all_manufacturers = Toutes les Marques
+text_all_manufacturers = Toutes les Marques

@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_eu_vat_number_title = TVA intracommunautaire de l'entreprise (Europe uniquement)
+cfg_configuration_compliance_policy_rules_eu_vat_number_description = Veuillez indiquer le numéro de TVA intracommunautaire de votre entreprise. Laissez ce champ vide si cela ne vous concerne pas.

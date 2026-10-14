@@ -1,0 +1,128 @@
+heading_title = MCP
+module_mcp_title = MCP
+module_mcp_short_title = MCP
+
+text_mcp_data = MCP
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a MCP. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools / mcp<br />
+
+module_mcp_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_mcp_data = MCP
+button_process =  Launch the migration
+button_continue = Continue
+button_insert = Insert
+
+ble_heading_mcp_id = Id
+table_heading_mcp_username = Username
+table_heading_mcp_key_text = Key
+table_heading_mcp_status = Status
+table_heading_mcp_date_added = Date Added
+table_heading_mcp_date_modified = Date Modified
+table_heading_action = Action
+
+tab_general = General
+tab_ip_address = IP Address
+tab_session = Session
+
+text_server_configuration = Configuration Serveur
+text_heading_comment = Commentaire
+text_info_message = Below you can create a list of IP's allowed to access the API. Your current IP is {{ip_address}}
+text_info_warning = You must save your Api before to add some others elements
+text_mcp_username = Username
+text_mcp_key = API Key
+text_add_ip = Add IP
+text_add = Add IP
+text_ip = IP Address
+text_action = Action
+text_token = Token
+text_date_added = Date Added
+text_date_modified = Date Modified
+text_mcp_generate_key = Generate Key
+text_comment = Comment
+text_server_host = Server Host
+text_server_port = Server Port
+text_external_connection_note = <b>External access (e.g. LM Studio):</b> point your client to the RAG-BI endpoint <code>{{endpoint}}</code> and authenticate with the Username + API Key. The client must reach ClicShopping on the port your web server actually serves — <b>not</b> the "Server Host/Port" configured above: those fields are where ClicShopping calls <b>out</b> to an MCP server (web search), they are not an inbound listening port. To expose the API on another port, configure your web server (Apache <code>Listen</code> / VirtualHost).
+text_websearch_limitation_note = <b>Known limitation:</b> web search queries are not yet reliable through LM Studio — a "trend" request returns a chart and a "price comparison" returns external images/prices (Amazon, Google Shopping, ...) that the client cannot render as text. Prefer analytics queries (sales, stock, products) for now.
+text_ssl_enabled = SSL Enabled
+text_data_permissions = Data Permissions
+text_status = Status
+text_description = Description
+text_select_data = Select Data
+text_select_data_desc = Select data from the database
+text_update_data = Update Data
+text_update_data_desc = Update data in the database
+text_create_data = Create Data
+text_create_data_desc = Create data in the database
+text_delete_data = Delete Data
+text_delete_data_desc = Delete data from the database
+text_create_db = Create Table in Database
+text_create_db_desc = Create a table in the database
+text_last_24 = 24
+text_monitoring_alerts = Monitoring Alerts
+text_alert_threshold = Alert Threshold
+text_latency_threshold = Latency Threshold
+text_downtime_threshold = Downtime Threshold
+text_data_retention = Data Retention (days)
+text_alert_notification = Alert Notification
+text_account_rate_limit = Rate Limit Override (this account)
+text_account_rate_limit_note = Leave both fields empty to inherit the App settings. The limit applies to authenticated requests of THIS account, so two accounts behind the same IP no longer share a bucket.
+text_rate_limit_window = Rate Limit Window
+text_rate_limit_window_desc = Length of the window in seconds. Recommended: 60 s for a public front-office chatbot, 900 s for an ERP.
+text_max_requests_per_window = Max Requests per Window
+text_max_requests_per_window_desc = Recommended: 5-10 per 60 s for a public chatbot, 20 per 60 s for a human-driven back-office tool, 300-600 per 900 s for a read-only ERP. Set a lower value for an account allowed to write.
+
+
+table_heading_mcp_id = Id
+table_heading_mcp_username = Username
+table_heading_mcp_key_text = Key
+table_heading_mcp_status = Status
+table_heading_mcp_date_added = Date Added
+table_heading_mcp_date_modified = Date Modified
+table_heading_action = Action
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_alert_mcp_medium = Hello Administrator,/n
+The MCP system has detected a medium priority warning:/n
+{{recommendation}}./n/n
+No automatic corrective action has been taken. Please check the system./n
+Sincerely,/n
+The MCP Monitoring Agent/n
+
+text_alert_mcp_critical_subject = MCP WARNING - Critical Level
+text_alert_mcp_critical = Hello Administrator, /n
+The MCP system has detected a medium priority warning:/n
+{{recommendation}}./n/n
+An automatic reconnection attempt has been initiated./n
+Please check the logs for more details./n/n
+Sincerely,/n
+The MCP Monitoring Agent/n
+
+
+text_alert_mcp_rate_limit_subject = MCP WARNING - Account quota reached
+text_alert_mcp_rate_limit = Hello Administrator,\n\n
+The MCP account {{account}} has reached its ceiling of {{limit}} requests per {{window}} seconds.\n
+Its requests are being refused until the window expires.\n\n
+Raise the ceiling on the account form if this traffic is legitimate, otherwise check who holds the key.\n\n
+Sincerely,\n
+The MCP Monitoring Agent

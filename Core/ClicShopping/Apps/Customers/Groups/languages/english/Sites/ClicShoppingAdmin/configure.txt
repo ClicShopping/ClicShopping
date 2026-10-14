@@ -1,0 +1,4 @@
+heading_title = Customer groups
+module_gr_short_title = Customer groups
+
+title_menu = Customer groups

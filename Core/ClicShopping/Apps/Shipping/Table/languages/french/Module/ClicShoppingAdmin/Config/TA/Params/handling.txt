@@ -1,0 +1,2 @@
+cfg_item_handling_title = Couts d'emballage
+cfg_item_handling_desc = Cou d'emballage pour la commande

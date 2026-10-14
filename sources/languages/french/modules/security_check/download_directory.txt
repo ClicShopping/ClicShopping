@@ -1,0 +1,3 @@
+warning_download_directory_non_existent = Le répertoire de téléchargement privé n'existe pas. Vous ne pourrez pas télécharger des fichiers privés tant que celui-ci n'exite pas. : {{download_path}}
+download_directory = Répertoire de téléchargement
+

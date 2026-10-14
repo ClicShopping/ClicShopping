@@ -1,0 +1,6 @@
+cfg_stripe_server_prod_title = Production or Sandbox
+cfg_stripe_server_prod_description = Sélectionner True pour mettre en Production le module de paiement
+
+cfg_stripe_server_prod_true = True
+cfg_stripe_server_prod_false = False
+

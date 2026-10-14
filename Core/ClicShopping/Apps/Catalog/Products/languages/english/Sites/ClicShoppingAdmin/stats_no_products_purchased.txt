@@ -1,0 +1,16 @@
+heading_title = Products no purchased
+module_sn_title = Products no purchased
+module_sn_short_title = Products no purchased
+
+text_stats_products_no_purchased = Products no purchased
+text_configure =  configure App Module
+
+table_heading_products_id = ID
+table_heading_products = Products
+table_heading_no_purchased = No Purchased
+table_heading_clear = Delete
+
+text_preview = Preview
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

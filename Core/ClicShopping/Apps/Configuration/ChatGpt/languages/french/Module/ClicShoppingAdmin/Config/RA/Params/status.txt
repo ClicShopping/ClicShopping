@@ -1,0 +1,5 @@
+cfg_chatgpt_status_title = Statut du module
+cfg_chatgpt_status_description = Active ou désactive le module RAG Analytics. Lorsque désactivé, toutes les fonctionnalités RAG incluant les requêtes de base de données, la recherche sémantique et l'analyse IA seront indisponibles. Recommandé : True pour activer les fonctionnalités d'intelligence d'affaires alimentées par l'IA.
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

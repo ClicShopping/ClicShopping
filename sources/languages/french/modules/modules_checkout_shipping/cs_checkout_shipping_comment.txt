@@ -1,0 +1,4 @@
+module_checkout_shipping_comment_title = Souhaitez-vous afficher un champs commentaire pour que le client puisse vous donner un message ?
+module_checkout_shipping_comment_description = Affiche un champs commentaire pour que le client puisse vous donner un message
+module_checkout_shipping_comment_table_heading_comments = Ajoutez des commentaires au sujet de votre commande
+module_checkout_shipping_comment_text = Insérer votre commentaire

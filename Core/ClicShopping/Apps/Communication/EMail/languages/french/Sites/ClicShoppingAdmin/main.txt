@@ -1,0 +1,37 @@
+heading_title = E-mail
+module_em_title = E-mail
+module_em_short_title = E-mail
+
+title_menu = E-mail
+
+text_email =  E-mail
+text_configure =  Configurer App Module
+
+text_intro = Cette App vous permet une page de gestion des E-mail. <br />
+
+module_em_introduction = Le processus d'installation installe le menu
+
+module_em_short_title = E-mail
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+
+button_email = E-mail
+button_cancel = Annuler
+button_new = Nouveau
+button_back = Retour
+button_send = Send
+button_save = Enregister
+button_delete = Supprimer
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.

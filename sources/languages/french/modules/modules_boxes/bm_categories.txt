@@ -1,0 +1,4 @@
+
+module_boxes_categories_title = Souhaitez-vous afficher la boxes des categories ?
+module_boxes_categories_description = Affiche les cat&euro;gories sous forme d'arborescence dans la boutique
+module_boxes_categories_box_title = Catégories

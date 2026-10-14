@@ -1,0 +1,66 @@
+id bigint(20) unsigned not_null auto_increment comment(Primary key - auto-incremented unique identifier)
+event_id varchar(255) not_null comment(Unique event identifier (UUID))
+event_type enum('threat_detected','threat_blocked','false_positive','security_check_passed','security_check_failed','pattern_fallback','llm_unavailable','response_validation_failed','leakage_detected','grounding_failed','query_allowed','query_blocked','security_fallback','layer_performance','test_event','obfuscation_detected','websearch_facade_initialized') not_null comment(Type of security event)
+severity enum('low','medium','high','critical') not_null default('medium') comment(Event severity level)
+threat_type varchar(100) comment(Type of threat: instruction_override, exfiltration, hallucination, etc.)
+threat_score decimal(5,2) comment(Threat score (0.00-1.00))
+confidence decimal(5,2) comment(Detection confidence (0.00-1.00))
+user_query text not_null comment(Original user query that triggered the event)
+query_language varchar(10) default('en') comment(Language of the query (en, fr, es, de))
+query_hash varchar(64) comment(MD5 hash of query for deduplication)
+detection_method enum('llm_semantic','pattern_based','response_validation','hybrid','llm','llm_analysis','llm_intent_flag','llm_cached','pattern_removal','pattern_prefilter','pattern_fallback','keyword_analysis','dynamic_keyword_match','error','unknown') not_null comment(Method used for detection)
+detection_layer varchar(50) comment(Security layer that detected: SemanticSecurityAnalyzer, PatternSecurityDetector, etc.)
+matched_patterns longtext comment(Patterns that matched (if pattern-based) - JSON format)
+llm_reasoning text comment(LLM reasoning for the detection (if LLM-based))
+action_taken enum('blocked','allowed','flagged','logged_only','fallback_triggered','layer_executed','layer_failed','test','obfuscation_detected') not_null default('logged_only') comment(Action taken on the event)
+blocked tinyint(1) not_null default(0) comment(1 if query was blocked, 0 if allowed)
+response_generated text comment(Response that was generated (if any))
+response_blocked tinyint(1) default(0) comment(1 if response was blocked due to validation failure)
+user_id varchar(255) comment(User ID who triggered the event)
+session_id varchar(255) comment(Session identifier)
+ip_address varchar(45) comment(IP address (IPv4 or IPv6))
+user_agent text comment(User agent string)
+interaction_id int(11) comment(FK to rag_interactions (managed by code))
+request_type varchar(50) comment(Type of request: analytics, semantic, hybrid, web_search)
+agent_used varchar(50) comment(Agent that processed: orchestrator, analytics_agent, semantic_agent)
+detection_time_ms int(11) comment(Time taken for detection in milliseconds)
+total_processing_time_ms int(11) comment(Total processing time in milliseconds)
+metadata longtext comment(Additional metadata in JSON format)
+context longtext comment(Additional context about the event in JSON format)
+error_message text comment(Error message if detection failed)
+created_at datetime not_null default(current_timestamp) comment(Event creation timestamp)
+date_added datetime not_null default(current_timestamp) comment(Alias for created_at (consistency with other tables))
+expires_at datetime comment(Expiration date for automatic cleanup (90 days default))
+archived tinyint(1) not_null default(0) comment(1 if event has been archived)
+
+
+--
+primary id
+unique idx_event_id event_id
+idx_event_type event_type
+idx_severity severity
+idx_threat_type threat_type
+idx_threat_score threat_score
+idx_detection_method detection_method
+idx_action_taken action_taken
+idx_blocked blocked
+idx_user_id user_id
+idx_session_id session_id
+idx_interaction_id interaction_id
+idx_created_at created_at
+idx_expires_at expires_at
+idx_archived archived
+idx_query_hash query_hash
+idx_severity_created severity created_at
+idx_event_type_created event_type created_at
+idx_user_created user_id created_at
+idx_blocked_severity blocked severity
+idx_threat_type_score threat_type threat_score
+idx_detection_method_created detection_method created_at
+idx_archived_expires archived expires_at
+fulltext ft_user_query user_query
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

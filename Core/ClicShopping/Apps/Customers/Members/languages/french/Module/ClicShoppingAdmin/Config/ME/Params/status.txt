@@ -1,0 +1,5 @@
+cfg_members_status_title = Statut
+cfg_members_status_description = Souhaitez vous activer ce module à votre boutique ?
+
+cfg_members_status_true = True
+cfg_members_status_false = False

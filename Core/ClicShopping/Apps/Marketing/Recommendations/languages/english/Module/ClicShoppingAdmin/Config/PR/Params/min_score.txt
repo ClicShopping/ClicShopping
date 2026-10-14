@@ -1,0 +1,3 @@
+cfg_products_recommendations_min_score_title = Min Score
+cfg_products_recommendations_min_score_description = Get the products that are frequently accepted for customers recommendations (must be between -1 and 1)
+

@@ -1,0 +1,5 @@
+module_moneyorder_title = Paiement par chèque
+module_moneyorder_short_title = Paiement par chèque
+module_moneyorder_public_title = Paiement par chèque
+
+module_moneyorder_text = Veuillez libellé le chèque à :  {{pay_to}} <br /><br />Envoyé par :<br />{{store_name_addres}}<br /><br />Votre commande vous sera envoyé uniquement après réception de votre chèque et vérification

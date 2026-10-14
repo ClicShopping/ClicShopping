@@ -1,0 +1,13 @@
+module_admin_dashboard_googlelinks_app_title = Souhaitez-vous installer Google link
+module_admin_dashboard_googlelinks_app_description = Affiche des liens
+
+module_admin_dashboard_googlelinks_app_seo_title = SEO - Actions rapide à entreprendre
+module_admin_dashboard_googlelinks_app_analytics = Google Analytics
+module_admin_dashboard_googlelinks_app_webmastertools = Google  Webmaster Tools
+module_admin_dashboard_googlelinks_app_places = Google Business
+module_admin_dashboard_googlelinks_app_alerts = Google alert
+module_admin_dashboard_googlelinks_app_adsense = Google Adsense
+module_admin_dashboard_googlelinks_app_adwords = Google Adwords
+module_admin_dashboard_googlelinks_app_console = Google console
+module_admin_dashboard_googlelinks_app_merchant = Google Merchant
+

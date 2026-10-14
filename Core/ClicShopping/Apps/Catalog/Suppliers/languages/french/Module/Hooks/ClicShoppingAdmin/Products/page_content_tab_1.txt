@@ -1,0 +1,2 @@
+text_products_suppliers = Fournisseur
+text_create = Créer

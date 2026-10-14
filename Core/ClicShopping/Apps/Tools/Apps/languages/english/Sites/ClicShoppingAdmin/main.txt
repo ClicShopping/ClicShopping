@@ -1,0 +1,39 @@
+heading_title = Apps
+module_ap_title = Apps
+module_ap_short_title = Apps
+
+text_apps = Apps
+text_configure =  configure App Module
+
+text_intro = This app allow you to dislay apps. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_ap_introduction = The install process create Apps and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_apps_access = Apps
+button_reset = Reset
+button_update = Update
+button_apps = Apps
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+heading_title = Apps
+table_heading_apps = Apps on server
+table_heading_vendor = Vendor
+table_heading_version = Version

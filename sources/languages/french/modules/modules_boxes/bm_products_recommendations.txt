@@ -1,0 +1,6 @@
+module_boxes_products_recommendations_title = Souhaitez-vous afficher les Recommandations clients dans la boutique ?
+module_boxes_products_recommendations_description = Affiche les Recommandations clients
+module_boxes_products_recommendations_box_title = Recommandations clients
+module_boxes_products_recommendations_all_products_recommendations = Toutes les Recommandations clients
+
+button_detail = Détails

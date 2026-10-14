@@ -1,0 +1,25 @@
+
+heading_title = Search a product
+
+navbar_title = Search
+navbar_title_1 = Advanced Search
+navbar_title_2 = Search Results
+
+heading_title_1 = Advanced Search
+heading_title_2 = Products meeting the search criteria
+
+heading_search_criteria = Search Criteria
+
+text_no_products = There is no product that matches the search criteria.
+
+error_at_least_one_input = At least one of the fields in the search form must be entered.
+error_invalid_from_date = Invalid From Date.
+error_invalid_to_date = Invalid To Date.
+error_to_date_less_than_from_date = To Date must be greater than or equal to From Date.
+error_price_from_must_be_num = Price From must be a number.
+error_price_to_must_be_num = Price To must be a number.
+error_price_to_less_than_price_from = Price To must be greater than or equal to Price From.
+error_invalid_keywords = Invalid keywords.
+dob_format_string = mm/dd/yyyy
+button_search = Search
+

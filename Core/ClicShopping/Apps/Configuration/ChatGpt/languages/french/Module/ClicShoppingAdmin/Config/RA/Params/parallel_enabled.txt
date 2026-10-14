@@ -1,0 +1,5 @@
+cfg_chatgpt_parallel_enabled_title = Activer/Désactiver l'exécution parallèle du LLM pour les requêtes multiples
+cfg_chatgpt_parallel_enabled_description = Lorsqu'elle est activée, plusieurs appels au LLM sont exécutés simultanément via Guzzle async. Cela améliore considérablement les performances.
+
+cfg_chatgpt_parallel_enabled_status_true = True
+cfg_chatgpt_parallel_enabled_status_false = False.

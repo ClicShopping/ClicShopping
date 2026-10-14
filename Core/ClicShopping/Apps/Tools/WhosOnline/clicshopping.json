@@ -1,0 +1,24 @@
+{
+  "title": "Who's Online App",
+  "app": "WhosOnline",
+  "vendor": "Tools",
+  "version": "1.0.0",
+  "req_core_version": "3.406",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "AdminDashboard": {
+      "WhosOnline": "Module\\ClicShoppingAdmin\\Dashboard\\WhosOnline"
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

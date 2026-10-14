@@ -1,0 +1,6 @@
+cfg_moneyorder_status_title = Status
+cfg_moneyorder_status_description = Set True to enable or not the module
+
+cfg_moneyorder_status_true = True
+cfg_moneyorder_status_false = False
+

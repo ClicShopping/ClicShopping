@@ -1,0 +1,9 @@
+navbar_title = Favorites
+heading_title = Favorites
+
+text_favorites_seo_title = Favorites
+text_date_added = Date Added:
+text_manufacturer = Brands:
+text_price = Price:
+text_product_options = options suggested:
+text_no_products = No products in this moment

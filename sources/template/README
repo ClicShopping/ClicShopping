@@ -1,0 +1,17 @@
+To create a new template, you must copy all files inside ExNewTemplate in your newfolder. (mandatory)
+Do not change the css structure in Default Directory, just overide in your Template Directory.
+
+To override the default template, just copy the file or module than you want to change and the directories structure.
+You must respect the css structure.
+
+New Module.
+When you install a new module, the module is copied in Default directory and in your template Directory.
+
+Note:
+All your css must be copy in the new template (graphism directory). it's not possible to override one css for example
+When you upload a module, the module is registred in the new template and the default template (bootstrap).
+
+
+Becarefull
+Do not change this directory : Default (Some errors can appear)
+

@@ -1,0 +1,2 @@
+text_products_specials = Souhaitez-vous que ce produit apparaisse comme Promotions ?
+text_products_specials_percentage = Remise produit

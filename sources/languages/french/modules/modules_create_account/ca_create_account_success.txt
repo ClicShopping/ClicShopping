@@ -1,0 +1,7 @@
+module_create_account_success_title = Succès : Souhaitez-vous afficher la page de succès d'inscription ?
+module_create_account_success_description = Afficher la page de succès d'inscription ?
+
+button_continue = Continuer
+
+module_create_account_success_text_account_created = Félicitations ! Votre nouveau compte vient d'être crée ! Vous pouvez maintenant personnaliser votre compte et mettre à jour vos préférences depuis votre ESPACE CLIENT.
+  <p>vous pouvez également commander directement nos produits.<br />Pour toute question relative au fonctionnement du site et aux commandes en ligne, vous pouvez soit consulter la rubrique  "INFOS CLIENTS" ou contacter notre Hotline via un E-Mail par le formulaire mis à votre disposition :<a href="index.php?Info&Contact">store owner</a>.Nous contacter</a>.<br /><br />');

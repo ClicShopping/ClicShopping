@@ -1,0 +1,41 @@
+heading_title =  Commande total clients
+module_sc_title =  Commande total clients
+module_sc_short_title =  Commande total clients
+
+text_stats_customers = Commande total clients
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'accéder à un rapport de statistiques concernant les commandes clients<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+- The App is located in Rapports / Statistiques financières / Statistiques commandes clients<br />
+
+module_sc_introduction = Le processus d'install crée la base de données et le menu pour ce module
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_stats_customers = Stats commandes total clients
+button_cancel = Annuler
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+icon_edit_customer = Editer client
+
+table_heading_number = No.
+table_heading_customers = Clients
+table_heading_total_purchased = Total acheté
+table_heading_action = Action
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+

@@ -1,0 +1,19 @@
+
+ modules_sitemap_summary_title = Do  you want to display a summary sitemap ?
+ modules_sitemap_summary_description = Add a summary sitemap
+
+ sitemap_summary_text_home_page = Home Page
+ sitemap_summary_text_newsletter = Newsletter subscription
+ sitemap_summary_text_contact = Contact Us
+
+ sitemap_summary_text_my_account = My account
+ sitemap_summary_text_create_account = Create an account
+ sitemap_summary_text_password = Password lost
+
+ sitemap_summary_text_products_specials = See specials
+ sitemap_summary_text_products_favorites = See favorites
+ sitemap_summary_text_products_whats_new = See products new
+ sitemap_summary_text_products_featured = See featured produts
+
+ sitemap_summary_text_search_advanced_search = Search a product
+ sitemap_summary_text_blog = See the blog

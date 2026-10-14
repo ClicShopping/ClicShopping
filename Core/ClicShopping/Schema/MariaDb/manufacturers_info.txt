@@ -1,0 +1,16 @@
+manufacturers_id int not_null comment(FK to manufacturers table - manufacturer identifier)
+languages_id int not_null comment(FK to languages table - language for this translation)
+manufacturers_url varchar(255) not_null comment(Manufacturer website URL for this language)
+url_clicked int(5) default(0) not_null comment(Click count for manufacturer URL tracking)
+date_last_click datetime comment(Timestamp of last click on manufacturer URL)
+manufacturer_description text comment(Translated description of the manufacturer)
+manufacturer_seo_title text null comment(SEO meta title tag for manufacturer page)
+manufacturer_seo_description text null comment(SEO meta description tag for manufacturer page)
+manufacturer_seo_keyword text null comment(SEO meta keywords tag for manufacturer page)
+--
+primary manufacturers_id languages_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language URL, description and SEO fields of a manufacturer, with click tracking. The brand identity is in manufacturers.

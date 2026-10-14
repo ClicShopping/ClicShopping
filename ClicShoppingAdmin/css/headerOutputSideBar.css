@@ -1,0 +1,93 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+.bg-header {
+  background-color: #eee !important;
+}
+
+.vertical-nav {
+  min-width: 5rem;
+  width: 17rem;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s;
+}
+
+.page-content {
+  width: calc(100% - 17rem);
+  margin-left: 17rem;
+  transition: all 0.4s;
+}
+
+#content.active {
+  width: 100%;
+  margin: 0;
+}
+
+#sidebar.active {
+  margin-left: -17rem;
+  z-index: 10000;
+}
+
+.sidebarPosition {
+  padding-right: 20px;
+}
+
+.nav-link[data-bs-toggle].collapsed:before {
+  content: " ";
+}
+
+.nav-link[data-bs-toggle]:not(.collapsed):before {
+  /*    content: " ▸ ";*/
+}
+
+.addScrollSideBar {
+  overflow-y: auto;
+  height: 780px;
+  width: 100%;
+}
+
+.sidebarHide {
+  display: none;
+}
+
+.media-body {
+  border-bottom: solid #eee;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.05)
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    width: calc(100% - 0rem);
+    margin-left: 0rem;
+    transition: all 0.4s;
+  }
+
+  #sidebar {
+    margin-left: -17rem;
+  }
+
+  #sidebar.active {
+    margin-left: 0;
+  }
+
+  .separator {
+    margin: 3rem 0;
+    border-bottom: 1px dashed #fff;
+  }
+
+  .nav navTop {
+    width: 100%;
+  }
+
+  .sidebarHide {
+    display: contents;
+  }
+}

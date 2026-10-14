@@ -1,0 +1,4 @@
+modules_products_reviews_listing_image_title = Listing Commentaire : Do you want to display the product image?
+modules_products_reviews_listing_image_description = Display the product image
+
+text_price =

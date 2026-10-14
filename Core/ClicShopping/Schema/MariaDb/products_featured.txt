@@ -1,0 +1,17 @@
+products_featured_id int not_null auto_increment comment(Primary key - unique identifier for each featured product)
+products_id int not_null default(0) comment(FK to products table - product being featured)
+products_featured_date_added datetime comment(Timestamp when product was featured)
+products_featured_last_modified datetime comment(Timestamp of last modification)
+scheduled_date datetime comment(Future date when featuring becomes active - null for immediate)
+expires_date datetime comment(Expiration date when featuring ends - null for no expiration)
+date_status_change datetime comment(Timestamp when status was last changed)
+status tinyint(1) not_null default(1) comment(Featured status - 0: inactive, 1: active and displaying)
+customers_group_id int not_null default(0) comment(FK to customers_groups table - customer group who sees featured product, 0: all groups)
+--
+primary products_featured_id
+idx_products_featured_id products_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment ADMIN MERCHANDISING - editorial selection of the products the shop puts forward on its storefront, one row per product, with the scheduling window that opens and closes the exposure (scheduled_date, expires_date) and the customer group that sees it.

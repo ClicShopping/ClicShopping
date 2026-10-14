@@ -1,0 +1,28 @@
+return_id int not_null auto_increment comment(Primary key - unique identifier for each return/RMA request)
+return_ref varchar(32) not_null comment(Return reference number displayed to customer - e.g. RMA-2024-001)
+order_id int not_null comment(FK to orders table - original order containing returned product)
+product_id int not_null comment(FK to products table - product being returned)
+customer_id int not_null comment(FK to customers table - customer requesting return)
+customer_firstname varchar(255) not_null comment(Customer first name at time of return)
+customer_lastname varchar(255) not_null comment(Customer last name at time of return)
+customer_email varchar(255) not_null comment(Customer email for return communication)
+customer_telephone varchar(255) not_null comment(Customer phone number for return coordination)
+product_name varchar(255) not_null comment(Product name at time of return)
+product_model varchar(255) not_null comment(Product model/SKU at time of return)
+quantity int(4) not_null comment(Quantity of items being returned)
+opened tinyint(1) not_null default(0) comment(Product condition - 0: unopened/sealed, 1: opened/used)
+return_reason_id int not_null comment(FK to return_orders_reason table - reason for return)
+return_action_id int not_null comment(FK to return_orders_action table - requested action - refund, exchange, credit)
+return_status_id int not_null default(1) comment(FK to return_orders_status table - current return status)
+comment text not_null comment(Customer comments explaining the return)
+date_ordered date not_null comment(Date of original order)
+date_added datetime not_null comment(Timestamp when return request was submitted)
+date_modified datetime default null comment(Timestamp of last modification to return)
+archive tinyint(1) not_null default(0) comment(Archive status - 0: active, 1: archived)
+--
+primary return_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment RETURNS / RMA - one row per product return request, joined to the original order (order_id) and product (product_id). Use it for return volume, reasons and refunds. A return is NOT a sale: the sale itself stays in orders and orders_products, and a return never appears there.

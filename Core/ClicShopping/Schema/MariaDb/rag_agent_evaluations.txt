@@ -1,0 +1,30 @@
+evaluation_id varchar(36) not_null comment(Unique identifier for the evaluation (UUID))
+evaluator_agent_id varchar(100) not_null comment(Agent that performed the evaluation)
+output_id varchar(36) not_null comment(Identifier of the output being evaluated)
+output_type varchar(50) not_null comment(Type of output (sql_query, reasoning_chain, validation_result, etc.))
+producer_agent_id varchar(100) not_null comment(Agent that produced the output)
+self_evaluation_prevented tinyint(1) default 0  comment(Flag indicating if self-evaluation was prevented for this evaluation)
+accuracy_score decimal(3,2) not_null comment(Accuracy dimension score (0.00-1.00))
+completeness_score decimal(3,2) not_null comment(Completeness dimension score (0.00-1.00))
+efficiency_score decimal(3,2) not_null comment(Efficiency dimension score (0.00-1.00))
+clarity_score decimal(3,2) not_null comment(Clarity dimension score (0.00-1.00))
+overall_score decimal(3,2) not_null comment(Weighted average of all dimension scores)
+feedback text not_null comment(Detailed textual feedback from evaluator)
+strengths longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`strengths`)) comment(Array of identified strengths)
+improvements longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`improvements`)) comment(Array of suggested improvements)
+evaluated_at timestamp NULL default(current_timestamp)  comment(When the evaluation was performed)
+
+--
+primary evaluation_id
+idx_output_id output_id
+idx_evaluator evaluator_agent_id
+idx_producer producer_agent_id
+idx_overall_score overall_score
+idx_output_type output_type
+idx_evaluated_at evaluated_at
+idx_self_evaluation_prevented self_evaluation_prevented
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

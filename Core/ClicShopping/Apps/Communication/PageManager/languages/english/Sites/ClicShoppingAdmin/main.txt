@@ -1,0 +1,166 @@
+heading_title = Page Manager
+module_pm_title = Page Manager
+module_pm_short_title = Page Manager
+
+title_menu = Page Manager
+text_page_manager =  Page Manager
+
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a Page Manager<br />
+- Activate this module and activate the module Page Manager located in the Communication menu
+
+module_pm_introduction = The install process create the menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+
+button_page_manager = Page Manager
+button_cancel = Cancel
+button_send = Send
+button_save = Save
+button_delete = Delete
+button_new = New page
+button_insert = Insérer
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+heading_title = Page Manager
+heading_title_edition = Edit page
+heading_title_new = New page
+table_heading_page_type = Box type
+
+table_heading_pages = Pages
+table_heading_type_page = Page Type
+table_heading_status = Status
+table_heading_customers_group = Customers group
+table_heading_sort_order = Sort Order
+table_heading_action = Actions
+table_heading_links_target = Links type
+table_heading_page_type = Box type
+
+tab_general = General
+tab_page_link = Page links
+tab_page_description = Description
+tab_page_meta_tag = Meta Tag
+
+title_pages_choose = Page type
+text_pages_choose = Please select the type of page that  you want to insert:
+
+title_name_page = Page title
+
+title_pages_date = Date
+text_pages_date_start = Start date :
+text_pages_date_closed = Expires date :
+text_date_added = Date added :
+text_last_modified = Last modified :
+text_status_change = Status change :
+text_page_manager_customers_group = Display customers groups :
+text_start_date = Start date :
+text_close_date = Expire Date :
+
+normal_customer = Normal customers
+text_all_groups = All groups
+
+title_pages_type = Page type
+text_pages_box = Box choice to display :
+text_pages_type = Page type :
+
+page_manager_select = ---- Select ----
+page_manager_introduction_page = Introduction page
+page_manager_main_page = Main page
+page_manager_contact_us = Contact Us
+page_manager_informations = Informations
+page_manager_main_box = Main Box
+page_manager_secondary_box = Secondary box
+page_manager_landing_page = Landing page
+page_manager_none = None
+page_manager_menu_header = Header menu
+page_manager_menu_footer = Footer menu
+
+text_pages_general_conditions = Is it a Page Conditions of Sales ?
+page_manager_text_yes = Yes
+page_manager_text_no = No
+
+title_divers = Others
+text_pages_time = Time display for introduction page :
+text_pages_time_seconde = <i>Seconds</i>
+text_pages_sort_order = Sort Order :
+
+title_link = Type of link on the page
+text_pages_intext = Link Type :
+text_link_same_windows = Same window
+text_link_new_windows = New window
+text_target_internal = Internal
+text_target_external = External
+text_pages_external_link = External URL of the page:
+text_target = Link Target:
+text_target_samewindow = Same Window
+text_target_newwindow = New Window
+
+text_pages_information_description = Page description
+
+text_info_delete_intro = Are you sure you want to delete this page?
+
+keywords_google_trend = Keywords Google trend
+
+text_products_page_refefrencement = Product Meta Data
+text_products_page_title = Title
+text_products_header_description = Description
+text_products_keywords = Keywords
+text_products_tag_product = Products tag
+text_products_tag_blog = Tags blog
+text_products_page_seo = SEO
+
+title_help_seo = Note on the search engine optimization management
+help_seo = <li>The system automatically manages the search engine optimization.<br />
+<blockquote>it automatically included elements in the following order if the fields are not filled:<br />
+title : the name of your product (ex leather jacket)<br />
+description: The product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+keywords: the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+category: Category Product<br />
+</blockquote></li>
+<li>if you fill in the fields, the tags appear in the following way:<br />
+<blockquote>
+title: The title of fields, the name of your product (ex leather jacket)<br />
+description: The field description, the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+keywords: the fields keywords, the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+</blockquote></li>
+<li><strong>please do not insert  too many keywords (maximum 10)</strong> and establish consistency between each field to find the words the most important first</li>
+
+
+title_help_image = Help
+title_help_page_manager = Note on creation introduction pages
+text_pages_type_information = <li>Concerning the introduction page, we suggest you to let display <u>10 secondes at least</u>.If  you want an illimited time, let the field empty
+title_help_description = Note on the use of the wysiwyg
+help_description = <li>If you inserted plugin in Firefox, it can be incompatibilities (ex: adblock more)</li>
+
+success_page_inserted = Success: The page has been inserted.
+success_page_updated = Success: The page has been updated.
+success_page_removed = Success: The page has been removed.
+success_page_manager_status_updated = Success: The status of the page has been updated.
+error_page_title_required = Error: Page title required.
+error_page_title_required_curseur = <span class="errorText">Please inform the title of the page.</span>
+
+image_new_page = New Page
+icon_edit = Edit
+icon_preview = Preview
+icon_delete = delete
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displa <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+text_help_wysiwyg = Help wysiwig
+help_options =

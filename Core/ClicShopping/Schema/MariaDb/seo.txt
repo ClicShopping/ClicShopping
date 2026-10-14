@@ -1,0 +1,37 @@
+seo_id int not_null default(1) comment(Primary key - SEO configuration identifier)
+language_id int not_null default(1) comment(FK to languages table - language for SEO content)
+seo_defaut_language_title text null comment(Default homepage title tag)
+seo_defaut_language_keywords text null comment(Default homepage meta keywords)
+seo_defaut_language_description text null comment(Default homepage meta description)
+seo_defaut_language_footer text null comment(Default footer SEO content)
+seo_language_products_info_title text null comment(Product detail page title template)
+seo_language_products_info_keywords text null comment(Product detail page keywords template)
+seo_language_products_info_description text null comment(Product detail page description template)
+seo_language_products_new_title text null comment(New products page title)
+seo_language_products_new_keywords text null comment(New products page keywords)
+seo_language_products_new_description text null comment(New products page description)
+seo_language_special_title text null comment(Special offers page title)
+seo_language_special_keywords text null comment(Special offers page keywords)
+seo_language_special_description text null comment(Special offers page description)
+seo_language_reviews_title text null comment(Reviews page title)
+seo_language_reviews_keywords text null comment(Reviews page keywords)
+seo_language_reviews_description text null comment(Reviews page description)
+seo_language_favorites_title text null comment(Favorites/wishlist page title)
+seo_language_favorites_keywords text null comment(Favorites/wishlist page keywords)
+seo_language_favorites_description text null comment(Favorites/wishlist page description)
+seo_language_featured_title text null comment(Featured products page title)
+seo_language_featured_keywords text null comment(Featured products page keywords)
+seo_language_featured_description text null comment(Featured products page description)
+seo_defaut_language_title_h1 text null comment(Default H1 heading for homepage)
+seo_language_recommendations_title text null comment(Recommendations page title)
+seo_language_recommendations_description text null comment(Recommendations page description)
+seo_language_recommendations_keywords text null comment(Recommendations page keywords)
+
+--
+primary seo_id language_id
+idx_seo_seo_id seo_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Site-wide SEO CONFIGURATION, one row per language: default title, keywords, description and footer used on the shop pages. Settings only.

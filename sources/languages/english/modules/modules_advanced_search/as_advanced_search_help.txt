@@ -1,0 +1,24 @@
+module_advanced_search_help_name = Do you want to display an help on the web search page ?
+module_advanced_search_help_description = display an help on the web search page for the customer
+module_advanced_search_help_title = Search Help
+module_advanced_search_help_text = <br />
+you have trouble to find the product you are looking for? Our search engine is the most fastest and most effective way to select the choice that meets your expectations.. 
+<br /><br />
+<strong>how to proceed?</strong>
+<br />
+<br />
+simply type in your word you are looking for in the search bar and click on OK.. 
+<br />
+you have several filters (product category, price, brands) allow you to specify your search. Functions in selected categories, complementary filters appear and allow you a more precise refinement. 
+<br /> <br />
+<u>examples of research</u><br />
+<p class="blockquote">
+<li class="modulesAdvancedSearchHelp">
+you can enter a product type, brand, description, reference: Usb, 1000 GB hard drive, samsung tv, 1EG1.054.04., Etc. 
+</li>
+<li class="modulesAdvancedSearchHelp">
+you can separate the keywords by opéérateurs logical AND (and) and OR (or). For example, you can enter Blouse AND Pants. This research will show you the results that meet two criteria simultaneously.
+</li>
+<li class="modulesAdvancedSearchHelp">
+you can also do a search on a string by enclosing keywords in double-quotes. For example, a search on "Red Shirt" will display a list of all items which match the exact string in their description.
+</li>

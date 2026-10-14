@@ -1,0 +1,2 @@
+module_header_tags_sitemap_title = Souhaitez vous utiliser les meta tag pour la cartographie du site ?
+module_header_tags_sitemap_description = Ajoute les metas pour la cartographie du site

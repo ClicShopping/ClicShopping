@@ -1,0 +1,28 @@
+{
+  "name": "opcache-gui",
+  "description": "A clean and responsive interface for Zend OPcache information, showing statistics, settings and cached files, and providing a real-time update for the information (using jQuery and React).",
+  "version": "3.6.1",
+  "main": "index.js",
+  "devDependencies": {
+    "@babel/cli": "^7.28.0",
+    "@babel/core": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/plugin-transform-class-properties": "^7.27.1",
+    "sass": "^1.89.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile-jsx": "babel --presets @babel/preset-react build/_frontend/interface.jsx --plugins @babel/plugin-transform-class-properties -o build/interface.js",
+    "compile-scss": "sass build/_frontend/interface.scss build/interface.css --style=compressed"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amnuts/opcache-gui.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/amnuts/opcache-gui/issues"
+  },
+  "homepage": "https://github.com/amnuts/opcache-gui#readme"
+}

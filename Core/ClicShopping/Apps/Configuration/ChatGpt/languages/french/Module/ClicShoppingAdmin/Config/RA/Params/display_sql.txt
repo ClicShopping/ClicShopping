@@ -1,0 +1,5 @@
+cfg_chatgpt_display_sql_title = Afficher la requête SQL dans la réponse
+cfg_chatgpt_display_sql_description = Affiche la requête SQL générée dans la réponse de l'IA. Lorsqu'activé, les utilisateurs peuvent voir la requête SQL exacte qui a été exécutée pour récupérer les données. Utile pour la transparence, le débogage et l'apprentissage. Recommandé : True pour les administrateurs, False pour les utilisateurs finaux.
+
+cfg_chatgpt_display_sql_true = True
+cfg_chatgpt_display_sql_false = False

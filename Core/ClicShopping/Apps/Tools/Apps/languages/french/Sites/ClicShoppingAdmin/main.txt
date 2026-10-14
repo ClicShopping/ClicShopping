@@ -1,0 +1,37 @@
+heading_title = Apps
+module_ap_title =  Apps
+module_ap_short_title = Apps
+
+text_apps = Apps
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'afficher les apps installées<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'Apps.<br />
+- Cette app est dans le menu Outils<br />
+
+module_ap_introduction = Le processus d'installation crée la base de données et le menu pour ce module
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+button_apps_access = Apps
+button_reset = Reset
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+heading_title = Apps
+table_heading_apps = Apps sur Serveur
+table_heading_vendor = Vendeur
+table_heading_version = Version

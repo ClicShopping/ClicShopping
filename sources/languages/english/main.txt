@@ -1,0 +1,317 @@
+date_format_short = m/d/Y
+date_format_long = m/d/Y H:i:s
+date_format_short_sql = Y-m-d
+date_format = m/d/Y
+date_time_format = m/d/Y H:M:S
+js_date_format = mm/dd/yyyy
+language_currency = USD
+html_params = dir="ltr" lang="en"
+charset = utf-8
+html_lang = en
+
+title = {{store_name}}
+access_catalog = Access to {{store_name}} shop
+
+header_title_top = Index
+header_title_catalog = {{store_name}}
+
+text_selected = Select
+text_rate_limiter_wait = Please wait {{wait}} seconds before restarting this operation.
+type_below = Type Below
+
+footer_text_requests_since = requests since
+products_group_quantity_unit_title = FRS-
+
+error_conditions_not_accepted = Please confirm the terms and conditions bound to this order by ticking the box below.
+
+js_error = Errors have occured during the process of your form. <br />Please make the following corrections:<br />
+js_review_text = * The 'Review Text' must have at least {{min_length}} characters.
+js_review_rating = * You must rate the product for your review.
+js_error_no_payment_module_selected = * Please select a payment method for your order.
+js_error_submitted = This form has already been submitted. Please press Ok and wait for this process to be completed.
+
+error_no_payment_module_selected = Please select a payment method for your order.
+error_payment_obscur = A error has been detected in the process verification, please retry or select another payment method
+
+entry_text_select = Select
+entry_spam_text = *
+entry_antispam = How many :
+text_antispam = three
+
+entry_customers_phone_number_text = *
+entry_post_code = Postal Code
+entry_post_code_text = *
+
+entry_company = Company
+category_personnal = Personal informations
+entry_gender = Gender
+male = Male
+female = Female
+entry_gender_text = *
+entry_telephone_number = Phone
+entry_telephone_number_text = *
+entry_street_address = Address
+entry_street_address_text = *
+entry_suburb = Suburb
+entry_city = City
+entry_city_text = *
+entry_country = Country
+entry_country_text = *
+entry_state = State / Department
+entry_state_text = *
+
+entry_email_address = Email
+entry_email_address_text = *
+entry_last_name = Last Name
+entry_last_name_text = *
+entry_first_name = First Name
+entry_first_name_text = *
+
+entry_company_error = Your Company Name must contain a minimum of {{min_length}}characters.
+entry_company_error_pro = Your Company Name must contain a minimum of {{min_length}} characters.
+entry_siret_error = The number of registration of your company must contain a minimum of {{min_length}} characters.
+entry_tva_intracom_error = The number of VAT Intracom of your company must contain a minimum of {{min_length}} characters.
+entry_code_ape_error = The nomenclature number your company must contain a minimum of {{min_length}} characters.
+entry_taxe_provinciale = Provincial Tax number :
+entry_code_taxe_provinciale_error = Le provincial tax code of your company must contain a minimum of {{min_length}} characters.
+entry_code_taxe_provinciale_text = *
+entry_taxe_federale = Federal Tax :
+entry_code_taxe_federale_error = the federal tax code of your company must contain a minimum of  {{min_length}} characters.
+entry_code_taxe_federale_text = *
+
+entry_gender_error = Please select your Gender.
+entry_gender_error_pro = Please select your Gender.
+entry_first_name_error = Your First Name must contain a minimum of {{min_length}} characters.
+entry_first_name_error_pro = Your First Name must contain a minimum of {{min_length}} characters.
+entry_last_name_error = Your Last Name must contain a minimum of {{min_length}} characters.
+entry_last_name_error_pro = Your Last Name must contain a minimum of ' . {{min_length}} . ' characters.
+entry_date_of_birth_error = Your Date of Birth must be in this format: MM/DD/YYYY (eg 05/21/1970)
+entry_date_of_birth_error_pro = Your Date of Birth must be in this format: MM/DD/YYYY (eg 05/21/1970)
+entry_email_address_error = Your email address is not correct.
+entry_email_address_confirm_not_matching = The Confirmation Email must match your Email Address.
+entry_email_address_error_pro = Your E-Mail Address must contain a minimum of ' . {{min_length}} . ' characters.
+entry_email_address_check_error = Your E-Mail Address does not appear to be valid - please make any necessary corrections.
+entry_email_address_check_error_number = You made an error in the calculation formula applied at the bottom of the form.<br />Please make any necessary corrections.
+entry_agreement_check_error = You must accept our privacy conditions to finish your subscription.
+entry_email_address_check_error_pro = Your E-Mail Address does not appear to be valid - please make any necessary corrections.
+entry_email_address_error_exists = Your E-Mail Address already exists in our records - please log in with the e-mail address or create an account with a different address.
+entry_email_address_error_exists_pro = Your E-Mail Address already exists in our records - please log in with the e-mail address or create an account with a different address.
+entry_email_address_confirmation_check_error = You did not seize an identical address email at the time of the confirmation.
+entry_email_address_confirmation_check_error_pro = You did not seize an identical address email at the time of the confirmation.
+entry_street_address_error = Your Street Address must contain a minimum of {{min_length}} characters.
+entry_street_address_error_pro = Your Street Address must contain a minimum of {{min_length}} characters.
+entry_suburb_error =
+entry_suburb_text =
+entry_post_code_error = Your Post Code must contain a minimum of {{min_length}} characters.
+entry_post_code_error_pro = Your Post Code must contain a minimum of {{min_length}} characters.
+entry_city_error = Your City must contain a minimum of {{min_length}} characters.
+entry_city_error_pro = Your City must contain a minimum of {{min_length}} characters.
+entry_state_error = Your State must contain a minimum of {{min_length}} characters.
+entry_state_error_select = Please select a state from the States pull down menu.
+entry_state_error_pro = Your State must contain a minimum of {{min_length}} characters.
+entry_state_error_select_pro = Please select a state from the States pull down menu.
+entry_state_error_not_existing = Vous must select an existing state
+
+entry_country_error = You must select a country from the Countries pull down menu.
+entry_country_error_pro = You must select a country from the Countries pull down menu.
+entry_telephone_number_error = Your Telephone Number must contain a minimum of {{min_length}} characters.
+entry_telephone_number_error_pro = Your Telephone Number must contain a minimum of {{min_length}} characters.
+entry_cellular_phone_number_error = Your Cellular phone Number must contain a minimum of {{min_length}} characters.
+entry_cellular_phone_number_error_pro = Your Cellular phone Number must contain a minimum of {{min_length}} characters.
+entry_phone_dgrp = Your phone number is important to contact you (payment, shipping problem ...)
+
+entry_newsletter_text =
+entry_newsletter_error =
+entry_password_error = Your Password must contain a minimum of {{min_length}} characters.
+entry_password_error_not_matching = The Password Confirmation must match your Password.
+entry_password_error_pro = Your Password must contain a minimum of ' . {{min_length}} . ' characters.
+entry_password_error_not_matching_pro = The Password Confirmation must match your Password.
+entry_password_confirmation_text = * Confirm your password.
+entry_password_current_error = Your Password must contain a minimum of {{min_length}} characters.
+entry_password_new_error = Your new Password must contain a minimum of {{min_length}} characters.
+entry_password_new_error_not_matching = The Password Confirmation must match your new Password.
+entry_password_new_error_pro = Your new Password must contain a minimum of {{min_length}} characters.
+entry_password_new_error_not_matching_pro = The Password Confirmation must match your new Password.
+
+entry_text_order_number = Order N°
+entry_error_contact = An error has been detected, please retry.
+
+text_result_page =
+text_display_number_of_items = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong> items)
+text_display_number_of_reviews = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong> reviews)
+prevnext_title_first_page = First Page
+prevnext_title_previous_page = Previous Page
+prevnext_title_next_page = Next Page
+prevnext_title_goto_page = Go to page
+prevnext_title_last_page = Last Page
+prevnext_title_page_no = Page {{jump_to_page}}
+prevnext_title_prev_set_of_no_page = Previous Set of {{page_set_total_rows}} Pages
+prevnext_title_next_set_of_no_page = Next Set of %d Pages
+prevnext_button_first = &lt;&lt;FIRST
+prevnext_button_prev = [&lt;&lt;&nbsp;Prev]
+prevnext_button_next = [Next&nbsp;&gt;&gt;]
+prevnext_button_last = LAST&gt;&gt;
+image_button_pay_total_now = Pay Now ({{total}})
+image_button_pay_total_processing = Processing, please wait ..
+
+product_added = {{products_name}} has been added to your Cart
+product_updated = {{products_name}} has been updated in your Cart
+product_removed = {{products_name}} has been removed from your Cart
+
+text_ticker_products_new = News
+text_ticker_specials = Specials
+text_ticker_favorite = Favorites
+text_ticker_featured = Selected
+
+text_button_display_stock_good = In stock
+text_button_display_stock_alert = Soon out of stock
+text_button_display_stock_out = Product out of stock
+
+button_continue = Continue
+
+text_greeting_personal = Welcome <span class="greetUser">{{first_name}} !</span> We have some <a href="{{url_products_new}}"><u>the products new</u></a> available ?
+text_greeting_guest = Welcome <span class="greetUser">Mrs, Mr</span>. Feel free to <a href="{{url_login}}"><u>log yourself in</u></a> ? browse some of our <a href="{{url_products_new}}"><u>new products</u></a> ?
+text_select =  --- Select ---
+
+text_sort_products = Sort products
+text_descendingly = descendingly
+text_ascendingly = ascendingly
+text_by =  by
+
+text_sort_by = Sort by
+text_view_grid = Grid view
+text_view_list = List view
+
+text_stock = Stock level :
+
+text_shopping_cart_checkout_step1 = Shopping cart
+text_shopping_cart_checkout_step2 = Shipphing method or <br /> Account
+text_shopping_cart_checkout_step3 = Payment method
+text_shopping_cart_checkout_step4 = Order payment summary
+text_shopping_cart_checkout_step5 = Processing payment
+
+text_success_action = Your request has been updated
+
+button_new_product = New Product
+button_add_address = Add Address
+
+month =  m
+days =  d
+hours =  H
+minutes =  mn
+secondes =  sec
+
+text_price_with_tax_tag = incl. tax -
+text_unknown_tax_rate = Unknown tax rate
+
+text_ccval_error_invalid_date = The expiry date entered for the credit card is invalid.<br />Please check the date and try again.
+text_ccval_error_invalid_number = The credit card number entered is invalid.<br />Please check the number and try again.
+text_ccval_error_unknown_card = The first four digits of the number entered are: %s<br />If that number is correct, we do not accept that type of credit card.<br />If it is wrong, please try again.
+
+prices_logged_in_text = Please log in for prices.
+prices_logged_in_submit = Sorry you must be logged in for prices.
+prices_logged_in_buy_text = Please log in for Buy-now
+tax_included = TAX inc.
+tax_excluded = TAX exc.
+
+no_orders_group = No product avalaible
+no_orders_public =
+text_out_of_stock = Out of stock
+text_out_of_stock_pre_order = Only pre-order
+text_out_of_stock_allow_checkout = Order out of stock accepted
+text_out_of_stock_allow_checkout = Order out of stock accepted
+
+text_antispam = three
+
+entry_discount_coupon_error = The coupon code you have inserted is not valid.
+entry_discount_coupon_not_applicable_products = The coupon entered is invalid or does not apply to the products selected in the cart.
+entry_discount_coupon_specials_error = This coupon does not apply to a product on special offer: {{product}}
+entry_discount_coupon_available_error = The coupon code you have entered is no longer valid.
+entry_discount_coupon_use_error = Our records show that you have used this coupon {{entry_discount_coupon_use_error}} time(s).  You may not use this code more than {{entry_discount_coupon_max_use}} time(s).
+entry_discount_coupon_min_price_error = The minimum order total for this coupon is {{discount_min_price_error}}
+
+module_order_total_discount_coupon_title = Discount Coupon
+module_order_total_discount_coupon_tax_applied = Tax applied
+module_order_total_discount_coupon_display_file = Discount Coupon [code] applied
+
+entry_discount_coupon_min_quantity_error = The minimum number of products required for this coupon is {{discount_min_price_error}}
+entry_discount_coupon_exclusion_error = Some or all of the products in your cart are excluded.
+entry_discount_coupon = Code du coupon :
+
+table_heading_image =
+table_heading_date_added = Date
+table_heading_price = Price
+table_heading_model = Model
+table_heading_quantity = Quantity
+table_heading_weight = Weight
+table_heading_date = Date
+table_heading_manufacturer = Manufacturer
+table_heading_products = Product Name
+table_heading_buy_now = Minimum quantity
+table_heading_total = Total
+
+text_products_info_price_by_weight =
+text_login_error = Login error, please try again
+text_general_conditions = Sales conditions
+text_privacy_conditions = Privacy conditions
+
+email_text_subject = Order Process {{store_name}}
+email_text_order_number = Hello,
+Please find the elements concerning your order into {{store_name}}.
+We thank you for your confidence and we make our possible as well as possible to treat the sending of your order.<br /><br />Order Number :
+email_text_invoice_url = Detailed Invoice:
+email_text_date_ordered = Date Ordered:
+email_text_products = Products
+email_text_subtotal = Sub-Total:
+email_text_tax = Tax:
+email_text_shipping = Shipping:
+email_text_total = Total:
+email_text_delivery_address = Delivery Address
+email_text_billing_address = Billing Address
+email_text_payment_method = Payment Method
+
+email_separator =
+text_email_via = via
+
+email_text_footer = Your order is being prepared and you will be sent soon. Please print this email certifying that you have to take order well on {{store_name}} or for any later correspondence.<br /><br />Receive, dear customer, our sincere greetings.<br />
+regards,<br /><strong>{{store_name}} Team</strong><br />
+<p>{{store_name_address}}<br />
+<u><font size="2">Confidentiality Note :</font></U><font size="2"><br />
+this message as well as the documents which would be appended are addressed exclusively to their recipient and could contain confidential information subjected to the professional secrecy or whose disclosure is prohibited under the terms of the legislation in force. So we inform the person who would receive it without being the recipient or an authorized person, that this information is confidential and that any use, copies, files or disclosure is prohibited.  If you received this message, we ask you to agree to communicate it to us by email : {{store_owner_email_address}}. and to proceed directly to its destruction<br />
+<p><font size="2">In accordance with the <strong>Law</strong> no 78-17 of January 6, 1978 known as Data-processing Law and Freedom, you are entitled to correction of your personal data or on request by email</font></div>
+
+
+email_text_subject_stock = Stock Alert on product on {{store_name}}
+email_reorder_level_text_stock = Hello,<br /><br />You recieved an warning email concernng your warning stock (general configuration) for this product. This warning stock is the alrt stock where on or several procducs is reached. <br />There the differents caracteristics on the product : <br />
+email_text_stock = Hello, <br /><br /> You receive an  warning about the sold_out stock on one of your products. Your product is no available on your store. However, you can reactivate it without modifying your stock. The Add button will be replaced by the following sold_out button.<br />There characteristics of the products out of stock :<br />
+email_text_subject_alert_stock = Stock alert on specific product on {{store_name}}
+email_reorder_level_text_alert_stock = Hello,<br /><br />You receive an  warning about the alert stock (defined in the product) concerning a product.  Your product is available on your store. <br />There characteristics of the products out of stock : <br />
+email_text_product_alert_stock = Stock on this product :
+
+
+email_text_id_product = Product id
+email_text_model = Model
+email_text_products_name = Product name
+email_text_product_url = Product URL
+email_text_product_stock = New product stock
+email_text_date_alert = Alert date
+
+text_add_discount_message_shopping_cart = . It will be applied on order summary
+text_error_antispam = Antispam error
+pull_down_default_manufacturer = Our brands
+
+text_chatbot_ok = Thanks, Here the information about your question: <strong>{{question}}</strong><br /><br />
+text_chatbot_not_ok = I'm sorry but I do not find, the informations. Please give me more context about your product seach (and include the name of the product you want to look).<br /><br />
+link_chatbot_page_general_condition = <br /><br /> ==> For more informations, we invite you to consult this page :
+
+
+text_install =
+<div style="text-align:center; padding-top: 50px;"><a href="https://www.clicshopping.org" target="_blank" rel="noopener"><img src="images/logo_clicshopping_1.png" border="0" height="105" width="284" alt="Market Place"></a><br />
+<div style="padding-top: 120px;">Congratulation, you have make with success the install process, please  read the informations below</div>
+<div style="padding-top: 20px;">Please, click on ClicShopping logo to connect you to the Market Place to begin and select your module that you want install</div>
+<div>ClicShopping is built on modular architecture, to use, you must install the modules. For more information, please, go to MarketPlace</div>
+<div><br /> - More about install module, please click on this link : <a href ="https://www.clicshopping.org/marketplace/mes-premiers-pas-bl-9.html" target="_blank" rel="noopener">My first step</a></div>
+<div> - To download the Starter Pack : please click on : <a href="https://www.clicshopping.org/marketplace/sources/public/clicshopping/" target="_blank" rel="noopener">Pack Starter</a> and install via the installation system of ClicShopping and activate the modules</div>
+<div> - Form more informations, please go to see our : <a href="https://www.clicshopping.org/marketplace/index.php?Blog&Categories" target="_blank" rel="noopener">blog</a></div>
+
+success_account_updated = Success : updated

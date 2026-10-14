@@ -1,0 +1,2 @@
+cfg_chatgpt_interaction_response_max_chars_title = Max Char response inside Interactions
+cfg_chatgpt_interaction_response_max_chars_description = Provide a number max for interactions before truncated

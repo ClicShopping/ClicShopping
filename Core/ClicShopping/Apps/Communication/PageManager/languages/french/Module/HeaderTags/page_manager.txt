@@ -1,0 +1,3 @@
+module_header_tags_page_manager_title = Souhaitez vous utiliser les meta tag pour le Gestionnaire de page ?
+module_header_tags_page_manager_description = Ajoute les metas pour le gestionnaire de page
+

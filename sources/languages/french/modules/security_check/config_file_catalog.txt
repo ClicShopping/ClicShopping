@@ -1,0 +1,2 @@
+warning_config_file_writeable = Je suis capable d'écrire dans le fichier de configuration du système :   {{configure_file_path}}.  C'est une vulnérabilité potentielle importante - veuillez mettre des droits 444 sur ce fichier.
+config_file_catalog = Configuration catalog

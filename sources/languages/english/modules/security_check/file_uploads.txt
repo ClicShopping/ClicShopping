@@ -1,0 +1,2 @@
+warning_file_uploads_disabled = Warning: File uploads are disabled in the php.ini configuration file.
+file_uploads = File uploads

@@ -1,0 +1,5 @@
+cfg_chatgpt_actor_system_status_title = Enable Agent system Status
+cfg_chatgpt_actor_system_status_description = do you yant to enable Agent system Status
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

@@ -1,0 +1,53 @@
+{
+  "_comment": "Production Environment Configuration",
+  "_description": "Configuration optimized for production use with high reliability",
+  "_environment": "production",
+
+  "critics_per_evaluation": 3,
+  "critic_evaluation_timeout": 30,
+  "actor_retry_attempts": 3,
+  "actor_execution_timeout": 60,
+  "parallel_evaluation_enabled": true,
+
+  "consensus_threshold": 0.7,
+  "minimum_critics_required": 2,
+  "outlier_detection_enabled": true,
+  "outlier_threshold": 2.0,
+  "discussion_phase_enabled": true,
+
+  "max_concurrent_actions_per_actor": 5,
+  "max_concurrent_evaluations_per_critic": 10,
+  "load_balancing_enabled": true,
+  "load_balancing_algorithm": "weighted_round_robin",
+
+  "actor_selection_algorithm": "capability_confidence_load",
+  "critic_selection_algorithm": "expertise_diversity_load",
+  "prefer_domain_specialists": true,
+  "require_domain_specialists": false,
+
+  "metrics_tracking_enabled": true,
+  "metrics_aggregation_interval": 300,
+  "performance_degradation_threshold": 0.5,
+  "alert_on_performance_degradation": true,
+
+  "actor_critic_separation_enabled": true,
+  "hybrid_agent_support_enabled": false,
+  "backward_compatibility_mode": false,
+  "migration_logging_enabled": false,
+
+  "message_protocol_version": "1.0",
+  "message_validation_enabled": true,
+  "async_communication_enabled": true,
+
+  "error_logging_enabled": true,
+  "error_recovery_enabled": true,
+  "graceful_degradation_enabled": true,
+
+  "database_persistence_enabled": true,
+  "audit_trail_enabled": true,
+  "result_retention_days": 90,
+
+  "dashboard_enabled": true,
+  "real_time_metrics_enabled": true,
+  "metrics_export_enabled": true
+}

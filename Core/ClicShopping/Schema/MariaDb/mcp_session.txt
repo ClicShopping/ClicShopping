@@ -1,0 +1,15 @@
+mcp_session_id int(11) not_null auto_increment comment(Primary key - unique identifier for each MCP session)
+mcp_id int(11) not_null comment(FK to mcp table - MCP configuration this session belongs to)
+session_id varchar(32) not_null comment(Unique session identifier - generated token for session tracking)
+ip varchar(40) not_null comment(IP address of the session - IPv4 or IPv6 format)
+date_added datetime not_null comment(Timestamp when the session was created)
+date_modified datetime not_null comment(Timestamp of last session activity)
+--
+primary mcp_session_id
+unique idx_mcp_session_id mcp_session_id
+idx_mcp_id mcp_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

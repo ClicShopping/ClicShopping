@@ -1,0 +1,17 @@
+metric_id int(11) not_null auto_increment comment(Auto-incrementing metric ID)
+objective_id varchar(36) not_null comment(Objective this metric belongs to)
+metric_name varchar(100) not_null comment(Name of the metric (e.g., execution_time, accuracy))
+metric_value decimal(10,4) not_null comment(Numeric value of the metric)
+recorded_at timestamp NULL default(current_timestamp) comment(When the metric was recorded)
+
+--
+primary metric_id
+idx_objective_id objective_id 
+idx_metric_name metric_name 
+idx_recorded_at recorded_at 
+idx_objective_metric objective_id metric_name
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

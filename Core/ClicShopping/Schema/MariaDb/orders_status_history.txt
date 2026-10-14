@@ -1,0 +1,20 @@
+orders_status_history_id int not_null auto_increment comment(Primary key - unique identifier for each status history entry)
+orders_id int not_null comment(FK to orders table - order this history entry belongs to)
+orders_status_id int(5) not_null comment(FK to orders_status table - new status that was set)
+orders_status_invoice_id int(5) default(1) not_null comment(FK to orders_status_invoice table - invoice status at this time)
+admin_user_name varchar(64) comment(Administrator username who changed the status)
+date_added datetime not_null comment(Timestamp when status was changed)
+customer_notified int(1) default(0) not_null comment(Customer notification flag - 0: not notified, 1: customer was notified)
+comments text comment(Admin comments about the status change)
+orders_status_tracking_id int(5) default(0) not_null comment(FK to orders_status_tracking table - shipping carrier for tracking)
+orders_tracking_number varchar(255) null comment(Shipping tracking number)
+orders_status_support_id int(2) default(0) not_null comment(FK to orders_status_support table - support ticket status)
+evidence varchar(255) comment(Evidence file or reference for status change)
+--
+primary orders_status_history_id
+idx_orders_status_history_orders_id orders_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment TIMELINE of an order: one row per status change, with the tracking number, who changed it and whether the customer was notified. Use it for delays and order follow-up, never for amounts.

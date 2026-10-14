@@ -1,0 +1,9 @@
+ heading_title =
+ navbar_title = Description
+ products_not_sell = Product no available
+
+ text_also_purchased_products = Our customers have also purchased theses items
+
+ text_product_not_found = Product not found !
+
+ success_notifications_updated = Products Notification added in your account

@@ -1,0 +1,19 @@
+categories_id int not_null auto_increment comment(Primary key - unique identifier for each category)
+categories_image varchar(255) comment(Path to category image file)
+parent_id int unsigned default(0) not_null comment(FK to categories table - parent category ID for hierarchical structure, 0 for root categories)
+sort_order int(3) comment(Display order for sorting categories)
+date_added datetime comment(Timestamp when category was created)
+last_modified datetime comment(Timestamp of last modification)
+status tinyint(1) default(1) not_null comment(Category status - 0: inactive, 1: active)
+customers_group_id int(11) default(99) not_null comment(FK to customers_groups table - customer group with access to this category, 99: all groups)
+
+--
+primary categories_id
+idx_categories_parent_id parent_id
+idx_customers_group_id customers_group_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Product categories with hierarchical structure and access control

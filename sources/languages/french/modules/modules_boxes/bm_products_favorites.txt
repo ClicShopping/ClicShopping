@@ -1,0 +1,7 @@
+module_boxes_products_favorites_title = Souhaitez-vous afficher les coups de coeur dans la boutique ?
+module_boxes_products_favorites_description = Affiche les coups de coeur
+module_boxes_products_favorites_box_title = Coups de coeur
+module_boxes_products_favorites_all_products_favorites = Tous les coups de coeur
+
+
+ button_detail = Détails

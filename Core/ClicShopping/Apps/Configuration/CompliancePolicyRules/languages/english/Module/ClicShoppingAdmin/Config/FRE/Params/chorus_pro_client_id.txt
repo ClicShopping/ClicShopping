@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_client_id_title = Client ID PISTE Chorus PRo
+cfg_configuration_compliance_policy_rules_chorus_pro_client_id_description = Client ID of the PISTE application.

@@ -1,0 +1,57 @@
+heading_title = Database Tables
+module_dt_title = Database Tables
+module_dt_short_title = Database Tables
+
+text_data_base_tables = Database Tables
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a database Tables form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_dt_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_data_base_tables = Database Tables
+button_reset = Reset
+button_analyse = Analyse
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+table_heading_table = Table
+table_heading_rows = Rows
+table_heading_size = Size
+table_heading_engine = Engine
+table_heading_collation = Collation
+table_heading_msg_type = Message Type
+table_heading_msg = Message
+table_heading_queries = Queries
+
+action_check_tables = Check Tables
+action_analyze_tables = Analyze Tables
+action_optimize_tables = Optimize Tables
+action_repair_tables = Repair Tables
+action_utf8_conversion = Convert to utf8mb4
+
+action_utf8_conversion_from_autodetect = Auto-Detect
+action_utf8_conversion_from = from {{char_set}}
+
+

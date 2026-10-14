@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_embedding _format_version_title = Embedding Format Version
+cfg_ecommerce_cockpit_ai_embedding _format_version_description = Version of the content template for embeddings

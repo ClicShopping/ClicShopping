@@ -1,0 +1,9 @@
+
+ module_boxes_products_featured_title = Featured products
+ module_boxes_products_featured_description = Featured products display
+ module_boxes_products_featured_box_title = Featured products
+ module_boxes_products_featured_all_products_featured = All Featured products
+
+ text_flash_discount = Flash Discount
+
+ button_detail = Details

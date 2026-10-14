@@ -1,0 +1,68 @@
+heading_title = Panel d'Administration
+
+text_username = Pseudonyme:
+text_password = Mot de passe:
+text_name = Nom de l'administrateur:
+text_firstname = Prénom de l'administrateur:
+text_create_first_administrator = Il n'y a aucun administrateur actuellement dans la base de données. Veuillez remplir les informations suivantes pour créer un Administrateur. (Une connexion manuelle est requise après cette étape)
+heading_title_sent_password = Récupération de mot de passe perdue
+text_sent_password = Si vous avez oublié votre mot de passe, saisissez votre email ci-dessous : nous vous enverrons un lien pour en choisir un nouveau.
+text_no_email_address_found = Aucune adresse email ou pseudo n'a été trouvé
+
+email_password_reminder_subject = {{store_name}} (Panel d'administration) - Réinitialisation du mot de passe
+email_password_reminder_body = Une réinitialisation du mot de passe a été demandée depuis l'adresse IP {{remote_address}}.<br /><br />Pour choisir un nouveau mot de passe du panneau d'administration de {{store_name}}, ouvrez ce lien dans les {{expiry_minutes}} minutes :<br /><a href="{{reset_url}}">{{reset_url}}</a><br /><br />Si vous n'êtes pas à l'origine de cette demande, ignorez cet email : votre mot de passe actuel reste valable.<br /><br />
+
+success_password_sent = Si cette adresse correspond à un compte administrateur, un email contenant un lien de réinitialisation a été envoyé.
+button_submit = Envoyer
+text_new_text_password = Nouveau mot de passe
+text_administration_panel = Panneau d'administration
+text_email_lost_password = Votre email
+error_invalid_administrator = Erreur: Connexion invalide, veuillez recommencer.
+button_login = Se connecter
+button_create_administrator = Créer un administrateur
+
+
+error_action_recorder = Erreur: Le nombre maximum de login a été atteint. Veuillez recommencer dans {{module_action_recorder_admin_login_minutes}}  minutes. Un email a été envoyé à l'administrateur avec l'ensemble de vos informations de provenance (géolocalisation). Vous avez droit encore à une tentative avant d'être définitivement bloqué
+
+report_email_subject = Connexion intempestive ClicShopping
+report_access_login = Quelqu'un essaye de se connecter a l'administration de votre boutique de vente en ligne. Il s'agit peut etre d'une erreur de connexion. Veuillez vous connecter dans votre administration pour avoir des informations complementaires dans la section Outil / Surveillance des actions.
+Ci-dessous les elements initiaux a notre connaissance. S'il y a plusieurs tentatives, l'adresse sera bloquee pendant un periode de temps. <br />
+Plus d'infos peuvent trouvé ici (copier l'IP : {{IP}})  https://ipinfo.io/
+report_sender_ip_address = Adresse IP : {{IP}}
+report_sender_host_name = Nom du serveur ou provider : {{HOST}}
+report_subject_email = [Rapport] Erreur de connexion pour acceder a votre administration
+report_sender_username = Nom du utilsateur : {{USERNAME}}
+
+
+
+
+heading_title_email_verification = Authentication 2 facteurs
+button_verify = Envoyer le code
+entry_email_verification_code_placeholder = Code de vérification
+text_email_verification_instruction = A des fins de sécurité, un code de vérification a été envoyé à votre adresse email. Veuillez entrer le code ci-dessous pour accéder à votre compte.
+email_verification_subject = Code de vérification pour accéder à votre compte {{store_name}}.
+email_verification_body = Bonjour,<br /><br />
+Un code de vérification a été demandé pour accéder à votre compte sur {{store_name}}.<br />
+Votre code de vérification est : {{verification_code}}<br />
+Ce code est valide pour {{expiry_minutes}} minutes.<br />
+Si vous n'avez pas demandé ce code, veuillez ignorer cet email et contacter notre service client.<br />
+Adresse IP de la demande :{{remote_address}}    <br />
+
+Best regards,
+The {{store_name}} Team
+
+text_email_verification_code = Veuillez entrer le code de vérification
+error_email_verification_code_invalid = Le code de vérification est invalide. Veuillez réessayer.
+error_email_verification_code_expired = Le code de vérification a expiré. Veuillez demander un nouveau code.
+button_resend_code = Renvoyer le code
+
+success_email_verification_code_sent = Le code de vérification a été envoyé à votre adresse email.
+error_email_verification_failed = Erreur : La vérification a échoué. Veuillez réessayer.
+text_email_code_invalid = Code invalide. Veuillez réessayer.
+
+heading_title_reset_password = Choisir un nouveau mot de passe
+text_password_confirmation = Confirmer le nouveau mot de passe
+error_reset_link_invalid = Erreur : ce lien de réinitialisation est invalide ou a expiré. Veuillez en demander un nouveau.
+error_password_too_short = Erreur : le mot de passe doit contenir au moins {{min_length}} caractères.
+error_password_not_matching = Erreur : les deux mots de passe ne correspondent pas.
+success_password_reset = Succès : votre mot de passe a été modifié. Vous pouvez maintenant vous connecter.

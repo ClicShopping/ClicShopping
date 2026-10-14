@@ -1,0 +1,6 @@
+modules_contact_us_success_title = Souhaitez vous afficher le formulaire de réponse de contact avec succès ?
+modules_contact_us_success_description = Affiche le formulaire de réponse de contact avec succès
+
+ modules_contact_us_success_text_success = Merci beaucoup, nous allons lire avec attention votre requete et nous vous reviendrons sous peu
+
+

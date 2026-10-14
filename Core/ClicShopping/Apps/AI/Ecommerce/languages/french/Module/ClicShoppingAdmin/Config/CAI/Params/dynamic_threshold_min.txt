@@ -1,0 +1,3 @@
+cfg_ecommerce_cockpit_ai_dynamic_threshold_min_title = Seuil dynamique minumum (comptage)
+cfg_ecommerce_cockpit_ai_dynamic_threshold_min_description = Nombre minimum d’analyses historiques requis pour un produit afin d’activer le calcul de seuils dynamiques.
+- Si nombre d’analyses ≥ 10 : utilisation de seuils dynamiques (calculés à partir de la distribution des scores du produit) sinon T_low et T_high

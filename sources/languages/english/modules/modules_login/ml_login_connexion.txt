@@ -1,0 +1,13 @@
+  module_login_connexion = Do you want to display the login form to the customer account?
+  module_login_connexion_description = Displays the login form to the customer account.
+ module_login_connexion_heading_new_customer = I am customer
+
+ module_login_connexion_heading_returning_customer = I am Customer
+ module_login_connexion_text_returning_customer = I am a returning customer.
+ module_login_connexion_entry_email_address = Your email :
+ module_login_connexion_entry_email_address_text =
+ module_login_connexion_entry_password = Password :
+ module_login_connexion_text_password_forgotten = Password forgotten? Click here.
+
+ button_login = Log in
+ module_login_connexion_entry_password_text = Password forgotten

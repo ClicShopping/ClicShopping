@@ -1,0 +1,3 @@
+cfg_stripe_key_webhook_endpoint_title = Clef du webhook endpoint
+cfg_stripe_key_webhook_endpoint_desc = Insérer la clef du webhook endpoint <br />
+Veuillez cliquer sur Aide pour plus d'information

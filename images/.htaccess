@@ -1,0 +1,12 @@
+Options -Indexes
+
+# Only image
+<FilesMatch "\.(gif|png|jpg|php)$">
+  <IfModule !mod_authz_core.c>
+    Allow from all
+  </IfModule>
+
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+</FilesMatch>

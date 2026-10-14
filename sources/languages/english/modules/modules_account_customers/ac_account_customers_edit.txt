@@ -1,0 +1,54 @@
+
+navbar_title_1 = Account
+navbar_title_2 = Edit
+
+module_account_customers_edit_title = Do you want to allow to change information Account ?
+module_account_customers_edit_description = Display a form to edit / change account informations
+
+module_account_customers_edit_heading_title = Account Information
+
+module_account_customers_edit_title_account = My account
+module_account_customers_edit_title_company = Company Information
+
+form_required = * Required information
+
+male = Male
+female = Female
+male_address = Mr.
+female_address = Ms.
+
+text_category_personal_pro = Personal informations
+
+entry_gender = Gender:
+entry_gender_error = Please select your Gender.
+entry_gender_error_pro = Please select your Gender.
+entry_gender_text = *
+
+entry_first_name = First Name:
+entry_first_name_text = *
+entry_last_name = Last Name:
+entry_last_name_text = *
+entry_date_of_birth = Date of Birth:
+entry_date_of_birth_text = * (eg. 05/21/1970)
+entry_email_address = E-Mail Address:
+entry_email_address_error = Your email address is not correct.
+entry_telephone_number = Telephone Number:
+entry_telephone_number_text = *
+entry_cellular_phone_number = Cellular phone Number:
+entry_cellular_phone_number_text =
+entry_company = Company Name:
+entry_company_text = *
+entry_company_text_pro = *
+entry_siret = N° of registration :
+entry_siret_text = *
+entry_siret_exemple = (ex : SIRET Code for the French company)
+entry_code_ape = Nomenclatur Number :
+entry_code_ape_text = *
+entry_code_ape_exemple = (ex : APE Code for the French company)
+entry_tva_intracom = N&deg; of VAT intracom :
+entry_tva_intracom_text = * Select the country in first.
+entry_country = Country:
+entry_country_text = *
+
+button_continue = Continue
+button_back = Back

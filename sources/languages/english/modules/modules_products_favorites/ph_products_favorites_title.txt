@@ -1,0 +1,5 @@
+
+module_products_favorites_title = Do you want to display the favorites title ?
+module_products_favorites_title_description = Display the favorites title
+
+text_heading_title = Favorites products

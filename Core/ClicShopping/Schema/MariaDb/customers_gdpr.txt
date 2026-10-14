@@ -1,0 +1,12 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each GDPR preference record)
+customers_id int(11) not_null comment(FK to customers table - customer identifier)
+no_ip_address tinyint(1) default(0) not_null comment(GDPR IP address tracking opt-out - 0: track IP, 1: do not track IP)
+date_added datetime null comment(Timestamp when GDPR preferences were set)
+
+--
+primary id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data.

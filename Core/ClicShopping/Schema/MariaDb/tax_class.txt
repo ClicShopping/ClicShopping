@@ -1,0 +1,12 @@
+tax_class_id int not_null auto_increment comment(Primary key - unique identifier for each tax class)
+tax_class_title varchar(32) not_null comment(Short tax class name - e.g. Taxable Goods, Digital Products)
+tax_class_description varchar(255) not_null comment(Detailed description of what this tax class applies to)
+last_modified datetime comment(Timestamp of last modification)
+date_added datetime not_null comment(Timestamp when tax class was created)
+--
+primary tax_class_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Tax classification categories for products and services

@@ -1,0 +1,8 @@
+module_header_tags_gdpr_title = Afficher un pop up d'acceptation de la Gdpr
+module_header_tags_gdpr_description = Affiche un pop up d'acceptation de la Gdpr
+
+module_header_tags_text_info = We use our own and third-party cookies to personalize content and to analyze web traffic.
+module_header_tags_text_info_read_more = Read more about
+module_header_tags_text_info_title = {{store_name}} utilise des cookies
+module_header_tags_text_info_reject = Refuser
+module_header_tags_text_info_accept = Tout accepter

@@ -1,0 +1,64 @@
+text_reasoning_cot_prompt = <<<PROMPT
+You are an expert problem solver. Use step-by-step reasoning to solve this problem.
+
+Problem: {{problem}}
+{{context}}
+Instructions:
+1. Break down the problem into clear steps
+2. For each step, explain your reasoning
+3. Show your work and intermediate results
+4. Arrive at a final answer
+
+Format your response as:
+STEP 1: [Description]
+Reasoning: [Your thought process]
+Result: [What you learned/found]
+
+STEP 2: ...
+
+FINAL ANSWER: [Your conclusion]
+CONFIDENCE: [0.0 to 1.0]
+PROMPT;
+
+text_reasoning_tot_prompt = <<<PROMPT
+Solve this problem using a specific approach.
+
+Problem: {{problem}}
+
+Your approach: {{approach}}
+
+Provide your reasoning and conclusion.
+PROMPT;
+
+text_reasoning_decompose_prompt = <<<PROMPT
+Analyze this problem and determine if it can be broken down into simpler subproblems.
+
+Problem: {{problem}}
+
+Respond in this format:
+IS_ATOMIC: yes/no
+REASONING: [Why it is or isn't atomic]
+
+If not atomic:
+SUBPROBLEM 1: [Description]
+SUBPROBLEM 2: [Description]
+...
+PROMPT;
+
+text_reasoning_verification_prompt = <<<PROMPT
+Verify if this solution correctly solves the problem.
+
+Problem: {{problem}}
+
+Proposed Solution: {{solution}}
+
+Respond in this format:
+IS_CORRECT: yes/no
+CONFIDENCE: [0.0 to 1.0]
+EXPLANATION: [Why it is or isn't correct]
+ISSUES: [List any problems found]
+PROMPT;
+
+text_reasoning_tot_approach_data = Approach this problem from a data-driven perspective
+text_reasoning_tot_approach_logical = Approach this problem from a logical reasoning perspective
+text_reasoning_tot_approach_creative = Approach this problem from a creative problem-solving perspective

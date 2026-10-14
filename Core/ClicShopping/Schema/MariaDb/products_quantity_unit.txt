@@ -1,0 +1,11 @@
+products_quantity_unit_id int not_null comment(Primary key - unique identifier for each quantity unit)
+language_id int not_null comment(FK to languages table - language for this unit name)
+products_quantity_unit_title varchar(32) not_null comment(Display name for quantity unit - e.g. Each, Box, Case, Dozen, Pallet)
+--
+primary products_quantity_unit_id language_id
+idx_products_quantity_unit_title products_quantity_unit_title
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language label of a quantity unit (piece, kg, litre). Lookup table: join it for the unit name.

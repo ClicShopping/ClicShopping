@@ -1,0 +1,5 @@
+cfg_chatgpt_debug_rag_manager_title = Enable RAG Debug Mode
+cfg_chatgpt_debug_rag_manager_description = Enable detailed logging for RAG operations. When enabled, all RAG processes, errors, and performance metrics are logged to help troubleshoot issues. Logs are written to the RAG log directory. Recommended: False for production, True for development.
+
+cfg_chatgpt_debug_rag_manager_status_true = True
+cfg_chatgpt_debug_rag_manager_status_false = False

@@ -1,0 +1,2 @@
+cfg_moneyorder_pay_to_title = Payer à
+cfg_moneyorder_pay_to_desc = Veuillez indiquer le libellé du chèque

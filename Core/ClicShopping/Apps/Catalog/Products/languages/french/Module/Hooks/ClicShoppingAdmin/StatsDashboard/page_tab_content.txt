@@ -1,0 +1,2 @@
+box_entry_products = Nombre de produits
+box_entry_products_off_line = Nombre de produits hors ligne

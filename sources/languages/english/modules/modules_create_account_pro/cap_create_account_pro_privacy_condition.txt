@@ -1,0 +1,5 @@
+module_create_account_pro_privacy_condition_title = Do you want to enable the privacy condition ?
+module_create_account_pro_privacy_condition_description = Add the information about the privacy condition
+
+text_privacy_conditions_description = The privacy statement are available always on {{store_name}} and can be read <a href="{{privacy_url}}" target="_blank" rel="noopener"><u>here</u></a>.
+text_privacy_conditions_agree = Please check this box to give your consent regarding our privacy policy

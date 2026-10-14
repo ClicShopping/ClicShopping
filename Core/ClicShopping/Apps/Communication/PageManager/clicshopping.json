@@ -1,0 +1,50 @@
+{
+  "title": "Page Manager App",
+  "app": "PageManager",
+  "vendor": "Communication",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "RSS": "Module\\HeaderTags\\RSS",
+      "PageManager": "Module\\HeaderTags\\PageManager",
+      "ContactCustomer": "Module\\HeaderTags\\ContactCustomer",
+      "Sitemap": "Module\\HeaderTags\\Sitemap"
+    },
+    "Hooks": {
+      "Shop/SiteUrl": {
+        "Canonical": "Module\\Hooks\\Shop\\SiteUrl\\Canonical"
+      },
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      },
+      "ClicShoppingAdmin/CustomersGroup": {
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\CustomersGroup\\Delete"
+      },
+      "Shop/Orders": {
+        "Process": "Module\\Hooks\\Shop\\Orders\\Process"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "Info&Contact": "Sites\\Shop\\Pages\\Contact",
+      "Info&Content": "Sites\\Shop\\Pages\\Content",
+      "Info&SiteMap": "Sites\\Shop\\Pages\\SiteMap",
+      "Info&RSS": "Sites\\Shop\\Pages\\RSS",
+      "Info&Cookies": "Sites\\Shop\\Pages\\Cookies",
+      "Info&SSLcheck": "Sites\\Shop\\Pages\\SSLcheck"
+    }
+  }
+}

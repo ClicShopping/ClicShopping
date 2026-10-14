@@ -1,0 +1,31 @@
+module_products_info_also_purchased_title = Souhaitez-vous afficher les Clients ont aussi achetés ?
+module_products_info_also_purchased_description = Affiche les Clients ont aussi achetés
+module_products_info_also_purchased_name = Recommandations clients
+
+text_stock =  Stock
+text_flash_discount = Remise flash
+text_customer_quantity = qté
+text_products_quantity_type = Type qté
+text_products_free = Gratuit
+text_manufacturer = Marque
+text_products_price_kilo = px/kg
+text_date_available =  Date disponibilité
+text_only_shop = Seulement au magasin
+text_only_web = Seulement sur le web
+text_products_info_packaging_text = Produit
+text_products_packaging_new = neuf
+text_products_packaging_repackaged = reconditionné
+text_products_packaging_used = utilisé
+text_display_shipping_delay = Délais expédition
+text_display_shipping_delay_out_of_stock = Délais expédition produit hors stock
+text_products_volume = Volume produit
+text_display_products_weight = Poids kg
+
+min_qty_product = min qty
+
+text_ticker_favorite = Favoris
+text_ticker_featured = Sélectionné
+
+button_details = Détails
+button_buy_now = Acheter
+button_sold_out = Epuisé

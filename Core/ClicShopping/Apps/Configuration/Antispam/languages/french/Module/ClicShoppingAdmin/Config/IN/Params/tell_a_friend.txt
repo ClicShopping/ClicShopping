@@ -1,0 +1,7 @@
+cfg_antispam_tell_a_friend_title = Envoyer à un ami
+cfg_antispam_tell_a_friend_description = Sélectionnez True pour activer le module
+<br /><strong><br /><strong>Option: Vous devez installer le module ou l'APP correspondante et activer les modules</strong></strong>
+
+cfg_antispam_tell_a_friend_true = True
+cfg_antispam_tell_a_friend_false = False
+

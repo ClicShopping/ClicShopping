@@ -1,0 +1,470 @@
+<?php
+/**
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt;
+
+use ClicShopping\OM\Registry;
+use ClicShopping\Sites\Common\HTMLOverrideCommon;
+use ClicShopping\AI\Config\TechnicalDefaults;
+use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
+use ClicShopping\AI\Security\InputValidator;
+use ClicShopping\AI\Infrastructure\Prompt\PromptOptimizer;
+use ClicShopping\AI\Infrastructure\Response\ResponseNormalizer;
+use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LLMProviderFactory;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+
+/**
+ * ResponseProcessor
+ *
+ * Manages GPT response generation and processing.
+ * Extracted from Gpt.php as part of code refactoring (Task 9).
+ *
+ * Responsibilities:
+ * - Process prompts and generate responses
+ * - Handle model-specific API calls
+ * - Track token usage
+ * - Implement fallback logic
+ * - Normalize responses
+ * - Build API request bodies
+ */
+class ResponseProcessor
+{
+  // Store last token usage for retrieval
+  private static $lastTokenUsage = null;
+
+  /**
+   * Call LLM with model-specific handling and integrated components
+   *
+   * This method integrates:
+   * - PromptOptimizer: Optimizes prompts for model context length limits
+   * - ResponseNormalizer: Normalizes responses from different models
+   * - Fallback Logic: Tries alternative models on failure
+   * - Comprehensive Logging: Tracks all operations for debugging
+   *
+   * @param string $prompt The prompt text to send to the model
+   * @param string $model The model name (e.g., 'gpt-4o', 'gpt-4.1-mini', 'anth-sonnet')
+   * @param int|null $maxtoken Maximum tokens for response
+   * @param float|null $temperature Temperature for response generation
+   * @param int|null $max Maximum number of responses
+   * @return array Normalized response with consistent structure
+   * @throws \Exception If all models fail or prompt is invalid
+   */
+  public static function callWithModel(string $prompt, string $model, ?int $maxtoken = null, ?float $temperature = null, ?int $max = 1): array
+  {
+    $securityLogger = new SecurityLogger();
+    $debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
+
+    if ($debug) {
+      $securityLogger->logSecurityEvent(
+        "callWithModel: Starting call with model '$model'",
+        'info'
+      );
+    }
+
+    // Step 1: Validate prompt
+    if (empty($prompt) || trim($prompt) === '') {
+      throw new \Exception("Prompt cannot be empty");
+    }
+
+    // Step 2: Optimize prompt for model context length
+    $optimizer = new PromptOptimizer();
+    
+    if ($optimizer->exceedsLimit($prompt, $model)) {
+      if ($debug) {
+        $originalTokens = $optimizer->estimateTokenCount($prompt);
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Prompt exceeds limit for model '$model' ($originalTokens tokens). Optimizing...",
+          'warning'
+        );
+      }
+      
+      $optimizedPrompt = $optimizer->optimizeForModel($prompt, $model);
+      
+      if ($debug) {
+        $optimizedTokens = $optimizer->estimateTokenCount($optimizedPrompt);
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Prompt optimized from $originalTokens to $optimizedTokens tokens",
+          'info'
+        );
+      }
+    } else {
+      $optimizedPrompt = $prompt;
+      
+      if ($debug) {
+        $tokens = $optimizer->estimateTokenCount($prompt);
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Prompt within limits ($tokens tokens). No optimization needed.",
+          'info'
+        );
+      }
+    }
+
+    // Step 3: Call the model with optimized prompt
+    try {
+      if ($debug) {
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Calling model '$model' with optimized prompt",
+          'info'
+        );
+      }
+
+      $rawResponse = self::getGptResponse($optimizedPrompt, $maxtoken, $temperature, $model, $max);
+
+      if ($rawResponse === false) {
+        throw new \Exception("Model '$model' returned false response");
+      }
+
+      if ($debug) {
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Received response from model '$model' (" . strlen($rawResponse) . " chars)",
+          'info'
+        );
+      }
+
+      // Step 4: Normalize response
+      $normalizer = new ResponseNormalizer();
+      $normalizedResponse = $normalizer->normalize($rawResponse, $model);
+
+      if ($debug) {
+        $responseType = $normalizedResponse['response_type'] ?? 'unknown';
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Response normalized successfully (Type: $responseType)",
+          'info'
+        );
+      }
+
+      return $normalizedResponse;
+
+    } catch (\Exception $e) {
+      // Step 5: Fallback logic - try alternative model
+      if ($debug) {
+        $securityLogger->logSecurityEvent(
+          "callWithModel: Model '$model' failed: " . $e->getMessage(),
+          'error'
+        );
+      }
+
+      $fallbackModel = self::getFallbackModel($model);
+
+      if ($fallbackModel !== null) {
+        if ($debug) {
+          $securityLogger->logSecurityEvent(
+            "callWithModel: Trying fallback model '$fallbackModel'",
+            'warning'
+          );
+        }
+
+        try {
+          return self::callWithModel($optimizedPrompt, $fallbackModel, $maxtoken, $temperature, $max);
+        } catch (\Exception $fallbackException) {
+          if ($debug) {
+            $securityLogger->logSecurityEvent(
+              "callWithModel: Fallback model '$fallbackModel' also failed: " . $fallbackException->getMessage(),
+              'error'
+            );
+          }
+          
+          throw new \Exception(
+            "Primary model '$model' and fallback model '$fallbackModel' both failed. " .
+            "Primary error: " . $e->getMessage() . ". " .
+            "Fallback error: " . $fallbackException->getMessage()
+          );
+        }
+      }
+
+      throw new \Exception("Model '$model' failed and no fallback available: " . $e->getMessage());
+    }
+  }
+
+  /**
+   * Get the fallback model for a failed model, resolved from the DB catalog.
+   *
+   * Uses the catalogued fallback (the `ai_model_status_fallback=1` row) via the ChatGpt facade
+   * instead of a hardcoded per-model map. Returns null when there is no distinct fallback to try
+   * (empty catalog, or the failed model IS the fallback) so `callWithModel()` never recurses onto
+   * the same model.
+   *
+   * @param string $failedModel The model that failed
+   * @return string|null Fallback model name, or null if no distinct fallback is available
+   */
+  private static function getFallbackModel(string $failedModel): ?string
+  {
+    $fallbackModel = Gpt::getTechnicalFallbackModel();
+
+    if ($fallbackModel === '' || $fallbackModel === $failedModel) {
+      return null;
+    }
+
+    return $fallbackModel;
+  }
+
+  /**
+   * Get GPT response (PUBLIC API - NO CHANGES TO SIGNATURE)
+   * 
+   * REFACTORED INTERNALLY: Now uses LLMProviderInterface for provider abstraction
+   * while maintaining 100% backward compatibility with all existing usages.
+   * 
+   * @param string $question The question/prompt
+   * @param int|null $maxtoken Maximum tokens
+   * @param float|null $temperature Temperature
+   * @param string|null $engine Model/engine name
+   * @param int|null $max Max responses
+   * @return bool|string Response or false on error
+   */
+  public static function getGptResponse(string $question, int|null $maxtoken = null, ?float $temperature = null, ?string $engine = null, int|null $max = 1): bool|string
+  {
+    $maxPromptLength = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_MAX_PROMPT_LENGTH');
+    $chatgpt_debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';
+
+    if (ConfigManager::checkGptStatus() === false) {
+      return false;
+    }
+
+    if (empty($question) || trim($question) === '') {
+      return false;
+    }
+
+    if (is_null($engine)) {
+      $engine = ModelManager::defaultModel();
+    }
+
+    // Validate and sanitize prompt
+    $prompt = trim($question);
+
+    if (preg_match('/<script[\s>]/i', $prompt) || preg_match('/<iframe[\s>]/i', $prompt)) {
+      error_log("SECURITY: Blocked dangerous HTML tags in prompt: " . substr($prompt, 0, 100));
+      
+      $language = Registry::get('Language');
+      $language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
+      throw new \Exception($language->getDef('text_error_prompt_blocked_security'));
+    }
+
+    if (strlen($prompt) > $maxPromptLength) {
+      $prompt = substr($prompt, 0, $maxPromptLength);
+      error_log("WARNING: Prompt truncated to {$maxPromptLength} characters (security limit)");
+    }
+    
+    // No HTML escaping here: escaping is a RENDERING concern (see RequestValidator, which
+    // escapes a display copy). Escaping the prompt shipped `-&gt;`, `&quot;` and `&#039;` to the model.
+    if (empty($prompt)) {
+      error_log("WARNING Ajax ChatGpt: Prompt is empty after validation for: " . substr($question, 0, 100));
+      $prompt = trim($question);
+    }
+
+    $prompt = HTMLOverrideCommon::removeInvisibleCharacters($prompt);
+
+    if (empty($prompt)) {
+      $language = Registry::get('Language');
+      $language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
+
+      throw new \Exception($language->getDef('text_error_prompt_empty_after_sanitization'));
+    }
+
+    try {
+      if ($chatgpt_debug) {
+        error_log("[INFO SEARCH] [ResponseProcessor::getGptResponse] Starting provider detection for engine: {$engine}");
+      }
+
+      $providerName = self::detectProviderFromEngine($engine);
+
+      if ($chatgpt_debug) {
+       error_log("[INFO VALIDATED] [ResponseProcessor::getGptResponse] Provider detected: {$providerName} for engine: {$engine}");
+
+        error_log(sprintf(
+          "[INFO EDIT] [ResponseProcessor::getGptResponse] Request params - model: %s, max_tokens: %s, temperature: %s, prompt_length: %d",
+          $engine,
+          $maxtoken ?? 'null',
+          $temperature ?? 'null',
+          strlen($prompt)
+        ));
+      }
+
+      $factory = LLMProviderFactory::getInstance();
+
+      $provider = $factory->create($providerName, [
+        'model' => $engine,
+        'max_tokens' => $maxtoken,
+        'temperature' => $temperature,
+      ]);
+
+      if ($chatgpt_debug) {
+        error_log("[INFO VALIDATED] [ResponseProcessor::getGptResponse] Provider instance created successfully: " . get_class($provider));
+      }
+
+      if ($chatgpt_debug) {
+        error_log("[INFO SEARCH] [ResponseProcessor::getGptResponse] Getting LLPhant chat instance from provider");
+      }
+      // No legacy fallback: a provider construction failure propagates to the outer catch
+      // (returns false). The deprecated getChat() path has been removed.
+      $chat = $provider->getLLPhantChat();
+
+      if ($chatgpt_debug) {
+        error_log("[INFO VALIDATED] [ResponseProcessor::getGptResponse] Using provider {$providerName} via getLLPhantChat()");
+      }
+
+      // Count this LLM round-trip. Provider::getLLPhantChat() returns an unwrapped LLphant Chat
+
+      $chat = CountingChat::wrap($chat);
+
+      if ($chatgpt_debug) {
+        error_log(sprintf(
+          "[INFO SEARCH] [ResponseProcessor::getGptResponse] Calling generateText() with prompt (first 100 chars): %s",
+          substr($prompt, 0, 100)
+        ));
+      }
+
+      $result = $chat->generateText($prompt);
+
+      if ($chatgpt_debug) {
+        error_log(sprintf(
+          "[INFO VALIDATED] [ResponseProcessor::getGptResponse] generateText() returned result - length: %d, first 100 chars: %s",
+          strlen($result),
+          substr($result, 0, 100)
+        ));
+      }
+
+      // Extract usage metrics. 
+      $lastResponse = is_callable([$chat, 'getLastResponse']) ? $chat->getLastResponse() : null;
+
+      if (!is_null($lastResponse) && isset($lastResponse['usage'])) {
+        self::$lastTokenUsage = [
+          'prompt_tokens' => $lastResponse['usage']['prompt_tokens'] ?? 0,
+          'completion_tokens' => $lastResponse['usage']['completion_tokens'] ?? 0,
+          'total_tokens' => $lastResponse['usage']['total_tokens'] ?? 0
+        ];
+
+        if ($chatgpt_debug) {
+          error_log(sprintf(
+            '[INFO USAGE] [ResponseProcessor::getGptResponse] Token usage for model %s: prompt=%d, completion=%d, total=%d',
+            $engine,
+            self::$lastTokenUsage['prompt_tokens'],
+            self::$lastTokenUsage['completion_tokens'],
+            self::$lastTokenUsage['total_tokens']
+          ));
+        }
+      } else {
+        $promptTokens = (int)ceil(strlen($prompt) / 4);
+        $completionTokens = (int)ceil(strlen($result) / 4);
+
+        self::$lastTokenUsage = [
+          'prompt_tokens' => $promptTokens,
+          'completion_tokens' => $completionTokens,
+          'total_tokens' => $promptTokens + $completionTokens,
+          'estimated' => true
+        ];
+
+        if ($chatgpt_debug) {
+          error_log(sprintf(
+            '[INFO USAGE] ESTIMATED token usage for model %s (provider: %s reported none): prompt=%d, completion=%d, total=%d',
+            $engine,
+            get_class($chat),
+            $promptTokens,
+            $completionTokens,
+            $promptTokens + $completionTokens
+          ));
+        }
+      }
+
+      return $result;
+      
+    } catch (\Exception $e) {
+      error_log(sprintf(
+        "❌ [ResponseProcessor::getGptResponse] Error occurred - Message: %s, File: %s, Line: %d",
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+      ));
+      error_log("[error] [ResponseProcessor::getGptResponse] Stack trace: " . $e->getTraceAsString());
+      
+      return false;
+    }
+  }
+
+  /**
+   * Detect LLM provider from model/engine name
+   * 
+   * @param string|null $engine Model/engine name
+   * @return string Provider name
+   */
+  private static function detectProviderFromEngine(?string $engine = null): string
+  {
+    $engine ??= ModelManager::defaultModel();
+
+    $modelProviderMap = ModelManager::getModelProviderMap();
+
+    if (isset($modelProviderMap[$engine])) {
+      return $modelProviderMap[$engine];
+    }
+
+    if (defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True') {
+      error_log("WARNING: Unknown model '$engine' in detectProviderFromEngine(). Using default provider 'openai'.");
+    }
+
+    return 'openai';
+  }
+
+  /**
+   * Get the last token usage from the most recent API call
+   * 
+   * @return array|null Array with 'prompt_tokens', 'completion_tokens', 'total_tokens' or null if not available
+   */
+  public static function getLastTokenUsage(): ?array
+  {
+    return self::$lastTokenUsage;
+  }
+
+  /**
+   * Build API request body for a specific provider
+   * 
+   * @param string $prompt The prompt text
+   * @param string $provider Provider name
+   * @param string|null $model Model name
+   * @param float|null $temperature Temperature
+   * @param int|null $maxTokens Max tokens
+   * @return array Request body array ready for JSON encoding
+   */
+  public static function buildApiRequestBody(string $prompt, string $provider, ?string $model = null, ?float $temperature = null, ?int $maxTokens = null): array 
+  {
+    // Note: Deprecation warning in comment only
+    // This method is maintained for backward compatibility
+    
+    $body = [
+      'model' => $model ?? ModelManager::defaultModel(),
+      'temperature' => $temperature ?? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE,
+      'max_tokens' => $maxTokens ?? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN,
+    ];
+
+    switch ($provider) {
+      case 'openai':
+      case 'mistral':
+      case 'lmstudio':
+      case 'gemini':
+      case 'deepseek':
+        $body['messages'] = [
+          ['role' => 'user', 'content' => $prompt]
+        ];
+        break;
+
+      case 'anthropic':
+        $body['messages'] = [
+          ['role' => 'user', 'content' => $prompt]
+        ];
+        $body['max_tokens'] = $maxTokens ?? 1024;
+        break;
+
+      case 'ollama':
+        $body['prompt'] = $prompt;
+        unset($body['messages']);
+        break;
+    }
+
+    return $body;
+  }
+}

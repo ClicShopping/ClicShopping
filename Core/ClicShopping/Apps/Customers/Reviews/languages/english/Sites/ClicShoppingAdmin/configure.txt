@@ -1,0 +1,4 @@
+heading_title = Reviews
+module_rv_short_title = Reviews
+
+title_menu = Reviews

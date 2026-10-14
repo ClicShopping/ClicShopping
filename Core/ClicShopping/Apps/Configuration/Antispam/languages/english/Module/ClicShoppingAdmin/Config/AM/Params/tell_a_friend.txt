@@ -1,0 +1,7 @@
+cfg_antispam_tell_a_friend_title = Tell a friend
+cfg_antispam_tell_a_friend_description = Set True to enable or not the module
+<br /><strong>option: You must install the module or Apps to use it and the modules activated</strong>
+
+cfg_antispam_tell_a_friend_true = True
+cfg_antispam_tell_a_friend_false = False
+

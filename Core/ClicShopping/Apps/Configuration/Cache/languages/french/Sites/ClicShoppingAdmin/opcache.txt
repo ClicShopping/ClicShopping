@@ -1,0 +1,54 @@
+heading_title = Gestion de l'OPcache
+heading_reset_opcache = Réinitialiser l'OPcache
+heading_memory_usage = Utilisation de la mémoire
+heading_cache_statistics = Statistiques du cache
+heading_configuration = Configuration
+heading_installation_guide = Guide d'installation
+
+text_enable_realtime = Activer les mises à jour en temps réel
+text_disable_realtime = Désactiver les mises à jour en temps réel
+text_reset_opcache = Réinitialiser l'OPcache
+text_reset_confirm = Êtes-vous sûr de vouloir réinitialiser l'OPcache ?
+text_opcache_not_available = Données OPcache non disponibles
+
+text_memory_type = Type de mémoire
+text_value = Valeur
+text_start_time = Heure de démarrage
+text_restart_count = Nombre de redémarrages
+text_used_memory = Mémoire utilisée
+text_free_memory = Mémoire libre
+text_wasted_memory = Mémoire gaspillée
+text_wasted_percentage = Pourcentage de mémoire gaspillée
+
+text_statistic = Statistique
+text_cache_hits = Succès du cache
+text_cache_misses = Échecs du cache
+text_cached_scripts = Scripts en cache
+text_cached_keys = Clés en cache
+
+text_setting = Paramètre
+text_php_version = Version PHP
+text_opcache_version = Version OPcache
+text_enabled = Activé
+text_memory_consumption = Consommation mémoire
+text_jit_enabled = JIT activé
+text_jit_buffer_size = Taille du buffer JIT
+
+text_config_instructions = Instructions de configuration
+text_edit_php_ini = Modifier la configuration php.ini
+text_restart_server = Redémarrer le serveur web
+
+success_opcache_reset = L'OPcache a été réinitialisé avec succès
+error_opcache_reset = Échec de la réinitialisation de l'OPcache
+warning_opcache_function = Fonction OPcache non disponible
+
+text_memory_consumption = Consommation mémoire
+text_jit_enabled = JIT activé
+text_jit_buffer_size = Taille du buffer JIT
+
+text_config_instructions = Instructions de configuration
+text_edit_php_ini = Modifier la configuration php.ini
+text_restart_server = Redémarrer le serveur web
+
+text_info = OpCache est un moteur de cache intégré à PHP pour améliorer les performances en stockant le bytecode précompilé des scripts en mémoire partagée, évitant ainsi à PHP de charger et d’analyser les scripts à chaque requête.<br />
+Cependant, si vous êtes en mode développement, vous devez désactiver OpCache dans votre fichier php.ini (sur 0) ou le réinitialiser à chaque fois car OpCache utilise un mode persistant.<br />

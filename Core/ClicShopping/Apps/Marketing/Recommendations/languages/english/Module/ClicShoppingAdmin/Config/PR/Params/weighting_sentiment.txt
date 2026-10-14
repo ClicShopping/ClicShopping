@@ -1,0 +1,4 @@
+cfg_products_recommendations_weighting_sentiment_title = Weighting Sentiment
+cfg_products_recommendations_weighting_sentiment_description = It's ability to fine-tune or modify the relative importance or influence of the sentiment score. <br />
+<strong>The neutral</strong> evaluated as positive value is 0.8 for 1.5 weighting Sentiment
+

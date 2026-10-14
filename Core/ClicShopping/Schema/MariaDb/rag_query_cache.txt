@@ -1,0 +1,24 @@
+id int(11) not_null auto_increment
+cache_key varchar(64) not_null comment(Unique MD5 key)
+user_query varchar(500) not_null comment(User question)
+sql_query text not_null comment(Generated SQL query)
+query_results longtext default null comment(JSON Results)
+created_at datetime not_null comment(Creation date)
+expires_at datetime not_null comment(Expiry date)
+hit_count int(11) not_null default 0 comment(Number of uses)
+interpretation text default null comment(Natural language interpretation)
+entity_id int(10) unsigned default null
+entity_type varchar(50) default null
+
+--
+primary id
+unique cache_key cache_key
+unique idx_cache_key cache_key
+idx_expires expires_at
+idx_hits hit_count
+idx_entity entity_type entity_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

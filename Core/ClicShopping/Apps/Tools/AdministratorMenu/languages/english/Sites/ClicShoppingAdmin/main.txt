@@ -1,0 +1,91 @@
+heading_title = Administrator menu
+module_am_title = Administrator menu
+module_am_short_title = Administrator menu
+
+text_administrator_menu =  Administrator menu
+text_configure = Configure App Module
+
+text_intro = This app allow you to include aAdministrator menu pages. <br /><br />
+- Activate this module located in the Tools menu
+
+module_am_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_administrator_menu = Administrator menu
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+button_new_category =  New menu
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Tools parameters have been successfully saved.
+
+heading_title_search = Search
+heading_title_goto = Go To:
+
+table_heading_id = ID
+table_heading_categories = Administrator menu
+table_heading_categories_products = Menu
+table_heading_action = Action
+table_heading_status = Status
+table_heading_categories = Administrator menu
+table_heading_sort_order = Sort Order
+table_heading_rights_access = Access Rights
+table_heading_app = APP
+
+text_info_heading_delete_category = Delete a categorie
+text_info_heading_move_category = Move a category
+
+text_categories = Administrator menu:
+text_subcategories = Subcategories:
+text_top = --- Top ---
+
+
+text_top = --- Top ---
+text_edit_link = Link
+text_edit_access_administrator = Access rights
+text_edit_sort_order = Sort order
+text_menu = Menu
+text_image = Image
+text_edit_image = Image
+text_edit_b2b_menu =  B2B Menu
+text_selected = -- Select --
+
+text_all_right = All right
+text_all_rights_admin = Admin right
+text_rights_employee = Employee Rights
+text_rights_visitor = Visitor Rights
+
+tab_general = General
+
+button_cancel = Cancel
+button_move = move
+button_update = Update
+
+image_folder = Folder
+image_edit = Edit
+image_move = Move
+image_delete = Delete
+
+text_move = Move {{move_label}}
+text_move_categories_intro = Move category {{move_category}}
+
+text_delete_warning_childs = <strong>WARNING:</strong> There are {{delete_child}} (child-)categories still linked to this category!
+text_delete_category_intro =  Delete :
+text_select_menu = Select categorie
+
+error_administrator_menu_selected = please select an administrator menu right

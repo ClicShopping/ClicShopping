@@ -1,0 +1,30 @@
+modules_contact_us_form_title = Do you want to enable the contact fields in the contact us form ?
+modules_contact_us_form_description = add the contact fields in the contact us form
+
+text_administrator_department = No department defined
+
+entry_customers_id = Your Customer number :
+entry_order = Your order number :
+entry_date = Date :
+entry_customers_phone = Phone :
+
+entry_need_customers = Please indicate the service to contact ?
+entry_customer = Question Customer :
+
+entry_note_registered = Please tell us the product model or any relevant information about the problem on the order you have made or your need<br /><br />
+entry_note_no_registered = If you apply for an order already made, please click: <a href="index.php?Account&Main">My Account</a> then choose your order number<br /><br />
+
+entry_name = Full Name:
+entry_email = E-Mail Address:
+entry_enquiry = Enquiry:
+entry_enquiry_customer = Your message :
+entry_enquiry_customer_information = Customer message :
+entry_email_object_customer = Request copy
+entry_customers_subject = Subject of your request :
+
+send_department_company = Contact to Department :
+
+entry_customers_phone_dgrp = We need your phone number to eventually contact you
+entry_email_dgrp = We need your email to answer you
+
+entry_text_alert = You must write more {{textalert}} words before to send this message

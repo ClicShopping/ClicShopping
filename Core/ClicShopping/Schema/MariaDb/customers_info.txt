@@ -1,0 +1,15 @@
+customers_info_id int not_null comment(FK to customers table - customer identifier, one-to-one relationship)
+customers_info_date_of_last_logon datetime comment(Timestamp of customer's most recent login)
+customers_info_number_of_logons int(5) comment(Total count of customer login sessions)
+customers_info_date_account_created datetime comment(Timestamp when customer account was created)
+customers_info_date_account_last_modified datetime comment(Timestamp of last account modification)
+global_product_notifications int(1) default(0) comment(Product notification preference - 0: disabled, 1: enabled for all products)
+password_reset_key char(40) comment(Temporary token for password reset - expires after use or timeout)
+password_reset_date datetime comment(Timestamp when password reset was requested)
+--
+primary customers_info_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Extended customer information including login history and notification preferences

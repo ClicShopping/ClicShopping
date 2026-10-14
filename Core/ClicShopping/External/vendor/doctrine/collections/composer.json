@@ -1,0 +1,63 @@
+{
+    "name": "doctrine/collections",
+    "description": "PHP Doctrine Collections library that adds additional functionality on top of PHP arrays.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "php",
+        "collections",
+        "array",
+        "iterators"
+    ],
+    "authors": [
+        {
+            "name": "Guilherme Blanco",
+            "email": "guilhermeblanco@gmail.com"
+        },
+        {
+            "name": "Roman Borschel",
+            "email": "roman@code-factory.org"
+        },
+        {
+            "name": "Benjamin Eberlei",
+            "email": "kontakt@beberlei.de"
+        },
+        {
+            "name": "Jonathan Wage",
+            "email": "jonwage@gmail.com"
+        },
+        {
+            "name": "Johannes Schmitt",
+            "email": "schmittjoh@gmail.com"
+        }
+    ],
+    "homepage": "https://www.doctrine-project.org/projects/collections.html",
+    "require": {
+        "php": "^8.4",
+        "doctrine/deprecations": "^1",
+        "symfony/polyfill-php86": "^1.36"
+    },
+    "require-dev": {
+        "ext-json": "*",
+        "doctrine/coding-standard": "^14",
+        "phpstan/phpstan": "^2.1.30",
+        "phpstan/phpstan-phpunit": "^2.0.7",
+        "phpunit/phpunit": "^12.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Doctrine\\Common\\Collections\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Doctrine\\Tests\\Common\\Collections\\": "tests"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

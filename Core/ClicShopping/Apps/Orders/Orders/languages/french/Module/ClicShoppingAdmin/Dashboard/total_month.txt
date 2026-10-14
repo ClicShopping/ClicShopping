@@ -1,0 +1,3 @@
+module_admin_dashboard_total_month_app_title = Evolution cumulée du CA / mois sur 1 an
+module_admin_dashboard_total_month_app_description = Graphique permettant de voir l'évolution du chiffre d'affaires par mois basé en fonction du sous-total
+module_admin_dashboard_total_month_app_chart_link = Evolution cumulée du CA sur 1 an (ventes réalisées)

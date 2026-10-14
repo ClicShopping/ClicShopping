@@ -1,0 +1,41 @@
+text_review_sentiment_semantic_semantic_title = Analyse du sentiment pour le produit {{products_name}}
+text_sentiment_semantic_review_sentiment_id = ID du sentiment pour {{review_sentiment_id}}
+text_review_sentiment_semantic_description = Contenu de l'avis sur {{products_name}}
+text_review_sentiment_semantic_status = Statut du sentiment pour {{products_name}}
+text_review_sentiment_semantic_approved = Validation du sentiment pour {{products_name}}
+text_review_sentiment_semantic_date_added = Date d'ajout de l'avis pour {{products_name}}
+text_review_sentiment_semantic_vote = Note attribuée à {{products_name}}
+text_review_sentiment_semantic_customer_id = ID client ayant évalué {{products_name}}
+text_review_sentiment_semantic_vote_sentiment = Nature du vote pour {{products_name}}
+text_review_sentiment_taxonomy = [taxonomie]
+
+
+text_create_taxonomy = TACHE : Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle et un profil de sentiment à partir du texte suivant.
+Le texte correspond à un avis ou retour client (review) sur un produit ou une catégorie e-commerce.
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine] : Domaine général du produit ou service évalué (ex. Maison, Mode, Électronique)
+[sous_domaine] : Segment ou spécialisation au sein du domaine (ex. Arts de la table, Informatique, Mobilier)
+[type_produit] : Type de produit ou catégorie évaluée (ex. Composant, Vaisselle, Chaussure)
+[subject_produit] : Produit ou élément spécifique mentionné dans l’avis (ex. Assiette en porcelaine, Carte mère X)
+[type_avis] : Type d’avis (ex. Avis client, Avis expert, Test)
+[note] : Note ou évaluation numérique si présente (ex. 4/5)
+[sentiment_global] : Polarité générale de l’avis (ex. Positive, Négative, Neutre)
+[avantages] : Points positifs relevés dans l’avis
+[inconvenients] : Points négatifs ou critiques mentionnés
+[theme] : Thématique conceptuelle ou fonctionnelle liée à l’avis (ex. Performance, Confort, Utilisabilité)
+[type_usage] : Type d’usage discuté (ex. Domestique, Professionnel, Extérieur)
+[subject_usage] : Contexte d’utilisation précis (ex. Salle à manger, Bureau, Jardin)
+[style] : Style, tendance ou identité esthétique si mentionnée (ex. Minimaliste, Vintage, Contemporain)
+[criteres] : Critères ou attributs spécifiques évoqués (ex. Qualité, Durabilité, Design)
+[dimension_symbolique] : Valeurs ou représentations associées si mentionnées (ex. Luxe, Partage, Prestige)
+[dimension_sensorielle] : Aspects sensoriels mentionnés (ex. Texture, Couleur, Finition, Odeur)
+[objectif] : Bénéfice, finalité ou résultat mis en avant dans l’avis
+[source] : Type de l’évaluateur ou plateforme si mentionné (ex. Client, Expert, Site web)
+[mots_cles] : Liste libre de mots-clés pertinents extraits du texte de l’avis
+
+Texte : {{document_text}}

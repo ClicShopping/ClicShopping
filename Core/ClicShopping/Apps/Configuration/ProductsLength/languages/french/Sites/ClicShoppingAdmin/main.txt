@@ -1,0 +1,67 @@
+heading_title = Dimensions
+module_we_title = Dimensions
+module_we_short_title = Dimensions
+
+text_products_length = Dimensions
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des dimensions <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_we_introduction = Le processus d'installation installe la base de données et le menu
+module_we_short_title = Dimensions
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_products_length = Dimensions
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_insert_products_length = Insérer une dimension
+button_insert_class = Insérer une conversion
+
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+table_heading_products_length_class_id = Id
+table_heading_products_length_class_symbol = Symbole
+table_heading_products_length_class_type = Nom de la dimension
+table_heading_products_length_class_to_id = Conversion en dimension
+table_heading_products_length_class_rule = Valeur conversation
+table_heading_action = Action
+
+text_info_class_conversaion_value = Valeur conversation
+text_info_heading_edit_products_length = Edition
+text_info_heading_delete_products_length = Suppression
+text_info_heading_insert_products_length = Insérer
+text_info_class_title_to_id = Convertir en
+
+text_products_length_class_title = Nom de la dimension
+text_products_length_class_key = Symbol
+text_products_length_rules = Valeur du la dimension
+text_info_class_title = Nom de la dimensions
+
+text_info_edit_intro = Veuillez faire les changements nécessaire
+text_info_delete_info =  Supprimer cette dimension
+
+icon_edit_class_title = Editer une dimension

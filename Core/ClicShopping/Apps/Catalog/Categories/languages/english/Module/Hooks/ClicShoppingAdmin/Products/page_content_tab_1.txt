@@ -1,0 +1,15 @@
+text_categories_name = Categories
+text_select_categorie = --- Click to activate ---
+text_top = --- Top ---
+text_categories = Categories
+
+text_description_categories = Categories Description
+text_categories_preview_title = Categorie preview
+text_categories_image_delete = Delete image
+text_create = Create
+
+text_select_category_action = Select your action if necessary
+text_copy_as_none = No action
+text_copy_as_move = Move inside a category (select only one)
+text_copy_as_link = link to a category / categories
+text_copy_as_duplicate = Duplicate inside categorie / categories

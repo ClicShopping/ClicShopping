@@ -1,0 +1,4 @@
+navbar_title = Reviews
+heading_title = Customers reviews concerning this product
+text_no_reviews = No comment
+text_reviews_seo_title = Reviews

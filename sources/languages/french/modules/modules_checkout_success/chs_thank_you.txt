@@ -1,0 +1,47 @@
+module_checkout_success_thank_you_title = Souhaitez-vous activer le module de remerciement ?
+module_checkout_success_thank_you_description = Affiche une message de remerciement ?
+module_checkout_success_text_thanks_for_shopping = Merci de votre confiance et d'avoir effectué vos achats chez {{store_name}}.<br />Nous espérons vous revoir très bientot !
+module_checkout_success_text_success = <strong>Votre commande vient d'être prise en compte avec succès. Veuillez trouver ci-joint quelques informations complémentaires.</strong>
+
+module_checkout_success_text_order_history = Historique de commandes
+module_checkout_success_text_contact = Nous contacter
+module_checkout_success_text_account = Mon compte
+
+module_checkout_success_text_see_orders =
+<p class="blockquote">
+  <h3>votre commande</h3>
+  <br /><br />
+  <li>vous pouvez accéder à votre compte  via la page
+
+<strong>{{my_account}}</strong>.</li>
+  <li>vous pouvez accéder à votre historique de commande via la page <strong> : {{account_history}}
+  </strong>.<br />Vous pourrez y imprimer votre bon de commande ou votre facture en consultant les détails de votre commande.</li>
+  <li><strong>si vous avez payé par chèque</strong>, nous vous demandons de bien vouloir nous faire parvenir soit une copie de votre bon de commande ou du mail de confirmation que vous avez reçu. Dès réception, nous allons traiter votre demande.
+  <br /><br />Adresse de {{store_name}}. : {{store_name_address}}</li><br /><br />
+</p>
+
+module_checkout_success_text_contact_store_owner =
+<p class="blockquote">
+  <h3>réceptionner de votre colis</h3>
+  <br /><br />
+  <li>afin de prévenir tout litige ultérieur, nous vous demandons de vérifier le contenu de votre colis en présence du livreur et de n'accepter en aucun cas un colis en mauvais état, reconditionné, entouré d'adhésif, trop léger ou qui aurait été ouvert pendant le transport sans en avoir préalablement vérifié le contenu.</li>
+  <li>dans le cas ou votre colis est entouré d'un film noir, nous vous demandons de retirer ce film en présence du livreur afin de pouvoir vérifier efficacement l'état de votre colis avant de l'accepter.</li>
+  <li>pour tout autres informations, veuillez vous référer à nos conditions générales concernant le traitement, la gestion et la réception des commandes</li>
+</p>
+  <div class="hr"></div>
+<p class="blockquote">
+  <h3>comment bien nous contacter</h3>
+  <br /><br />
+  <li>s'il s'agit d'une commande effectuée : Veuillez editer votre numéro de commande et cliquez sur support. {{account_history}}</li>
+  <li>s'il s'agit d'une demande ou d'une information spécifique, veuillez passer ce formulaire : {{contact}}</li>
+</p>
+
+module_checkout_success_create_account_success =
+<p class="blockquote">
+  <h3>votre commande</h3>
+  <br /><br />
+  Vous avez choisi de payer en créant un compte invité, vous ne pouvez pas avoir accès à votre historique de compte.<br /> Seul les emails que nous vous enverrons, vous permettrons de connaître l'état de la situation de votre commande.<br /><br />
+  <br /><br />
+  <li><strong>si vous avez payé par chèque</strong>, nous vous demandons de bien vouloir nous faire parvenir soit une copie de votre bon de commande ou du mail de confirmation que vous avez reçu. Dès réception, nous allons traiter votre demande.
+  <br /><br />Adresse de {{store_name}}. : {{store_name_address}}</li><br /><br />
+</p>

@@ -1,0 +1,5 @@
+cfg_ecommerce_debug_title = Debug
+cfg_ecommerce_debug_description = Souhaitez vous activer le debug ?
+
+cfg_ecommerce_debug_true = True
+cfg_ecommerce_debug_false = False

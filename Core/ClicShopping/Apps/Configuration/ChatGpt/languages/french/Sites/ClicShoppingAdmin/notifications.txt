@@ -1,0 +1,27 @@
+text_notifications = Notifications MCP
+text_all = Tous
+text_errors = Erreurs
+text_warnings = Avertissements
+text_just_now = À l'instant
+text_minutes_ago = il y a %d minutes
+text_hours_ago = il y a %d heures
+text_days_ago = il y a %d jours
+text_no_notifications = Aucune notification trouvée
+text_confirm_clear = Êtes-vous sûr de vouloir effacer toutes les notifications ?
+error_clear_failed = Échec de l'effacement des notifications
+
+button_clear = Tout Effacer
+button_refresh = Actualiser
+
+text_error = Erreur
+text_warning = Avertissement
+text_hook = Hook
+text_timestamp = Heure
+text_context = Contexte
+text_copy_context = Copier le contexte
+text_copied = Copié !
+
+text_load_more = Charger Plus
+text_loading = Chargement...
+text_auto_refresh = Actualisation automatique activée
+text_manual_refresh = Actualisation manuelle uniquement

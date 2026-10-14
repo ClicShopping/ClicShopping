@@ -1,0 +1,166 @@
+heading_title = Extensions
+module_up_title = Extensions
+module_up_short_title = Extensions
+
+text_upgrade = Extensions
+text_configure = Configure Apps Modules
+
+text_intro = This app allow you to include an Extensions form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_up_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_upgrade = Extensions
+button_reset = Reset cache
+button_reset_temp = Reset Tmp
+button_analyse = Analyse
+button_update = Update
+button_core = Core
+button_reset_cache_core = Reset cache core
+button_upgrade = Apps / Modules
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+title_help = Help
+button_manual = Manual install
+button_automatic_install = Automatic install
+text_local_version = Local version :
+text_server_version = Server version :
+text_up_to_date =
+<p>-The search is done only from part of the name of the module. For example to know all the header modules just write header, for the bottom of the page, footer... </p>
+<p>-Please select a search module or criteria before starting the search</p>
+<strong>- You version is up to date. The current version installed is : </strong>
+
+text_search = Search
+
+text_step_upgrade = <p><strong>Upgrade process :</strong></p>
+  <p>step 1 : Store is offline</p>
+  <p>step 2 : Download zip from github</p>
+  <p>step 3 : Decompress and install ClicShopping Core</p>
+  <p>Step 4 : Open Shop</p>
+  <p>Step 5 : Please,close the install process manually</p>
+  <p>Step 6 : Check if eveything works fine</p>
+
+text_warning_upgrade = <p><strong>The process has began, please wait a moment. This page will be updated</strong></p>
+
+text_upgrade_version = <p>Your ClicShopping version <strong>is not up to date</strong>. Your current version :
+text_check_latest_release = Check lastest release used
+text_upgrade_site = All the applications are available if you look these address (Please note this space is experimental and can be have errors
+text_current_version = Current version
+text_latest_version = Latest version
+text_latest_release_date = Latest release date
+text_changelog = Changelog
+text_uptodate = You are up to date.
+text_upgrade_site = All applications are available at theses address :<br />
+
+text_upgrade_new_version = The new version is :
+text_reload = re-test
+test_download = Download ClicShopping
+
+text_install_files = <strong>Please read these informations before to proceed</strong>.<br /><br />
+    - Experimentale Apps, it can have some bugs can be appear
+    - Github display a rate limit about the connexion and a delay. If you see a message, please wait and restart your research more later<br />
+    - The Json information is uploaded in the Cache directory.<br />
+    - The decompression can depends of your server configuration to work or not and you must adpat the chmod directory at 777 in function.<br />
+    - if it's not possible to install the module, please download, and you must install yourself the module in the good directory. <br />
+       for Officials addons :  https://github.com/ClicShoppingOfficialModulesV3<br />
+       for community addons : https://github.com/organizations/ClicShoppingV3Community<br />
+    - The concept is in beta mode and must be improved in the time (your help is welcome)
+
+table_heading_module = Name
+table_heading_description = Description
+table_heading_install = Install
+
+text_description = Description :
+text_licence = License :
+text_vendor = Vendor :
+text_tag = Tag :
+text_module_type = Module type :
+text_directory_install = Directory Install :
+text_download = Module Download :
+text_activate = To activate the Apps copy this link in your URL or click: <br />
+text_dependance = Dependance :
+text_temp_version = Cache temp version :
+text_installed_version = Installed version :
+text_info_upload = Please insert the zip file to upload
+text_installed = Installed
+text_more_infos = More Infos :
+text_close = Close
+text_search = Search
+text_top = -------- Top --------
+text_reset_success = the update had realised with success.
+button_not_free = Buy
+button_free = Free
+button_install = Install
+button_update_start = Start update
+button_more_infos = More Infos
+button_reset_search = Reset
+button_marketplace = Marketplace
+button_setting = Setting
+button_uninstallable = Uninstallable
+button_install_app = App install
+button_refresh = Refresh
+
+text_search_limit = Seach github limit :
+text_core_limit = Core github limit :
+text_cache_file = Cache delay : 1 month
+text_count_search =  Number of module found :
+text_rate_limit = Rate limit
+
+text_official = Official modules
+text_community = Community modules
+text_partner = Partner modules
+
+success_core_installed = The core update has been installed.
+success_file_installed = The update has been installed with success, please activate the apps or the module
+
+warning_no_module = No module found
+text_marketplace_username = Please insert the parameters of your account by clicking on the Configure button. <br />
+To use the marketplace, you must necessarily be registered on the forum <br />
+Please note that your connections are saved as well as your IP address and your website.
+In the event of abuse, you can not use this tool definitely and your IP is banished
+success_files_installed = Files has been installed
+error_file_not_installed = An error is produced during the process
+error_directory_not_writable = The OnlineUpdates directory is not in write mode (777)
+error_rate_exceed = Github API rate limit exceeded, please wait before to continue, come back later and try again
+error_curl_error_transfert_failed = Error transfert failed
+error_fopen_file = Error open file
+error_project_not_writable_on_server = Project not writable on the server
+error_link_not_allowed = Link not allowed
+text_file_download_error = Download error
+text_error_username = Please add your forum email as username
+
+text_result_install = Installation result
+error_result = We do not find the json file. Check in your cache
+text_info_result =
+- Close shop<br />
+            - Module Installed<br />
+            - Shop opened<br /><br />
+            - File name : {{file}} <br /><br />
+            - Info Json<br />
+
+text_marketplace_info = To be able to install an app, you must be connected to the forum<p></p>
+Please select a category to display apps and modules. <p></p>
+<strong> Note: </strong>: - Depending on the configuration of your server and its authorizations, the automatic installation will not be able to work, you will have to do it manually. <br />
+  - You can also update the marketplace to have the last new features or configure a cronjob (see Cronjob menu).
+
+Text_marketplace_update = Categories and applications have been updated. <p> </p>
+Please update your page one last time.
+text_error_api_connection = Error Api :
+text_success_files_installed = Apps Installed

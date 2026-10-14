@@ -1,0 +1,13 @@
+heading_title =
+text_no_products = Il n'y a aucun articles dans cette catégorie.
+text_no_products2 = Aucun article de cette marque n'est disponible.
+text_number_of_products = Nombre d'articles:
+text_show =
+text_buy = Acheter
+text_now = maintenant
+text_all_categories = Toutes les catégories
+text_all_manufacturers = Nos Marques
+
+min_qty_order_product = Qté min :
+text_price = Tarif :
+min_qty_order_product = Pour réaliser une commande, vous devez respecter les quantités; minimum.

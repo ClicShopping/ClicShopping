@@ -1,0 +1,3 @@
+module_index_categories_name_title = Souhaitez-vous afficher le nom de la catégorie dans le contenu des catégories ?
+module_index_categories_name_description = Affiche  le nom de la catégorie dans le contenu de la catégories.
+

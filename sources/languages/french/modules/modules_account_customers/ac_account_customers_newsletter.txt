@@ -1,0 +1,10 @@
+module_account_customers_newsletter_title = Souhaitez-vous permettre au client de s'abonner ou de se désabonner au bulletin d'information ?
+module_account_customers_newsletter_description = Affiche le formulaire de d'abonnement ou de désabonnement au bulletin d'information
+
+my_newsletter_title = Bulletin d'information
+module_account_customers_newsletter = Bulletin d'information général
+module_account_customers_newsletters_description = Ceci inclut : les nouveautés, les promotions et toutes les annonces.
+
+my_newsletters_title = Mon abonnement
+
+button_continue = Continuer

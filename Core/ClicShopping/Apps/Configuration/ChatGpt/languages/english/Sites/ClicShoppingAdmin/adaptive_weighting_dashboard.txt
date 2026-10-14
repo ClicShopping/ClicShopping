@@ -1,0 +1,101 @@
+heading_title_adaptive_weighting = Adaptive Weighting Monitoring Dashboard
+button_refresh = Refresh
+button_back_dashboard = Back to Dashboard
+button_export_csv = Export CSV
+button_export_json = Export JSON
+button_run_anomaly_scan = Run anomaly scan
+
+text_overview = Adaptive Weighting Overview
+text_weight_stats = Weight Statistics
+text_total_weight_calculations = Total Weight Calculations
+text_avg_weight = Average Weight
+text_min_weight = Minimum Weight
+text_max_weight = Maximum Weight
+text_weight_stddev = Weight Std Deviation
+text_total_evaluations = Total Evaluations
+text_active_critics = Active Critics
+
+text_weight_distribution = Weight Distribution
+text_weight_bucket = Weight Range
+text_count = Count
+
+text_critic_weight_history = Critic Weight History
+text_critic_id = Critic ID
+text_evaluation_id = Evaluation ID
+text_weight = Weight
+text_timestamp = Timestamp
+
+text_weights_by_domain = Weights by Domain
+text_domain = Domain
+text_avg_weight_domain = Average Weight
+text_weight_count = Weight Count
+text_critic_count = Critic Count
+
+text_domain_match_quality = Domain Match Quality
+text_match_quality_distribution = Match Quality Distribution
+text_high_match = High Match
+text_medium_match = Medium Match
+text_low_match = Low Match
+text_no_match = No Match
+text_recent_matches = Recent Domain Matches
+text_domain_match = Domain Match
+text_created_at = Created At
+
+text_consensus_comparison = Consensus Comparison (Dynamic vs Static)
+text_total_comparisons = Total Comparisons
+text_avg_dynamic_consensus = Avg Dynamic Consensus
+text_avg_static_consensus = Avg Static Consensus
+text_avg_difference = Avg Difference
+text_avg_abs_difference = Avg Absolute Difference
+text_dynamic_better_count = Dynamic Better Count
+text_static_better_count = Static Better Count
+text_dynamic_better_percentage = Dynamic Better Percentage
+text_recent_comparisons = Recent Comparisons
+text_consensus_id = Consensus ID
+text_dynamic_consensus = Dynamic Consensus
+text_static_consensus = Static Consensus
+text_difference = Difference
+
+text_weight_anomalies = Weight Anomalies
+text_anomaly_id = Anomaly ID
+text_anomaly_type = Anomaly Type
+text_severity = Severity
+text_llm_analysis = LLM Analysis
+text_detected_at = Detected At
+text_no_anomalies = No anomalies detected
+text_anomaly_scan_running = Scanning…
+text_anomaly_scan_error = Anomaly scan failed
+
+text_weight_trends = Weight Trends Over Time
+text_date = Date
+text_weight_stddev_trend = Weight Std Dev
+
+text_top_weighted_critics = Top Weighted Critics
+text_evaluations = Evaluations
+
+text_critic_domain_performance = Critic Performance by Domain
+text_domains = Domains
+text_evaluation_count = Evaluation Count
+
+text_weight_explanation = Weight Explanation
+text_weight_id = Weight ID
+text_raw_weight = Raw Weight
+text_normalized_weight = Normalized Weight
+text_llm_explanation = LLM Explanation
+text_factor_analysis = Factor Analysis
+
+text_export_metrics = Export Metrics
+text_filter_by_domain = Filter by Domain
+text_filter_by_period = Filter by Period
+text_7_days = 7 Days
+text_30_days = 30 Days
+text_90_days = 90 Days
+
+text_no_data = No data available
+text_loading = Loading...
+text_error_loading_data = Error loading data
+
+text_chart_weight_distribution = Weight Distribution Chart
+text_chart_consensus_comparison = Consensus Comparison Chart
+text_chart_weight_trends = Weight Trends Chart
+text_chart_domain_performance = Domain Performance Chart

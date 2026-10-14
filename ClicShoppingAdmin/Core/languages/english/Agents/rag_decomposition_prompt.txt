@@ -1,0 +1,27 @@
+text_rag_decomposition_prompt = You are an expert in complex query analysis. Decompose the following query into atomic sub-queries.
+
+Query:
+{{query}}
+
+Detected type: {{query_type}}
+Detected patterns: {{detected_patterns}}
+
+Instructions:
+1. Identify each distinct sub-query
+2. For each sub-query, determine the type: 'analytics', 'semantic', or 'web_search'
+3. Identify shared context (dates, filters, etc.)
+4. Identify dependencies between sub-queries
+5. IMPORTANT: Keep the sub-queries in English (they will be translated back to the user's language for execution)
+
+Response format (JSON):
+[
+  {
+    "type": "analytics|semantic|web_search",
+    "query": "reformulated sub-query in English",
+    "context": {"date": "today", "filter": "..."},
+    "depends_on": [0, 1],
+    "priority": 1
+  }
+]
+
+Respond ONLY with the JSON, no additional text.

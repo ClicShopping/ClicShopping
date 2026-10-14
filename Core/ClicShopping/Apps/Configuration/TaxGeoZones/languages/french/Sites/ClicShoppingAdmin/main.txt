@@ -1,0 +1,82 @@
+heading_title = Taxes par zones géographiques
+module_tg_title = Taxes par zones géographiques
+module_tg_short_title = Taxes par zones géographiques
+
+text_tax_geo_zones = Taxes par zones géographiques
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des Taxes par zones géographiques <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_tg_introduction = Le processus d'installation installe la base de données et le menu
+module_tg_short_title = Taux fiscaux
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_tax_geo_zones = Taxes par zones géographiques
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+icon_geo = Géo Zone
+
+table_heading_country = Pays
+table_heading_country_zone = Zone
+table_heading_tax_zones = Zones fiscales
+table_heading_action = Action
+table_heading_tax_description = Description
+table_heading_number_zone = Nombre de zones
+
+text_info_heading_new_zone = Nouvelle zone
+text_info_new_zone_intro = Merci de compléter les informations sur la zone
+
+text_info_heading_edit_zone = Editer zone
+text_info_edit_zone_intro = Merci d'effectuer les changements nécessaires
+
+text_info_heading_delete_zone = Supprimer zone
+text_info_delete_zone_intro = Etes vous sur de vouloir supprimer cette zone ?
+
+text_info_heading_new_sub_zone = Nouvelle sous-zone
+text_info_new_sub_zone_intro = Merci de compléter les informations sur la sous-zone
+
+text_info_heading_edit_sub_zone = Editer sous-zone
+text_info_edit_sub_zone_intro = Merci d'effectuer les changements nécessaires
+
+text_info_heading_delete_sub_zone = Supprimer sous-zone
+text_info_delete_sub_zone_intro = Etes vous sur de vouloir supprimer cette sous-zone ?
+
+text_info_date_added = Date d'ajout :
+text_info_last_modified = Dernière modification :
+text_info_zone_name = Nom de la zone :
+text_info_number_zones = Nombre de zones :
+text_info_zone_description = Description :
+text_info_country = Pays :
+text_info_country_zone = Zone :
+type_below = Toutes les zones
+text_selected = Toutes les zones
+text_all_countries = Tous les pays
+
+js_state_select = -- Selectionner --
+
+image_details = Details

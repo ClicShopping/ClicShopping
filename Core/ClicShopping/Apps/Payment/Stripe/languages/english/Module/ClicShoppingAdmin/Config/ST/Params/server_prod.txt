@@ -1,0 +1,6 @@
+cfg_stripe_server_prod_title = Production or Sandbox
+cfg_stripe_server_prod_description = Select True for the production
+
+cfg_stripe_server_prod_true = True
+cfg_stripe_server_prod_false = False
+

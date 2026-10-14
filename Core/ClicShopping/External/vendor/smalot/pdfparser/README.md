@@ -1,0 +1,72 @@
+# PDF parser
+
+[![Version](https://poser.pugx.org/smalot/pdfparser/v)](//packagist.org/packages/smalot/pdfparser)
+![CI](https://github.com/smalot/pdfparser/workflows/CI/badge.svg)
+![CS](https://github.com/smalot/pdfparser/workflows/CS/badge.svg)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/smalot/pdfparser/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smalot/pdfparser/?branch=master)
+[![Downloads](https://poser.pugx.org/smalot/pdfparser/downloads)](//packagist.org/packages/smalot/pdfparser)
+
+The `smalot/pdfparser` is a standalone PHP package that provides various tools to extract data from PDF files.
+
+### Maintenance status
+
+This library is under **limited maintenance**.
+It is still kept compatible with supported PHP versions, and community contributions may be accepted. However, there is currently **no active feature development** and **no guarantee** that pull requests will be reviewed or merged in a timely manner.
+If you plan to contribute anything beyond a small, well-scoped fix, please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
+
+## Features
+
+- Load/parse objects and headers
+- Extract metadata (author, description, ...)
+- Extract text from ordered pages
+- Support of compressed PDFs
+- Support of MAC OS Roman charset encoding
+- Handling of hexa and octal encoding in text sections
+- Create custom configurations (see [CustomConfig.md](/doc/CustomConfig.md)).
+
+Currently, secured documents and extracting form data are not supported.
+
+## License
+
+This library is under the [LGPLv3 license](https://github.com/smalot/pdfparser/blob/master/LICENSE.txt).
+
+## Install
+
+This library requires PHP 7.1+ since [v1](https://github.com/smalot/pdfparser/releases/tag/v1.0.0).
+You can install it via [Composer](https://getcomposer.org/):
+
+```bash
+composer require smalot/pdfparser
+```
+
+In case you can't use Composer, you can include `alt_autoload.php-dist`. It will include all required files automatically.
+
+## Quick example
+
+```php
+<?php
+
+use Smalot\PdfParser\Config;
+use Smalot\PdfParser\Parser;
+
+// Custom config: Recommended when parsing PDFs from untrusted sources
+$config = new Config();
+
+// Cap how far a single stream is decompressed, to avoid memory exhaustion.
+// Pick a value that fits your content, and combine it with a sane PHP memory_limit.
+$decodeMemoryLimit = 100 * 1024 * 1024; // = 100 MB
+$config->setDecodeMemoryLimit($decodeMemoryLimit);
+
+$parser = new Parser([], $config);
+$document = $parser->parseFile('/path/to/untrusted-file.pdf');
+
+echo $document->getText();
+```
+
+Further usage information can be found [here](/doc/Usage.md).
+
+See [CustomConfig.md](/doc/CustomConfig.md) for all configuration options.
+
+## Documentation
+
+Documentation can be found in the [doc](/doc) folder.

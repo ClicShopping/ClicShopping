@@ -1,0 +1,2 @@
+ modules_products_reviews_listing_description_title = Listing Commentaire : Do you want to display the products description and the title ?
+ modules_products_reviews_listing_description_description = Display the products description and the title

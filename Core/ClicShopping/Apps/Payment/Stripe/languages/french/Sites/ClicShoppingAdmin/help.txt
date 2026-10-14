@@ -1,0 +1,60 @@
+text_stripe = Stripe help
+
+text_stripe_info = <strong>About</strong><br /><br />
+
+<strong>website : https://stripe.com</strong><br /><br />
+
+The Stripe payment plugin module allows you to connect your Stripe account to your online store.<br />
+The payment gateway is operated by Stripe.<br /><br />
+
+Setup is quick: start accepting credit cards in less than 5 minutes, with your existing Stripe account.<br />
+No monthly fees and no setup fees.<br />
+PCI Compliant. Customer never leaves your store!<br />
+Standard rates are low per transaction<br />
+Funds are deposited in your bank account in 1-2 business days.<br /><br />
+
+<strong>Requirements</strong><br /><br />
+
+- You must be using SSL on your website<br />
+- You will need a Stripe account, already validated and connected with your bank.<br /><br />
+
+<strong>Creating an App inside your Stripe account</strong><br /><br />
+
+- Dashboard Login : https://dashboard.stripe.com  to view the actions and orders<br /><br />
+
+1/ Define your environment :
+Click to create a new Application and give it a name, such as "Webstore", and click Create<br />
+
+2/ <strong>Click on Developper section and API Key</strong><br /><br />
+- Activate the test environment
+- Click the "Show Secret" button, and copy the Secret key test inside ClicShopping Stripe apps.<br />
+- Also Copy the public key inside ClicShopping Stripe apps.<br /><br />
+
+2/ <strong>Cliquez sur Developers &gt; Webhooks pour créer le point de terminaison webhook</strong><br /><br />
+- Ajoutez un nouveau endpoint<br />
+- L'URL du endpoint doit être (remplacez le domaine par le vôtre) : https://www.mydomain.com/shop/index.php?order&stripe&webhook&st<br /><br />
+- Sélectionnez les événements à écouter. Ce module réconcilie la commande à partir du PaymentIntent (il n'utilise PAS les Checkout Sessions, ne sélectionnez donc pas les événements checkout.session.*). Activez ces 4 événements :<br />
+&nbsp;&nbsp;&bull; payment_intent.succeeded&nbsp;&nbsp;(obligatoire - valide la commande et met à jour son statut)<br />
+&nbsp;&nbsp;&bull; payment_intent.payment_failed&nbsp;&nbsp;(marque un paiement échoué)<br />
+&nbsp;&nbsp;&bull; charge.succeeded<br />
+&nbsp;&nbsp;&bull; charge.refunded&nbsp;&nbsp;(enregistre un remboursement)<br /><br />
+- Enregistrez le endpoint, puis dans Stripe cliquez sur "Reveal" pour afficher le <strong>Signing secret</strong> (il commence par whsec_).<br />
+- Copiez ce signing secret dans le champ de configuration Stripe de ClicShopping <strong>"Clé du webhook endpoint"</strong>. Cette valeur est fournie par Stripe (vous ne l'inventez pas) et elle est obligatoire : la signature de chaque événement reçu est vérifiée avec elle, sinon le webhook est rejeté.<br /><br />
+- Note : le webhook est un filet de sécurité serveur-à-serveur (par ex. si le client ferme l'onglet juste après avoir payé). La commande est aussi créée de façon synchrone au checkout, donc un secret manquant ne bloque pas les paiements normaux, mais il est fortement recommandé pour des mises à jour de statut et des remboursements fiables.<br /><br />
+
+
+3/ <strong>Test your integration</strong><br /><br />
+- In your clicShopping Stripe Apps select also the test environnement<br />
+- Now you are ready to make a test<br />
+- Note : on this url, you wil have all the test card, choose one and proceed an order : https://stripe.com/docs/testing#cards
+
+4/ <strong>Success or not</strong><br /><br />
+- Go to payment and look if you have a success blue button<br />
+- Click on your order and you must see all the informations<br />
+- Go to developper section : click on webhooks and the link : You must see a blue success information<br /><br />
+
+5/ <strong>Production mode</strong><br />
+- Change the menu test environnement in production<br />
+- change inside your ClicShopping apps Stripe the configuration test to production<br />
+- Change inside the apps the key to include the production key (fo that you must activate completly your account)<br />
+- Make last test.

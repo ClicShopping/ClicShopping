@@ -1,0 +1,13 @@
+text_review_sentiment_products_id = product_id
+text_review_sentiment_review_id = review_id
+text_review_sentiment_language_id = language_id
+text_review_sentiment_sentiment_status = sentiment status
+text_review_sentiment_sentiment_approved = sentiment approved
+text_review_sentiment_date_added = date added
+text_review_sentiment_description = sentiment description
+text_review_sentiment_vote = Vote
+text_review_sentiment_customer_id = customer id (vote)
+text_review_sentiment_vote_sentiment = vote sentiment
+text_warning_mesage = Sentiment reviews not analysed: you need at least {{review_number}} to be analysed.
+text_warning_gpt_disabled = ChatGPT must be enabled and configured to generate the sentiment analysis.
+text_succes_mesage = Sentiment reviews successfully updated.

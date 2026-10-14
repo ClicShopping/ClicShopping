@@ -1,0 +1,2 @@
+ module_index_categories_name_title = Do you want to display inside the categories the name of the categorie ?
+ module_index_categories_name_description = Display inside the categories the name of the categorie.

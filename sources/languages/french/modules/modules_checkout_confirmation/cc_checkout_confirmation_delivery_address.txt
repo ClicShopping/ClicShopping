@@ -1,0 +1,7 @@
+module_checkout_confirmation_delivery_address_title = Souhaitez-vous afficher l'adresse du destinataire de la commande ?
+module_checkout_confirmation_delivery_address_description = Affiche l'adresse du destinataire de la commande
+module_checkout_confirmation_delivery_address_text_edit = Editer
+
+module_checkout_confirmation_delivery_address_heading_delivery = Information sur le destinataire
+module_checkout_confirmation_delivery_address_text_delivery_title = Adresse de livraison
+module_checkout_confirmation_delivery_address_text_shipping_title = Méthode d'expédition

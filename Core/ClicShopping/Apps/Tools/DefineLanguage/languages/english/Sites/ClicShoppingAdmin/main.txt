@@ -1,0 +1,76 @@
+heading_title = Define language
+module_cr_title = Define language
+module_cr_short_title = Define language
+
+text_define_language = Define language
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a define_language page. <br /><br />
+- Activate this module located in the Tools menu
+
+module_cr_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_define_language = Define language
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Tools parameters have been successfully saved.
+heading_title_2 = Define Language
+heading_title_search = Search
+
+table_heading_definition_key = Definition key
+table_heading_definition_value = Definition value
+table_heading_content_group_title = Content group
+table_heading_content_group_action = Action
+table_heading_files = Files
+table_heading_writable = Writable
+table_heading_last_modified = Last Modified
+
+text_edit_note = <strong>Editing Definitions</strong><br /><br />Each language definition is set using the PHP <a href="https://www.php.net/define" target="_blank" rel="noreferrer">define()</a> function in the following manner:<br /><br /><nobr>define(\'TEXT_MAIN\ =  \'<span style="background-color: #FFFF99;">This text can be edited. It\\\'s really easy to do!</span>\ </nobr><br /><br />The highlighted text can be edited. As this definition is using single quotes to contain the text, any single quotes within the text definition must be escaped with a backslash (eg, It\\\'s).
+
+text_file_does_not_exist = File does not exist.
+
+ms_error_create = <strong>Error:</strong> {{dpathname}} is not writable.
+ms_error_db_save = <strong>Error:</strong> {{definition_key}} definition key is already added. Edit {{definition_key}} definition value or add new key.
+
+button_reset_all_languages = Reset all languages
+section_heading_translations = Edit translation
+
+text_language_definition_confirm_delete = Are you sure you want to delete this definition?
+text_language_definition_delete_title = Delete
+Edit_translation = Edit
+
+icon_add_new = Add new
+icon_delete = Delete
+
+image_filtered_edit = Filtered edition
+placeholder_new_definition_value = Add new definition key
+text_pattern = Only lower cases, digits and underscore characters are allowed.
+
+text_search = Search
+
+image_edit = Edit
+image_filter = Filter
+
+error_language_directory_not_writeable = The language directory is not writeable
+
+alert_info_language = if you do not see all language, please click on the different language on the catalog to activate the cache
+error_file_not_writeable = Impossible the write inside the file but your modification is save inside the database

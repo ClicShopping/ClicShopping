@@ -1,0 +1,3 @@
+navbar_title = Commentaires
+heading_title_review_info = Commentaires Client
+text_reviews_seo_title = Commentaires

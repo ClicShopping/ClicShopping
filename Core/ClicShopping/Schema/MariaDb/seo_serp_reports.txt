@@ -1,0 +1,32 @@
+id INT(11) not_null auto_increment comment(Primary key - unique identifier for each serp entry)
+entity_type VARCHAR(50) not_null comment(Type of entity analyzed: product, category, manufacturer, etc.)
+entity_id INT(11) not_null comment(Foreign key - ID of the analyzed entity (references products_id, categories_id, etc.))
+language_id INT(11) not_null comment(Language context for the SEO analysis)
+url VARCHAR(512) default null comment(Full URL of the analyzed page)
+serp_source VARCHAR(50) default null comment(Source of SERP data: google, bing, manual, etc.)
+serp_query VARCHAR(512) default null comment(Search query used to retrieve SERP data for this entity)
+serp_data LONGTEXT default null comment(Raw JSON SERP results returned by the search engine)
+seo_before LONGTEXT default null comment(JSON snapshot of the full SEO content before optimization (title, description, keywords, etc.))
+seo_after LONGTEXT default null comment(JSON snapshot of the full SEO content after optimization)
+proposed_changes LONGTEXT default null comment(JSON list of SEO changes proposed by the AI pipeline)
+audit_result LONGTEXT default null comment(JSON detailed audit report: issues found, recommendations, scores per criteria)
+summary TEXT default null comment(Human-readable summary of the SEO analysis and main recommendations)
+seo_score_before INT(11) default 0 comment(Global SEO score before optimization (0-100))
+seo_score_after INT(11) default 0 comment(Global SEO score after optimization (0-100) - used to measure improvement)
+status VARCHAR(50) default null comment(Processing status: pending, processing, completed, failed, skipped)
+triggered_by VARCHAR(50) default null comment(Who triggered the analysis: auto=system scheduler, or admin user identifier)
+created_at DATETIME not_null default now() comment(Timestamp when the SEO analysis entry was created)
+updated_at DATETIME default null comment(Timestamp of the last update)
+pipeline_metrics JSON NULL default null comment(JSON metrics of the AI pipeline execution: duration, tokens used, steps completed, errors encountered)
+
+--
+primary id
+idx_entity entity_type entity_id language_id
+idx_status status
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment SEO AUDIT REPORT of one entity (product, category, page): the search-engine result data for a query, the SEO content before and after, the proposed changes and the scores. It answers SEO questions - ranking, keyword, optimisation gain.

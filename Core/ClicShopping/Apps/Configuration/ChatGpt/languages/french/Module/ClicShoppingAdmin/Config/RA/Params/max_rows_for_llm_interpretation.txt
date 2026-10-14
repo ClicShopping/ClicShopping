@@ -1,0 +1,2 @@
+cfg_chatgpt_max_rows_for_llm_interpretation_title = Nombre maximum de lignes pour l'interprétation LLM
+cfg_chatgpt_max_rows_for_llm_interpretation_description = Le nombre maximum de lignes qui seront envoyées par le LLM pour l'interprétation IA. Si les résultats de la requête dépassent cette limite, les données seront toujours affichées mais l'interprétation IA ne sera pas disponible. Cela protège la fenêtre de contexte du LLM et contrôle les coûts API.

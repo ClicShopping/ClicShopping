@@ -1,0 +1,19 @@
+products_attributes_id int not_null auto_increment comment(Primary key - unique identifier for each product attribute combination)
+products_id int not_null comment(FK to products table - product this attribute belongs to)
+options_id int not_null comment(FK to products_options table - option type like Size or Color)
+options_values_id int not_null comment(FK to products_options_values table - specific value like Large or Red)
+options_values_price decimal(15,4) not_null comment(Price adjustment for this attribute - can be positive or negative)
+price_prefix char(1) default('+') not_null comment(Price modifier - + to add, - to subtract from base price)
+products_options_sort_order int(3) default(1) comment(Display order for this attribute option)
+products_attributes_reference varchar(50) not_null comment(Internal reference code or SKU suffix for this attribute)
+customers_group_id int(11) default(0) not_null comment(FK to customers_groups table - customer group for this pricing, 0: all groups)
+products_attributes_image varchar(255) null comment(Optional image showing this attribute variant)
+status tinyint(1) default(1) not_null comment(Attribute status - 0: inactive, 1: active and selectable)
+--
+primary products_attributes_id
+idx_products_attributes_products_id products_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment PRODUCT VARIANTS - one row per product and option value (size, colour), each carrying its own surcharge in options_values_price, signed by price_prefix (+ or -). Use it for questions about variants and option surcharges.

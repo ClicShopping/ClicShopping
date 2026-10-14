@@ -1,0 +1,17 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each marketplace category)
+categories_id int not_null comment(Marketplace category identifier from external marketplace)
+parent_id int not_null default(0) comment(FK to marketplace_categories.id - parent category for hierarchical structure, 0 for top-level)
+categories_name text default null comment(Name of the marketplace category)
+url text default null comment(URL to the marketplace category page)
+date_added date default null comment(Date when category was added to local database)
+date_modified date default null comment(Date when category was last modified)
+sort_order int(3) default(0) comment(Display order of categories within same parent level)
+
+--
+primary id
+idx_parent_id parent_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

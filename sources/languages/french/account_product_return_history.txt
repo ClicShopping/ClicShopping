@@ -1,0 +1,3 @@
+navbar_title_1 = Compte
+navbar_title_2 = Historiques retour produit
+

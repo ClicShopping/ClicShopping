@@ -1,0 +1,71 @@
+#english
+INSERT INTO `clic_configuration` VALUES(null, 'MCP Server Port', 'CLICSHOPPING_APP_MCP_MC_SERVER_PORT', '3001', 'Port used to connect to the MCP server', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Downtime thresholds in the MCP interface', 'CLICSHOPPING_APP_MCP_MC_DOWNTIME_THRESHOLDS', '300', 'Downtime thresholds, for example the maximum outage duration before an alert is triggered', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Latency in the MCP interface', 'CLICSHOPPING_APP_MCP_MC_LATENCY_THRESHOLDS', '1000', 'Latency thresholds, for example the latency value beyond which an alert will be triggered', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Token', 'CLICSHOPPING_APP_MCP_MC_TOKEN', '', 'Please insert the access token to connect to the MCP server.<br>We recommend using a long, complex token with at least 15 letters, numbers, and special characters.', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Alert thresholds in the MCP interface', 'CLICSHOPPING_APP_MCP_MC_ALERT_THRESHOLDS', '20', 'Purpose of the alert thresholds, the limit beyond which an alert will be triggered', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Data Retention', 'CLICSHOPPING_APP_MCP_MC_DATA_RETENTION', '7', 'Data retention policy, indicating how long data will be stored before deletion or archiving', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Do you want to enable secure SSL connection', 'CLICSHOPPING_APP_MCP_MC_SSL', 'False', 'In production mode, we recommend enabling this connection', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Sort Order', 'CLICSHOPPING_APP_MCP_MC_SORT_ORDER', '500', 'The sort order location of the module shown in the available methods listing (lowest is displayed first).', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'MCP Server Host', 'CLICSHOPPING_APP_MCP_MC_SERVER_HOST', 'localhost', 'Insert the access token to connect to the MCP server', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Alert Notification', 'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION', 'False', 'Be notified in case of MCP server failure', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Status', 'CLICSHOPPING_APP_MCP_MC_STATUS', 'True', 'Set True to enable or not the module', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Parameter [MCP App]', 'MODULE_MODULES_MCP_INSTALLED', 'Tools\\MCP\\MC', 'Parameter [MCP App]', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Display JSON in Browser', 'CLICSHOPPING_APP_MCP_MC_DISPLAY_BROWSER_JSON', 'True', 'In test mode, select False; in production mode, select True.<br>This setting allows displaying the API request result in JSON format in the browser.', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+
+
+#french
+INSERT INTO `clic_configuration` VALUES(null, 'Port du serveur MCP', 'CLICSHOPPING_APP_MCP_MC_SERVER_PORT', '3001', 'Port utilisé pour se connecter au serveur MCP', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Seuils d’indisponibilité dans l’interface MCP', 'CLICSHOPPING_APP_MCP_MC_DOWNTIME_THRESHOLDS', '300', 'Seuils d’indisponibilité, par exemple la durée maximale de panne avant qu’une alerte ne soit déclenchée', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Latence dans l’interface MCP', 'CLICSHOPPING_APP_MCP_MC_LATENCY_THRESHOLDS', '1000', 'Seuils de latence, par exemple la valeur de latence au-delà de laquelle une alerte sera déclenchée', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Jeton', 'CLICSHOPPING_APP_MCP_MC_TOKEN', '', 'Veuillez insérer le jeton d’accès pour vous connecter au serveur MCP.<br>Nous recommandons d’utiliser un jeton long et complexe comportant au moins 15 lettres, chiffres et caractères spéciaux.', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Seuils d’alerte dans l’interface MCP', 'CLICSHOPPING_APP_MCP_MC_ALERT_THRESHOLDS', '20', 'Objet des seuils d’alerte, la limite au-delà de laquelle une alerte sera déclenchée', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Rétention des données', 'CLICSHOPPING_APP_MCP_MC_DATA_RETENTION', '7', 'Politique de rétention des données, indiquant combien de temps les données seront conservées avant suppression ou archivage', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Souhaitez-vous activer la connexion sécurisée SSL', 'CLICSHOPPING_APP_MCP_MC_SSL', 'False', 'En mode production, nous vous recommandons d’activer cette connexion', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Ordre de tri', 'CLICSHOPPING_APP_MCP_MC_SORT_ORDER', '500', 'L’ordre d’affichage du module dans la liste des méthodes disponibles (les plus bas sont affichés en premier).', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Hôte du serveur MCP', 'CLICSHOPPING_APP_MCP_MC_SERVER_HOST', 'localhost', 'Insérez le jeton d’accès pour vous connecter au serveur MCP', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Notification d’alerte', 'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION', 'False', 'Être notifié en cas de défaillance du serveur MCP', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Statut', 'CLICSHOPPING_APP_MCP_MC_STATUS', 'True', 'Définir sur True pour activer ou non le module', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Paramètre [MCP App]', 'MODULE_MODULES_MCP_INSTALLED', 'Tools\\MCP\\MC', 'Paramètre [MCP App]', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Afficher JSON dans le navigateur', 'CLICSHOPPING_APP_MCP_MC_DISPLAY_BROWSER_JSON', 'True', 'En mode test, sélectionnez False ; en mode production, sélectionnez True.<br>Ce paramètre permet d’afficher le résultat de la requête API au format JSON dans le navigateur.', 6, 0, NULL, '2025-09-18 18:14:27', NULL, NULL);
+
+
+
+-----------
+INSERT INTO `clic_administrator_menu` VALUES(816, 'index.php?A&Tools\\MCP&MCP', 163, 3, 1, '', 0, 'app_tools_mcp', 1);
+
+INSERT INTO `clic_administrator_menu_description` VALUES(816, 'MCP', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(816, 'MCP', 2);
+
+CREATE TABLE :table_mcp_alerts (
+  `id` int(11) NOT NULL,
+  `alert_type` varchar(32) NOT NULL,
+  `message` text NOT NULL,
+  `alert_timestamp` datetime NOT NULL,
+  `severity_level` int(11) NOT NULL DEFAULT 1,
+  `context` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE :table_mcp_alerts
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_alert_timestamp` (`alert_timestamp`),
+  ADD KEY `idx_severity` (`severity_level`);
+
+
+CREATE TABLE clic_mcp_performance_history (
+`id` int(11) NOT NULL,
+`timestamp` int(11) NOT NULL,
+`request_rate` decimal(10,2) NOT NULL DEFAULT 0.00,
+`average_latency` decimal(10,2) NOT NULL DEFAULT 0.00,
+`error_frequency` decimal(5,2) NOT NULL DEFAULT 0.00,
+`uptime_percentage` decimal(5,2) NOT NULL DEFAULT 0.00,
+`total_requests` int(11) NOT NULL DEFAULT 0,
+`created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE `clic_mcp_performance_history`
+ADD PRIMARY KEY (`id`),
+ADD KEY `idx_timestamp` (`timestamp`),
+ADD KEY `idx_created_at` (`created_at`);
+
+INSERT INTO `clic_cron` VALUES(6, 'McpHealthCron', 'All 5 minutes', 'minute', 'McpHealthCron', 1, '2025-09-25 09:52:21', '2025-09-25 10:56:07');

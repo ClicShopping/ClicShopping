@@ -1,0 +1,7 @@
+module_checkout_confirmation_law_hamon_title = Do you want to display An order confirmation button  on the order process ?
+module_checkout_confirmation_law_hamon_description = Display An order confirmation button  on the order process
+
+module_checkout_confirmation_law_hamon_text_error_agreement = Error Agreement : Please refresh the page (F5) and check the box to continue
+module_checkout_confirmation_law_hamon_text_conditions = <strong>By validating this check box and pressing the button confirmed, I agree to confirm the order of the ordered products</strong>
+module_checkout_confirmation_law_hamon_text_title = Payment Agreement
+form_required_information = Required

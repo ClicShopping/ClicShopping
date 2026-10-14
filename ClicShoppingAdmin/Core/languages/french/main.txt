@@ -1,0 +1,708 @@
+date_format_short = m/d/Y
+date_format_short_sql = Y-m-d
+date_format_long = m/d/Y H:i:s
+date_format_sql = Y-m-d
+date_format = m/d/Y
+date_format_en = Y/m/d
+date_invoice = Ymd
+php_date_time_format = m/d/Y H:i:s
+date_time_format = m/d/Y H:M:S
+jquery_datepicker_format = yyyy-mm-dd
+jquery_datepicker_language = en
+js_date_format = dd/mm/yyyy
+
+html_params = dir="ltr" lang="fr"
+charset = utf-8
+date_format_reference = Ym
+dob_format_string = mm/dd/yyyy
+
+title = Administration {{store_name}}
+
+header_title_top = Administration
+header_title_support_site = Support
+header_title_online_catalog = Catalogue
+header_title_administration = Administration
+header_title_logoff = Quitter
+
+text_chat_send = Demander
+text_chat_reset_context = Nouveau contexte
+text_chat_save = Sauver la requête
+text_chat_message = Ecrire un message (Veuillez être patient pour la réponse)
+text_chat_close = Fermer
+text_chat_open = Ouvrir le chat
+text_chat_title = Que souhaitez-vous résoudre ?
+text_copy_html = Copie html
+text_copy = Copie texte
+
+male = Mr.
+female = Mme.
+
+box_configuration_mystore = Ma Boutique
+box_configuration_logging = Se connecter
+box_configuration_cache = Cache
+box_modules_admin_dashboard = Tableau de bord
+box_heading_modules = Modules
+box_modules_action_recorder = Enregistrement des actions
+box_modules_header_tags = Référencement
+box_modules_contact_customers = Contacts clients
+box_entry_newsletter_b2c = Nbr souscription Newsletter (B2C)
+box_entry_recover_shopping_cart = Paniers abandonnés
+
+box_modules_payment = Paiement
+box_modules_shipping = Expédition
+box_modules_order_total = Montant Total
+box_catalog_manufacturers = Marques
+box_customers_customers = Clients
+box_customers_orders = Commandes
+box_taxes_countries = Pays
+box_taxes_geo_zones = Zones fiscales
+box_localization_currencies = Devises
+box_localization_languages = Langues
+box_newsletter = Bulletin d'information
+box_heading_help = Support
+
+box_catalog_categories_priceupdate = Mise à jour rapide
+box_customers_approval = Clients en attente
+box_customers_groups = Groupes clients
+
+text_box_heading_module = Module
+text_selected = -- Sélectionner --
+entry_text_select = -- Sélectionner --
+text_all_right = Tous
+text_all_rights_admin =  Droits administration
+text_rights_employee = Droits des employés
+text_rights_visitor =  Droits des visiteurs
+
+js_error = Des erreurs sont survenues durant le traitement de votre formulaire !
+Merci de faire les corrections suivantes
+
+js_options_value_price = * Le nouvel attribut produit nécessite un prix
+js_options_value_price_prefix = * Le nouvel attribut produit nécessite un préfixe de prix
+
+js_products_name = *  Le nouveau produit nécessite un nom
+js_products_description = * Le nouveau produit nécessite une description
+js_products_price = * Le nouveau produit nécessite un prix
+js_products_weight = * Le nouveau produit nécessite un poids
+js_products_quantity = * Le nouveau produit nécessite une quantité
+js_products_model = * Le nouveau produit nécessite un modèle
+js_products_image = * Le nouveau produit nécessite une image
+
+js_specials_products_price = * Un nouveau prix pour ce produit doit être fixé
+
+js_gender = * Le champ GENRE ne peut être vide.
+
+js_first_name = * Le champ PRENOM doit avoir au moins {{min_length}} caractères.
+js_last_name = * Le champ NOM doit avoir au moins {{min_length}} caractères.
+js_dob = * Le champ  DATE DE NAISSANCE doit être au format xx/xx/xxxx (Jour/Mois/Année).
+
+js_email_address = * Le champ ADRESSE E-MAIL n'est pas correcte.
+js_address = * Le champ ADRESSE POSTALE doit avoir au moins {{min_length}} caractères.
+js_post_code = * Le champ CODE POSTAL doit avoir au moins {{min_length}} caractères.
+js_city = * Le champ VILLE doit avoir au moins {{min_length}} caractères.
+js_state = * Le champ DEPARTEMENT doit être précisé.
+js_state_select = -- Sélectionnez --
+js_zone = * L'entrée Etat doit être choisie parmi la liste pour ce pays.
+js_country = * Le champ PAYS doit être précisé.
+js_telephone = * Le champ NUMERO DE TELEPHONE doit avoir au moins {{min_length}} caractères.
+js_cellular_phone = * Le champ NUMERO DE CELLULAIRE doit avoir au moins {{min_length}} caractères.
+js_password = * Le champ MOT DE PASSE et Confirmation doivent avoir au moins {{min_length}} caractères.
+
+js_order_does_not_exist = Le numéro de commande %s n'existe pas !
+
+category_personal = Données personnelles
+category_address = Adresse
+category_address_default = Adresse principale
+category_contact = Contact téléphoniques
+category_company = Détail sur la société
+category_options = Options
+category_newsletter = Inscription aux newsletters
+category_group_customer = Type de client
+category_order_taxe = Mode de facturation
+category_order_taxe_group = Mode de facturation autorisé sur le groupe
+category_shipping_customer = Mode de livraison autorisé
+category_shipping_customer_group = Mode de livraison autorisé sur le groupe
+category_order_customer = Mode de paiement autorisé
+category_order_customer_group = Mode de paiement autorisé sur le groupe
+
+entry_gender = Civilité :
+entry_gender_error = &nbsp;<span class="errorText">requis</span>
+entry_first_name = Prénom :
+entry_first_name_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_last_name = Nom :
+entry_last_name_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_date_of_birth = Date de naissance :
+entry_date_of_birth_error = &nbsp;<span class="errorText">Format : JJ/MM/AAAA</span>
+entry_email_address = E-Mail :
+entry_email_address_error = &nbsp;<span class="errorText">Votre adresse email n'est pas correcte </span>
+entry_email_address_check_error = &nbsp;<span class="errorText">L'adresse électronique ne semble pas être valide!</span>
+entry_email_address_error_exists = &nbsp;<span class="errorText">Cette adresse électronique existe déjà!</span>
+entry_company = Nom de la société :
+entry_company_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_street_address = Adresse :
+entry_street_address_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_suburb = Complément d'adresse :
+entry_suburb_error =
+entry_post_code = Code postal :
+entry_post_code_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+entry_city = Ville :
+entry_city_error = &nbsp;<span class="errorText">min. {{min_length}} caractères</span>
+entry_state = Département ou Etat :
+entry_state_error = &nbsp;<span class="errorText">requis</span>
+entry_country = Pays :
+entry_country_error =
+entry_telephone_number = Numéro de téléphone:
+entry_telephone_number_error = &nbsp;<span class="errorText">min. {{min_length}} caractères.</span>
+
+entry_cellular_phone_number = Numéro de téléphone cellulaire:
+entry_cellular_phone_number_error =
+entry_telephone = Téléphone
+
+entry_newsletter = Bulletin d'informations :
+entry_newsletter_yes = Abonné
+entry_newsletter_no = Non abonné
+entry_newsletter_error =
+entry_newsletter_language = Langue de correspondance
+
+entry_address_number = Adresse No
+entry_adress_default = (Adresse principale)
+entry_siret = Numéro d'immatriculation :
+entry_siret_exemple = (ex : No immatricultion SIRET de la société)
+entry_ape = Numéro de nomenclature (ou autre) :
+entry_ape_exemple = (ex : Autre numeacute;ro immatriculation (ex code APE)
+entry_tva = Numéro de TVA Intracom (Europe) :
+entry_tva_iso_error = &nbsp;<span class="errorText">Le code pays de deux lettres ne semble pas être correct.</span>
+
+entry_customers_group_name = Groupe client :
+entry_groups_name = Nom :
+
+image_ani_send_email = Envoyer un courrier électronique
+image_archive = Archiver
+image_archive_to = Archiver
+image_back = Retour
+image_backup = Sauvegarde
+image_batch_print_order = Impressions en masse
+image_cancel = Annuler
+image_confirm = Confirmer
+image_copy = Copier
+image_copy_to = Copier vers
+image_details = Détails
+image_delete = Supprimer
+image_edit = Editer
+image_email = Courrier électronique
+image_file_manager = Gestionnaire de fichiers
+image_help = Aide
+icon_edit_customer = Editer le client
+icon_edit_order = Editer la commande
+
+image_icons = Activer
+image_insert = Insérer
+image_lock = Vérrouilller
+image_module_install = Installer le module
+image_module_remove = Supprimer le module
+image_move = Déplacer
+image_new_banner = Nouvelle bannière
+image_new_blog = Nouvel Article
+image_new_category = Nouvelle catégorie
+image_new_country = Nouveau pays
+image_new_currency = Nouvelle devise
+image_new_file = Nouveau fichier
+image_new_folder = Nouveau dossier
+image_new_language = Nouvelle Langue
+image_new_newsletter = Nouveau bulletin d'informations
+image_new_product = Nouveau Produit
+image_new_tax_class = Nouvelle classe fiscale
+image_new_tax_rate = Nouveau taux fiscal
+image_new_tax_zone = Nouvelle zone fiscale
+image_new_zone = Nouvelle zone
+image_orders = Commandes
+image_orders_erp = Commande enregistrée dans ERP
+image_orders_invoice_erp = Facture comptabilisée dans ERP
+image_orders_invoice_manual_erp = Facture enregistrée dans ERP
+image_orders_invoice_cancel_erp = Facture annulée dans ERP
+image_orders_history = Historique
+image_orders_invoice = Facture
+image_orders_packingslip = Bon de Livraison
+image_customers = Clients
+image_newsletter = Newsletters
+image_reviews = Avis des clients
+image_preview = Prévisualiser
+icon_preview = Prévisualisation Catalogue
+image_restore = Restaurer
+image_reset = Réinitialiser
+image_save = Sauvegarder
+image_search = rechercher
+image_select = Choisir
+image_send = Envoyer
+image_send_email = Envoyer un courrier électronique
+image_undo = Annuler
+image_unlock = Déverrouiller
+image_update = Mettre à jour
+image_update_currencies = Mettre à jour le taux de change
+image_upload = Transférer
+image_categories = Catégories
+image_specials = Promotions produits
+image_manufacturers = Gestion des marques
+image_products_expected = Gestion des arrivées en stock
+image_unpack = Désarchiver
+image_backup_db = Sauvegarder la base de données
+image_banner = Gestion des bannières
+image_whos_online = Clients en ligne
+image_filter = filtre
+image_new_group = Nouveau groupe
+image_updateallprice = Mettre à jour tous les prix du groupe
+
+button_actualise = Actualiser
+button_activate = Activer
+button_analyse = Analyser
+button_archive = Archives
+button_back = Retour
+button_backup = Sauvegarder
+button_cancel = Annuler
+button_confirm = Confirmer
+button_copy = Copier
+button_delete = Supprimer
+button_edit = Edit
+button_error_log = Log des erreurs
+button_flag = Mettre à jour statuts
+button_insert = Insérer
+button_create_account = Créer un compte
+button_history =  Historique
+button_invoice = Facture PDF
+button_module_install = installer un module
+button_move = Déplacer
+button_new = Nouveau
+button_new_banner = Nouvelle bannière
+button_new_products = Nouveau produit
+button_new_ticket = Nouveau Ticket
+button_new_category = Nouvelle catégorie
+button_new_product = Nouveau Produit
+button_packingslip = Bon expédition
+button_preview = Prévisualiser
+button_print_text = Imprimer
+button_reset = Réinitialiser
+button_restore = Importer
+button_send = Envoyer
+button_save = Sauvergarder
+button_unpack = Désarchiver
+button_update = Valider
+
+icon_edit = Editer
+icon_cross = Faux
+icon_current_folder = Dossier courant
+icon_delete = Supprimer
+icon_error = Erreur
+icon_file = Fichier
+icon_file_download = Télécharger
+icon_folder = Répertoire
+icon_locked = Vérrouiller
+icon_previous_level = Niveau précédent
+icon_preview = Prévisualiser
+icon_statistics = Statistiques
+icon_success = Succès
+icon_tick = Vrai
+icon_unlocked = Déverrouiller
+icon_warning = Attention
+icon_help = Aide
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+prevnext_button_prev = &lt;&lt;
+prevnext_button_next = &gt;&gt;
+
+prevnext_title_previous_page = Page précédente
+prevnext_title_next_page = Nouvelle page
+prevnext_title_goto_page = Aller à la page
+prevnext_title_page_no = Page %d
+prevnext_title_next_set_of_no_page = Next Set of %d Pages
+
+text_search = Rechercher
+text_default = Défaut
+text_set_default = Mettre par défaut
+text_field_required = &nbsp;<span class="fieldRequired">* Requis</span>
+text_sort_all = Tri
+text_sort_by = Trier par
+text_descendingly = descendant
+text_ascendingly = ascendant
+text_image_preview = Prévisualiser
+text_other = Autres
+text_legend = Légende
+text_all_groups = Tous les groupes clients
+text_all_languages = Tous les langages
+
+text_cache_categories = Boite catégories
+text_cache_manufacturers = Boite marques
+text_cache_also_purchased = Module d'achat supplémentaire
+text_cache_products_related = Module des produits complémentaires
+text_cache_products_cross_sell = Module des produits croisés
+text_cache_new = Nouveaux produits
+text_cache_upcoming = Produits à venir
+
+text_none = --- Aucun ---
+text_top = --- Haut ---
+
+text_twitter_message = Votre message a bien été envoyé sur twitter<br />
+text_twitter_profile =  Voir votre profil
+text_error_twitter_post = Erreur, veuillez insérer un message et réessayer.<br />
+
+text_header_user_administrator = Administrateur
+text_header_logoff_administrator = Déconnexion
+text_header_online_customers = Client(s)
+text_header_number_of_customers = {{online_customer}} en ligne
+text_header_icon_number_of_customers = Afficher les clients en ligne
+text_help_wysiwyg = Information sur l'aide à l'utilisation du Wysiwyg en image
+text_close = Fermer
+
+text_image_nonexistent = Pas d'image
+error_destination_does_not_exist = Erreur : le chemin cible n'existe pas.
+error_destination_not_writeable = Erreur : Impossible d'écrire dans le répertoire cible.
+error_file_not_saved = Erreur : fichier transférer non sauvegardé.
+error_filetype_not_allowed = Erreur : type de fichier transféré non-permis.
+error_file_too_large = Erreur : Le fichier est trop volumineux.
+error_file_empty = Erreur : Le fichier est vide ou n'a pas de contenu.
+error_file_mime_type_invalid = Erreur : La validation du type de fichier a échoué - incompatibilité de type MIME détectée.
+error_file_signature_invalid = Erreur : La validation de la signature du fichier a échoué - le fichier peut être corrompu ou déguisé.
+success_file_saved_successfully = Succès : Le fichier transféré a été sauvegardé avec succès.
+warning_no_file_uploaded = Informations : Aucune image ou fichier de transféré sur le serveur.
+warning_edit_customers = Des champs comportent des erreurs, veuillez rectifier.
+error_file_not_writeable = Impossible d'écrire dans ce fichier
+error_banner_title = Erreur: Titre de la bannière requis
+error_banner_group = Erreur: Groupe de la bannière requis
+error_no_default_language_defined = Erreur: Il n'y a pas de langue par défaut. Merci d'en choisir une dans: Administration Outils->Localisation->Langues
+error_log =  'Erreurs ont été détectés. Veuillez vérifier les fichiers se trouvant dans :
+
+
+error_image_directory_does_not_exist = Erreur: le répertoire cible n'exite pas
+error_image_directory_not_writeable = Erreur: le répertoire cible n'est pas en mode écriture
+error_image_does_not_exist = Erreur: l'imagen'existe pas
+error_image_is_not_writeable = Error: l'image ne peut pas etre supprimée
+error_suppliers =  'Veuillez selectionner un fournisseur dans la liste
+error_orders =  'Veuillez selectionner correctement vos N° de commande
+
+options_order = Facturation :
+options_order_national = National
+options_order_cee = Union Européenne
+options_order_international = International
+options_order_taxe = Assujetti à la taxe
+options_order_no_taxe = Non assujetti à la taxe
+
+visitor_name = Client Normal
+
+tax_included = Toutes taxes
+tax_excluded = Hors taxes
+
+tab_general = Général
+tab_orders = Facturation
+tab_shipping = Livraison
+tab_categorie = Catégorie
+tab_price = Prix
+tab_desc = Description
+tab_img = Visuel
+tab_ref = Metadonnées
+tab_societe = Société
+tab_adresse_book = Carnet
+tab_code_html = Code HTML
+tab_orders_details = Commande
+tab_statut = Statut
+tab_options = Options
+tab_quantity_discount = Qty discount
+tab_statistics =  Statistics
+
+fixed_amount = Montant fixe
+percentage_discount =  Remise sur pourcentage
+shipping_discount = Remise sur livraison
+price_total = Total du prix
+product_quantity = Quantité de produit
+
+keywords_google_trend = Tendance des mots clefs selon Google
+
+
+success_status_updated = Mise à jour fait avec succès
+error_unknown_status_flag = Erreur Inconnue
+error_no_access = Aucun accès autorisé
+
+all_pages = Toutes les pages.
+one_by_one = Ou une par une :
+check_all = Tout selectionner
+deselect_all = Tout Supprimer
+
+select_datas = --- Séléctionner ---
+text_select =  --- Selectionner ---
+text_all_orders = Tous les statuts
+
+no_script_text = <strong>JavaScript ne semble pas activé ou a été désactivé par un bloquer de publicité.</strong><br />Vous devez activer le javascript dans votre navigateur pour utiliser correctement ClicShopping. <a href="https://www.enable-javascript.com/" target="_blank" rel="noreferrer">Veuillez cliquez-ici pour une aide en ligne</a>.';
+
+title_help_general = Aide
+
+text_top = --- Haut ---
+text_all_pages = Toutes les pages (module affiché)
+text_one_by_one =  Une par une (module caché)
+text_chek_all = Tout cocher (module caché)
+text_deselect_all = Tout décocher (module affiché)
+
+text_address_first_name = Prénom
+text_address_last_name = Nom
+text_address_company = Société
+text_address_street_address = Adresse
+text_address_suburb = Adresse 2
+text_address_city = Ville
+text_address_state = Etat / Département
+text_address_postcode = Code postal
+text_address_country = Pays
+
+table_heading_qte = Qte
+table_heading_products_model = Reference
+table_heading_products = Produits
+table_heading_tax = Taxes
+table_heading_total = Total
+table_heading_price_excluding_tax = Prix (HT)
+table_heading_price_including_tax = Prix (TTC)
+table_heading_total_excluding_tax = Total (HT)
+table_heading_total_including_tax = Total (TTC)
+
+table_heading_customers_id = Id client
+table_heading_customers_name = Nom
+table_heading_options = Options
+
+visitor_name = Client normal
+
+text_error_upload_file = Erreur lors du téléchargement du fichier
+error_file_cannot_process = Impossible de procéder au téléchargement du fichier
+
+text_number_support = Commande support
+text_number_of_item = Nombre d'items
+text_success_import = Succès Importation
+button_continue = Continuer
+text_seo_action = SEO Action
+
+error_phpmailer = Si vous avez ce message : escapeshellcmd() has been disabled for security reasons, vous devez configurer votre  smtp dans l'administration et ne pas utiliser sendmail par défaut<br />
+Message could not be sent. Mailer Error:  {{phpmailer_error}}
+
+text_warning_group = Veuillez mettre à jour vos groupes clients pour voir ce module dans le catalogue ou le supprimer
+no_access_warning = Vous n'avez pas accés à cette fonctionnalité.
+success_migration_done = La migration a été un succés
+
+
+
+
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Traduit en francais.
+Format attendu via un exemple :
+[domaine]: Arts de la table
+[type_produit]: Produits
+[sujet_produit]: Assiettes, verres
+[type_usage]: Utilisation
+[sujet_usage]: Dîner, réception
+[type_objectif]: Objectif
+[sujet_objectif]: Raffinement, expérience
+
+Texte : {{document_text}}
+
+
+
+
+
+
+
+text_rag_answer_question_not_found = Je n'ai pas trouvé d'informations spécifiques pour répondre à votre question. Veuillez reformuler ou poser une autre question.
+text_rag_answer_question_error = Désolé, une erreur s'est produite lors du traitement de votre question. Veuillez réessayer ultérieurement.
+
+text_parentheses_mismatch_error = Parenthèses non correspondantes : {{openParenCount}} ouvrantes contre {{closeParenCount}} fermantes.
+text_invalid_column_alias_error = Alias de colonne invalide (contient un point).
+text_select_without_from_error = Requête SELECT sans clause FROM.
+text_unresolved_placeholders_error = Espaces réservés non résolus détectés.
+text_no_correction_applied = Aucune correction appliquée.
+text_parentheses_mismatch = Parenthèses non correspondantes
+text_correction_invalid_column_aliases = Correction des alias de colonnes invalides
+text_resolution_placeholders = Résolution des espaces réservés
+text_syntax error corrected = Erreur de syntaxe corrigée
+text_problematic_part_removed = Partie problématique {{problematicPart}} supprimée
+text_problematic_part_everything_following_removed = Partie problématique {{problematicPart}} et tout ce qui suit supprimé
+text_colum_reference_does_not_exist = Il semble qu’il y ait une référence à une colonne qui n’existe pas dans la base de données. Essayez de reformuler votre requête avec des termes plus généraux.
+text_sql_query_generated_error = Il y a une erreur de syntaxe dans la requête SQL générée. Essayez de reformuler votre question de manière plus claire et précise.
+text_table_referenced_does_not_exist = Une table référencée dans la requête n’existe pas. Essayez de reformuler votre question avec des termes plus généraux.
+text_error_executing_query = Une erreur est survenue lors de l’exécution de la requête. Essayez de reformuler votre question de manière plus claire et précise.
+text_no_valid_sql_query_could_extracted = Aucune requête SQL valide n’a pu être extraite de la réponse.
+text_correction_cancelled = Corrections annulées car elles n’ont pas résolu tous les problèmes
+text_no_applied_confidence = Non appliqué – confiance insuffisante
+text_error_context_sql_number_request = Trop d’informations sont envoyées au LLM. Le contexte est limité. Veuillez affiner votre demande ou ajuster les paramètres.<br />
+Nbr de ligne max : {{maxRows}}<br />
+Nbr de résultat : {{count}}<br />
+
+error_llm_guardrails_block = Je ne peux pas fournir cette réponse en raison de problèmes de fiabilité détectés. Pouvez-vous reformuler votre question ?
+error_llm_guardrails_manual_review = Note: Cette réponse nécessite une vérification manuelle concernant cette réponse : {{result}}
+success_llm_guardrails_manual_confidence_score = Niveau de confiance: {{confidenceScore}}. La réponse a été acceptée  : {{result}}
+error_llm_guardrails_validation = Erreur lors de la validation
+error_llm_guardrails_evaluation = Erreur lors de l'évaluation
+error_llm_guardrails_invalid_format = Réponse illisible ou format invalide
+
+llm_guardrails_prompt_relevance = Améliorer la pertinence.
+llm_guardrails_prompt_accuracy = Vérifier l’exactitude métier.
+llm_guardrails_prompt_completeness = Ajouter des détails.
+llm_guardrails_prompt_clarity = Clarifier la rédaction.
+llm_guardrails_prompt_hallucination = Attention : risque élevé d’hallucination détecté.
+llm_guardrails_prompt_sources = Améliorer la qualité et la fiabilité des sources.
+
+
+llm_guardrails_accuracy = Exactitude
+llm_guardrails_relevance = Pertinence
+llm_guardrails_completeness = Complétude
+llm_guardrails_clarity = Clarté
+llm_guardrails_reliability = Fiabilité
+llm_guardrails_overall_score = Score global
+
+
+
+
+column_entity_id = ID
+column_products_id = ID Produit
+column_catalog_price = Prix catalogue
+column_days_until_stockout = Jours avant rupture
+column_estimated_stockout_date = Date de rupture estimée
+column_stockout_probability = Probabilité de rupture
+column_daily_sales_velocity = Ventes par jour
+column_recommended_reorder_quantity = Quantité à commander
+column_stock_risk_status = État du stock
+column_stock_risk_level = Niveau de risque
+column_forecast_horizon_days = Horizon de prévision (jours)
+value_stock_risk_status_out_of_stock = En rupture
+value_stock_risk_status_below_threshold = Sous le seuil d'alerte
+value_stock_risk_status_rupture_within_lead_time = Rupture dans le délai de réapprovisionnement
+value_stock_risk_status_rupture_within_horizon = Rupture dans l'horizon
+value_stock_risk_status_ok = OK
+value_stock_risk_level_low = Faible
+value_stock_risk_level_medium = Moyen
+value_stock_risk_level_high = Élevé
+column_manufacturers_id = ID Marque
+column_categories_id = ID Catégorie
+column_orders_id = ID Commande
+column_customers_id = ID Client
+column_suppliers_id = ID Fournisseur
+column_reviews_id = ID Avis
+
+column_manufacturers_name = Nom de la Marque
+column_products_name = Nom du Produit
+column_categories_name = Nom de la Catégorie
+column_customers_name = Nom du Client
+column_suppliers_name = Nom du Fournisseur
+
+column_products_quantity = Stock
+column_quantity = Quantité
+column_products_ordered = Quantité Vendue
+
+column_products_price = Prix
+column_price = Prix
+column_source = Marchand
+column_title = Offre
+column_old_price = Prix précédent
+column_rating = Note
+column_link = Lien
+column_total_price = Montant Total
+column_final_price = Prix Final
+
+column_date_added = Date d'Ajout
+column_date_modified = Date de Modification
+column_orders_date = Date de Commande
+column_date_purchased = Date d'Achat
+
+column_products_model = Modèle
+column_products_status = Statut
+column_orders_status = Statut Commande
+column_status = Statut
+
+column_products_description = Description
+column_categories_description = Description
+column_customers_email_address = Email
+column_customers_telephone = Téléphone
+column_variation_percent = Évolution (%)
+column_variation_points = Évolution (points)
+column_period_year = Année
+column_period_quarter = Trimestre
+column_quarter_num = Trimestre
+column_period_month = Mois
+column_line_revenue = CA produits
+column_revenue_ht = Chiffre d'affaires
+column_gross_margin_amount = Marge brute
+column_gross_margin_percent = Taux de marge (%)
+column_gross_margin_pct = Taux de marge (%)
+column_revenue_without_cost = CA sans coût enregistré
+column_net_orders_count = Commandes nettes (remboursements déduits)
+
+status_inactive = ❌ Inactif
+status_active = ✅ Actif
+status_pending = ⏳ En attente
+status_completed = ✅ Terminé
+status_cancelled = ❌ Annulé
+status_processing = 🔄 En cours
+
+value_null = -
+value_empty = -
+value_unknown = Inconnu
+
+
+text_chat_loading_analyzing = Analyse en cours de votre demande. Veuillez patienter. Merci.<br>
+Note : Veuillez toujours vérifier la réponse de l'IA.
+
+text_chat_loading_request = Envoi de votre demande...
+text_chat_validation_empty = Veuillez entrer une question
+text_chat_validation_too_long = Votre question est trop longue (max {{maxLength}} caractères)
+text_chat_error_prefix = Erreur: 
+text_chat_error_config_missing = Configuration manquante
+text_chat_error_unknown = Erreur inconnue
+text_chat_error_server = Erreur serveur
+text_chat_error_session_expired = Votre session a expiré ou la requête a été bloquée avant d'atteindre le serveur. Reconnectez-vous, puis renvoyez votre question.
+text_chat_error_empty_response = Réponse vide du serveur
+text_chat_error_invalid_response = Réponse invalide
+text_chat_metrics_confidence_title = Niveau de confiance de l'IA
+text_chat_metrics_confidence_label = Confiance
+text_chat_metrics_security_title = Score de sécurité de la réponse
+text_chat_metrics_security_label = Sécurité
+text_chat_metrics_hallucination_title = Probabilité d'hallucination
+text_chat_metrics_hallucination_label = Hallucination
+text_chat_metrics_quality_title = Qualité globale de la réponse
+text_chat_metrics_quality_label = Qualité
+text_chat_metrics_relevance_title = Pertinence par rapport à la question
+text_chat_metrics_relevance_label = Pertinence
+text_chat_metrics_fidelity_title = Fidélité de la réponse (ancrage dans les sources/données) - plus c'est haut, mieux c'est
+text_chat_metrics_fidelity_label = Fidélité
+text_chat_metrics_to_verify_title = Le contrôle qualité IA a signalé cette réponse - à vérifier avant de vous y fier
+text_chat_metrics_to_verify_label = À vérifier
+text_chat_reset_confirm = Voulez-vous vraiment créer un nouveau contexte? Cela effacera l'historique de la conversation actuelle.
+text_chat_reset_loading = Création d'un nouveau contexte...
+text_chat_reset_success_title = Nouveau contexte créé!
+text_chat_reset_success_body = Vous pouvez maintenant commencer une nouvelle conversation.
+text_chat_error_context_prefix = Erreur: 
+text_chat_error_context_unknown = Erreur inconnue
+text_chat_error_context_missing_output = Réponse vide du serveur
+text_chat_clarification_title = Précision requise
+text_chat_clarification_placeholder = Votre réponse...
+text_chat_clarification_send = Envoyer
+text_chat_clarification_info = Ou saisissez votre réponse :
+text_chat_clarification_error_missing = Données de clarification manquantes
+text_chat_clarification_error_empty = Veuillez entrer une précision
+text_chat_clarification_error_request = Erreur lors de l'envoi de la précision
+text_chat_clarification_status_sending = Envoi de votre précision...
+text_chat_clarification_status_received = Précision reçue.
+text_chat_clarification_error_invalid_response = Réponse de clarification invalide
+text_chat_clarification_response_prefix = Précision :
+text_chat_clarification_retry = Réessayer
+text_chat_feedback_correction_label = Connaissez-vous la bonne réponse ? (optionnel)
+text_chat_feedback_correction_placeholder = Écrivez la réponse attendue — c’est elle dont le système apprend.
+
+text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus précis sur ce que vous voulez savoir.
+text_multiple_interpretations_review = Plusieurs interprétations fournies. Veuillez examiner tous les résultats.
+text_ambiguous_query_detected = Plusieurs interprétations détectées
+text_clarification_needed = Clarification nécessaire
+
+text_rag_insufficient_information = Je n'ai pas suffisamment d'informations fiables pour répondre à cette question avec précision. Les informations disponibles dans ma base de connaissances sont insuffisantes ou pas directement pertinentes à votre requête.
+text_rag_source_insufficient_information = Informations Insuffisantes - Réponse rejetée en raison d'un score de fiabilité faible
+
+
+
+text_notify_user_site_unavailable = Le site [{{targetSite}}] n'est pas encore disponible dans la base de données compétiteur, veuillez compléter votre base de sites compétiteurs.\n\nSites disponibles actuellement : {{availableSites}}.
+Nous effectuons une recherche Google Shopping à la place.
+
+text_rate_limiter_wait = Veuillez attendre {{wait}} secondes avant de relancer cette opération.
+error_data_encryption_missing = Sécurité : la clé data_encryption est absente de Core/ClicShopping/Conf/global.php. Les données clients ne peuvent plus être chiffrées tant qu'elle n'est pas ajoutée. Relancez l'installation SANS réinstaller la base pour régénérer le fichier, ou ajoutez la ligne à la main puis remettez les droits en lecture seule.
+text_browser_unsupported_title = Navigateur non pris en charge
+text_browser_unsupported = Ce navigateur est trop ancien pour utiliser l'administration en sécurité : il n'envoie pas l'en-tête de sécurité Sec-Fetch-Site. Veuillez le mettre à jour ou utiliser un navigateur récent (Chrome, Edge, Firefox, Safari).

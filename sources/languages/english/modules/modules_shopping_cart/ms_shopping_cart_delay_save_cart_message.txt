@@ -1,0 +1,4 @@
+ module_shopping_cart_delay_save_cart_message_title = Do you want to display an information message for the customer allowing to know the delay about this cart is saved ?
+ module_shopping_cart_delay_save_cart_message_description = Display an information message for the customer allowing to know the delay about this cart is saved
+
+ module_shopping_cart_delay_save_cart_message_information = Your basket content are stored here for 30+ days, after registred, so you can return anytime

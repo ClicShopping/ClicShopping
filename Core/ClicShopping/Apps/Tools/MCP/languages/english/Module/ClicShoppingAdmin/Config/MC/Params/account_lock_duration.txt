@@ -1,0 +1,2 @@
+cfg_products_api_account_lock_duration_title = Account Lock Duration
+cfg_products_api_account_lock_duration_description = Specifies the time period an account remains locked after exceeding allowed limits.

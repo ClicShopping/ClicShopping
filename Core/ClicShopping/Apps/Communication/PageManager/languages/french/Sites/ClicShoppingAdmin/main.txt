@@ -1,0 +1,168 @@
+heading_title = Page Manager
+module_pm_title = Page Manager
+module_pm_short_title = Page Manager
+
+title_menu = Page Manager
+
+text_page_manager =  Page Manager
+text_configure =  Configurer App Module
+
+text_intro = Cette App vous permet une page de gestion des Pages statiques. <br />
+
+module_pm_introduction = Le processus d'installation installe le menu
+
+module_pm_short_title = Page Manager
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+
+button_page_manager = Page Manager
+button_cancel = Annuler
+button_new = Nouveau
+button_back = Retour
+button_send = Send
+button_save = Enregister
+button_delete = Supprimer
+button_new = Nouvelle page
+button_insert = Insérer
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+heading_title = Page d'accueil et informations
+heading_title_edition = Edition page
+heading_title_new = Nouvelle page
+table_heading_page_type = Type boxe
+
+table_heading_pages = Titre de la page
+table_heading_type_page = Type de page
+table_heading_status = Statut
+table_heading_customers_group = Groupes client
+table_heading_sort_order = Ordre de tri
+table_heading_action = Actions
+table_heading_links_target = Type de liens
+table_heading_page_type = Boxe type
+
+tab_general = Général
+tab_page_link = Liens de la page
+tab_page_description = Description
+tab_page_meta_tag = Méta Tag
+
+title_pages_choose = Type de page
+text_pages_choose = Veuillez sélectionner le type de page que vous souhaitez insérer
+
+title_name_page = Nom de la page
+
+title_pages_date = Date
+text_pages_date_start = Planifié le
+text_pages_date_closed = Expire le
+text_date_added = Date d'ajout
+text_last_modified =  'Dernière modification
+text_status_change = Changement du statut
+text_page_manager_customers_group = Groupe de client pour affichage
+text_start_date = Date début
+text_close_date = Date d'expiration
+
+normal_customer = Clients Normaux
+text_all_groups = Tous les groupes
+
+title_pages_type = Type de la page
+text_pages_box = Choix boxe d'affichage
+text_pages_type = Type de page
+
+page_manager_select = ---- Selectionnez ----
+page_manager_introduction_page = Introduction
+page_manager_main_page = Accueil
+page_manager_contact_us = Nous contacter
+page_manager_informations = Informations
+page_manager_main_box = Boxe principale
+page_manager_secondary_box = Boxe secondaire
+page_manager_landing_page = Landing page
+page_manager_none = Aucune
+page_manager_menu_header = Menu entête du site
+page_manager_menu_footer = Menu bas de page du site
+
+text_pages_general_conditions = Est une page Conditions Générales de Vente ?
+page_manager_text_yes = Oui
+page_manager_text_no = Non
+
+title_divers = Divers
+text_pages_time = Temps d'affichage de la page d'introduction
+text_pages_time_seconde = <i>Secondes</i>
+text_pages_sort_order = Ordre de tri
+
+title_link = Type de lien sur la page
+text_pages_intext = Type de lien
+text_link_same_windows = Même fenêtre
+text_link_new_windows = Nouvelle fenêtre
+text_target_internal = Interne
+text_target_external = Externe
+text_pages_external_link = URL Externe de la page
+text_target = Affichage cible de la page
+text_target_samewindow = Meme onglet
+text_target_newwindow = Nouvel onglet
+
+text_pages_information_description = Description de la page
+
+text_info_delete_intro = &Euml;tes-vous certain que vous voulez supprimer cette page ?
+
+keywords_google_trend = Tendance des mots clefs selon Google
+
+text_products_page_refefrencement = Métadonnées
+text_products_page_title = Titre
+text_products_header_description = Description
+text_products_keywords = Mots clefs
+text_products_tag_product = tags Produit
+text_products_tag_blog = Blog tag
+text_products_page_seo = SEO
+
+title_help_seo = Notes sur la gestion des métadonnées
+help_seo = <li>Le système gère automatiquement la gestion des métadonnées.<br />
+<blockquote>il inscrit automatiquement les éléments dans l'ordre suivant si les champs ne sont pas renseignées:<br />
+titre : le nom de votre article (ex blouson cuir)<br />
+description : le nom de l'article (blouson cuir), le nom du article découpé (blouson, cuir), le nom de la catégorie,)<br />
+keywords : le nom du l'article (blouson cuir), le nom du l'article découpé (blouson, cuir), le nom de la catégorie<br />
+categorie : la catégorie de l'article<br />
+</blockquote></li>
+<li>si vous renseignez les champs, les balises apparaitront de la facon suivante : <br />
+<blockquote>
+titre : le titre du champs, le nom de votre article (ex blouson cuir)<br />
+description : le champs description, le nom de l'article (blouson cuir), le nom du article découpé (blouson, cuir), le nom de la catégorie<br />
+mots clefs : le champs mots clefs, le nom de l'article (blouson cuir), le nom de l'article découpé (blouson, cuir), le nom de la catégorie<br />
+</blockquote></li>
+<li><strong>veuillez à ne pas mettre trop de mots clefs (maximum 10)</strong> et établissez une cohérence entre chaque champs afin de retrouver les mots les plus importants en premier</li>
+
+
+title_help_image = Aide
+title_help_page_manager = Note sur la création des pages d'introduction
+text_pages_type_information = <li>Concernant la page d'introduction, nous vous suggérons de la laisser afficher au <u>minimum 10 secondes</u>. Si vous souhaitez un temps illimité, laisser le champs vide
+title_help_description = Note sur l'utilisation du wysiwyg
+help_description = <li>Si vous avez inséré des plugin dans Firefox, il peut y avoir des incompatibilités (ex : adblock plus)</li>
+
+success_page_inserted = Succès : La page a été insérée.
+success_page_updated = Succès : La page a été mise à jour.
+success_page_removed = Succès : La page a été supprimée.
+success_page_manager_status_updated = Succès : Le statut de la page a été mis à jour.
+error_page_title_required = Erreur : Le titre de page est requis.
+error_page_title_required_curseur = <span class="errorText">Veuillez informer le titre de la page.</span>
+
+image_new_page = Nouvelle page
+icon_edit = Editer la page
+icon_preview = Prévisualiser
+icon_delete = Supprimer
+
+text_result_page = Page {{listing_from}} à {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+text_help_wysiwyg = Aide wysiwig
+help_options =

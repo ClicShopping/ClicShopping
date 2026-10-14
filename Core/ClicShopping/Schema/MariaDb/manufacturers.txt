@@ -1,0 +1,15 @@
+manufacturers_id int not_null auto_increment comment(Primary key - unique identifier for each manufacturer)
+manufacturers_name varchar(64) not_null comment(Manufacturer name or brand name)
+manufacturers_image varchar(255) comment(Path to manufacturer logo or image file)
+date_added datetime comment(Timestamp when manufacturer was created)
+last_modified datetime comment(Timestamp of last modification to manufacturer)
+manufacturers_status tinyint(1) default(0) not_null comment(Manufacturer status - 0: inactive, 1: active and visible)
+suppliers_id int not_null default(0) comment(FK to suppliers table - primary supplier for this manufacturer, 0: no supplier)
+--
+primary manufacturers_id
+idx_manufacturers_name manufacturers_name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Manufacturer (brand) identity, one row per brand. The products of a brand reference it by manufacturers_id in products.

@@ -1,0 +1,5 @@
+cfg_chatgpt_cache_rag_manager_title = Enable RAG Cache
+cfg_chatgpt_cache_rag_manager_description = Enable caching for RAG queries to improve response speed. Cached results are reused for identical queries, significantly reducing processing time and API costs. Recommended: True for production environments.
+
+cfg_chatgpt_cache_rag_manager_status_true = True
+cfg_chatgpt_cache_rag_manager_status_false = False

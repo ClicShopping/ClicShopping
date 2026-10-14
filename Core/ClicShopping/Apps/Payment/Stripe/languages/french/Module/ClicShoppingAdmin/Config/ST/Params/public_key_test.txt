@@ -1,0 +1,3 @@
+cfg_stripe_public_key_test_title = Clef publique Test
+cfg_stripe_public_key_test_desc = Clef publique du compte Test que vous utilisez <br />
+More information : https://stripeup.com/

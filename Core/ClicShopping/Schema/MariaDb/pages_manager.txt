@@ -1,0 +1,21 @@
+pages_id int(11) not_null auto_increment comment(Primary key - unique identifier for each page)
+links_target varchar(6) default('_self') comment(Link target attribute - _self: same window, _blank: new window)
+sort_order int(3) comment(Display order of pages in navigation)
+status int(1) default(1) not_null comment(Page status - 0: disabled, 1: enabled)
+page_type int(1) default(0) not_null comment(Page type - 0: standard, 1: popup, 2: modal)
+page_box int(1) default(0) not_null comment(Display in box - 0: no, 1: yes)
+page_time varchar(4) not_null comment(Time-based display control - HHMM format)
+page_date_start datetime comment(Start date for page visibility)
+page_date_closed datetime comment(End date for page visibility)
+date_added datetime not_null comment(Timestamp when page was created)
+last_modified datetime comment(Timestamp of last modification)
+date_status_change datetime comment(Timestamp when status was last changed)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - which customer group can see this page, 0 for all)
+page_general_condition int(1) default(0) not_null comment(General conditions page flag - 0: regular page, 1: terms and conditions page)
+--
+primary pages_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment CMS page of the shop (terms, legal notice, help): type, status, dates and audience. The title and the HTML body are in pages_manager_description. The copy accepted on an order is in orders_pages_manager.

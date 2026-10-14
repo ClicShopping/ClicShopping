@@ -1,0 +1,21 @@
+session_id varchar(255) not_null comment(Unique identifier for the consensus session (UUID))
+output_id varchar(255) not_null comment(Output being evaluated for consensus)
+participating_agents longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`participating_agents`)) comment(Array of agent IDs participating in consensus)
+initial_scores longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`initial_scores`)) comment(Initial evaluation scores from each agent)
+consensus_reached tinyint(1) default 0 comment(Whether consensus was achieved)
+final_score decimal(3,2) default null comment(Final consensus score if reached)
+discussion_log longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(`discussion_log`)) comment(Log of discussion exchanges between agents)
+created_at timestamp NULL default(current_timestamp) comment(When the session started)
+resolved_at timestamp NULL default null comment(When consensus was reached or session ended)
+
+--
+primary session_id
+idx_output_id output_id
+idx_consensus_reached consensus_reached
+idx_created_at created_at
+idx_resolved_at resolved_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

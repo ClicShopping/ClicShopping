@@ -1,0 +1,11 @@
+modules_tell_a_friend_customer_title = Do you want to display the form for the customer with your details
+modules_tell_a_friend_customer_description = Display the for for the customer with your details
+
+modules_tell_a_friend_title_customer_details = Your details
+modules_tell_a_friend_field_customer_name = Your name :
+modules_tell_a_friend_entry_first_name_text = *
+
+modules_tell_a_friend_field_customer_email = Your Email
+modules_tell_a_friend_entry_email_address_text = *
+
+modules_tell_a_friend_email_dgrp = We need your email to inform your friend that you are sending him a message

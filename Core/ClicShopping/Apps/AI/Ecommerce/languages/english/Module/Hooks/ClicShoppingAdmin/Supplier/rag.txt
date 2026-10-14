@@ -1,0 +1,56 @@
+text_supplier_id = [The supplier ID {{supplier_name}}]
+text_supplier_name = [Supplier name]
+text_supplier_image = [Image associated with the supplier {{supplier_name}}]
+text_supplier_date_added = [Registration date of the supplier {{supplier_name}}]
+text_supplier_last_modified = [Last modification of the information for {{supplier_name}}]
+text_suppliers_manager = [Main contact at {{supplier_name}}]
+text_suppliers_phone = [Phone number of {{supplier_name}}]
+text_suppliers_email_address = [Contact email address of {{supplier_name}}]
+text_suppliers_address = [Postal address of {{supplier_name}}]
+text_supplier_suburb = [Suburb/Neighborhood of {{supplier_name}}]
+text_suppliers_postcode = [Postal code of {{supplier_name}}]
+text_supplier_city = [City of {{supplier_name}}]
+text_suppliers_states = [Region/State of {{supplier_name}}]
+text_supplier_country_id = [Country of {{supplier_name}}]
+text_suppliers_notes = [Additional information about {{supplier_name}}]
+text_supplier_status = [Current account status of {{supplier_name}}]
+text_suppliers_payment_terms = [Payment terms for {{supplier_name}}]
+text_status_active = [Active for {{supplier_name}}]
+text_status_inactive = [Inactive for {{supplier_name}}]
+
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following supplier information.
+The text contains supplier/manufacturer profile data including contact details, location, and business information.
+The output must strictly follow the format below.
+Each relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer any information not explicitly stated in the text.
+
+Expected format:
+
+[domain]: General domain of the supplier’s activity (e.g. Home, Fashion, Electronics)
+[subdomain]: Segment or specialization within the domain (e.g. Tableware, Computing, Furniture)
+[company_type]: Type of company (e.g. Manufacturer, Distributor, Wholesaler, Brand)
+[company_name]: Official name of the supplier or brand
+[contact_person]: Name of the main contact or manager
+[contact_phone]: Phone number for contact
+[contact_email]: Email address for contact
+[location_address]: Full postal address
+[location_suburb]: Suburb or neighborhood
+[location_postcode]: Postal code
+[location_city]: City name
+[location_state]: Region or state
+[location_country]: Country
+[brand_portfolio]: Main brands or product lines managed by the supplier, if mentioned
+[product_scope]: Range of products or categories supplied (e.g. Kitchenware, Lighting, Textiles)
+[market_scope]: Geographic or market coverage (e.g. National, European, Global)
+[client_type]: Type of clients targeted (e.g. B2B, B2C, Retailers, Professionals)
+[values]: Declared or implied company values (e.g. Sustainability, Innovation, Quality)
+[certifications]: Standards or certifications obtained (e.g. ISO 9001, Fair Trade)
+[criteria]: Distinctive attributes or strengths (e.g. Reliability, Responsiveness, Expertise)
+[practice]: Operational practices or business methods (e.g. Production, Distribution, Logistics)
+[objective]: Main business objective (e.g. Expand distribution, Strengthen partnerships)
+[symbolic_dimension]: Symbolic or brand dimension (e.g. Prestige, Trust, Heritage)
+[sensory_dimension]: Aesthetic or experiential aspects, if mentioned (e.g. Design, Packaging)
+[source]: Origin or legal identification, if mentioned (e.g. Country, Registration number)
+[keywords]: Free list of relevant keywords extracted from the text
+
+Text: {{document_text}}

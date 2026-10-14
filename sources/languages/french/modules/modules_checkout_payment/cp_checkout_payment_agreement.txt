@@ -1,0 +1,6 @@
+module_checkout_payment_agreement_title = Souhaitez-vous afficher une checkbox d'acceptation des condtions de vente ?
+module_checkout_payment_agreement_description = Affiche une checkbox d\acceptation des condtions de vente
+
+module_checkout_payment_agreement_table_heading_conditions = Information sur les conditions de vente
+module_checkout_payment_agreement_text_conditions_confirm = Veuillez approuver les conditions de vente liées à cette commande en cochant cette case. Les conditions de vente peuvent être consultées <a target="_blank" href="{{shop_code_url_conditions_vente}}" rel="noreferrer"><u>ici</u></a>
+module_checkout_payment_agreement_text_conditions_description = <strong>J'ai lu et j'accepte les conditions de vente liées à cette commande</strong>.

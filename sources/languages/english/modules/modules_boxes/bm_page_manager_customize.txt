@@ -1,0 +1,5 @@
+
+ module_boxes_page_manager_customize_title = Secondary information box
+ module_boxes_page_manager_customize_description = Secondary information box
+
+ module_boxes_page_manager_customize_box_title = Our informations

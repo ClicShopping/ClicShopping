@@ -1,0 +1,2 @@
+cfg_reviews_review_number_title = Nombre de commentaires à analyser
+cfg_reviews_review_number_description = Pour l'analyse de sentiments des commentaires des clients, vous devez avoir un minimum de commentaires. Nous vous recommendons 10.

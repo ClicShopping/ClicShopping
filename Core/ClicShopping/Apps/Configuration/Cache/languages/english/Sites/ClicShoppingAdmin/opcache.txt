@@ -1,0 +1,42 @@
+heading_title = OPcache Management
+heading_reset_opcache = Reset OPcache
+heading_memory_usage = Memory Usage
+heading_cache_statistics = Cache Statistics
+heading_configuration = Configuration
+heading_installation_guide = Installation Guide
+
+text_enable_realtime = Enable Realtime Updates
+text_disable_realtime = Disable Realtime Updates
+text_reset_opcache = Reset OPcache
+text_reset_confirm = Are you sure you want to reset the OPcache?
+text_opcache_not_available = OPcache data not available
+
+text_memory_type = Memory Type
+text_value = Value
+text_start_time = Start Time
+text_restart_count = Restart Count
+text_used_memory = Used Memory
+text_free_memory = Free Memory
+text_wasted_memory = Wasted Memory
+text_wasted_percentage = Wasted Memory Percentage
+
+text_statistic = Statistic
+text_cache_hits = Cache Hits
+text_cache_misses = Cache Misses
+text_cached_scripts = Cached Scripts
+text_cached_keys = Cached Keys
+
+text_setting = Setting
+text_php_version = PHP Version
+text_opcache_version = OPcache Version
+text_enabled = Enabled
+text_memory_consumption = Memory Consumption
+text_jit_enabled = JIT Enabled
+text_jit_buffer_size = JIT Buffer Size
+
+text_config_instructions = Configuration Instructions
+text_edit_php_ini = Edit php.ini Configuration
+text_restart_server = Restart Web Server
+
+text_info = opcache is a caching engine built into PHP to improve performance by storing precompiled script bytecode in shared memory, eliminating the need for PHP to load and parse scripts on each request.<br />
+but if you are in development mode, you must disable the OpCache in your php.ini file (on 0) or reset each time because OpCache use a persisting mode.<br />

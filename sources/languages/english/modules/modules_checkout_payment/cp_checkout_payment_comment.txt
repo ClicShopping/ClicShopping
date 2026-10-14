@@ -1,0 +1,5 @@
+
+ module_checkout_payment_comment_title = Do you want to allow the customer to insert a comment about this order ?
+ module_checkout_payment_comment_description = Allow the customer to insert a comment about this order
+ module_checkout_payment_comment_table_heading_comments = Add Comments About Your Order
+ module_checkout_payment_comment_text = Insert your comment

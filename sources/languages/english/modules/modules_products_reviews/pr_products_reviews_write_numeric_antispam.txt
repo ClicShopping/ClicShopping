@@ -1,0 +1,2 @@
+modules_products_reviews_write_numeric_antispam_title = Write comment : Do you want to display a numeric antispam (trap)?
+modules_products_reviews_write_numeric_antispam_description = Display a  numeric antispam

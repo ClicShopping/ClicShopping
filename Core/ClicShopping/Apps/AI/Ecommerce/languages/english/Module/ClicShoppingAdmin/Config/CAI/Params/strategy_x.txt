@@ -1,0 +1,5 @@
+cfg_ecommerce_cockpit_ai_strategy_x_title = Strategy X (Product Quality)
+cfg_ecommerce_cockpit_ai_strategy_x_description = Strategy Y (Commercial Performance)
+cfg_ecommerce_cockpit_ai_strategy_x_visibility = Visibility
+cfg_ecommerce_cockpit_ai_strategy_x_quality = Quality
+cfg_ecommerce_cockpit_ai_strategy_x_completeness = Completeness

@@ -1,0 +1,6 @@
+cfg_antispam_numeric_status_title = Status
+cfg_antispam_numeric_status_description = Set True to enable or not the module
+
+cfg_antispam_numeric_status_true = True
+cfg_antispam_numeric_status_false = False
+

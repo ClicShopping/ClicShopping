@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_title = Voulez-vous afficher les conditions de confidentialité lors de la création d'un compte ?
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_description = Voulez-vous consulter les conditions de confidentialité lors de la création d'un compte ?
+
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_true = True
+cfg_configuration_compliance_policy_rules_display_privacy_conditions_false = False

@@ -1,0 +1,13 @@
+modules_tell_a_friend_customer_title = Souhaitez-vous afficher le formulaire pour le client
+modules_tell_a_friend_customer_description = Afficher le formulaire pour le client
+
+modules_tell_a_friend_title_customer_details = Vos coordonnées
+modules_tell_a_friend_field_customer_name = Votre nom
+modules_tell_a_friend_entry_first_name_text = *
+
+modules_tell_a_friend_field_customer_email = Votre Email
+modules_tell_a_friend_entry_email_address_text = *
+
+modules_tell_a_friend_email_dgrp = Nous avons besoin de votre courriel pour informer votre ami que vous lui envoyer un message
+
+

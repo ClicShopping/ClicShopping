@@ -1,0 +1,8 @@
+module_boxes_whats_new_title = What's New
+module_boxes_whats_new_description = Show the newest products
+module_boxes_whats_new_box_title = What's new
+module_boxes_new_products_all_products = All news
+
+text_flash_discount = Flash Discount
+
+button_detail = More Infos

@@ -1,0 +1,12 @@
+customers_notes_id int not_null auto_increment comment(Primary key - unique identifier for each customer note)
+customers_id int not_null comment(FK to customers table - customer this note is about)
+customers_notes text not_null comment(Note content - internal administrative notes about the customer)
+customers_notes_date datetime comment(Timestamp when note was created)
+user_administrator varchar(255) not_null comment(Administrator username who created this note)
+--
+primary customers_notes_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Administrative notes about customers for internal tracking and communication

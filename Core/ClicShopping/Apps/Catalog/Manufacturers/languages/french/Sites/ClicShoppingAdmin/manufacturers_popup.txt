@@ -1,0 +1,25 @@
+heading_title = Marques
+
+title_manufacturer_general = Informations générale
+text_manufacturers_description = Description
+title_manufacturer_image = Image
+
+text_image_nonexistent = L'IMAGE N'EXISTE PAS
+text_products_image_vignette = Image
+
+tab_description = Description
+tab_visuel = Image
+tab_seo = Métadonnées
+
+text_manufacturers_name = Nom de la marque :
+text_manufacturers_new_image = Nouvelle image de la marque :
+text_manufacturers_image = Image actuelle de la marque :
+text_manufacturers_delete_image = Ne plus afficher d'image de la marque
+text_manufacturers_url = URL de la marque :
+
+title_manufacturers_seo = Métadonnées pour le marques du produit
+text_manufacturer_seo_title = Titre
+title_manufacturer_seo_description = Description
+title_manufacturer_seo_keywords = Mots clés
+
+text_delete_image = Suppprimer l'image de la marque ?

@@ -1,0 +1,3 @@
+module_shopping_cart_checkout_step_title = Do you want to display the step about the order process ?
+
+module_shopping_cart_checkout_step_description = display the step about the order process

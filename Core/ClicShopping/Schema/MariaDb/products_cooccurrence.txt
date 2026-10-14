@@ -1,0 +1,13 @@
+product_id int not_null comment(Primary product identifier (source))
+related_id int not_null comment(Associated product identifier (target))
+score int not_null default(0) comment(Strength of association or frequency of co-purchase/view)
+updated_at timestamp null default(current_timestamp) on update current_timestamp() comment(coocurrence updated date)
+--
+primary product_id related_id
+idx_product_id product_id
+idx_related_id related_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment CO-PURCHASE affinity between two products, with a score: how often product_id and related_id are bought together. Derived from the order history, it answers cross-sell and bundle questions - it holds no price, no quantity and no revenue, those are in orders_products.

@@ -1,0 +1,868 @@
+dashboard_title = RAG Dashboard - Monitoring & Analytics
+dashboard_subtitle = Real-time RAG system monitoring
+
+# Buttons
+button_help = 📖 Help
+button_rag_websearch_config = 🌐 Competitors
+button_conversation_hystory = 💬 History
+button_reset_cache = 🗑️ Reset Cache
+button_reset_all_stats = Reset Stats
+button_export_json = Export JSON
+button_export_csv = Export CSV
+button_export_html = Export HTML
+text_ĥeading_remove_cache = Remove Cache
+
+# Main Metrics
+metric_total_requests = Total Requests
+metric_since_startup = since startup
+metric_error_rate = Error Rate
+metric_errors_count = errors
+metric_response_time = Response Time
+metric_average = average
+metric_memory_usage = Memory Usage
+metric_current_usage = current usage
+
+# Tokens
+metric_tokens_total = Total Tokens
+metric_tokens_7days = last 7 days
+metric_estimated_cost = Estimated Cost
+metric_requests_count = requests
+metric_tokens_input = Input Tokens
+metric_tokens_entry = input tokens
+metric_tokens_output = Output Tokens
+metric_tokens_exit = output tokens
+
+# Components
+component_status = Status
+component_calls_total = Total Calls
+component_success_rate = Success Rate
+component_avg_time = Avg Time
+component_healthy = HEALTHY
+component_degraded = DEGRADED
+component_critical = CRITICAL
+
+# Sections
+section_health_score = System Health
+section_system_metrics = System Metrics
+section_components = Components
+section_alerts = Alerts
+section_classification = Classification & Accuracy
+section_security = Security & Quality
+section_agents = Agents & Performance
+section_memory = Memory & Context
+section_feedback = User Feedbacks
+
+# Classification
+classification_total_requests = Total Requests
+classification_global_precision = Global Accuracy
+classification_based_on_confidence = Based on confidence
+classification_analytics = Analytics
+classification_semantic = Semantic
+classification_hybrid = Hybrid
+classification_error = Error
+
+# Security
+security_score = Security Score
+security_excellent = Excellent
+security_good = Good
+security_warning = Warning
+security_evaluations = Evaluations
+security_alerts = Security Alerts
+security_low_scores = Low scores
+
+# Agents
+agents_total_usage = Total Usage
+agents_avg_success_rate = Average Success Rate
+agents_all = All agents
+agents_most_used = Most Used Agent
+agents_main = Main agent
+agents_performance = Performance by Agent
+agents_usage = Usage
+agents_success_rate = Success Rate
+agents_avg_confidence = Average Confidence
+agents_usage_distribution = Agent Usage Distribution
+
+# Reasoning Modes
+reasoning_modes_title = Reasoning Modes Statistics
+reasoning_mode_cot = Chain-of-Thought (CoT)
+reasoning_mode_tot = Tree-of-Thought (ToT)
+reasoning_mode_sc = Self-Consistency (SC)
+reasoning_mode_usage = Usage
+reasoning_mode_success_rate = Success Rate
+reasoning_mode_avg_steps = Avg Steps
+reasoning_mode_avg_paths = Avg Paths
+reasoning_mode_avg_attempts = Avg Attempts
+reasoning_mode_avg_confidence = Avg Confidence
+reasoning_mode_avg_agreement = Avg Agreement
+reasoning_mode_no_data = No reasoning data available yet
+
+# Charts
+chart_performance_evolution = Performance Evolution
+chart_severity_distribution = Severity Distribution
+chart_request_types = Request Types Distribution
+chart_security_scores = Security Scores
+chart_agents_performance = Agent Performance
+chart_agents_usage = Agent Usage Distribution
+chart_reasoning_modes = Reasoning Modes Usage
+chart_no_data = No data available
+
+# Alerts
+alert_severity_info = Info
+alert_severity_warning = Warning
+alert_severity_error = Error
+alert_severity_critical = Critical
+
+# Messages
+success_reset_all_stats = All statistics have been successfully reset
+error_reset_stats = Error while resetting statistics
+confirm_reset_title = Reset all statistics
+confirm_reset_message = This action will permanently delete all interactions and statistics. This action is irreversible!
+confirm_reset_yes = Yes, reset
+confirm_reset_no = Cancel
+
+# Reset Modal
+modal_reset_title = ⚠️ Reset all statistics
+modal_reset_warning = Warning!
+modal_reset_description = This action will permanently delete:
+modal_reset_item1 = All recorded interactions
+modal_reset_item2 = All detailed statistics
+modal_reset_item3 = All charts will be reset
+modal_reset_irreversible = This action is irreversible!
+modal_reset_confirm = Are you sure you want to continue?
+
+# Status
+status_live = Live
+status_last_update = Last update
+status_problems_detected = Problems detected
+
+# Time
+time_days = d
+time_hours = h
+time_minutes = m
+time_seconds = s
+time_milliseconds = ms
+
+# Performance Tab
+tab_performance = Performance
+performance_title = ⚡ Performance Metrics
+performance_subtitle = Detailed performance analysis from rag_statistics
+performance_period = Period
+performance_last_7_days = Last 7 days
+performance_last_30_days = Last 30 days
+performance_all_time = All time
+
+# Performance Metrics
+performance_total_queries = Total Queries
+performance_avg_response_time = Average Response Time
+performance_min_response_time = Min Response Time
+performance_max_response_time = Max Response Time
+performance_cache_hit_rate = Cache Hit Rate
+performance_cache_hits = Cache Hits
+performance_cache_misses = Cache Misses
+performance_api_calls = API Calls
+performance_total_tokens = Total Tokens
+performance_total_cost = Total Cost
+performance_avg_cost_per_query = Avg Cost per Query
+
+# Performance by Agent
+performance_by_agent = Performance by Agent
+performance_agent_name = Agent Name
+performance_agent_queries = Queries
+performance_agent_avg_time = Avg Time
+performance_agent_success_rate = Success Rate
+performance_agent_confidence = Confidence
+
+# Performance by Classification
+performance_by_classification = Performance by Classification Type
+performance_classification_type = Type
+performance_classification_count = Count
+performance_classification_percentage = Percentage
+performance_classification_avg_confidence = Avg Confidence
+
+# Response Time Distribution
+performance_response_time_dist = Response Time Distribution
+performance_time_under_1s = Under 1s
+performance_time_1_to_3s = 1-3s
+performance_time_3_to_5s = 3-5s
+performance_time_over_5s = Over 5s
+
+# Error Analysis
+performance_errors = Error Analysis
+performance_total_errors = Total Errors
+performance_error_rate_percent = Error Rate
+performance_errors_by_type = Errors by Type
+performance_error_type = Error Type
+performance_error_count = Count
+
+# Quality Metrics
+performance_quality = Quality Metrics
+performance_avg_quality_score = Average Quality Score
+performance_avg_security_score = Average Security Score
+performance_low_quality_count = Low Quality Responses
+performance_high_quality_count = High Quality Responses
+
+# Charts
+chart_response_time_trend = Response Time Trend
+chart_cache_performance = Cache Performance
+chart_agent_comparison = Agent Comparison
+chart_classification_distribution = Classification Distribution
+chart_error_trend = Error Trend
+
+# Messages
+performance_no_data = No performance data available yet
+performance_collecting = Collecting performance data...
+performance_refresh = Refresh Data
+
+# Feedback Section
+feedback_satisfaction_rate = Satisfaction Rate
+feedback_excellent = 🎉 Excellent
+feedback_good = ✅ Good
+feedback_to_improve = ⚠️ To improve
+feedback_no_data = ⏳ No feedback yet
+feedback_ratio = Feedback Ratio
+feedback_positive = Positive Feedbacks
+feedback_negative = Negative Feedbacks
+feedback_rating = Rating
+feedback_no_rating = No rating
+feedback_interactions = interactions
+feedback_minimum_ratio = Minimum feedback ratio
+feedback_optimal_ratio = Optimal feedback ratio
+feedback_minimum_satisfaction = Minimum satisfaction rate
+feedback_optimal_satisfaction = Optimal satisfaction rate
+feedback_recommended_goals = 🎯 Recommended Goals
+
+# Token Section
+token_consumption_title = 🎯 Token Consumption & Cost Analysis
+token_distribution = Token Distribution
+token_cost_analysis = Cost Analysis
+token_total_cost_7d = Total cost (7d)
+token_avg_cost_per_request = Avg cost/request
+token_per_dollar = Tokens/dollar
+token_efficiency = Efficiency
+token_tokens_per_req = tokens/req
+token_daily_usage = Daily Usage (Last 7 days)
+token_top_request_types = Top Request Types
+token_request_type = Request Type
+token_count = Count
+token_tokens = Tokens
+token_average = Average
+token_percent_total = % of Total
+token_no_data = No token data available
+token_tracking_not_configured = Token tracking is not yet configured or no requests have been made.
+token_to_activate = To activate tracking
+token_verify_tracker = Verify that TokenUsageTracker is properly initialized
+token_make_requests = Make some GPT requests to generate data
+token_refresh_page = Refresh this page
+token_activity_30_days = Activity for the last 30 days
+token_cumulative_12_months = Cumulative view over 12 months
+token_cost_by_model = Cost breakdown by model
+
+# Component Section
+component_metrics = Component Metrics
+component_name = Component
+component_problems = Problems
+component_status_label = Status
+
+# Latency Section
+latency_title = ⚡ Latency Metrics & Fast-Lane Efficiency
+latency_avg_global = ⏱️ Average Global Latency
+latency_fast_lane = 🚀 Fast-Lane Latency
+latency_full_orchestration = 🔄 Full Orchestration Latency
+latency_performance_gain = ⚡ Performance Gain
+latency_faster = faster
+latency_requests = requests
+latency_fast_requests = fast requests
+latency_full_requests = full requests
+latency_times_faster = times faster
+latency_percentiles = 📊 Latency Distribution (Percentiles)
+latency_metric = Metric
+latency_min = Min
+latency_median = P50 (Median)
+latency_p75 = P75
+latency_p90 = P90
+latency_p95 = P95
+latency_p99 = P99
+latency_max = Max
+latency_global = ⏱️ Global
+latency_comparison = 📊 Latency Comparison
+latency_percentiles_dist = 📈 Percentiles Distribution
+latency_query_distribution = 🥧 Query Distribution
+latency_speedup_factor = ⚡ Speedup Factor
+latency_efficiency_analysis = 🎯 Fast-Lane Efficiency Analysis
+latency_speedup = Speedup factor
+latency_time_saved = Time saved per request
+latency_percent_faster = Percentage faster
+latency_fast_lane_requests = Fast-Lane requests
+latency_total_time_saved = Total time saved
+latency_recommendations = 💡 Recommendations
+latency_no_data = No latency data available
+latency_auto_collect = Latency metrics will be collected automatically during next requests.
+
+# Performance Evolution
+perf_evolution = 📈 Performance Evolution
+perf_severity_distribution = Distribution of Severities
+perf_agent_distribution = Agent Usage Distribution
+perf_agent_performance = 📊 Performance by Agent
+perf_agent_name = Agent
+perf_agent_usage = Usage
+perf_agent_percentage = %
+perf_agent_success_rate = Success Rate
+perf_agent_avg_confidence = Average Confidence
+perf_no_agent_data = No agent data available
+perf_agent_data_info = Agent statistics will appear here once requests have been processed.
+
+# Tabs
+tab_general = General
+tab_component = Components
+tab_alert = Alerts
+tab_trend = Trends
+tab_token_cost = Token & Cost
+tab_classification_performance = Classification & Performance
+tab_latency = Latency & Fast-Lane
+tab_security = Security
+tab_performance_cache = Performance & Cache
+tab_feedback = Feedback
+tab_export_api = Export & API
+
+# Alerts
+alert_no_active = No active alerts - System is working correctly!
+alert_description = Alerts are triggered when system metrics exceed defined thresholds (error rate > 10%, response time > 10s, memory > 90%)
+alert_active_count = active alert(s)
+alert_triggered_ago = Triggered
+alert_minutes_ago = minutes ago
+alert_current_value = Current
+alert_threshold = Threshold
+alert_acknowledged_at = Acknowledged at
+alert_acknowledge = Acknowledge
+alert_acknowledge_tooltip = Mark this alert as acknowledged
+alert_acknowledged_success = Alert acknowledged successfully
+alert_resolve = Resolve
+alert_resolve_tooltip = Resolve and remove this alert
+alert_resolved_success = Alert resolved successfully
+alert_escalate = Escalate
+alert_escalate_tooltip = Escalate this alert to higher severity (sends email to store owner)
+alert_escalated_success = Alert escalated successfully - Email sent to store owner
+
+# Trends
+trend_analysis = Trend Analysis
+trend_metric = Metric
+trend_trend = Trend
+trend_change = Change
+trend_current_value = Current Value
+trend_increasing = ↗ Increasing
+trend_decreasing = ↘ Decreasing
+trend_stable = → Stable
+trend_insufficient_data = Insufficient data for trends. Collection in progress...
+
+# Recommendations
+recommendation_title = Recommendations
+recommendation_priority = Priority
+
+# Security Section
+security_evaluations = Evaluations
+security_alerts_title = Security Alerts
+security_low_scores_label = Low scores
+security_scores_chart = 📊 Security Scores
+security_no_data = No security data available
+security_data_info = Security statistics will appear here once requests have been evaluated.
+
+# Security Monitoring (Prompt Injection Detection)
+security_health_score = Security Health Score
+overall_health = Overall Health
+total_security_events = Total Security Events
+critical_threats = Critical Threats
+blocked_queries = Blocked Queries
+threats_detected = Threats Detected
+detection_rate = Detection Rate
+block_rate = Block Rate
+detection_accuracy = Detection Accuracy
+attack_type_distribution = Attack Type Distribution
+language_statistics = Language Statistics
+avg_score = Avg Score
+no_threats_detected = No threats detected
+events = events
+threats_detected_period = threats detected in this period
+last = Last
+high = High
+
+# Feedback Tab Details
+feedback_summary_7days = 📊 Summary (Last 7 days)
+feedback_total_interactions = Total interactions
+feedback_total_feedback = Total feedbacks
+feedback_ratio_label = Feedback ratio
+feedback_satisfaction_label = Satisfaction rate
+feedback_positive_count = Positive feedbacks
+feedback_negative_count = Negative feedbacks
+feedback_neutral_count = Neutral feedbacks
+feedback_goals_title = 🎯 Recommended Goals
+feedback_min_ratio_goal = Minimum feedback ratio
+feedback_optimal_ratio_goal = Optimal feedback ratio
+feedback_min_satisfaction_goal = Minimum satisfaction rate
+feedback_optimal_satisfaction_goal = Optimal satisfaction rate
+feedback_ratio_description = (1 feedback for 5 interactions)
+feedback_optimal_ratio_description = (2 feedbacks for 5 interactions)
+
+# Performance & Cache Tab
+perf_cache_title = ⚡ Performance & Cache
+perf_cache_overview = Cache Overview
+perf_cache_details = Detailed Stats & Actions
+perf_cache_impact = Performance Impact
+perf_cache_files = File Cache Statistics
+perf_cache_websearch = WebSearch Cache
+perf_cache_charts = Performance Charts
+cache_hit_rate = Cache Hit Rate
+cache_requests_from_cache = Requests served from cache
+cache_about_title = 💡 About Cache
+cache_about_description = The query cache stores SQL query results to improve performance.
+cache_hit_label = Hit
+cache_hit_description = Query served from cache (fast)
+cache_miss_label = Miss
+cache_miss_description = Query executed on database (slower)
+cache_performance_impact = 📈 Performance Impact
+cache_improvement = Performance Improvement
+cache_total_api_calls = Total API Calls
+
+# Latency Recommendations
+latency_rec_low_usage = Only {percentage}% of requests use fast-lane. Consider expanding detection criteria.
+latency_rec_excellent = Excellent! {percentage}% of requests use fast-lane.
+latency_rec_speedup = Fast-lane is {factor}x faster! Keep optimizing it.
+latency_rec_normal = Performance is normal. Keep monitoring.
+
+# AI Analysis
+ai_analysis_title = 🤖 AI Analysis
+
+# Modal Reset Stats
+modal_reset_stats_title = ⚠️ Reset all statistics
+modal_reset_stats_warning = Warning!
+modal_reset_stats_description = This action will permanently delete:
+modal_reset_stats_item1 = All recorded interactions
+modal_reset_stats_item2 = All detailed statistics
+modal_reset_stats_item3 = All charts will be reset
+modal_reset_stats_irreversible = This action is irreversible!
+modal_reset_stats_confirm = Are you sure you want to continue?
+modal_reset_stats_cancel = Cancel
+modal_reset_stats_yes = Yes, reset
+
+# Modal Reset Cache
+modal_reset_cache_title = Reset Cache
+modal_reset_cache_warning_title = Warning!
+modal_reset_cache_warning_text = This action will delete cached data. Subsequent queries will be slower until the cache is rebuilt.
+modal_reset_cache_select = Select caches to reset:
+modal_reset_cache_cancel = Cancel
+modal_reset_cache_confirm = Reset Cache
+modal_reset_cache_error = Error: Unable to reset cache. Check the logs.
+modal_reset_cache_reactivate_button = Reactivate button
+
+# Cache Types
+cache_type_database = 💾 Database Cache
+cache_type_database_desc = Database table rag_query_cache (SQL query results)
+cache_type_schema = 🗂️ Schema Query Cache
+cache_type_schema_desc = Cached database schema queries in Work/Cache/Rag/SchemaQuery/
+cache_type_intent = 🎯 Intent Classification Cache
+cache_type_intent_desc = Cached intent classifications in Work/Cache/Rag/Intent/
+cache_type_ambiguity = 🔀 Ambiguity Cache
+cache_type_ambiguity_desc = Cached ambiguity resolutions in Work/Cache/Rag/Ambiguity/
+cache_type_translation_ambiguity = 🌐 Translation Ambiguity Cache
+cache_type_translation_ambiguity_desc = Cached ambiguity translations in Work/Cache/Rag/Translation/
+cache_type_context = 📋 Context Cache
+cache_type_context_desc = Cached context retrievals in Work/Cache/Rag/Context/
+cache_type_memory = 🧠 Memory Cache
+cache_type_memory_desc = Cached memory entries in Work/Cache/Rag/Memory/
+cache_type_embedding = 🔢 Embedding Cache
+cache_type_embedding_desc = Cached vector embeddings in Work/Cache/Rag/Embedding/
+cache_type_embedding_search = 🔍 Embedding Search Cache
+cache_type_embedding_search_desc = Cached embedding search results in Work/Cache/Rag/EmbeddingSearch/
+cache_type_translations = 🌐 Translation Cache
+cache_type_translations_desc = Cached translations in Work/Cache/Rag/Translation/
+cache_type_classification = 🎯 Classification Cache
+cache_type_classification_desc = Cached query classifications in Work/Cache/Rag/Classification/
+cache_type_hybrid = 🔀 Hybrid Query Cache
+cache_type_hybrid_desc = Cached multi-temporal query results in Work/Cache/Rag/Hybrid/
+cache_type_semantic = 📋 Semantics Query Cache
+cache_type_semantic_desc = Cached semantics request results in Work/Cache/Rag/Semantic/
+cache_type_sql = 🗂️ Sql Query Cache
+cache_type_sql_desc = Cached Sql request results in Work/Cache/Rag/SQL/
+cache_type_security = 🛡️ Security Cache
+cache_type_security_desc = Cached security analysis in Work/Cache/Rag/Security/
+cache_type_reputation = ⭐ Reputation Cache
+cache_type_reputation_desc = Cached reputation signals in Work/Cache/Rag/Reputation/
+cache_type_config = ⚙️ Config Cache
+cache_type_config_desc = Cached technical config in Work/Cache/Rag/Config/
+websearch_cache_statistics = Web Search Cache Statistics
+websearch_no_data = No WebSearch cache data available.
+
+
+# File Caches
+file_caches_statistics = File Caches Statistics
+cache_status = Status
+cache_enabled = Enabled
+cache_disabled = Disabled
+cache_files = Files
+cache_size = Size
+cache_directory = Directory
+
+# Tab 7 - Security Section
+tab7_title = 🔒 Security & Quality
+tab7_security_score = Security Score
+tab7_cache_entries = Cache Entries
+tab7_cached_queries = Cached queries
+tab7_time_saved = Time Saved
+tab7_total_time_saved = Total time saved
+tab7_avg_savings = Average Savings
+tab7_per_cached_request = Per cached request
+tab7_detailed_stats = 📊 Detailed Statistics
+tab7_total_hits = Total Hits
+tab7_total_misses = Total Misses
+tab7_avg_result_size = Average Result Size
+tab7_last_update = Last Update
+tab7_actions = 🔧 Actions
+tab7_flush_cache = 🗑️ Flush Cache
+tab7_ttl_default = 1 hour by default
+tab7_system_metrics = System Metrics
+tab7_total_api_cost = Total API Cost
+tab7_uptime = Uptime
+tab7_php_version = PHP Version
+tab7_system_stats = System Statistics
+tab7_memory_limit = Memory Limit
+tab7_peak_memory = Peak Memory
+tab7_recommendations = Recommendations
+
+# Tab 11 - Feedback Analysis
+tab11_title = ⭐ Feedback Analysis
+tab11_analyze_negative = 🔍 Analyze Negative
+tab11_analyze_positive = ✨ Analyze Positive
+tab11_analyze_complete = 📊 Complete Analysis
+tab11_no_feedback = No feedback recorded
+tab11_feedback_will_appear = Feedbacks will appear here once users have submitted their feedback.
+tab11_recent_feedbacks = 📝 Recent Feedbacks
+tab11_loading_feedbacks = Loading feedbacks...
+
+# Tab 12 - Exports
+tab12_title = Data Exports
+tab12_download_metrics = Download metrics and reports in different formats:
+tab12_csv_export = CSV Export
+tab12_json_health = JSON - Health Report
+tab12_json_metrics = JSON - Metrics
+tab12_json_alerts = JSON - Alerts
+tab12_json_stats = JSON - Statistics
+tab12_prometheus_format = Prometheus Format
+tab12_html_dashboard = HTML - Dashboard
+tab12_markdown_api = Markdown - API Ref
+tab12_api_endpoints = API Endpoints
+tab12_endpoint = Endpoint
+tab12_description = Description
+tab12_health_report = System health report
+tab12_all_metrics_json = All metrics in JSON
+tab12_prometheus_metrics = Metrics in Prometheus format
+tab12_api_documentation = API Documentation Markdown
+
+# Tab 12 - Actor-Critic Metrics Exports
+tab12_actor_critic_section = 📊 Actor-Critic Metrics
+tab12_actor_critic_dashboard = JSON - Actor-Critic Dashboard
+tab12_actor_metrics = JSON - Actor Metrics
+tab12_critic_metrics = JSON - Critic Metrics
+tab12_actor_critic_utilization = JSON - Utilization Metrics
+tab12_actor_critic_alerts = JSON - Actor-Critic Alerts
+tab12_actor_critic_trends = JSON - Performance Trends
+tab12_actor_critic_prometheus = Prometheus - Actor-Critic Metrics
+tab12_actors_csv = CSV - Actor Metrics Export
+tab12_critics_csv = CSV - Critic Metrics Export
+tab12_actor_critic_dashboard_desc = Complete actor-critic dashboard data
+tab12_actor_metrics_desc = Performance metrics for all actors
+tab12_critic_metrics_desc = Performance metrics for all critics
+tab12_utilization_desc = Real-time actor and critic utilization
+tab12_actor_critic_alerts_desc = Active performance degradation alerts
+tab12_trends_desc = Historical performance trends
+tab12_actor_critic_prometheus_desc = Metrics in Prometheus format for monitoring
+tab12_actors_csv_desc = Download actor metrics as CSV
+tab12_critics_csv_desc = Download critic metrics as CSV
+
+# Actor-Critic Metrics - General
+text_actor_critic_summary = Actor-Critic Summary
+text_total_actors = Total Actors
+text_total_critics = Total Critics
+text_separation_ratio = Separation Ratio
+text_total_agents = Total Agents
+text_actor_metrics_title = 🎭 Actor Performance Metrics
+text_critic_metrics_title = 🔍 Critic Performance Metrics
+text_coordination_metrics = 🔄 Coordination Metrics
+text_utilization_metrics = 📊 Utilization Metrics
+text_performance_alerts = ⚠️ Performance Alerts
+
+# Actor Metrics
+text_total_executions = Total Executions
+text_success_rate = Success Rate
+text_avg_execution_time = Avg Execution Time
+text_quality_score = Quality Score
+text_performance_score = Performance Score
+text_actor_utilization = Actor Utilization
+text_by_action_type = By Action Type
+
+# Critic Metrics
+text_total_evaluations = Total Evaluations
+text_avg_evaluation_time = Avg Evaluation Time
+text_agreement_with_consensus = Agreement with Consensus
+text_evaluation_consistency = Evaluation Consistency
+text_critic_utilization = Critic Utilization
+text_by_output_type = By Output Type
+
+# Coordination Metrics
+text_total_coordinations = Total Coordinations
+text_avg_coordination_time = Avg Coordination Time
+text_avg_actor_execution_time = Avg Actor Execution Time
+text_avg_critic_evaluation_time = Avg Critic Evaluation Time
+
+# Alert Types
+alert_type_low_success_rate = Low Success Rate
+alert_type_slow_execution = Slow Execution
+alert_type_low_quality = Low Quality Score
+alert_type_high_utilization = High Utilization
+alert_type_low_agreement = Low Agreement with Consensus
+alert_type_slow_evaluation = Slow Evaluation
+alert_type_inconsistent_evaluations = Inconsistent Evaluations
+
+# Alert Messages
+alert_actor_low_success = Actor {actor_id} success rate below threshold
+alert_actor_slow_execution = Actor {actor_id} execution time exceeds threshold
+alert_actor_low_quality = Actor {actor_id} quality score below threshold
+alert_actor_high_utilization = Actor {actor_id} utilization exceeds threshold
+alert_critic_low_agreement = Critic {critic_id} agreement with consensus below threshold
+alert_critic_slow_evaluation = Critic {critic_id} evaluation time exceeds threshold
+alert_critic_inconsistent = Critic {critic_id} evaluation consistency below threshold
+alert_critic_high_utilization = Critic {critic_id} utilization exceeds threshold
+
+# Export Buttons
+button_export_actor_metrics = Export Actor Metrics
+button_export_critic_metrics = Export Critic Metrics
+button_export_actor_critic_dashboard = Export Dashboard Data
+button_view_actor_critic_metrics = View Actor-Critic Metrics
+
+# Latency Recommendations (hardcoded text)
+latency_rec_low_usage_text = Only {percentage}% of requests use fast-lane. Consider expanding detection criteria.
+latency_rec_excellent_text = Excellent! {percentage}% of requests use fast-lane.
+latency_rec_p95_high = P95 global exceeds 5s. Optimize slow queries.
+latency_rec_speedup_text = Fast-lane is {factor}x faster! Keep optimizing it.
+latency_rec_normal_text = Performance is normal. Keep monitoring.
+
+# Cache Reset Modal - JavaScript messages
+cache_reset_select_one = Please select at least one cache type.
+cache_reset_in_progress = Resetting cache in progress...
+cache_reset_success = Cache successfully reset!
+cache_reset_files_deleted = Files deleted
+cache_reset_translations_deleted = Translations deleted
+cache_reset_db_entries_deleted = DB entries deleted
+cache_reset_prompts_deleted = Prompts deleted
+cache_reset_semantic_deleted = Semantic queries deleted
+cache_reset_schema_deleted = Schema cache files deleted
+cache_reset_intent_deleted = Intent cache files deleted
+cache_reset_ambiguity_deleted = Ambiguity cache files deleted
+cache_reset_schema_deleted = Schema cache files deleted
+cache_reset_translation_ambiguity_deleted = Translation ambiguity cache files deleted
+cache_reset_context_deleted = Context cache files deleted
+cache_reset_embeddings_deleted = Embeddings cache files deleted
+cache_reset_embedding_search_deleted = Embedding search cache files deleted
+cache_reset_classification_deleted = Classification cache files deleted
+cache_reset_hybrid_deleted = Hybrid cache files deleted
+cache_reset_sql_deleted = SQL cache files deleted
+cache_reset_memory_deleted = Memory cache files deleted
+cache_reset_security_deleted = Security cache files deleted
+cache_reset_reputation_deleted = Reputation cache files deleted
+cache_reset_config_deleted = Config cache files deleted
+cache_reset_error_occurred = An error occurred
+cache_reset_resetting = Resetting...
+
+# Additional UI elements
+tab6_global_metrics = Global Metrics
+tab11_metrics_summary = Metrics Summary
+tab11_analysis_in_progress = Analysis in progress...
+
+
+# Source Breakdown
+source_breakdown = Source Breakdown
+source = Source
+count = Count
+percentage = Percentage
+success_rate = Success Rate
+avg_time = Avg Time
+total = Total
+no_source_data = No source data available for the selected period
+
+# Informational messages for disabled features
+chatgpt_not_installed_title = ChatGPT Module Not Installed
+chatgpt_not_installed_message = The ChatGPT AI module is not currently installed on your system. This module provides advanced AI-powered features for your e-commerce platform.
+chatgpt_not_installed_action = To install and enable the ChatGPT module:
+chatgpt_not_installed_step1 = 1. Click the Configure button above
+chatgpt_not_installed_step2 = 2. Follow the installation instructions
+chatgpt_not_installed_step3 = 3. Enable the ChatGPT module in the configuration
+chatgpt_not_installed_step4 = 4. Return to this dashboard to access all features
+
+chatgpt_disabled_title = ChatGPT Module Disabled
+chatgpt_disabled_message = The ChatGPT AI module is installed but currently disabled. Enable it to access AI-powered features.
+chatgpt_disabled_action = To enable the ChatGPT module:
+chatgpt_disabled_step1 = 1. Click the Configure button above
+chatgpt_disabled_step2 = 2. Set the ChatGPT module status to "True"
+chatgpt_disabled_step3 = 3. Save your configuration
+chatgpt_disabled_step4 = 4. Return to this dashboard
+
+rag_not_installed_title = RAG Business Intelligence Not Installed
+rag_not_installed_message = The RAG BI (Retrieval-Augmented Generation Business Intelligence) system is not currently installed. RAG BI provides advanced analytics, semantic search, and intelligent data insights.
+rag_not_installed_action = To install and enable RAG BI:
+rag_not_installed_step1 = 1. Click the Configure button above
+rag_not_installed_step2 = 2. Navigate to the RAG BI configuration section
+rag_not_installed_step3 = 3. Follow the installation instructions
+rag_not_installed_step4 = 4. Enable RAG BI in the configuration
+rag_not_installed_step5 = 5. Return to this dashboard to view analytics
+
+rag_disabled_title = RAG Business Intelligence Disabled
+rag_disabled_message = The RAG BI system is installed but currently disabled. The dashboard is showing classic LLM chat mode only.
+rag_disabled_action = To enable RAG BI and access full analytics:
+rag_disabled_step1 = 1. Click the Configure button above
+rag_disabled_step2 = 2. Set the RAG BI status to "True"
+rag_disabled_step3 = 3. Save your configuration
+rag_disabled_step4 = 4. Return to this dashboard to view full analytics
+
+# Cold Cache Timeout Fix Metrics
+cold_cache_metrics_title = 🧊 Cold Cache & Timeout Metrics
+cold_cache_state_title = Cache State Distribution
+cold_cache_cold_count = Cold Cache Queries
+cold_cache_warm_count = Warm Cache Queries
+cold_cache_expired_count = Expired Cache Queries
+cold_cache_cold_percentage = Cold cache percentage
+cold_cache_warm_percentage = Warm cache percentage
+cold_cache_performance_title = Cold vs Warm Cache Performance
+cold_cache_avg_time = Average Execution Time
+cold_cache_cold_avg = Cold cache average
+cold_cache_warm_avg = Warm cache average
+cold_cache_speedup = Speedup Factor
+cold_cache_time_saved = Time Saved
+cold_cache_timeout_events_title = Timeout Events
+cold_cache_total_timeouts = Total Timeouts
+cold_cache_cold_timeouts = Cold Cache Timeouts
+cold_cache_warm_timeouts = Warm Cache Timeouts
+cold_cache_timeout_rate = Timeout Rate
+cold_cache_timeout_by_state = Timeouts by Cache State
+parallel_execution_title = ⚡ Parallel Execution Performance
+parallel_execution_enabled = Parallel Execution Enabled
+parallel_execution_total_queries = Total Queries with Parallel Execution
+parallel_execution_time_saved = Total Time Saved
+parallel_execution_avg_speedup = Average Speedup Factor
+parallel_execution_analytics_title = Analytics Query Performance
+parallel_execution_analytics_count = Analytics Queries
+parallel_execution_analytics_speedup = Analytics Speedup
+parallel_execution_analytics_time_saved = Time Saved (Analytics)
+parallel_execution_hybrid_title = Hybrid Query Performance
+parallel_execution_hybrid_count = Hybrid Queries
+parallel_execution_hybrid_speedup = Hybrid Speedup
+parallel_execution_hybrid_time_saved = Time Saved (Hybrid)
+parallel_execution_sequential_vs_parallel = Sequential vs Parallel Execution
+parallel_execution_sequential_time = Sequential Time
+parallel_execution_parallel_time = Parallel Time
+parallel_execution_improvement = Performance Improvement
+parallel_execution_percentage_faster = Percentage Faster
+cache_warming_title = 🔥 Cache Warming Statistics
+cache_warming_total_warmed = Total Queries Warmed
+cache_warming_success_rate = Warming Success Rate
+cache_warming_last_run = Last Warming Run
+cache_warming_next_run = Next Scheduled Run
+cache_warming_queries_identified = Queries Identified for Warming
+cache_warming_frequency_threshold = Frequency Threshold
+cache_warming_expiring_soon = Queries Expiring Soon
+cache_warming_expiration_warning = Expiration Warning Period
+hybrid_query_metrics_title = 🔀 Hybrid Query Metrics
+hybrid_query_total_count = Total Hybrid Queries
+hybrid_query_avg_subqueries = Average Sub-queries per Query
+hybrid_query_avg_execution_time = Average Execution Time
+hybrid_query_success_rate = Success Rate
+hybrid_query_parallel_enabled = Parallel Execution Enabled
+hybrid_query_time_distribution = Execution Time Distribution
+hybrid_query_under_5s = Under 5s
+hybrid_query_5_to_15s = 5-15s
+hybrid_query_15_to_30s = 15-30s
+hybrid_query_over_30s = Over 30s
+timeout_management_title = ⏱️ Adaptive Timeout Management
+timeout_cold_cache_threshold = Cold Cache Timeout
+timeout_warm_cache_threshold = Warm Cache Timeout
+timeout_avg_applied = Average Timeout Applied
+timeout_extension_rate = Timeout Extension Rate
+timeout_recommendations = Timeout Recommendations
+no_cold_cache_data = No cold cache data available yet
+no_parallel_execution_data = No parallel execution data available yet
+no_cache_warming_data = No cache warming data available yet
+no_hybrid_query_data = No hybrid query data available yet
+no_timeout_data = No timeout management data available yet
+data_will_be_collected = Data will be collected automatically during query execution
+
+# Cache Performance Charts (Task 7.3)
+cache_performance_charts = Cache Performance Charts
+cache_hit_miss_chart_title = Cache Hit/Miss Rate Over Time
+cache_cost_savings_chart_title = API Cost Savings Over Time
+cache_response_time_chart_title = Average Response Time Comparison
+cache_size_chart_title = Cache Size by Type
+cache_charts_info_title = About These Charts
+cache_hit_miss_label = Hit/Miss Rate
+cache_hit_miss_desc = Shows cache effectiveness over time
+cache_cost_savings_label = Cost Savings
+cache_cost_savings_desc = API costs saved vs spent
+cache_response_time_label = Response Time
+cache_response_time_desc = Cached vs uncached performance
+cache_size_label = Cache Size
+cache_size_desc = Storage usage by cache type
+text_agent_monitoring_management = 🤖 Agent Monitoring & Management
+button_agent_objectives = 📋 Agent Objectives
+text_agent_objectives_help = View and manage agent objectives
+button_agent_evaluations = 📊 Agent Evaluations
+text_agent_evaluations_help = Monitor evaluation scores and consensus
+button_agent_alerts = 🚨 Agent Alerts
+text_agent_alerts_help = View overdue objectives and issues
+button_actor_critic = 🎭 Actor-Critic/Evaluation
+text_actor_critic_help = Monitor actor-critic separation metrics
+
+
+# Hybrid Query Decomposition Statistics
+decomposition_stats_title = Hybrid Query Decomposition
+decomposition_total = Total Decompositions
+decomposition_avg_time = Average Time
+decomposition_range = Range
+decomposition_cache_hit_rate = Cache Hit Rate
+decomposition_cached_results = Cached Results
+decomposition_error_rate = Error Rate
+decomposition_success_rate = Success Rate
+decomposition_performance_details = Performance Details
+decomposition_slow_operations = Slow Operations (>500ms)
+decomposition_threshold = Threshold
+decomposition_min_time = Minimum Time
+decomposition_max_time = Maximum Time
+decomposition_about = About Decomposition
+decomposition_about_description = Hybrid query decomposition splits complex queries into separate sub-tasks for parallel processing.
+decomposition_what = What
+decomposition_what_description = Breaks down hybrid queries into analytics, semantic, and web search components
+decomposition_why = Why
+decomposition_why_description = Enables parallel processing and specialized handling of each query type
+decomposition_performance = Performance
+decomposition_performance_description = Target: <500ms per decomposition with >60% cache hit rate
+
+# Metier dashboards (split of the legacy single dashboard)
+dashboard_manager_title = Manager
+dashboard_developper_title = Developer
+dashboard_data_scientist_title = Data Scientist
+dashboard_manager_desc = Business overview: general health, alerts, trends, token cost and customer feedback.
+dashboard_developper_desc = Technical view: components, latency & fast-lane, security, performance & cache, exports.
+dashboard_data_scientist_desc = Analytics & ML: classification performance and agent monitoring.
+dashboard_open = Open
+tab_latency_fastlane = Latency & Fast-Lane
+
+# Reset cache modal - simplified 3-scope selection
+cache_type_db = Database cache
+cache_type_db_desc = Clears all AI / RAG caches stored in the database (query cache, web search embedding cache).
+cache_type_disk = AI disk cache (Rag)
+cache_type_disk_desc = Clears all AI / RAG file caches stored on disk (Work/Cache/Rag).
+cache_type_logs = Logs
+cache_type_logs_desc = Deletes the application log files (Work/Log).
+cache_reset_logs_deleted = Log files deleted
+
+# Developper dashboard: Performance & Cache tab split into two tabs
+tab_cache = Cache
+
+# Data Scientist: entry point to the Adaptive Weighting dashboard (was orphaned)
+button_adaptive_weighting = ⚖️ Adaptive Weighting
+text_adaptive_weighting_help = Actor-Critic adaptive weight tuning & metrics

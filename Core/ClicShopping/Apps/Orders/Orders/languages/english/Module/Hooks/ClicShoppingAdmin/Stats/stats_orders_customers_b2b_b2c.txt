@@ -1,0 +1,3 @@
+title_orders_b2b_b2c = Customer groups
+text_orders_b2c = B2C customers
+text_orders_b2b = B2B customers

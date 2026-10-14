@@ -1,0 +1,4 @@
+cfg_moneyorder_prepare_order_status_id_title = Statut de la commande
+cfg_moneyorder_prepare_order_status_id_desc = Veuillez sélectionner le statut adapté en fonction de la nouvelle commande
+
+cfg_moneyorder_order_status_id_default = -- Store Default Order Status --

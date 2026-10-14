@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.card.boxeContainerCurrencies {
+  margin-top: 0.625rem;
+  border-radius: 0.25rem;
+}
+
+.card-img-top.boxeBannerContentsCurrencies {
+  text-align: center;
+}
+
+.card-header.boxeHeadingCurrencies {
+
+
+  padding-left: 3px;
+  overflow: hidden;
+  text-transform: uppercase;
+
+}
+
+.card-title.boxeTitleCurrencies {
+  overflow: hidden;
+  padding: 3px;
+  text-transform: uppercase;
+
+
+}
+
+.card-text.boxeContentsCurrencies {
+  overflow: hidden;
+
+  text-align: center;
+  padding-bottom: 0.5rem;
+  padding-top: 0.10rem;
+  padding-right: 0.10rem;
+}
+
+.card-footer.boxeBottomCurrencies {
+  border-top: none;
+  padding: 0;
+}
+
+
+.card-block.boxeContentArroundCurrencies {
+  padding: 0.5rem;
+  overflow: hidden;
+  padding-right: 0.1rem;
+  padding-left: 0.1rem;
+}
+
+.card-img-top.boxeCurrencies {
+}
+
+
+.boxePullDownsideCurrencies {
+  width: 90%;
+}
+

@@ -1,0 +1,52 @@
+navbar_title_1 = Account
+navbar_title_2 = Edit
+module_account_customers_edit_title = Souhaitez-vous permettre au client d'éditer / changer leurs informations ?
+module_account_customers_edit_description = Affiche le formulaire permettant d'éditer / changer leurs informations
+
+module_account_customers_edit_heading_title = Informations de mon compte
+
+module_account_customers_edit_title_account = Mon compte
+module_account_customers_edit_title_company = Information société
+
+form_required = * Informations requises
+
+male = Homme
+female = Femme
+male_address = Mr.
+female_address = Ms.
+
+text_category_personal_pro = Informations personnelles
+
+entry_gender = Genre:
+entry_gender_error = Veuillez sélectionner votre gente
+entry_gender_error_pro = Erreur, veuillez sélectionner votre gente
+entry_gender_text = *
+
+entry_first_name = Prénom
+entry_first_name_text = *
+entry_last_name = Nom
+entry_last_name_text = *
+entry_date_of_birth = Date de naissance
+entry_date_of_birth_text = * (eg. 05/21/1970)
+entry_email_address = Address email
+entry_email_address_error = Votre addresse email n'est pas correct
+entry_telephone_number = Numéro de téléphone
+entry_telephone_number_text = *
+entry_cellular_phone_number = Numéro de téléphone cellulaire
+entry_cellular_phone_number_text =
+entry_company = Nom de la société
+entry_company_text = *
+entry_company_text_pro = *
+entry_siret = Numéro d'enregistrement Siret
+entry_siret_text = *
+entry_siret_exemple = (ex : SIRET pour les compagnie française)
+entry_code_ape = Numéro de nomenclature :
+entry_code_ape_text = *
+entry_code_ape_exemple = (ex : APE  pour les compagnie française)
+entry_tva_intracom = Numéro de TVA intracommunautaire
+entry_tva_intracom_text = * Sélectionner le pays en premier
+entry_country = Pays
+entry_country_text = *
+
+button_continue = Continuer
+button_back = Retour

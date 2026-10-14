@@ -1,0 +1,5 @@
+ modules_products_reviews_listing_button_process_title = Listing Commentaire : Do you want allow to customer to display the process button ?
+ modules_products_reviews_lisitng_button_process_description = Display the process button
+
+ button_write = Write a comment
+ button_back = Back

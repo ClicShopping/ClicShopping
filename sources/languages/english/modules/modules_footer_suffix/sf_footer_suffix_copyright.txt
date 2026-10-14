@@ -1,0 +1,5 @@
+modules_footer_suffix_copyright_title = Do you want to display the footer copyright ?
+modules_footer_suffix_copyright_description = Add a copyright on the shop footer
+modules_footer_suffix_trademark_text = Registered® and Trademark™ by <a href="https://www.clicshopping.org" target="_blank" rel="noopener">ClicShoppingAI™</a> - Copyright© Juin 2010 -
+
+modules_footer_suffix_copyright_text = <br />All right reserved on the website - Copyright©

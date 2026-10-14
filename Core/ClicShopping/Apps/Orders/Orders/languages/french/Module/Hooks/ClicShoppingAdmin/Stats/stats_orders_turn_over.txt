@@ -1,0 +1,3 @@
+title_orders_turn_over = Chiffres d'affaires Annuel
+text_orders_delivered = Livré
+text_orders_cancelled = Annulé

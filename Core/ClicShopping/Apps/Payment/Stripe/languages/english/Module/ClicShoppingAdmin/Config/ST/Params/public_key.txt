@@ -1,0 +1,3 @@
+cfg_stripe_public_key_title = Key
+cfg_stripe_public_key_desc = Public_key of the account you want to use <br />
+More information : https://stripeup.com/

@@ -1,0 +1,140 @@
+heading_title = Banner Manager
+module_bm_title = Banner Manager
+module_bm_short_title = Banner Manager
+
+text_banner_manager =  Banner Manager
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a banner_manager. <br /><br />
+- Activate this module and activate the module banner_manager located in the marketing menu
+
+module_bm_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_new_banner = New banner
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+button_banner_manager = Banner manager
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+alerte_notice_image = Not to put more than one image.
+notice_image = If an image already exists, want initially to select it before choosing another of them.
+text_delete_image = To remove the currently visible image
+
+tab_general = General
+tab_img = Images
+tab_code_html = Html code
+
+heading_title = Banner Manager
+heading_title_search = Search
+
+table_heading_banners = Banners Catalog
+table_heading_banners_admin = Banners Admin
+table_heading_groups = Groups
+table_heading_statistics = Displays / Clicks
+table_heading_status = Status
+table_heading_action = Action
+table_heading_customers_group = Customers group
+table_heading_language = languages
+table_heading_banners_theme = Template theme
+
+text_banners_title = Catalog Banner Title:
+text_banners_title_admin = Administration Banner Title:
+text_banners_url = Redirect URL
+text_banners_group = Group:
+text_banners_target = Mouse Click Reaction:
+text_banners_same_windows = Same window
+text_banners_new_windows = New window
+text_banners_new_group = New group:
+
+text_banners_customers_group = Display for a client group
+text_banners_language = Display language
+text_all_languages = All languages
+normal_customer = Normal Customers
+text_all_groups = All groups
+text_banners_all_themes = All themes
+text_banners_theme = Template theme
+
+text_banners_image = Image of the banner
+text_banners_image_local = Image local:
+text_banners_image_target = File of save:
+text_banners_image_delete = Not display this image on this banner
+text_banners_image_visuel = Image displayed
+
+text_banners_html = HTML Banner
+text_banners_html_text = HTML Code:
+text_banners_expires_on = Expires On:
+text_banners_or_at = or
+text_banners_impressions = impressions/views.
+text_banners_scheduled_at = Scheduled At:
+text_banners_banner_note = <li>Use an image or HTML text for the banner - not both.</li><li>HTML Text has priority over an image</li>
+text_banners_insert_note = <li>To activate wysiwyg, you must click twice on Source button for Firefox users.</li><li>If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock +)</li><li>HTML Text has priority over an image</li>
+text_banners_expircy_note = <u>Expire Notes</u> :<ul><li>Only one of the two fields should be submited</li><li>If the banner is not to expire automatically, then leave these fields blank</li></ul>
+text_banners_schedule_note = <u>Schedule Notes</u> :<ul><li>If a schedule is set, the banner will be activated on this date.</li><li>All scheduled banners are marked as desactive until their date has arrived, to which they will then be marked active.</li><li>The banners are automatically updated (the store catalog manages this element), it is unnecessary to change the status of the banner after registration.</li></ul>
+
+text_banners_date_added = Date Added:
+
+text_banners_data = D<br />A<br />T<br />A
+text_banners_last_3_days = Last 3 Days
+text_banners_banner_views = Banner Views
+text_banners_banner_clicks = Banner Clicks
+
+text_info_delete_intro = Are you sure you want to delete this banner?
+text_info_delete_image = Delete a banner image
+
+success_banner_inserted = Success: The banner has been inserted.
+success_banner_updated = Success: The banner has been updated.
+success_banner_removed = Success: The banner has been removed.
+success_banner_status_updated = Success: The status of the banner has been updated.
+
+error_banner_title_required = Error: Banner title required.
+error_banner_group_required = Error: Banner group required.
+
+error_unknown_status_flag = Error: Unknown status flag.
+
+title_banners_general = General information
+title_banners_groupe = Group
+title_banners_date = Date
+title_banners_image = Image banner
+title_banners_html = Banner HTML code
+
+text_help_banners_image = Help
+title_help_banners_image = Note on the banner image
+title_help_banners_date = Note on the use of the dates of a banner
+title_help_banners_html_text = Note on code HTML of a banner
+
+icon_view_banner = View banner
+icon_edit = Edit
+icon_delete = Delete
+icon_copy_to = Copy to
+icon_statistics = Statistics
+
+set_inactive = Inactive
+set_active = Active
+
+error_image_is_not_writable = Image is not writable
+error_image_does_not_exist = Image does not exist
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+text_banners_expiracy_note = <strong>Expiry Notes:</strong><ul><li>Only one of the two fields should be submitted</li><li>If the banner is not to expire automatically, then leave these fields blank</li></ul>
+text_banners_scheduled_note = <strong>Schedule Notes:</strong><ul><li>If a schedule is set, the banner will be activated on that date.</li><li>All scheduled banners are marked as deactive until their date has arrived, to which they will then be marked active.</li></ul>

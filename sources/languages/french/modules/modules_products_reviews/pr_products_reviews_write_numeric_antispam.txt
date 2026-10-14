@@ -1,0 +1,2 @@
+modules_products_reviews_write_numeric_antispam_title = Ecriture Commentaire : Souhaitez-vous afficher un antispam numérique ?
+modules_products_reviews_write_numeric_antispam_description = Affiche un antispam numérique

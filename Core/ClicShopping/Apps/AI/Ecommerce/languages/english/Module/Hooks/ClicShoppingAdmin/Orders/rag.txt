@@ -1,0 +1,41 @@
+text_key_domain = domain
+text_key_entity = entity
+
+text_key_order_id = order.id
+text_key_order_date = order.date
+text_key_order_status = order.status
+text_key_order_currency = order.currency
+text_key_order_payment_method = order.payment_method
+
+text_key_customer_name = customer.name
+text_key_customer_company = customer.company
+text_key_customer_city = customer.city
+text_key_customer_country = customer.country
+
+text_key_delivery_city = delivery.city
+text_key_delivery_country = delivery.country
+
+text_key_product_name = product.name
+text_key_product_model = product.model
+text_key_product_price = product.price
+text_key_product_quantity = product.quantity
+text_key_product_tax_rate = product.tax_rate
+
+text_key_product_attribute_option = product.attribute.option
+text_key_product_attribute_value = product.attribute.value
+
+text_key_total_subtotal = total.subtotal
+text_key_total_shipping = total.shipping
+text_key_total_tax = total.tax
+text_key_total_total = total.total
+
+
+text_key_history_date = history.date
+text_key_history_status = history.status
+text_key_history_comment = history.comment
+text_key_history_tracking = history.tracking
+text_key_history_admin = history.admin
+
+
+text_value_domain_ecommerce = ecommerce
+text_value_entity_order = order

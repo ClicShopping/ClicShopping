@@ -1,0 +1,4 @@
+
+ module_checkout_payment_button_process_title = Do you want to display a process button to continue the process order ?
+ module_checkout_payment_button_process_description = Display a process button to continue the process order
+ button_continue = Continue

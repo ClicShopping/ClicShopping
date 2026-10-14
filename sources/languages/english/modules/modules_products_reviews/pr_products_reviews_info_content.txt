@@ -1,0 +1,9 @@
+heading_title_reviews = Customer reviews
+modules_products_reviews_info_content_title = Read comment : Do you to allow to customer to read the comments ?
+modules_products_reviews_info_content_description = Allow to customer to read the comments
+modules_products_reviews_info_content_text_review_date_added = {{date_added}}
+modules_products_reviews_info_content_text_review_text_review_by = {{customer_name}}
+modules_products_reviews_info_content_text_no_review = no review
+modules_products_reviews_info_content_text_no_review = Delete your comment
+modules_products_reviews_info_content_text_customers_tag = Customers Sentiment
+modules_products_reviews_info_content_text_customers_ai_sentiment = Artificial analysis about the customers sentiments on

@@ -1,0 +1,4 @@
+heading_title = Groupes Client
+module_gr_short_title = Groupes Client
+
+title_menu = Groupes Client

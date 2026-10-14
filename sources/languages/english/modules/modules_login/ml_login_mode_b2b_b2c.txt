@@ -1,0 +1,11 @@
+module_login_mode_b2b_b2c = Do you want to display the B2B / B2C buttons for customers subscriptions ?
+module_login_mode_b2b_b2c_description = Display the B2B / B2C buttons for the customers subscriptions <br />Note : becarefull, this mode is in relation with general configuration : Customer management B2B/ configuration
+
+text_open_account = Subscribe or open an account
+text_b2b = Open a professionnal Account
+text_b2c = Open a customer Account
+text_intro_b2b = You are a company or you want to buy our products for resell, please click on this button and continue the process
+text_intro_b2c = You are a customer and ou whsh an account, it's easy and simple, You will access at all our services and maybe you will receive a discount coupon
+
+button_retailers =  Professionals / retailers
+button_customers =  Customers

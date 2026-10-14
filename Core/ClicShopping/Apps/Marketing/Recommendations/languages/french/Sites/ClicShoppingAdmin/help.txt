@@ -1,0 +1,60 @@
+text_strategy = <strong> stratégie </strong> <br /> <br />
+- Vous ne pouvez sélectionner qu'une seule stratégie. Si vous souhaitez changer, Yu doit supprimer toutes vos données <br />
+- Score positif: un score de recommandation positif indique que le produit est susceptible d'être recommandé à l'utilisateur. Un score positif plus élevé implique souvent une recommandation plus forte. L'ampleur du score peut représenter le niveau de confiance dans la recommandation. <br />
+- Score neutre: un score proche de 0 peut impliquer que l'algorithme de recommandation n'est pas fortement biaisé vers ou contre recommander le produit. Cela pourrait indiquer une recommandation neutre ou incertaine. <br />
+- Score négatif: un score négatif suggère que le produit est moins susceptible d'être recommandé. Plus le score négatif est faible, plus l'indication est forte que le produit n'est pas un bon ajustement pour l'utilisateur. <br />
+- L'analyse des sentiments est basée sur les commentaires de la revue GPT analysés <br />
+- Le score est déterminé par un algorithme avec le résultat de l'analyse du sentiment <br />
+- À propos du catalogue de produits, seul le score positif est affiché en fonction de vos paramètres <br /> <br />
+
+Text_Range = <strong> Recommandation basée sur la plage </strong> <br /> <br />
+La recommandation basée sur la plage est un type de stratégie de recommandation qui se concentre sur les gammes numériques ou les seuils de divers facteurs pour déterminer l'adéquation d'un produit pour un utilisateur. Dans cette approche, différents attributs de produits tels que la notation des utilisateurs, les scores d'examen et les commentaires des utilisateurs se voient attribuer des pondérations spécifiques et combinés pour calculer un score de recommandation. Le score de recommandation est ensuite comparé aux gammes ou seuils prédéfinis pour déterminer le niveau de recommandation pour un produit particulier. Par exemple, les produits avec des scores de recommandation tombant dans une plage spécifique peuvent être considérés comme fortement recommandés, modérément recommandés ou non recommandés du tout. <br /> <br />
+Dans notre cas, nous prenons en compte le taux d'examen, la rétroaction des utilisateurs et le score de sentiment (si disponible) pour calculer le score de recommandation pour un produit donné. Il permet également différentes stratégies (gamme ou autres sources) pour calculer le score. <br /> <br />
+
+<strong> Paramètres de base: </strong> <br />
+- Min Score: Obtenez les produits qui sont fréquemment acceptés pour les recommandations des clients (doivent être comprises entre -1 et 1): 0,5 <br />
+- Score Max: Obtenez les produits fréquemment rejetés par les recommandations des clients (doivent être comprises entre -1 et 1) doivent être un score min ou Egal inférieur: 0,5 <br />
+- Sentiment de pondération: il est de la capacité à affiner ou à modifier l'importance ou l'influence relative du score de sentiment: 1,5
+<br /> <br />
+<strong> Paramètres: </strong> <br />
+Exemple d'analyse: <br />
+- Sentiment de la revue des clients: positif <br />
+- Min Score: 0,5 <br />
+- Score maximum: 0,5 <br />
+- Sentiment de pondération: 1,5 <br />
+- Évaluation des clients Revue du produit: 1 étoile <br />
+- Résultat: positif
+<br /> <br />
+- Sentiment d'examen client: neutre <br />
+- Min Score: 0,5 <br />
+- Score maximum: 0,5 <br />
+- Sentiment de pondération: 1,5 <br />
+- Évaluation des clients Revue du produit: 1 étoile <br />
+- Résultat: -0,8 <br />
+<i> Remarque: </i> Ce cas 1 étoile avec commentaire positif est considéré comme une approche négative.
+<br /> <br />
+- Sentiment de la revue des clients: négatif <br />
+- Min Score: <br />
+- Score maximum: <br />
+- Sentiment de pondération: <br />
+- Évaluation des clients Revue du produit: 1 étoile <br />
+- Résultat: négatif <br />
+<br /> <br />
+
+Text_Multiple = <strong> Recommandation de plusieurs sources </strong> <br /> <br />
+La recommandation de plusieurs sources est une stratégie de recommandation qui tire parti de plusieurs sources de données ou canaux d'information pour générer des recommandations personnalisées pour les utilisateurs. Au lieu de s'appuyer uniquement sur des données spécifiques à l'utilisateur (par exemple, les notes des utilisateurs ou les commentaires), cette approche considère un large éventail de données provenant de diverses sources, telles que le comportement des utilisateurs, les réseaux sociaux, les fonctionnalités des éléments et les informations contextuelles. En combinant des informations provenant de diverses sources, le système de recommandation peut créer un profil utilisateur plus complet et précis, conduisant à des recommandations de produits plus pertinentes et diverses. La recommandation de plusieurs sources est particulièrement utile dans les situations où des données utilisateur limitées sont disponibles ou lorsque le système de recommandation doit tenir compte d'un éventail plus large de facteurs influençant les préférences des utilisateurs.
+<br /> <br />
+
+<strong> Paramètres de base: </strong> <br />
+- Min Score: Obtenez les produits qui sont fréquemment acceptés pour les recommandations des clients (doivent être comprises entre -1 et 1): 0,5 <br />
+- Score Max: Obtenez les produits fréquemment rejetés par les recommandations des clients (doivent être comprises entre -1 et 1) doivent être un score min ou Egal inférieur: 0,5 <br />
+- Sentiment de pondération: il est de la capacité à affiner ou à modifier l'importance ou l'influence relative du score de sentiment: 1,5
+<br /> <br />
+
+<strong> Paramètres: </strong> <br />
+Exemple d'analyse: <br />
+- Sentiment de la revue des clients: positif <br />
+- Min Score: 1,5 <br />
+- Score maximum: 1,5 <br />
+- Sentiment de pondération: 1,5 <br />
+- Évaluation des clients Revue du produit: 1

@@ -1,0 +1,78 @@
+{
+  "title": "Customers groups App",
+  "app": "Groups",
+  "vendor": "Customers",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "ClicShoppingAdmin/Favorites": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\Favorites\\CustomerGroup",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Favorites\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Favorites\\Update"
+      },
+      "ClicShoppingAdmin/Featured": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\Featured\\CustomerGroup",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Featured\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Featured\\Update"
+      },
+      "ClicShoppingAdmin/Specials": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\Specials\\CustomerGroup",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Specials\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Specials\\Update"
+      },
+      "ClicShoppingAdmin/BlogContent": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\BlogContent\\CustomerGroup",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\BlogContent\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\BlogContent\\Update"
+      },
+      "ClicShoppingAdmin/BlogCategories": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\BlogCategories\\CustomerGroup",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\BlogCategories\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\BlogCategories\\Update"
+      },
+      "ClicShoppingAdmin/DiscountCoupon": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\DiscountCoupon\\CustomerGroup",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\DiscountCoupon\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\DiscountCoupon\\Update",
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\DiscountCoupon\\Delete"
+      },
+      "ClicShoppingAdmin/Products": {
+        "CustomerGroupTab3": "Module\\Hooks\\ClicShoppingAdmin\\Products\\CustomerGroupTab3",
+        "Save": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Save",
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Delete",
+        "RemoveProduct": "Module\\Hooks\\ClicShoppingAdmin\\Products\\RemoveProduct"
+      },
+      "ClicShoppingAdmin/PageManager": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\CustomerGroup",
+        "Save": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\Save",
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\PageManager\\Delete"
+      },
+      "ClicShoppingAdmin/BannerManager": {
+        "CustomerGroup": "Module\\Hooks\\ClicShoppingAdmin\\BannerManager\\CustomerGroup",
+        "Save": "Module\\Hooks\\ClicShoppingAdmin\\BannerManager\\Save",
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\BannerManager\\Delete"
+      },
+      "ClicShoppingAdmin/Customers": {
+        "pageTab4": "Module\\Hooks\\ClicShoppingAdmin\\Customers\\pageTab4",
+        "pageTab5": "Module\\Hooks\\ClicShoppingAdmin\\Customers\\pageTab5",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Customers\\Update"
+      },
+      "ClicShoppingAdmin/TopDashboard": {
+        "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\DashboardMembersB2B"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

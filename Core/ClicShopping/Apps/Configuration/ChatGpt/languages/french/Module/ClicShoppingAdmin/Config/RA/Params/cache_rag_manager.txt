@@ -1,0 +1,5 @@
+cfg_chatgpt_cache_rag_manager_title = Activer le cache RAG
+cfg_chatgpt_cache_rag_manager_description = Active la mise en cache des requêtes RAG pour améliorer la vitesse de réponse. Les résultats mis en cache sont réutilisés pour les requêtes identiques, réduisant considérablement le temps de traitement et les coûts API. Recommandé : True pour les environnements de production.
+
+cfg_chatgpt_cache_rag_manager_status_true = True
+cfg_chatgpt_cache_rag_manager_status_false = False

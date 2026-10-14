@@ -1,0 +1,12 @@
+heading_title =  Cache control
+module_ca_short_title = Cache
+text_cache = Cache control
+text_intro = Installation of the Cache module allows you to set up a cache system for your ClicShopping store. This can help improve performance by storing frequently accessed data in memory, reducing the need to repeatedly fetch it from the database or regenerate it.
+button_configure = Configure Cache
+button_save = Save
+button_dialog_uninstall = Uninstall
+dialog_uninstall_title = Uninstall Cache
+dialog_uninstall_body = Are you sure you want to uninstall the Cache module? This action cannot be undone and may affect the performance of your store.
+button_uninstall = Uninstall
+button_delete = Remove definitely
+

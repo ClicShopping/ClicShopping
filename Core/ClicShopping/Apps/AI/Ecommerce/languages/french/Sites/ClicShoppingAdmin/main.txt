@@ -1,0 +1,106 @@
+heading_title = Domaine IA E-Commerce
+heading_dashboard = Tableau de Bord
+heading_overview = Aperçu
+heading_configuration = Configuration
+heading_help = Aide
+
+button_dashboard = Tableau de Bord
+button_overview = Aperçu
+button_configuration = Configuration
+button_help = Aide
+button_back = Retour
+button_install_title = Installer
+button_save = Enregistrer
+button_ecommerce = Ecommerce
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+tab_overview = Aperçu
+tab_entities = Entités
+tab_queries = Requêtes
+tab_performance = Performance
+
+section_welcome = Bienvenue dans le Domaine IA E-Commerce
+text_welcome_message = Ceci est l'interface de gestion du Domaine IA E-Commerce. Vous pouvez ici surveiller et gérer toutes les opérations IA liées à l'e-commerce.
+
+module_acp_title = OpenAI ACP Beta Ecommerce
+module_acp_short_title =  OpenAI ACP Beta Ecommerce
+module_acp_introduction = OpenAI a développé un protocole de commerce électronique appelé Agentic Commerce Protocol (ACP).
+Il permet d’afficher les produits directement dans GPT avec un paiement instantané.
+Ce module implémente ce protocole, gère le paiement et assure le suivi des commandes via ClicShopping.<br>
+Vous devez vous enregistrer auprés de OpenAi pour utiliser ce procol ACP.
+
+module_ucp_title = Google UCP Beta Ecommerce
+module_ucp_short_title =  Google UCP Beta Ecommerce
+module_ucp_introduction = Google a développé un protocole de commerce électronique ouvert appelé Universal Commerce Protocol (UCP).<br>
+Il permet aux agents de récupérer les produits, de créer des sessions de paiement et de finaliser les paiements via des points d'accès standardisés.
+
+module_ec_short_title = Agent Ecommerce
+module_ec_title = Agent Ecommerce
+module_ec_introduction = Ce module Apps est obligatoire pour pouvoir utiliser correctement le rag et crééer les embedding nécessaires. ?
+
+module_cai_title = Product Cockpit AI
+module_cai_short_title =  Product Cockpit AI
+module_cai_introduction = Product Cockpit AI analyse votre produit en prenant plusieurs paramètres et propose des recommandations.<br>
+
+
+section_domain_overview = Aperçu du Domaine
+subsection_domain_info = Informations du Domaine
+subsection_supported_entities = Entités Supportées
+subsection_query_capabilities = Capacités de Requête
+subsection_semantic_queries = Requêtes Sémantiques
+subsection_analytics_queries = Requêtes Analytiques
+subsection_hybrid_queries = Requêtes hybrides
+
+label_domain_name = Nom du Domaine
+label_domain_id = ID du Domaine
+label_pure_llm_mode = Mode LLM Pur
+label_language_processing = Traitement du Langage
+
+status_enabled = Activé
+domain_ecommerce = E-Commerce
+text_english_processing = Tout le traitement interne est effectué en anglais
+
+entity_products = Produits
+entity_products_desc = Catalogue de produits avec descriptions, prix et inventaire
+entity_orders = Commandes
+entity_orders_desc = Commandes clients avec statut, articles et informations de paiement
+entity_customers = Clients
+entity_customers_desc = Profils clients avec informations de contact et de compte
+entity_categories = Catégories
+entity_categories_desc = Catégories de produits et hiérarchies
+entity_manufacturers = Fabricants
+entity_manufacturers_desc = Fabricants de produits et informations sur les marques
+entity_suppliers = Fournisseurs
+entity_suppliers_desc = Fournisseurs de produits et informations d’approvisionnement
+entity_reviews = Avis
+entity_reviews_desc = Avis et notes des clients sur les produits
+entity_return_orders = Retours de commandes
+entity_return_orders_desc = Demandes de retour de produits et informations de remboursement
+entity_reviews_sentiment = Sentiment des avis
+entity_reviews_sentiment_desc = Analyse du sentiment des avis clients
+
+text_info_message_warning = Ce module n'est pas activé. Veuillez activer ce module dans la page de configuration.
+
+
+text_query_capabilities = Le domaine e-commerce supporte les requêtes sémantiques, analytiques et hybride:
+
+query_example_1 = Trouver des produits similaires à "chaussures de course"
+query_example_2 = Quels sont les produits les plus vendus ce mois?
+query_example_3 = Montrez-moi les avis clients pour le produit X
+
+query_example_4 = Calculer le revenu total par catégorie
+query_example_5 = Lister les commandes avec le statut "en attente"
+query_example_6 = Afficher l'historique d'achat du client
+
+
+query_example_7 = Donnes-moi le prix de l'Iphone 17 pro et article 4 des cgv
+query_example_8 = Donnes-moi le prix de l'Iphone 17 pro et les quantités en stock des produits
+query_example_9 = Calcules-moi le chiffres d'affaires par trimestres et donnes moi les produits les plus vendus par trimests et par ordre descendant

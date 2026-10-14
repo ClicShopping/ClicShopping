@@ -1,0 +1,42 @@
+module_account_product_return_title = Retour Produit
+module_account_product_return_order_title = Informations Commande
+
+module_account_product_return_heading_title = Informations Retour produit
+module_account_product_return_product_return_title = Retour Produit
+
+text_name = Nom
+text_email_address = Email
+text_telephone_number = Téléphone
+text_address = Adresse
+text_customer_information = Addresse client
+text_customer_shipping_information = Information expédition
+text_opened = Produit déballé
+text_unopened = Produit non déballé
+
+module_account_product_return_order_id = Order Id :
+module_account_product_return_order_date = Date achat :
+module_account_product_return_product_name = Nom du produit :
+module_account_product_return_product_model = Référence produit :
+
+module_account_product_return_product_quantity = Quantité à retourner
+module_account_product_return_reason_return = Raison du retour
+module_account_product_return_product_opened = Produit ouvert / déballé
+module_account_product_return_faulty = Commentaires utiles au traitement
+
+button_back =  Retour
+button_continue = Continuer
+
+
+email_text_subject = Demande de retour produit {{store_name}}
+email_text_content = Un client vous a envoyé une demande d'information concernant le retour éventuel d'un produit. Merci de vous connecter à votre espace d'administration afin de connaître les raisons de cette demande
+email_text_subject_customer = Prise en compte de votre demande {{store_name}}
+email_text_subject_customer = Bonjour, <br />
+Nous avons bien pris en compte votre demande de support. Nous allons la traiter très rapidement.<br />
+En vous connectant dans votre espace d'administration, vous pourrez consulter l'historique du traitement de votre demande et nous contacter si vous avez des commentaires à nous soumettre.<br />
+Nous vous souhaitons une bonne journée</br>
+Cordialement<br />
+L'équipe Support
+
+
+text_alert_info = Les retours des produits sont soumis à des clauses. Veuillez vous référer à nos conditions générales pour connaître le détails des informations et des conditions de retour.
+Votre délais de rétractation est fixé à {{withdrawal}} jours à partir de la date d'achat. Concernant la garantie des produits, si le produit est garanti, veuillez-vous référer au spécificité du produit.

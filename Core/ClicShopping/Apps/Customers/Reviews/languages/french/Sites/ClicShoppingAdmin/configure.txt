@@ -1,0 +1,4 @@
+heading_title = Commentaires
+module_rv_short_title = Commentaires
+
+title_menu = Commentaires

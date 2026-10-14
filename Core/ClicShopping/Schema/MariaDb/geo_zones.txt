@@ -1,0 +1,12 @@
+geo_zone_id int not_null auto_increment comment(Primary key - unique identifier for each geographic zone group)
+geo_zone_name varchar(255) not_null comment(Geographic zone group name - e.g. EU Countries, North America)
+geo_zone_description varchar(255) not_null comment(Detailed description of the geographic zone group)
+last_modified datetime comment(Timestamp of last modification)
+date_added datetime not_null comment(Timestamp when geographic zone was created)
+--
+primary geo_zone_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Geographic zone groups for applying tax and shipping rules to multiple regions

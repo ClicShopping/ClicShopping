@@ -1,0 +1,5 @@
+title_menu = Gpt
+text_error_composer = Composer n'est pas installé sur votre machine, veuillez réaliser cette commande dans votre terminal : apt-get install composer
+text_error_exec = La fonction exec n'est pas initialisé. Vous ne pouvez pas réaliser de mise à jour ou d'installation d'une librairie Composer. Veuillez vérifier votre php.ini ou contacter votre hébergeur
+
+

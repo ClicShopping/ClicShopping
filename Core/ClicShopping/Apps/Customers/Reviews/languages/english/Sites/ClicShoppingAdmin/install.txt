@@ -1,0 +1,3 @@
+title_menu = Reviews
+title_menu_sentiment = Products Reviews Vote
+title_menu_statistics_vote = Vote commentaires produits

@@ -1,0 +1,32 @@
+modules_contact_us_form_title = Souhaitez-vous afficher les champs de contact du formulaire de contact ?
+modules_contact_us_form_description = Affiche les champs du formulaire de contact
+
+text_administrator_department = Aucun département défini
+
+entry_customers_id = Votre numéro client :
+entry_order = Votre numéro de commande :
+entry_date = Date :
+entry_customers_phone = Téléphone :
+
+entry_need_customers = Veuillez indiquer le service à contacter ?
+entry_customer = Question Client :
+
+entry_note_registered = Veuillez nous préciser la référence du/des produits et toutes informations concernant le problème identifié sur la commande<br /><br />
+
+entry_note_no_registered = Si vous appliquez pour une commande déjà effectuée veuillez cliquez sur : <a href="index.php?Account&Main">Mon Account</a> et veuillez choisir votre numéro de commande<br /><br />
+
+entry_name = Nom, prénom
+entry_email = Adresse email
+entry_enquiry = Requête
+entry_enquiry_customer = Votre message
+entry_enquiry_customer_information = Message client
+entry_email_object_customer = Copie de la requete
+entry_customers_subject = Sujet de votre requête
+
+entry_antispam = combien font :
+send_department_company = Contacter un département
+
+entry_customers_phone_dgrp = Nous avons besoin de votre numéro de téléphone pour vous contacter éventuellement
+entry_email_dgrp = Nous avons besoin de votre courriel pour vous répondre
+
+entry_text_alert = Vous devez écrire plus de {{textalert}} mots avant d envoyer ce message

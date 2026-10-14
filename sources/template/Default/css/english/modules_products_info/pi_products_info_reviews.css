@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.moduleProductsInfoReviewsRow {
+}
+
+.moduleProductsInfoReviewsTitle, span.moduleProductsInfoReviewsTitle h3 {
+  font-size: 1rem;
+}
+
+
+.moduleProductsInfoTextReviewBy, span.moduleProductsInfoTextReviewBy {
+  font-weight: bold;
+  float: left;
+}
+
+.moduleProductsInfoDateReviewAdded, span.moduleProductsInfoDateReviewAdded {
+  font-weight: bold;
+}
+
+span.moduleProductsInfoReviewsTitleAiSentiment h4 {
+  font-size: 0.9rem;
+}
+
+span.moduleProductsInfoReviewsTitleAiSentimentDescription h5
+{
+  font-size: 0.9rem;
+}
+
+.moduleProductsInfoReviewText {
+}
+
+span.productsInfoReviewsRating {
+  color: #f0a42a;
+  font-size: large;
+}
+
+.buttonVoteYes .toggleButton.yesButton {
+  border: 1px solid #e3e3e3;
+  background-color: #e3e3e3;
+  padding: 2px 3px; /* Adjust padding as needed */
+  border-radius: 5px; /* Add rounded corners if desired */
+}
+
+.buttonVoteNo .toggleButton.noButton {
+  border: 1px solid #e3e3e3;
+  background-color: #e3e3e3;
+  padding: 2px 3px; /* Adjust padding as needed */
+  border-radius: 5px; /* Add rounded corners if desired */
+}

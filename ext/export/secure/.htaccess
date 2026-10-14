@@ -1,0 +1,7 @@
+AuthUserFile .htaccess
+AuthGroupFile /dev/null
+AuthName "Accès sécurisé aux exports"
+AuthType Basic
+<LIMIT GET POST>
+Require valid-user
+</LIMIT>

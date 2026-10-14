@@ -1,0 +1,2 @@
+module_products_info_name = Souhaitez-vous afficher le titre du produit ?
+module_products_info_name_description = Affiche le titre du produit dans la page de description du produit

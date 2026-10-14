@@ -1,0 +1,4 @@
+cfg_products_recommendations_strategy_title = Stratégie d'analyse
+cfg_products_recommendations_strategy_description = Veuillez choisir votre stratégie
+cfg_products_recommendations_strategy_range = Analyse basée sur un range
+cfg_products_recommendations_strategy_multiple = Analyse basée sur de multiples sources (simulées)

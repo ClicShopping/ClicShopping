@@ -1,0 +1,6 @@
+ modules_products_reviews_write_rating_title = Write Comment : Do you want to allow to customer the rate the product ?
+ modules_products_reviews_write_rating_description = Allow to  customer the rate the product
+
+ modules_products_reviews_write_rating_text_bad = Bad
+ modules_products_reviews_write_rating_text_good = Very good
+ modules_products_reviews_write_rating_text_sub_title_rating = Evaluation of your comment

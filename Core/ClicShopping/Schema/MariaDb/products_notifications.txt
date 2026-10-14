@@ -1,0 +1,10 @@
+products_id int not_null comment(FK to products table - product customer wants notification for)
+customers_id int not_null comment(FK to customers table - customer requesting notification)
+date_added datetime not_null comment(Timestamp when notification request was created)
+--
+primary products_id customers_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Customers who asked to be warned when a product comes back in stock, one row per customer and product. It records a request to be notified.

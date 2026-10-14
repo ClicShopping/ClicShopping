@@ -1,0 +1,13 @@
+customers_basket_attributes_id int not_null auto_increment comment(Primary key - unique identifier for each basket item attribute)
+customers_id int not_null comment(FK to customers table - customer who owns this basket)
+products_id tinytext not_null comment(Product identifier - may include variant information)
+products_options_id int not_null comment(FK to products_options table - selected product option - e.g. Size, Color)
+products_options_value_id int not_null comment(FK to products_options_values table - selected option value - e.g. Large, Red)
+--
+primary customers_basket_attributes_id
+idx_customers_basket_att_customers_id customers_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Product attributes and options selected for items in customer shopping baskets

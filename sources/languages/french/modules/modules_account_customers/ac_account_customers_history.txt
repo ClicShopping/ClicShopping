@@ -1,0 +1,20 @@
+module_account_customers_history_title = Souhaitez-vous permettre au client de  voir les historiques de commande ?
+module_account_customers_history_description = Affiche les historiques de commande
+
+module_account_customers_history_heading_title = Historique des commandes
+module_account_customers_history_heading_description = Suivez l'avancement de vos commandes et consultez votre historique.
+
+module_account_customers_history_order_number = Commande / facture No.
+module_account_customers_history_order_status = Statut :
+module_account_customers_history_order_date = Date de prise de la commande :
+module_account_customers_history_order_shipped_to = Envoyée à :
+module_account_customers_history_order_billed_to = Facturée à:
+module_account_customers_history_order_products = Articles :
+module_account_customers_history_order_cost = Montant total :
+module_account_customers_history_view_order = Voir la commande
+
+module_account_customers_history_no_purchases = <p style="color:#ff0000;">Vous n'avez pas encore fait d'achat ou votre commande est en cours de traitement.</p>
+
+button_view = Afficher
+button_back = Retour
+button_return_product_closed = Cloturé

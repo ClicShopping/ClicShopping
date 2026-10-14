@@ -1,0 +1,38 @@
+heading_title = Antispam
+module_am_title = Antispam
+module_am_short_title = Antispam
+
+title_menu = Antispam
+text_antispam = Antispam
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a antispam page. <br /><br />
+- Activate this module located in the Configuration menu
+- Do not forget : this app has some modules must be activated inside the template
+
+module_am_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_antispam = Antispam
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+

@@ -1,0 +1,64 @@
+heading_title_agent_evaluations = Suivi des évaluations des agents
+button_refresh = Actualiser
+button_back_dashboard = Retour au tableau de bord
+button_close = Fermer
+
+text_total_evaluations = Total des évaluations
+text_average_score = Score moyen
+text_consensus_sessions = Sessions de consensus
+text_consensus_rate = Taux de consensus
+
+text_recent_evaluations = Évaluations récentes
+text_score_distribution = Répartition des scores
+
+text_evaluator = Évaluateur
+text_producer = Producteur
+text_output_type = Type de sortie
+text_overall_score = Score global
+text_accuracy = Précision
+text_completeness = Complétude
+text_efficiency = Efficacité
+text_clarity = Clarté
+text_date = Date
+text_actions = Actions
+
+text_avg_scores_by_dimension = Scores moyens par dimension
+text_dimension = Dimension
+text_visual = Visuel
+
+text_session_id = ID de session
+text_output_id = ID de sortie
+text_participants = Participants
+text_status = Statut
+text_final_score = Score final
+text_created = Créé
+text_resolved = Résolu
+
+text_dynamic_consensus = Consensus dynamique
+text_static_consensus = Consensus statique
+text_difference = Différence
+text_difference_percent = Différence %
+
+text_evaluation_details = Détails de l'évaluation
+text_details = Détails
+text_number_of_evaluations = Nombre d'évaluations
+text_reached = Atteint
+text_failed = Échoué
+text_pending = En attente
+text_na = N/A
+text_none = Aucun
+
+text_evaluation_id = ID d'évaluation
+text_scores = Scores
+text_overall = Global
+text_feedback = Commentaires
+text_strengths = Points forts
+text_improvements = Améliorations
+text_evaluated = Évalué
+
+help_title = Aide - Comprendre les évaluations des agents
+help_description = Cette page affiche les évaluations de qualité effectuées par les agents critiques sur les réponses produites par les agents acteurs.
+help_scores = <strong>Scores (0-5) :</strong> Accuracy = exactitude des données, Completeness = exhaustivité de la réponse, Efficiency = optimisation des ressources, Clarity = lisibilité et structure.
+help_consensus = <strong>Sessions de consensus :</strong> Lorsque plusieurs critiques évaluent la même sortie, une session de consensus est créée pour obtenir un score final pondéré.
+help_distribution = <strong>Répartition :</strong> L'onglet distribution montre les scores moyens par dimension pour identifier les axes d'amélioration.
+help_usage = <strong>Utilisation :</strong> Un score global < 0.3 indique que la qualité des réponses doit être améliorée. Vérifiez les recommandations du système.

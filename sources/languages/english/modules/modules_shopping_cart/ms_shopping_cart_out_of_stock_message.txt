@@ -1,0 +1,5 @@
+ module_shopping_cart_out_of_stock_message_title = Do you want to display a message when the product is not available  ?
+ module_shopping_cart_out_of_stock_message_description = Display a message when the product is not available
+
+ module_shopping_cart_out_of_stock_cant_checkout = Products marked with {{out_of_stock}}  don't exist in desired quantity in our stock.<br />Please alter the quantity of products marked with ({{out_of_stock}}).
+ module_shopping_cart_out_of_stock_can_checkout = Products marked with {{out_of_stock}}  don't exist in desired quantity in our stock.<br />You can buy them anyway and check the quantity we have in stock for immediate deliver in the checkout process.

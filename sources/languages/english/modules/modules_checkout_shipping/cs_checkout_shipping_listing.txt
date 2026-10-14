@@ -1,0 +1,12 @@
+
+ module_checkout_shipping_listing_title = Do you want to display the shipping listing ?
+ module_checkout_shipping_listing_description = Display the shipping listing
+
+ module_checkout_shipping_table_heading_shipping_method = Shipping Method
+ module_checkout_shipping_text_choose_shipping_method = Select a shipping method
+ module_checkout_shipping_title_please_select = Please select
+
+ module_checkout_shipping_text_enter_shipping_information = It's the only shipping available for this order
+ module_checkout_shipping_free_shipping_title = Free shipping
+ module_checkout_shipping_free_shipping_description = Free shipping for all order more than {{free_shipping_amount}
+

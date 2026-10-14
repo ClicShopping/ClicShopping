@@ -1,0 +1,18 @@
+contribution_id varchar(36) not_null
+collaborative_objective_id varchar(36) not_null comment(ID of the collaborative objective)
+agent_id varchar(100) not_null comment(Agent making the contribution)
+contribution_type varchar(50) not_null comment(Type of contribution (initialization, work_completed, milestone_achieved, etc.))
+contribution_value longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`contribution_value`)) comment(Details of the contribution)
+recorded_at timestamp NULL default(current_timestamp)
+
+--
+primary contribution_id
+idx_collaborative_objective collaborative_objective_id
+idx_agent agent_id
+idx_contribution_type contribution_type
+idx_recorded_at recorded_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_t_low_title = Low Threshold (T_low - score)
+cfg_ecommerce_cockpit_ai_t_low_description = Threshold for low scores in quadrant classification (0-100)

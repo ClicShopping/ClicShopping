@@ -1,0 +1,2 @@
+check_github_directory_title = Vérification répertoire de Github
+warning_github_directory_exists = Le répertoire .Github a été identifié, veuillez le supprimer

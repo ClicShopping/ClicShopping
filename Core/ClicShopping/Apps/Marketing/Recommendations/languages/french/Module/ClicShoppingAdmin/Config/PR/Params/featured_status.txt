@@ -1,0 +1,5 @@
+cfg_products_recommendations_featured_status_title = Souhaitez-vous activer la création automatique / supression d'un produits sélectionnés ?
+cfg_products_recommendations_featured_status_description = Activer la création automatique /supression d'un produits sélectionnés
+
+cfg_products_recommendations_featured_status_true = True
+cfg_products_recommendations_featured_status_false = False

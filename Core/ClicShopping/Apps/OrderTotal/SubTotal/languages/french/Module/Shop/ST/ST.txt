@@ -1,0 +1,3 @@
+module_st_title = Sous Total
+module_st_public_title = Sous Total
+module_st_short_title = Sous Total

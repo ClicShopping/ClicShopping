@@ -1,0 +1,7 @@
+box_entry_customers = Customers number
+text_entry_customers_b2c =   - Nb Customers B2C
+text_entry_customers_b2b =   - Nb Customers B2B
+
+text_stats_man = % men<br /> Average age
+text_stats_woman = % women<br /> Average age
+text_year = years

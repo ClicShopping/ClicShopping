@@ -1,0 +1,6 @@
+cfg_modules_hooks_status_title = Status
+cfg_modules_hooks_status_description = Set True to enable or not the module
+
+cfg_modules_hooks_status_true = True
+cfg_modules_hooks_status_false = False
+

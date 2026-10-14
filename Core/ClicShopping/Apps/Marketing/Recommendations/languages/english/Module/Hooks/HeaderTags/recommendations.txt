@@ -1,0 +1,2 @@
+module_header_tags_products_recommendation_title = Do you want to use meta data in recommendation ?
+module_header_tags_products_recommendation_description = Add the meta tag balise in the recommendation page

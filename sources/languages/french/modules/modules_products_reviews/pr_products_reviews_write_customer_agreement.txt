@@ -1,0 +1,2 @@
+modules_products_reviews_write_customer_agreement_title = Ecriture commentaire : Souhaitez-vous afficher un message d'acceptation client avant la publication de son commentaire
+modules_products_reviews_write_customer_agreement_description = Afficher un message d'acceptation client avant la publication de son commentaire

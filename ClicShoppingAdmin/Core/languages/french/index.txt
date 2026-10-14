@@ -1,0 +1,84 @@
+heading_title = Accueil
+heading_short_orders = Raccourci commandes
+heading_short_products = Raccourci Produits
+heading_short_categories = Raccourci catégories
+heading_short_customers = Raccourci clients
+heading_short_support = Raccourci support clients
+
+heading_title_orders = Commandes
+heading_title_divers = Divers
+
+box_title_orders = Commandes
+box_title_statistics = Statistiques
+box_entry_stock_expecting = Nombre de produits en attente ou hors stock
+box_entry_customer_basket = Nombre de commande pouvant être "recouvrés"
+box_entry_contact_demand_no_archive = Demandes de contact à analyser
+box_entry_products_no_purchase = Moyenne produits non vendus / vendus
+
+text_number_support = Commande support
+text_view = Plus d'informations
+
+catalog_contents = Contenus
+reports_products = Produits
+reports_orders = Commandes
+title_twitter = Tweet ClicShopping
+
+title_db_index = Taille base de données
+title_web_site_size = Taille du site internet
+title_system_memory = Mémoire systeme (get usage)
+title_core_memory = Bootstrap includes Memory Usage
+title_customer_information = Informations sur le compte client
+title_index_order = Etats des commandes
+
+tab_twitter = Tweet ClicShopping
+tab_statisitics = Statistiques
+tab_customer = Infos Serveur
+
+pack = Pack :
+contract_date = Date anniversaire contrat :
+email_size = Taille par boite email :
+email_size_info = 20 Mo
+contract_renewal = Renouvellement du contrat :
+contract_renewal_info = Reconduction automatique à la date d'anniversaire
+notice_termination = Préavis de résiliation :
+notice_termination_info = 2 mois avant échéance
+space = Stockage total de l'espace disque :
+backup_site = Sauvegarde du site :
+backup_site_info = journalière
+ask_informations = Bogue :
+bandwidth = Bande passante totale par mois
+report_issue = Rapporter un bug
+
+onglet_stat_generales = Statistiques Générales
+onglet_stat_ca = Chiffre d Affaires
+onglet_mon_compte = Mon Compte
+onglet_commerce = Infos RSS
+onglet_options = Options
+
+title_stat_ca_evolution = Evolution du CA cumulé par mois (Statut  livré)
+title_stats_growth_ca = Croissance du chiffre d'affaires
+title_stats_average_sales = Croissance moyenne annuelle du panier
+status = Statut total des commandes
+statistics = Statistiques Générales
+
+year_n0 = Année n
+year_n1 = Année n-1
+year_n2 = Année n-2
+year_n3 = Année n-3
+
+icon_edit_order = Editer la commande
+icon_edit_customer = Editer le client
+icon_view_customers_all_orders = Voir toutes les commandes du client
+icon_view_order = Voir la commande du client
+
+text_error_twitter = Erreur, veuillez insérer un message.<br />
+text_subscription_twitter = Inscrivez-vous sur <a href="https://www.twitter.com" target="_blank" rel="noreferrer">Twitter</a> pour bénéficier de toute la puissance des web sociaux dans votre strategie de développement marketing.<br />Puis configurer ClicShopping (Configuration / mon administration / Configuration du web social) pour pouvoir utiliser Twitter.
+
+
+linkedin_certificate_clicshopping = Obtenez votre Certification ClicShopping !
+
+text_install_dashboard = Cliquez ici pour installer votre tableau de bord (permier apprentissage pour connaitre l'outil) <br /> et les metas tag (menu Configuration/SEO)
+text_install_upgrade = Cliquez ici pour installer une nouvelle extension<br />
+text_good_luck = Nous vous souhaitons de réaliser de bonnes affaires avec ClicShopping. L'équipe
+text_follow_us = Suivez nous sur :
+text_donate = Cliquez ici pour nous aider à continuer en faisant une donation !

@@ -1,0 +1,239 @@
+ CREATE TABLE IF NOT EXISTS clic_categories_embedding (
+          id SERIAL PRIMARY KEY,
+          content text DEFAULT NULL,
+          type text DEFAULT NULL,
+          sourcetype text default 'manual',
+          sourcename text default 'manual',
+          embedding vector(3072) NOT NULL,
+          chunknumber int default 128,
+          date_modified datetime DEFAULT NULL,
+          entity_id INT,
+          language_id INT
+        );
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_categories_embedding (embedding);
+
+ CREATE TABLE IF NOT EXISTS clic_products_embedding (
+          id SERIAL PRIMARY KEY,
+          content text DEFAULT NULL,
+          type text DEFAULT NULL,
+          sourcetype text default 'manual',
+          sourcename text default 'manual',
+          embedding vector(3072) NOT NULL,
+          chunknumber int default 128,
+          date_modified datetime DEFAULT NULL,
+          entity_id INT,
+          language_id INT
+        );
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_products_embedding (embedding);
+
+CREATE TABLE IF NOT EXISTS clic_page_manager_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT,
+    language_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_page_manager_embedding (embedding);
+
+
+CREATE TABLE IF NOT EXISTS clic_manufacturers_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT,
+    language_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_manufacturers_embedding (embedding);
+
+
+CREATE TABLE IF NOT EXISTS clic_suppliers_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_suppliers_embedding (embedding);
+
+
+
+CREATE TABLE IF NOT EXISTS clic_reviews_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT,
+    language_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_reviews_embedding (embedding);
+
+
+CREATE TABLE IF NOT EXISTS clic_reviews_sentiment_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT,
+    language_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_reviews_sentiment_embedding (embedding);
+
+
+
+CREATE TABLE IF NOT EXISTS clic_return_orders_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_return_orders_embedding (embedding);
+
+
+
+CREATE TABLE IF NOT EXISTS clic_orders_embedding (
+    id SERIAL PRIMARY KEY,
+    content TEXT DEFAULT NULL,
+    type TEXT DEFAULT NULL,
+    sourcetype TEXT DEFAULT 'manual',
+    sourcename TEXT DEFAULT 'manual',
+    embedding VECTOR(3072) NOT NULL,
+    chunknumber INT DEFAULT 128,
+    date_modified DATETIME DEFAULT NULL,
+    entity_id INT
+);
+
+-- Add vector index separately
+CREATE VECTOR INDEX embedding_index ON clic_orders_embedding (embedding);
+
+
+
+
+
+
+#opcache / Memcache (update the number 805)
+INSERT INTO clic_sdministrator_menu VALUES(805, 'index.php?A&Configuration\\Cache&OpCache', 21, 6, 1, '', 0, 'app_configuration_cache', 1);
+INSERT INTO administrator_menu VALUES(806, 'index.php?A&Configuration\\Cache&Memcached', 21, 7, 1, '', 0, 'app_configuration_cache', 1);
+
+INSERT INTO clic_administrator_menu_description VALUES(805, 'OpCache information', 1);
+INSERT INTO clic_administrator_menu_description VALUES(805, 'Informations OpCache', 2);
+INSERT INTO `clic_administrator_menu_description` VALUES(806, 'Memcached information', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(806, 'Informations Memcached', 2);
+
+
+
+#update for Hashing
+ALTER TABLE `clic_orders` CHANGE `customers_name` `customers_name` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+ALTER TABLE `clic_orders` CHANGE `delivery_name` `delivery_name` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL;
+ALTER TABLE `clic_orders` CHANGE `billing_name` `billing_name` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+#embeddings
+INSERT INTO `clic_cron` VALUES(5, 'embeddings', 'update the embeddings table if it not exist', 'weekly', 'embeddings', 1, '2025-05-15 20:14:27', '2025-05-15 20:19:06');
+
+#Marketplace
+INSERT INTO `clic_configuration` VALUES(null, 'cfg_upgrade_client_id_title', 'CLICSHOPPING_APP_UPGRADE_UP_CLIENT_ID', '', 'cfg_upgrade_client_id_description', 6, 0, NULL, '2025-05-19 10:42:16', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Clé secrète', 'CLICSHOPPING_APP_UPGRADE_UP_SECRET_KEY', '', 'Vous devez envoyer une demande à un administrateur du forum pour obtenir la clé secrète', 6, 0, NULL, '2025-05-19 10:42:16', NULL, NULL);
+
+
+
+
+
+#Faire la mise du schema de clicshopping
+
+#email verification
+ALTER TABLE clic_administrators ADD COLUMN email_verification TINYINT(1) NOT NULL DEFAULT 1;
+ALTER TABLE clic_administrators ADD COLUMN email_verification_code VARCHAR(32) NULL;
+ALTER TABLE clic_administrators ADD COLUMN email_verification_expiry DATETIME NULL;
+
+ALTER TABLE clic_customers ADD COLUMN email_verification TINYINT(1) NOT NULL DEFAULT 1;
+ALTER TABLE clic_customers ADD COLUMN email_verification_code VARCHAR(32) NULL;
+ALTER TABLE clic_customers ADD COLUMN email_verification_expiry DATETIME NULL;
+
+
+#Delete customer
+ALTER TABLE `clic_customers` DROP `double_authentification_secret`;
+
+#delete topt
+DELETE FROM `clic_configuration` WHERE `clic_configuration`.`configuration_id` = 1561;
+DELETE FROM `clic_configuration` WHERE `clic_configuration`.`configuration_id` = 1562;
+DELETE FROM `clic_configuration` WHERE `clic_configuration`.`configuration_id` = 1563;
+DELETE FROM `clic_configuration` WHERE `clic_configuration`.`configuration_key` = 'CONFIGURATION_PRELOADING';
+
+
+
+#english
+INSERT INTO clic_configuration VALUES(null, 'Mistral Api Key', 'CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL', '', 'Please insert the api key (https://www.mistral.ai)', 6, 0, NULL, '2025-04-16 13:09:02', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Api Key VoyageAi', 'CLICSHOPPING_APP_CHATGPT_TA_API_KEY_VOYAGE_AI', '', 'Please insert the api key(https://www.voyageai.com)<br />(only for embeddging embedding)', 6, 0, NULL, '2025-04-16 13:40:54', NULL, NULL);
+
+INSERT INTO clic_configuration VALUES(null, 'Ordre de tri d\'affichage', 'CLICSHOPPING_APP_ADMINISTRATORS_AD_SORT_ORDER', '30', 'Ordre de tri pour l\'affichage (Le plus petit nombre est montré en premier)', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Statut', 'CLICSHOPPING_APP_ADMINISTRATORS_AD_STATUS', 'True', 'Souhaitez vous activer ce module à votre boutique', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Parameter [Administrators App]', 'MODULE_MODULES_ADMINISTRATORS_INSTALLED', 'Configuration\\Administrators\\AD', 'Parameter [Administrators App]', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
+
+INSERT INTO clic_configuration VALUES(null, 'Enable email verification by code for admin access', 'EMAIL_VERIFICATION_ENABLED_ADMIN', 'False', 'Enable or disable code verification for admin access. <br> Please ensure the administrator can access this verification', 46, 5, NULL, '2025-04-23 15:01:20', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Enable email verification by code for store access', 'EMAIL_VERIFICATION_ENABLED_SHOP', 'False', 'Enable or disable code verification for store access. <br> Please ensure the administrator can access this verification', 46, 6, NULL, '2025-04-23 15:01:20', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Email verification code validity duration (minutes)', 'EMAIL_VERIFICATION_CODE_EXPIRY', '5', 'Duration of the verification code validity in minutes', 46, 7, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Email verification code length', 'EMAIL_VERIFICATION_CODE_LENGTH', '6', 'Number of digits in the verification code (4-8)', 46, 8, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Use Memcached', 'USE_MEMCACHED', 'False', 'Enable Memcached caching. For Debug,please let on False', 11,2, NULL, '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+INSERT INTO `clic_configuration` VALUES(null, 'Use static content page cache on catalog', 'USE_CATALOG_CACHE', 'False', 'Enable static content caching for the catalog', 11, 7, '2025-06-03 15:04:24', '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Reset static content page cache on catalog', 'USE_CATALOG_RESET_CACHE', 'False', 'Reset static content caching for the catalog', 11, 7, '2025-05-31 11:00:50', '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Enable cache logging for static content page on catalog', 'USE_CATALOG_LOG_CACHE', 'False', 'Enable cache logging for catalog static content', 11, 7, '2025-06-03 15:01:38', '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+
+
+#french
+INSERT INTO clic_configuration VALUES(null, 'Clef Api Mistral', 'CLICSHOPPING_APP_CHATGPT_CH_API_KEY_MISTRAL', '', 'Veuillez insérer la clef API (https://www.mistral.ai)', 6, 0, NULL, '2025-04-16 13:09:02', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Clef Api VoyageAi', 'CLICSHOPPING_APP_CHATGPT_TA_API_KEY_VOYAGE_AI', '', 'Veuillez insérer la clef API (https://www.voyageai.com)<br />(uniquement pour les embedding)', 6, 0, NULL, '2025-04-16 13:40:54', NULL, NULL);
+
+INSERT INTO clic_configuration VALUES(null, 'Ordre de tri d\'affichage', 'CLICSHOPPING_APP_ADMINISTRATORS_AD_SORT_ORDER', '30', 'Ordre de tri pour l\'affichage (Le plus petit nombre est montré en premier)', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Statut', 'CLICSHOPPING_APP_ADMINISTRATORS_AD_STATUS', 'True', 'Souhaitez vous activer ce module à votre boutique', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Parameter [Administrators App]', 'MODULE_MODULES_ADMINISTRATORS_INSTALLED', 'Configuration\\Administrators\\AD', 'Parameter [Administrators App]', 6, 0, NULL, '2025-04-23 15:01:20', NULL, NULL);
+
+INSERT INTO clic_configuration VALUES(null, 'Activer la vérification de l\'email par code d\'accès à l\'administration', 'EMAIL_VERIFICATION_ENABLED_ADMIN', 'False', 'Activer ou désactiver la vérification par code pour l\'accès administrateur. <br> Veuillez vérifier que l\'administrateur peut accéder à cette vérification', 46, 5, NULL, '2025-04-23 15:01:20', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Activer la vérification par l\'email par code d\'accès pour la boutique', 'EMAIL_VERIFICATION_ENABLED_SHOP', 'False', 'Activer ou désactiver la vérification par code pour l\'accès àla boutique. <br> Veuillez vérifier que l\'administrateur peut accéder à cette vérification', 46, 6, NULL, '2025-04-23 15:01:20', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Durée de validité du code de la vérification par email (minutes)', 'EMAIL_VERIFICATION_CODE_EXPIRY', '5', 'Durée de validité du code de vérification en minutes', 46, 7, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Longueur du code de vérification de la vérification par email ', 'EMAIL_VERIFICATION_CODE_LENGTH', '6', 'Nombre de chiffres dans le code de vérification (4-8)', 46, 8, NULL, '2025-04-23 15:01:20', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Utiliser Memcached', 'USE_MEMCACHED', 'false', 'Activer le cache via Memcached. Pour du debug, veuillez laisser sur False', 11,2, NULL, '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
+
+INSERT INTO `clic_configuration` VALUES(null, 'Utiliser le cache de page de contenu statique sur le catalogue', 'USE_CATALOG_CACHE', 'False', 'Activer la mise en cache du contenu statique du catalogue', 11, 7, '2025-06-03 15:04:24', '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Réinitialiser le cache de page de contenu statique sur le catalogue', 'USE_CATALOG_RESET_CACHE', 'False', 'Réinitialiser la mise en cache du contenu statique du catalogue', 11, 7, '2025-05-31 11:00:50', '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO `clic_configuration` VALUES(null, 'Activer le journal du cache de page de contenu statique sur le catalogue', 'USE_CATALOG_LOG_CACHE', 'False', 'Activer le journal de mise en cache du contenu statique du catalogue', 11, 7, '2025-06-03 15:01:38', '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');

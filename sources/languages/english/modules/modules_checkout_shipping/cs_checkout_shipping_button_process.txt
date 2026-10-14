@@ -1,0 +1,4 @@
+
+ module_checkout_shipping_button_process_title = Do you want to display the process button to allow the customer to continue this order ?
+ module_checkout_shipping_button_process_description = Display the process button to allow the customer to continue this order
+ button_continue = Continue

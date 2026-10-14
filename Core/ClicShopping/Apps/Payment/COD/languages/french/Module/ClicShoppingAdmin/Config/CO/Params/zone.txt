@@ -1,0 +1,4 @@
+cfg_cod_zone_title = Zone de paiement
+cfg_cod_zone_desc = Veuillez sélectionner la zone que vous souhaitez appliquée pour l'envoie de vos colis
+
+cfg_cod_zone_global = -- Global --

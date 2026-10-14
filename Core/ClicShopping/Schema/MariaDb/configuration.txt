@@ -1,0 +1,22 @@
+configuration_id int not_null auto_increment comment(Primary key - unique identifier for each configuration setting)
+configuration_title varchar(255) not_null comment(Human-readable title of the configuration setting)
+configuration_key varchar(255) not_null comment(Unique key identifier for programmatic access - e.g. STORE_NAME, TAX_DECIMAL_PLACES)
+configuration_value text not_null comment(Current value of the configuration setting)
+configuration_description text not_null comment(Detailed description of what this setting controls)
+configuration_group_id int not_null comment(FK to configuration_group table - groups related settings together)
+sort_order int(5) comment(Display order within configuration group)
+last_modified datetime comment(Timestamp of last modification)
+date_added datetime not_null comment(Timestamp when configuration was created)
+use_function varchar(255) comment(PHP function to format value for display)
+set_function varchar(255) comment(PHP function or HTML for setting value in admin interface)
+
+--
+primary configuration_id
+idx_configuration_key configuration_key
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment System configuration settings for store behavior and features
+ai_schema = exclude

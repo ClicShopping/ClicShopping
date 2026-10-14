@@ -1,0 +1,8 @@
+navbar_title_1 = Expédition
+navbar_title_2 = Méthode de paiement
+
+heading_title_Payment = Information paiement
+
+text_conditions_description = Veuillez accepter les conditions de paiement
+text_conditions_confirm = Veuillez confirmer votre acceptation des conditions de paiement
+entry_discount_coupon = Coupon

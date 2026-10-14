@@ -1,0 +1,13 @@
+information_email_customers_id int not_null comment(FK to customers table - customer identifier for email notification preferences)
+information_email_customers_delay_90 tinyint(1) default(0) not_null comment(Send notification 90 days after last activity - 0: no, 1: yes)
+information_email_customers_delay_60 tinyint(1) default(0) not_null comment(Send notification 60 days after last activity - 0: no, 1: yes)
+information_email_customers_delay_30 tinyint(1) default(0) not_null comment(Send notification 30 days after last activity - 0: no, 1: yes)
+information_email_customers_delay_15 tinyint(1) default(0) not_null comment(Send notification 15 days after last activity - 0: no, 1: yes)
+information_email_customers_delay_7 tinyint(1) default(0) not_null comment(Send notification 7 days after last activity - 0: no, 1: yes)
+--
+primary information_email_customers_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Configuration of the reminder e-mail schedule of a customer: one flag per delay step (90, 60, 30, 15 and 7) after the last activity. Settings only.

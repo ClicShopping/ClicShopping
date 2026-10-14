@@ -1,0 +1,81 @@
+heading_title = Members B2B
+module_me_title = Members B2B
+module_me_short_title = Members B2B
+
+text_members =  Members B2B
+text_configure =  configure App Module
+
+text_intro = This app allow you to manage the members B2B in your administratopn. <br /><br />
+- Activate this module and activate the module Members B2B fields located in the Customers menu
+
+module_me_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_insert = Insert
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Update
+button_activate = Activate
+button_members = Member B2B
+button_send =  Send
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+table_heading_lastname = Lastname
+table_heading_firstname = Firstname
+table_heading_account_created = Account Created
+table_heading_action = Action
+table_heading_company = Company
+box_customers_approval = Waiting Approvation
+heading_title_search = Search
+heading_title = Customer approval
+
+member_desactivated = <p style="color:#FF0000;">Customer approval system is inactive !</p><<br /><<br />strong> See your Configuration</strong>
+
+email_contact = For help with any of our online services, please email us at: {{store_owner_email_address}};
+email_text_subject = Important Information attention: Account approved from {{store_name}}
+
+email_warning =  <br /><br /><strong>Note:</strong> This email address was used to request access to our e-commerce website. If you did not signup to be a customer, please send an email to {{store_owner_email_address}}<br/><br/>
+email_separator = ----------------------------------------------
+email_password_reminder_subject = {{store_name}} - Recall of access on your account -
+
+email_password_reminder_body = Hello ! <br />br />You asked us to open an office account on {{store_name}} and we thank you for your confidence.<br />Your request is validated and  your access on {{store_name}} are below. <br /><br />Log in with your e-mail address {{username}} and the password you chose when registering. <br /><br /><strong>Your useful links :</strong><br /><br />
+1) To reach on your clients' account, to modify your informations, your addresses of delivery and/or invoicing, <a href="{{url}}index.php?Account">Account</a><br />
+2) To reach directly the follow-up of your orders, <a href="{{url}}index.php?Account&History">History<br />
+3) To find its password forgotten : <a href="{{url}}index.php?Account&PasswordForgotten">Password</a><br /><br /><br />Regards,<br /><strong>{{store_name}} Team</strong><br /><br />{{store_name_address}}<br /><br /><U>
+
+email_text_coupon =  {{store_name}} are pleased to offer you a discount coupon that you can use at any time on the shop.<br /><br /> The coupon number is : <strong>
+
+icon_activate = Activate account
+icon_edit_customer = Edit customer
+icon_edit_customer = Editer la fiche client
+icon_delete = Delete
+icon_email = E-mail
+
+text_email_text_coupon = Coupon code to use :
+
+text_delete_reviews =  Delete Review  : {{delete_number}}
+text_info_delete_customer = Remove a customer
+text_delete_intro = Souhaitez-vous supprimer ce clientDo you want to remove this customer ?
+
+text_accept_intro = Do yout to accept this customer ?<br  />Please, select  customer group
+visitor_name = Normal customer
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+

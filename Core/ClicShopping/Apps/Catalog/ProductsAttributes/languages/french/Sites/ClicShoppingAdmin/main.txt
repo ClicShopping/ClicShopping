@@ -1,0 +1,36 @@
+heading_title =  Attributs produits
+module_pa_title = Attributs produits
+module_pa_short_title = Attributs produits
+
+text_products_attributes = Attributs produits
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'accéder à un formulaire de gestion des Attributs produits<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+- L'App se situe dan le menu Catalogue<br />
+
+module_pa_introduction = Le processus d'install crée la base de données et le menu pour ce module
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_products_attributes = Attributs produits
+button_cancel = Annuler
+button_new = Nouveau fournisseur
+button_update = Mettre à jour
+button_insert = Insérer
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

@@ -1,0 +1,2 @@
+cfg_item_tax_class_title = Classe de taxes
+cfg_item_tax_class_desc = Sélectionner la classe de taxe que vous souhaitez appliquées

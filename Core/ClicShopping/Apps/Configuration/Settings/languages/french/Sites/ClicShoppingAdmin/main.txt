@@ -1,0 +1,50 @@
+heading_title = Configuration
+module_st_title = Configuration
+module_st_short_title = Configuration
+
+text_administrators = Configuration
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des administrateurs <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_st_introduction = Le processus d'installation installe la base de données et le menu
+module_st_short_title = Settings
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_settings = Configuration
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+
+table_heading_configuration_title = Titre
+table_heading_configuration_value = Valeur
+table_heading_action = Action
+table_heading_configuration_key = Clef
+text_info_edit_intro = Merci de faire les changements nécessaires
+text_info_date_added = Date d'ajout :
+text_info_last_modified = Dernière modification :

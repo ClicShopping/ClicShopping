@@ -1,0 +1,2 @@
+module_header_tags_recommendations_title = Do you want to use customers recommendations meta tag ?
+module_header_tags_recommendations_description = Add the meta tag balise in customers recommendations page

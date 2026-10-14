@@ -1,0 +1,2 @@
+cfg_reviews_review_number_title = Reviews number to analyse
+cfg_reviews_review_number_description = For AI sentiment analyis, you must have a minimum of review to analyse. We recommend you 10.

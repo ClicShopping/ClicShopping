@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.ModuleFrontPageboxContainerNewProducts {
+  padding-top: 0.625rem;
+  padding-right: 0.5rem;
+}
+
+.ModuleFrontPageColNewProducts {
+  padding-right: 0.5rem;
+  min-width: 18.75rem;
+}
+
+.ModuleFrontPageProductsNewHeading h2 {
+  padding-left: 0.5rem;
+}
+
+.ModulesFrontPageBoostrapColumn5Button {
+  padding-bottom: 0.5rem;
+}

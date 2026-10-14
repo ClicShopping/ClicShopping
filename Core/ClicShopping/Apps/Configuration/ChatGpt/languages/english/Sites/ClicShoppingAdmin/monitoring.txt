@@ -1,0 +1,30 @@
+heading_title_monitoring = MCP Monitoring Configuration
+text_monitoring_settings = Monitoring Settings
+
+text_error_rate_threshold = Error Rate Threshold
+text_error_rate_threshold_desc = Alert when error rate exceeds this percentage
+text_latency_threshold = Latency Threshold
+text_latency_threshold_desc = Alert when response time exceeds this value
+
+text_alert_notifications = Enable Notifications
+text_alert_notifications_desc = Send notifications for monitoring alerts
+
+text_data_retention = Data Retention Period
+text_data_retention_desc = How long to keep historical monitoring data
+
+text_one_week = One Week
+text_one_month = One Month
+text_three_months = Three Months
+
+button_save = Save
+button_cancel = Cancel
+button_back = Back
+
+text_save_success = Monitoring configuration updated successfully
+text_configuration_error = Error saving configuration: %s
+
+text_monitor_status_title = MCP Monitor Status
+text_last_check = Last Check: %s
+text_current_status = Current Status: %s
+text_total_alerts = Total Alerts: %d
+text_performance_score = Performance Score: %d/100

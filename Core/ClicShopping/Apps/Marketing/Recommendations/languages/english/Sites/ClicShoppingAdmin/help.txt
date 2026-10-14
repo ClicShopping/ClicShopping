@@ -1,0 +1,81 @@
+text_strategy = <strong>Strategy</strong><br /><br />
+- You can select only one strategy. If you want to change, yu must delete all your data<br />
+- Positive Score : A positive recommendation score indicates that the product is likely to be recommended to the user. A higher positive score often implies a stronger recommendation. The magnitude of the score can represent the level of confidence in the recommendation.<br />
+- Neutral Score : A score close to 0 may imply that the recommendation algorithm is not strongly biased towards or against recommending the product. It might indicate a neutral or uncertain recommendation.<br />
+- Negative Score : A negative score suggests that the product is less likely to be recommended. The lower the negative score, the stronger the indication that the product is not a good fit for the user.<br />
+- The sentiment analysis is based on Gpt review comment analysed<br />
+- The score is determinated by an algorithm with the result of sentiment analysis<br />
+- About the product catalog, only the positive score is displayed in function of your parameters<br /><br />
+
+text_range = <strong>Range-Based Recommendation</strong><br /><br />
+Range-Based Recommendation is a type of recommendation strategy that focuses on the numerical ranges or thresholds of various factors to determine the suitability of a product for a user. In this approach, different product attributes such as user rating, review scores, and user feedback are assigned specific weightings and combined to calculate a recommendation score. The recommendation score is then compared against predefined ranges or thresholds to determine the level of recommendation for a particular product. For example, products with recommendation scores falling within a specific range may be considered as highly recommended, moderately recommended, or not recommended at all.<br /><br />
+in our case we takes into account the review rate, user feedback, and sentiment score (if available) to compute the recommendation score for a given product. It also allows for different strategies (Range or other sources) for calculating the score.<br /><br />
+
+<strong>Basic Settings :</strong><br />
+- Min Score : Get the products that are frequently accepted for customers recommendations (must be between -1 and 1) : 0.5<br />
+- Max Score : Get the products that are frequently rejected by customers recommendations (must be between -1 and 1) Must be inferior min score or egal : 0.5<br />
+- Weighting Sentiment : It's ability to fine-tune or modify the relative importance or influence of the sentiment score : 1.5
+<br /><br />
+<strong>Settings :</strong><br />
+Analysis example :<br />
+- Customer review sentiment : positive<br />
+- Min Score : 0.5 <br />
+- Max Score : 0.5 <br />
+- Weighting Sentiment : 1.5 <br />
+- Customer rating product review : 1 star<br />
+- result : positive
+<br /><br />
+- Customer review sentiment : neutral<br />
+- Min Score : 0.5<br />
+- Max Score : 0.5<br />
+- Weighting Sentiment : 1.5<br />
+- Customer rating product review : 1 star<br />
+-- Result : -0.8<br />
+<i> note :</i>This case 1 star with positive comment is considerated as negative approach.
+<br /><br />
+- Customer review sentiment : negative<br />
+- Min Score :<br />
+- Max Score :<br />
+- Weighting Sentiment :<br />
+- Customer rating product review : 1 star<br />
+- result : negative<br />
+<br /><br />
+
+text_multiple = <Strong>Multiple-Sources Recommendation</strong><br /><br />
+Multiple-Sources Recommendation is a recommendation strategy that leverages multiple data sources or information channels to generate personalized recommendations for users. Instead of relying solely on user-specific data (e.g., user ratings or feedback), this approach considers a wide range of data from diverse sources, such as user behavior, social networks, item features, and contextual information. By combining information from various sources, the recommendation system can create a more comprehensive and accurate user profile, leading to more relevant and diverse product recommendations. Multiple-Sources Recommendation is especially useful in situations where limited user data is available or when the recommendation system needs to account for a broader range of factors influencing user preferences.
+<br /><br />
+
+<strong>Basic Settings :</strong><br />
+- Min Score : Get the products that are frequently accepted for customers recommendations (must be between -1 and 1) : 0.5<br />
+- Max Score : Get the products that are frequently rejected by customers recommendations (must be between -1 and 1) Must be inferior min score or egal : 0.5<br />
+- Weighting Sentiment : It's ability to fine-tune or modify the relative importance or influence of the sentiment score : 1.5
+<br /><br />
+
+<strong>Settings :</strong><br />
+Analysis example :<br />
+- Customer review sentiment : positive<br />
+- Min Score : 1.5<br />
+- Max Score : 1.5<br />
+- Weighting Sentiment : 1.5<br />
+- Customer rating product review : 1 star<br />
+-- Result : Positive
+<br /><br />
+- Customer review sentiment : neutral<br />
+- Min Score :1.5<br />
+- Max Score :1.5<br />
+- Weighting Sentiment : 1.5<br />
+- Customer rating product review : 1 star<br />
+-- Result : 0.94 <br />
+<i>Note :</i>This case 1 star with positive comment is considered as negative review.
+
+<br /><br />
+- Customer review sentiment : negative<br />
+- Min Score :1.5<br />
+- Max Score :1.5<br />
+- Weighting Sentiment : 1.5<br />
+- Customer rating product review : 1 star<br />
+-- Result : negative
+<br /><br />
+<br /><br />
+
+<strong>In summary, to find the good balance, the best is to test and see the result.The default parameters are tested and works fine.</strong>

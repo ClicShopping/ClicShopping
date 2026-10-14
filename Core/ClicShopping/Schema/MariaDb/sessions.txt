@@ -1,0 +1,10 @@
+sesskey varchar(255) not_null comment(Primary key - unique session identifier)
+expiry int(11) unsigned not_null comment(Unix timestamp when session expires)
+value text not_null comment(Serialized session data - cart contents, user state, etc)
+--
+primary sesskey
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

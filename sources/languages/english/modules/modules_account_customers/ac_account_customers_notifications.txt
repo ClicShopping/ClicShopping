@@ -1,0 +1,15 @@
+
+ module_account_customers_notifications_title = Do you want to display the informations concerning the notifications realised by the customer ?
+ module_account_customers_notifications_title_description = Display the informations concerning the notifications realised by the customer
+ modules_account_customers_email_notifications_title = E-Mail Notifications
+ modules_account_customers_email_notifications_newsletters = Subscribe or unsubscribe from newsletters.
+ modules_account_customers_email_notifications_products = View or change my product notification list.
+
+ my_notifications_description = The product notification list allows you to stay up to date on products you find of interest.<br /><br />To be up to date on all product changes, select <strong>Global Product Notifications</strong>.
+
+ global_notifications_title = Global Product Notifications
+ global_notifications_description = Recieve notifications on all available products.
+
+ notifications_title = Product Notifications
+ notifications_description = To remove a product notification, clear the products checkbox and click on Continue.
+ notifications_non_existing = There are currently no products marked to be notified on.<br /><br />To add products to your product notification list, click on the notification link available on the detailed product information page.

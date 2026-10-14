@@ -1,0 +1,2 @@
+text_newsletter = Product return request
+text_view = - more informations

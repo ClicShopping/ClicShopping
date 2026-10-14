@@ -1,0 +1,24 @@
+Extract specific numbered entities from this query. Return ONLY a JSON array of entities.
+
+Domain: {{domain}}
+Query: "{{query}}"
+
+Identify any specific numbered items or identifiers mentioned in the e-commerce context, such as:
+- Articles, sections, chapters, paragraphs, clauses (article 3, section 5, chapter 2)
+- Products, items, SKUs (product 123, item ABC-456, SKU XYZ-789)
+- Orders, invoices, transactions (order 789, invoice INV-001, transaction TXN-123)
+- Categories, departments (category 5, department Electronics)
+- Customers, accounts (customer 456, account ACC-123)
+- Manufacturers, suppliers (manufacturer 10, supplier SUP-001)
+- Any other numbered or identified references
+
+For each entity found, return:
+{
+  "type": "article|product|order|category|section|chapter|customer|manufacturer|supplier|invoice|other",
+  "value": "the number or identifier",
+  "pattern": "the exact phrase from the query"
+}
+
+If NO specific entities are found, return an empty array: []
+
+Return ONLY valid JSON, no explanation.

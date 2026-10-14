@@ -1,0 +1,38 @@
+text_label_seo_analyzed = Lancez l'analyse SEO
+text_seo_not_analyzed = Le produit n a pas été analysé par l agent SEO. Lancez une analyse SEO pour calculer le seo_score et identifier les opportunités d optimisation.
+
+text_label_optimize_seo = Optimiser le SEO
+text_seo_low_score = Le score SEO est inférieur à {{seoThreshold}}/100. Améliorez les balises méta, les mots-clés, les données structurées et l’optimisation du contenu.
+
+text_label_optimize_description = Optimiser la Description
+text_description_poor = Le score de la description du produit est inférieur à {{$descThreshold}}. Enrichissez la description avec des fonctionnalités détaillées, des avantages et des cas d utilisation.
+
+text_label_create_promotion = Optimiser l'offre commerciale
+text_special_needed = Le produit est sous-performant (T2/T3). Une promotion stratégique (nouvelle ou mise à jour) est recommandée pour la déplacer vers le premier trimestre.
+
+text_label_add_featured_status = Augmenter la Visibilité (Featured)
+text_featured_needed = Augmentez la visibilité de ce produit de haute qualité. Assurez-vous que le statut En vedette est actif pour générer plus de trafic.
+
+text_label_add_favorites_status =  Augmenter la Visibilité (Favoris)
+text_favorites_needed = Augmentez la visibilité de ce produit de haute qualité. Assurez-vous que le statut des Favoris est actif pour générer plus de trafic.
+
+text_ctext_label_add_cross_recommendations = Augmenter les Recommandations
+ross_sell_needed = Tirez parti de la qualité de ce produit en ajoutant des articles associés pour augmenter la taille moyenne du panier. Recommandations minimales de {{recoMin}} requises.
+
+text_label_reposition_category = Repositionner la Categorie
+text_category_reposition = Produit au 3ème trimestre avec taux de retour ≤ {{$retThreshold}}. Envisagez de vous repositionner dans une catégorie différente ou d ajuster votre stratégie de tarification.
+
+text_label_consider_removal = Suppression à considérer
+text_consider_removal = Produit au troisième trimestre avec un taux de retour supérieur à {{$retThreshold}}. Envisagez fortement de le retirer du catalogue pour réduire les coûts et l insatisfaction des clients.
+
+text_label_add_featured_status = Valoriser cette perle rare !
+text_hidden_gem = Ce produit reçoit un trafic qualifié (intent ratio > {{$highIntentMin}}) mais n a encore généré aucune vente.
+Son potentiel commercial est réel mais sa visibilité insuffisante.
+Action : mise en avant Featured pour déclencher la première conversion.
+
+text_label_create_promotion = Valoriser la tendance du produit
+text_trending_product = La popularité pondérée de ce produit dépasse {{$trendMultiplier}} × la moyenne du catalogue — signal de tendance organique détecté.
+Action : promotion immédiate pour maximiser la conversion pendant que le trafic est qualifié.
+
+
+

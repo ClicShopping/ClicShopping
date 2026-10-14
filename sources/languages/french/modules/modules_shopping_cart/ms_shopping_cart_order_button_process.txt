@@ -1,0 +1,6 @@
+module_shopping_cart_order_button_process_title = Souhaitez-vous afficher le bouton de commande pour permettre au client de continuer sa commande ?
+module_shopping_cart_show_total_description = Affiche le bouton de commande pour permettre au client de continuer sa commande
+
+button_save_shopping_cart = Sauver votre panier
+button_continue = Continuer
+button_order = Commander

@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_delivery_earliest_title = Livraison la plus tot
+cfg_ecommerce_ucp_delivery_earliest_description = Delai relatif pour calculer la livraison la plus tot

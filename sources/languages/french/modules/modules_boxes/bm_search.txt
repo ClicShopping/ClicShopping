@@ -1,0 +1,5 @@
+module_boxes_search_title = Souhaitez-vous afficher la boxe de recherche  dans la boutique ?
+module_boxes_search_description = Affiche un champs permettant la recherche dans la boutique
+module_boxes_search_box_text =
+module_boxes_search_box_title = Rechercher
+module_boxes_search_box_advanced_search = Recherche avancée

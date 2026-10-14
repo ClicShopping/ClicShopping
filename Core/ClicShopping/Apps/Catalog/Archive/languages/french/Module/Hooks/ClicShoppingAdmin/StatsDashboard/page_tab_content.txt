@@ -1,0 +1,2 @@
+box_entry_products_archives = Nombre d'archives
+box_entry_products_no_archives = Nombre de produits non archivés

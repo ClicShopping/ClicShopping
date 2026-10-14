@@ -1,0 +1,96 @@
+heading_title = Menu Administrateur
+module_am_title = Menu Administrateur
+module_am_short_title = Menu Administrateur
+
+text_administrator_menu =  Menu Administrateur
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'include un gestionaire de menus d'administration <br /><br />
+- Activer ce module qui est situé dans le menu Tools
+
+module_am_introduction = Le processus d'installation installe la base de données et le menu
+module_am_short_title = Menu Administrateur
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_administrator_menu = Menu Administrateur
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_new_category =  New menu
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+title_heading = Menus administration
+
+heading_title_search = Rechercher
+heading_title_goto = Aller à :
+
+table_heading_id = ID
+table_heading_categories = Menus administration
+table_heading_categories_products = Menus
+table_heading_action = Action
+table_heading_status = Statut
+table_heading_categories = Menus administration
+table_heading_sort_order = Ordre de tri
+table_heading_rights_access = Droits d'accès
+table_heading_app = APP
+
+text_info_heading_delete_category = Supprimer une catgorie
+text_info_heading_move_category = Déplacer une catégorie
+
+text_categories = Menus administration :
+text_subcategories = Sous-catégories :
+text_top = --- Top ---
+
+text_edit_link = Lien
+text_edit_access_administrator = Droits administation
+text_edit_sort_order = order de tri
+text_select_menu = Menus
+text_menu = Menu
+text_image = Image
+text_edit_image = Image
+text_edit_b2b_menu =  B2B Menu
+text_selected = -- Sélectionner --
+
+text_all_right = Tous
+text_all_rights_admin = Droits Admin
+text_rights_employee = Droits employée
+text_rights_visitor = Droits visiteur
+
+tab_general = General
+
+button_cancel = Annuler
+button_move = Déplacer
+button_update = Mettre à jour
+
+image_folder = Répertoire
+image_edit = Editer
+image_move = Déplacer
+image_delete = Supprimer
+
+text_move = Déplacer
+text_move_categories_intro = Déplacer la catégorie {{move_category}}
+
+text_delete_warning_childs = <strong>Attention:</strong> Il y a {{delete_child}} sous-categories encore liées à cette catégorie !
+text_delete_category_intro =  Delete :
+
+text_select_menu = Selectionner la catégorie
+
+error_administrator_selected = Veuillez sélectionner un droit administrateur pour le menu
+
+

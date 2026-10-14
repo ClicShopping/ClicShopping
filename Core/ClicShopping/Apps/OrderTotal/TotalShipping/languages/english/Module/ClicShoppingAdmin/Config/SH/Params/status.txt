@@ -1,0 +1,6 @@
+cfg_order_total_shipping_status_title = Status
+cfg_order_total_shipping_status_description = Set True to enable or not the module
+
+cfg_order_total_shipping_status_true = True
+cfg_order_total_shipping_status_false = False
+

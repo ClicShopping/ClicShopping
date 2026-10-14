@@ -1,0 +1,72 @@
+heading_title = Template E-mail
+module_te_title = Template E-mail
+module_te_short_title = Template E-mail
+
+text_template_email =  Template E-mail
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion de template des emails <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+text_intro_fa =  Veuillez créer ce lien dans votre boutique pour accéder au template email
+
+module_te_introduction = Le processus d'installation installe la base de données et le menu
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_template_email = Template Email
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+table_heading_template_email_name = Nom du template
+table_heading_template_email_description = Description
+table_heading_template_email_type = Email envoyé de
+table_heading_template_customer_groups = Mode du groupe client
+table_heading_action = Actions
+
+text_info_template_catalog = Template Admin / Catalogue
+
+template_email_text_name = Nom du template :
+template_email_text_short_description = Description courte du template :
+template_email_text_description = Description du message :
+template_text_catalog_admin = Message envoyé à partir du :
+template_email_text_customer_group = Groupe client destinataire :
+template_email_text_variable = Variable
+text_template_email_catalog = Catalogue
+text_template_email_admin = Administration
+text_template_email_admin_catalog = Administration et catalogue
+text_template_email_b2c = Mode B2C
+text_template_email_b2c_b2b = Mode B2B B2C
+
+tab_description = Description
+tab_general = Général
+title_information_name = Informations Générales
+title_message = Message à envoyer
+
+image_edit = Edit
+
+help_title_onglet_general = Informations sur la gestion du template
+
+text_help_template = <ul>
+<li>{{http_shop}} vous permettra d'insérer l'URL du catalogue du site dans votre email : ex : {{http_shop}}index..php?Account&login = http://www.domain.com/shop/index. ?Account&LogIn</li>
+<li>{{store_name}} vous permettra d'insérer le nom de la boutique dans votre email</li>
+<li>{{store_owner_email_address}}  vous permettra d'insérer votre adresse email de la boutique dans votre email</li>
+</ul>
+
+
+

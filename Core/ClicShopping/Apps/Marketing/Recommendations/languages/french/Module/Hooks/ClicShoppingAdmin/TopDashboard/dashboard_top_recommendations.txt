@@ -1,0 +1,2 @@
+text_recommendations = Recommandations Clients
+text_view = - Plus d'informations

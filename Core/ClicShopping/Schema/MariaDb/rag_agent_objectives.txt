@@ -1,0 +1,27 @@
+objective_id varchar(36) not_null comment(Unique identifier for the objective (UUID))
+agent_id varchar(100) not_null comment(Identifier of the agent that created this objective)
+goal_statement text not_null comment(Clear description of what the agent aims to achieve)
+success_criteria longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`success_criteria`)) comment(Measurable criteria for objective completion)
+priority enum('low','medium','high','critical') not_null comment(Priority level of the objective)
+estimated_completion_time int(11) not_null comment(Estimated time to complete in seconds)
+status enum('pending','approved','active','completed','failed','cancelled') not_null default 'pending' comment(Current lifecycle status)
+conflicts_with varchar(36) default null comment(ID of conflicting objective if any)
+created_at timestamp NULL default(current_timestamp) comment(When the objective was created)
+approved_at timestamp NULL default null comment(When the objective was approved)
+started_at timestamp NULL default null comment(When execution started)
+completed_at timestamp NULL default null comment(When the objective was completed or failed)
+metrics longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(`metrics`)) comment(Performance metrics collected during execution)
+failure_reason text default null comment(Reason for failure if status is failed)
+
+--
+primary objective_id
+idx_agent_id agent_id 
+idx_status status 
+idx_priority priority 
+idx_created_at created_at 
+idx_conflicts conflicts_with
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

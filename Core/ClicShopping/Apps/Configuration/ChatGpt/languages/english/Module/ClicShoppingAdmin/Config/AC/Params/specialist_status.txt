@@ -1,0 +1,5 @@
+cfg_chatgpt_specialist_status_title = Enable Specialist Critic
+cfg_chatgpt_specialist_status_description = Activate the Specialist critic for evaluating operations. Specializes in assessing business logic and user workflows
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

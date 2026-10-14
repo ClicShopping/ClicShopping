@@ -1,0 +1,179 @@
+heading_title = Catégories
+module_ct_title = Catégories
+module_ct_short_title = Catégories
+
+text_products_categories = Catégories
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'installer un système de gestion d'categories des produits. <br /><br />
+- Activer ce module. Pour y accéder, veuillez aller dans le Menus Produits/Catégoriess
+
+module_ct_introduction = Le processus d'installation installe le menu
+module_ct_short_title = Catégories
+
+button_back = Retour
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_categories = Catégories
+button_cancel = Annuler
+button_new = Nouveau
+button_new_product = Nouveau Produit
+button_new_category = Nouvelle catégorie
+button_move = Déplacer
+button_update = Mettre à jour
+button_insert = Insérer
+button_products = Produits
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+tab_general = Géneral
+tab_description = Description
+tab_ref = SEO
+tab_img = Images
+
+keywords_google_trend = Mots clefs Google
+
+
+heading_title_search = Rechercher
+heading_title_goto = Aller à :
+
+table_heading_id = ID
+table_heading_categories_products = Catégories
+table_heading_action = Action
+table_heading_status = Statut
+table_heading_categories = Catégories
+table_heading_sort_order = Ordre de tri
+table_heading_last_modified = Dernière modification
+table_heading_created = Créé / modifié
+
+text_categories = Catégories :
+text_subcategories = Sous-catégories :
+text_description_categories = Description de la Catégorie
+text_categories_image_delete = Supprimer l'image
+
+text_products_page_refefrencement = Métadonnées pour la categorie
+text_products_page_title = Titre
+text_products_header_description = Description
+text_products_keywords = Mots clef
+text_categories_seo_url = Catégories SEO URL
+
+text_divers_title = Divers
+text_products_name = Catégorie
+
+text_create = créer
+text_image_nonexistent = L'IMAGE N'EXISTE PAS
+text_no_child_categories_or_products = Merci de créer une nouvelle catégorie ou un produit dans ce niveau.
+
+text_categories_name = Catégorie
+
+text_edit_intro = Merci de faire les changements nécessaires
+text_edit_categories_id = ID de la catégorie :
+text_edit_categories_name = Nom de la catégorie :
+text_edit_categories_image = Image de la catégorie :
+text_edit_sort_order = Ordre de tri :
+
+text_info_copy_to_intro = Veuillez choisir une nouvelle catégorie dans laquelle vous voulez copier ce produit
+text_info_current_categories = Catégories courantes :
+
+text_info_heading_new_category = Nouvelle catégorie
+text_info_heading_edit_category = Editer catégorie
+text_info_heading_delete_category = Supprimer catégorie
+text_info_heading_move_category = Déplacer catégorie
+
+text_delete_category_intro = Etes vous sur de vouloir supprimer cette catégorie ?
+
+text_delete_warning_childs = <strong>ATTENTION :</strong> Il y a {{delete_child}} (sous-)catégories liées &aacute; cette catégorie !
+text_delete_warning_products = <strong>ATTENTION :</strong> Il y a  {{delete_warning}} produits liées à cette catégorie !
+
+text_move_categories_intro = Merci de sélectionner la catégorie ou vous voudriez que <strong>{{categorie_intro}}</strong> soit placé
+text_move = Déplacer <strong>{{categorie_name}}</strong> vers :
+
+text_new_category_intro = Merci de compléter les informations suivantes pour la nouvelle catégorie
+text_categories_name = Nom de la catégorie :
+text_categories_name_title = Nom de la catégorie
+text_categories_image = Image de la catégorie :
+text_sort_order = Ordre de tri :
+
+text_user_name = Par :
+
+text_categories_image_title = Image principale de la catégorie
+text_categories_image_vignette = Image vignette de la catégorie
+text_categories_delete_image = Ne plus afficher d'image sur cette catégorie
+
+text_products_page_seo = SEO
+
+empty_category = Catégorie vide
+
+text_how_to_copy = Méthode de copie :
+text_help_wysiwyg = Wysiwyg
+
+error_cannot_link_to_same_category = Erreur : Impossible de lier des produits dans la même cat&eacutegorie.
+error_catalog_image_directory_not_writeable = Erreur : Impossible d'écrire dans le répertoire images
+error_cannot_move_category_to_parent = Erreur: Vous ne pouvez pas bougez cette catégorie.
+error_catalog_image_directory_does_not_exist = Erreur : Le répertoire d'images n'existe pas
+error_cannot_move_category_to_parent = Erreur : La catégorie ne peut pas être déplacée dans la sous-catégorie.
+
+title_help_image = Notes sur l'utilisation des images
+
+icon_delete = Supprimer
+icon_edit = Editer
+icon_move = Déplacer
+icon_folder = Répertoire
+
+text_alert_info_categories = Veuillez sélectionner une catégorie pour voir une sous-catégorie
+
+help_image_products = <li>redimensionnement automatique des images : <br />
+ <blockquote>
+    - Petite image pour les autres pages du site : ' . (int)SMALL_IMAGE_WIDTH . ' x ' . (int)SMALL_IMAGE_HEIGHT .'<br />
+    - Image moyenne pour la page de description des produits : ' . MEDIUM_IMAGE_WIDTH . ' x ' . MEDIUM_IMAGE_HEIGHT .'<br />
+    - Image Zoom pour la page de description des produits : ' . BIG_IMAGE_WIDTH . ' x ' . BIG_IMAGE_HEIGHT .'<br />
+    - Formats acceptés : JPG, GIF, PNG. <br />
+    - Taille maximum du fichier : 2000Ko max.<br />
+    - Vous pouvez à tout moment changer le redimensionnement automatique des images (Design / Configuration générale du design / Gestion des images).<br />
+    - Vous pouvez à tout moment activer aussi le téléchargement manuel (Configuration / Mon administrations / Gestion des images).<br />
+ </blockquote>
+</li>
+<li>l'utilisation de la galerie d'images nécéssite d'avoir le plug in ColorBox installé. Si n'y a pas d'images dans la gallerie, alors c'est l'image par défaut de la vignette qui est affichée sous forme de pop up.</li>
+
+
+help_image_categories = <li>Veuillez à ne pas mettre plus d'une image dans la sections "Image vignette de la catégorie".</li><li>Si vous avez inséré des plugins dans Firefox, il peut y avoir des incompatibilités (ex : adblock plus)</li>
+
+title_help_description = Notes sur l'utilisation du wysiwyg
+help_description = <li>Si vous avez inséré des plugin dans Firefox, il peut y avoir des incompatibilités (ex : adblock plus)</li>
+
+title_help_options = Notes sur les options
+help_options = <li>Les champs supplémentaires ne sont pas pris en compte dans la facture ni dans son calcul.</li><li>Si vous souhaitez créer ou supprimer un champs, vous devez le faire à partir du menu de gestion des champs supplémentaires.</li><li>
+si le champs est vide, celui n'apparaitra pas dans la partie catalogue.</li>
+
+title_help_general = Notes Informatives
+help_general = <li>Un certain nombre de champs sont paramétrables à partir du menu de configuration.</li>
+
+title_help_seo = Notes sur la gestion des métadonnées
+help_seo = <li>Le système gère automatiquement la gestion des métadonnées.<br />
+<blockquote>il inscrit automatiquement les éléments dans l'ordre suivant si les champs ne sont pas renseignées:<br />
+titre : le nom de votre produit (ex blouson cuir)<br />
+description : le nom du produit (blouson cuir), le nom du produit découpé (blouson, cuir), le nom de la catégorie,)<br />
+keywords : le nom du produit (blouson cuir), le nom du produit découpé (blouson, cuir), le nom de la catégorie<br />
+categorie : la catégorie du produit<br />
+</blockquote></li>
+<li>si vous renseignez les champs, les balises apparaitront de la facon suivante : <br />
+<blockquote>
+titre : le titre du champs, le nom de votre produit (ex blouson cuir)<br />
+description : le champs description, le nom du produit (blouson cuir), le nom du produit découpé (blouson, cuir), le nom de la catégorie<br />
+mots clefs : le champs mots clefs, le nom du produit (blouson cuir), le nom du produit découpé (blouson, cuir), le nom de la catégorie<br />
+</blockquote></li>
+<li><strong>veuillez à ne pas mettre trop de mots clefs (maximum 10)</strong> et établissez une cohérence entre chaque champs afin de retrouver les mots les plus importants en premier</li>

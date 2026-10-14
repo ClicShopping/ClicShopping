@@ -1,0 +1,32 @@
+heading_title = Suppliers management
+
+title_suppliers_general = General information
+title_suppliers_image = Supplier Image
+tab_visuel = Image
+tab_suppliers_note = Notes
+tab_suppliers_address = Address
+title_suppliers_address = Address
+
+text_suppliers = Suppliers:
+text_image_nonexistent = IMAGE DOES NOT EXIST
+
+text_suppliers_general = Others informations
+text_suppliers_name = Suppliers Name:
+text_suppliers_new_image = New suppliers Image:
+text_suppliers_image = Suppliers Image:
+text_suppliers_delete_image = Not display image suppliers
+text_suppliers_url = Suppliers URL:
+text_suppliers_address = Address :
+text_suppliers_suburb = Suburb :
+text_suppliers_postcode = Postcode :
+text_suppliers_city = City :
+text_suppliers_states = States :
+text_suppliers_country = Country :
+text_suppliers_notes = Others informations
+text_products_image_vignette = Image
+text_delete_image = Delete suppliers image?
+
+title_suppliers_manager = Manager name :
+title_suppliers_phone = Telephone :
+title_suppliers_fax = Fax :
+title_suppliers_email_address = Email address :

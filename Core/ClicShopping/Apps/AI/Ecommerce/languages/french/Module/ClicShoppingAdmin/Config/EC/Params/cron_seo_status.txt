@@ -1,0 +1,4 @@
+cfg_ecommerce_cron_seo_status_title = Statut par défaut du Cron
+cfg_ecommerce_cron_seo_status_description = Veuillez sélectionner le statut du cron
+cfg_ecommerce_cron_seo_status_true = True
+cfg_ecommerce_cron_seo_status_false = False

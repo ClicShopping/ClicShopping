@@ -1,0 +1,6 @@
+cfg_table_status_title = Statut d'affichage du module
+cfg_table_status_description = Sélectionner True pour afficher le module
+
+cfg_table_status_true = True
+cfg_table_status_false = False
+

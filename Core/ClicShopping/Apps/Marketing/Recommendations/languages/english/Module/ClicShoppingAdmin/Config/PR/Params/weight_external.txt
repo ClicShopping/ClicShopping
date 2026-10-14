@@ -1,0 +1,4 @@
+cfg_products_recommendations_weight_external_title = Weight External
+cfg_products_recommendations_weight_external_description = Weight applied to the external recommendations score (avg recommendations score normalized between min and max). Used in the Multiple strategy.
+
+

@@ -1,0 +1,21 @@
+rules_id int(11) not_null auto_increment comment(Primary key - unique identifier for each pricing rule)
+rules_name varchar(255) not_null comment(Descriptive name for the pricing rule - e.g. Bulk Discount 10+, Weekend Special)
+rules_condition text not_null comment(Rule condition logic - e.g. quantity > 10, customer_group = wholesale, date_range)
+rules_type enum('percentage_decrease','percentage_increase','fixed_price') not_null default ('percentage_decrease') comment(Price adjustment type - percentage_decrease: discount %, percentage_increase: markup %, fixed_price: set price)
+rules_value decimal(15,4) not_null comment(Adjustment value - percentage or fixed price depending on rules_type)
+rules_priority int(11) not_null default (0) comment(Rule priority for conflict resolution - higher number = higher priority)
+rules_status tinyint(1) not_null default (0) comment(Rule status - 0: inactive, 1: active and applying)
+date_added datetime not_null comment(Timestamp when rule was created)
+date_modified datetime default null comment(Timestamp of last modification to rule)
+rules_status_special tinyint(1) not_null default (0) comment(Special pricing flag alowing to change the special price - 0: regular rule, 1: special/promotional rule)
+customers_group tinyint(1) not_null default (0) comment(Customer group restriction - 0: all groups, specific ID for group-specific rules)
+rules_status_promotion tinyint(1) not_null default (0) comment(Special pricing flag to create a new specials : 0: inactive - 1: active)
+--
+primary rules_id
+idx_rules_id rules_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment DEFINITION of the dynamic pricing rules: condition, type, value, priority and target customer group. It holds rules, not prices: the selling price of a product is products_price in products.

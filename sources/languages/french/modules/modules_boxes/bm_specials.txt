@@ -1,0 +1,12 @@
+module_boxes_specials_title = Souhaitez-vous afficher la boxe des promotions dans la boutique ?
+module_boxes_specials_description = Affiche les promotions en cours
+module_boxes_specials_box_title = Promotions
+module_boxes_specials_all_specials = Toutes nos promotions
+
+text_flash_discount = Vente flash
+text_ticker_products_new = Nouveauté
+text_ticker_specials = Promotion
+text_ticker_favorite = Coup de coeur
+text_ticker_featured = Sélectionné
+
+ button_detail = Détails

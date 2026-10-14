@@ -1,0 +1,6 @@
+
+module_shopping_cart_out_of_stock_message_title = Souhaitez-vous afficher un message d'avertissement quand le produit est indisponible ou hors stock ?
+module_shopping_cart_out_of_stock_message_description = Affiche un message d'avertissement quand le produit est indisponible ou hors stock
+
+module_shopping_cart_out_of_stock_cant_checkout = Les articles marqués {{out_of_stock}}  ne sont pas en stock dans la quantité désirée.<br />Merci de corriger la quantité des articles marqués ({{out_of_stock}}).
+module_shopping_cart_out_of_stock_can_checkout = Les articles marqués {{out_of_stock}}  ne sont pas en stock dans la quantité désirée.<br />Vous pouvez néanmoins les acheter ils vous seront délivrés dés disponibilités.

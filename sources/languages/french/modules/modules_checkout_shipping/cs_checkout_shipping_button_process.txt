@@ -1,0 +1,3 @@
+module_checkout_shipping_button_process_title = Souhaitez-vous afficher le bouton permettant de continuer la procédure de commande ?
+module_checkout_shipping_button_process_description = Affiche le bouton permettant de continuer la procédure de commande
+module_checkout_shipping_button_process_button_continue = Continuer

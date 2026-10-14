@@ -1,0 +1,60 @@
+{
+    "name": "mattketmo/email-checker",
+    "description": "Throwaway email detection library",
+    "license": "MIT",
+    "keywords": ["email", "check", "throwaway", "disposable"],
+    "authors": [
+        {
+            "name": "Matthieu Moquet",
+            "email": "matthieu@moquet.net"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.91",
+        "illuminate/support": "^9.0 || ^10.0 || ^11.0 || ^12.0",
+        "knplabs/gaufrette": "^0.11",
+        "phpunit/phpunit": "^9.5",
+        "symfony/validator": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0"
+    },
+    "suggest": {
+        "symfony/validator": "Add validation constraints",
+        "knplabs/gaufrette": "Use filesystem abstraction layer to read data"
+    },
+    "autoload": {
+        "psr-4": {
+            "EmailChecker\\": "src/EmailChecker"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "EmailChecker\\Tests\\": "tests/EmailChecker/Tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "EmailChecker\\Laravel\\EmailCheckerServiceProvider"
+            ],
+            "aliases": {
+                "EmailChecker": "EmailChecker\\Laravel\\EmailCheckerFacade"
+            }
+        }
+    },
+    "scripts": {
+        "test": [
+            "phpunit --colors=always"
+        ],
+        "lint": [
+            "php-cs-fixer fix --ansi"
+        ],
+        "phpstan": [
+            "phpstan analyse"
+        ]
+    }
+}

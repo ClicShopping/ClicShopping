@@ -1,0 +1,2 @@
+cfg_products_api_rate_limit_window_title = Time interval during which rate limits are enforced.
+cfg_products_api_rate_limit_window_description = A fixed duration defining the period over which requests are counted to enforce rate limiting and prevent excessive usage.

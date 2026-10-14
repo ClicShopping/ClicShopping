@@ -1,0 +1,7 @@
+module_create_account_pro_success_title = Success :  Do you want to display a success page ?
+module_create_account_pro_success_description = Display a success page
+
+button_continue = Continue
+
+module_create_account_pro_success_text_account_created = Congratulations! Your new account has been successfully created! You can now take advantage of member priviledges to enhance your online shopping experience with us. If you have <strong>ANY</strong> questions about the operation of this online shop, please email the <a href="index.php?Info&Contact">{{store_owner}}</a>.<br /><br />A confirmation has been sent to the provided email address. If you have not received it within the hour, please <a href="index.php?Info&Contact">contact us</a>
+module_create_account_pro_success_text_account_created_1 = We took your request.<br /><br />You will received an email with your access codes allowing you to have an access on our website after a validation and checking of our sales department.<br /><br />Do not hesitate to contact our support on line for all request for additional information.<br /><br />Regards,<br />The {{store_name}} team

@@ -1,0 +1,35 @@
+navbar_title = Authentification à 2 facteurs
+text_heading_title_email_verification = Authentification à 2 facteurs
+
+text_Login_auth_introduction = <strong>Veuillez  entrer votre code d'identification qui vous a été envoyé par email.</strong><br />
+Nous avons mis en place ce processus afin de protéger l'accès à votre espace avec les dernières technologies recommandées.<br /> <br />
+Pour connaître votre code, veuillez consulter votreemail insérer le numéro envoyé. <br />
+Veuillez noter que ce code vous sera demandé à chaque connexion. <br />
+Si une connexion est faite sur votre compte, vous recevrez un email d'information.
+Nous avons mis en place cette approche pour vous fournir une meilleure sécurité concernant l'accès à vos donner.
+
+text_email_verification_code = Insérer votre code de vérification reçu
+button_resend_code = Renvoyer le code d'authentification
+button_verify = Vérifier
+
+
+
+text_email_code_required = Le code de vérification est requis.
+text_email_code_invalid = Le code de vérification est invalide ou a expiré.
+text_email_code_expired = Le code de vérification a expiré. Veuillez demander un nouveau code.
+text_email_verification_code_sent = Un nouveau code de vérification a été envoyé à votre adresse email.
+error_email_verification_code_sent = Échec de l'envoi du code de vérification. Veuillez réessayer.
+email_verification_subject = Code de vérification pour accéder à votre compte {{store_name}}.
+email_verification_body = Bonjour,
+Un code de vérification a été demandé pour accéder à votre compte sur {{store_name}}.
+Votre code de vérification est: {{verification_code}}
+Ce code est valable pendant {{expiry_minutes}} minutes.
+Si vous n\'avez pas demandé ce code, veuillez ignorer cet email et contacter notre service client.
+Adresse IP de la demande: {{remote_address}}
+
+Cordialement,
+L\'équipe {{store_name}}
+
+
+success_email_verification_code_sent = Un nouveau code de vérification a été envoyé à votre adresse email.
+error_email_verification_failed = Échec de l'envoi du code de vérification. Veuillez réessayer.

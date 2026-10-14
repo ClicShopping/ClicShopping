@@ -1,0 +1,6 @@
+cfg_products_categories_status_title = Status
+cfg_products_categories_status_description = Set True to enable or not the module
+
+cfg_products_categories_status_true = True
+cfg_products_categories_status_false = False
+

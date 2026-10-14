@@ -1,0 +1,32 @@
+queue_id bigint(20) not_null
+job_id varchar(50) not_null
+critic_id varchar(100) not_null
+evaluation_id varchar(36) not_null
+critic_score decimal(3,2) not_null
+consensus_score decimal(3,2) not_null
+alignment_delta decimal(3,2) not_null
+feedback_accepted tinyint(1) default(0)
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default(NULL) CHECK (json_valid(`metadata`))
+status enum('pending','completed','failed') not_null default('pending')
+attempts int(11) not_null default(0)
+error_message text default(NULL)
+created_at timestamp NULL default(current_timestamp)
+next_retry_at timestamp NULL default(NULL)
+completed_at timestamp NULL default(NULL)
+failed_at timestamp NULL default(NULL)
+
+--
+primary queue_id
+unique job_id job_id
+idx_job_id job_id
+idx_critic_id critic_id
+idx_evaluation_id evaluation_id
+idx_status status
+idx_created_at created_at
+idx_next_retry_at next_retry_at
+idx_status_attempts status attempts
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

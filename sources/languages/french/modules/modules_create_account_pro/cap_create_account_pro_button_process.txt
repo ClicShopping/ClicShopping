@@ -1,0 +1,4 @@
+module_create_account_pro_button_process_title = Souhaitez-vous afficher le button Continuer dans le formulaire de création de compte ?
+module_create_account_pro_button_process_description = Afficher le button Continuer dans le formulaire de création de compte (important de le laisser sur true)
+
+button_continue = Continuer

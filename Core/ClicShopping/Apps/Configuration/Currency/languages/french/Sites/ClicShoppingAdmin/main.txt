@@ -1,0 +1,79 @@
+heading_title = Devises
+module_cr_title = Devises
+module_cr_short_title = Devises
+
+text_currency = Pays
+text_configure =  Devises App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des devises <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_cr_introduction = Le processus d'installation installe la base de données et le menu
+module_cr_short_title = Products quantities units
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_currency = Devises
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_update_all = Tout mettre à jour
+button_configure_api = Configurer Api
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+text_set_default = Défaut
+text_default = Défaut
+
+table_heading_currency_name = Devise
+table_heading_currency_code = Code
+table_heading_currency_value = Valeur
+table_heading_action = Action
+table_heading_currency_last_updated = Last updated
+table_heading_currency_status = Statut
+table_heading_currency_surcharge = Surcharge taux
+
+text_info_common_currencies = Monnaies courantes
+text_info_edit_intro = Merci de faire les changements nécessaires
+text_info_currency_title = Titre :
+text_info_currency_code = Code:
+text_info_currency_symbol_left = Symbole gauche :<br />Veuillez ne pas insérer de symbol &euro; mais EUR
+text_info_currency_symbol_right = Symbole droit :<br />Veuillez ne pas insérer de symbol &euro; mais EUR
+text_info_currency_decimal_point = Point décimal :
+text_info_currency_thousands_point = Séparateur de milliers :
+text_info_currency_decimal_places = Nombre de décimales :
+text_info_currency_last_updated = Dernière mise à jour :
+text_info_currency_value = Valeur :
+text_info_currency_example = Exemple de sortie :
+text_info_insert_intro = Merci de rentrer la nouvelle devise avec ces donées liées
+text_info_delete_intro = Etes vous sur de vouloir supprimer cette devise ?
+text_info_heading_new_currency = Nouvelle devise
+text_info_heading_edit_currency = Editer devise
+text_info_heading_delete_currency = Supprimer devise
+text_info_set_as_default = {{text_set_default}} (Requiert une mise à jour manuelle de la valeur de la devise)
+text_info_currency_surcharge = Surcharge du taux
+text_info_delete_info =  Supprimer cette devise
+text_info_common_currency = Devises communes
+text_info_currency_choice = Choix de la devise
+
+error_remove_default_currency = Erreur : La devise par défaut ne peut être supprimée. Merci de choisir une autre devise par défaut et de réessayer.
+error_currency_code_exists = Erreur : le code {{code}} est déjà utilisé par une autre devise. Rien n'a été enregistré.

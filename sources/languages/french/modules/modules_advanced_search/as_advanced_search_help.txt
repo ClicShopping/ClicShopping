@@ -1,0 +1,25 @@
+module_advanced_search_help_title = Souhaitez-vous afficher une aide &agrave la recherche sur le site ?
+module_advanced_search_help_description = Affiche une aide &agrave la recherche sur le site pour l'utilisateur
+module_advanced_search_help_title = Aide à la recherche
+module_advanced_search_help_text = <br />
+    vous avez du mal à trouver le produit que vous cherchez ? Notre moteur de recherche est la solution la plus rapide et la plus efficace pour sélectionner les choix répondant à vos attentes.
+    <br /><br />
+    <strong>comment procéder ? </strong>
+    <br />
+    <br />
+    il vous suffit de taper votre mot que vous recherchez dans la barre de recherche et de cliquez sur OK.
+    <br />
+    vous bénéficier de plusieurs filtres (catégorie de produit, prix, marques) vous permettent de préciser votre recherche. En fonctions des catégories choisies, des filtres complémentaires apparaissent et vous permettent un affinage encore plus précis.
+    <br /> <br />
+    <u>exemples de recherche</u><br />
+    <p class="blockquote">
+    <li class="modulesAdvancedSearchHelp">
+    vous pouvez saisir un type de produit, une marque, une description, une référence : Clé usb, disque dur 1000 Go, tv samsung, 1EG1.054.04., etc.
+    </li>
+    <li class="modulesAdvancedSearchHelp">
+    vous pouvez séparer les mots clés par les opéérateurs logiques AND (et) et OR (ou). Par exemple, vous pouvez entrer Chemisier AND Pantalon. Cette recherche vous affichera les résultats qui répondent simultanément aux deux critêres.
+    </li>
+    <li class="modulesAdvancedSearchHelp">
+    vous pouvez également faire une recherche sur une chaine en l'encadrant de guillements. Par exemple, une recherche sur "Chemisier rouge" vous affichera la liste de tous les articles ayant exactement cette chaine dans leur description.
+    </li >
+

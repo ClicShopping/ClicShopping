@@ -1,0 +1,4 @@
+cfg_ecommerce_cockpit_ai_adaptive_rules_title = Activation de la boucle de rétroaction IA  et des règles adaptatives
+cfg_ecommerce_cockpit_ai_adaptive_rules_description = En mode True, la boucle de rétroaction est mise à jour sinon, elle est statique par défaut.
+cfg_ecommerce_cockpit_ai_adaptive_rules_true = True
+cfg_ecommerce_cockpit_ai_adaptive_rules_false = False

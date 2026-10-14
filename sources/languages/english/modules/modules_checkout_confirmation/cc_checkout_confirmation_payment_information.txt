@@ -1,0 +1,5 @@
+
+ module_checkout_confirmation_payment_information_title = Do you want to display the summary of order make by the customer ?
+ module_checkout_confirmation_payment_information_description = Display the summary of order make by the customer
+
+ module_checkout_confirmation_payment_information_heading_payment_information = Payment destinated at :

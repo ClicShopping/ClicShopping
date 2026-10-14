@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_display_double_taxes_title = Êtes-vous dans un pays appliquant la double imposition sur les ventes ?
+cfg_configuration_compliance_policy_rules_display_double_taxes_description = Souhaitez-vous afficher le message «J’accepte les conditions générales» ?
+
+cfg_configuration_compliance_policy_rules_display_double_taxes_true = True
+cfg_configuration_compliance_policy_rules_display_double_taxes_false = False

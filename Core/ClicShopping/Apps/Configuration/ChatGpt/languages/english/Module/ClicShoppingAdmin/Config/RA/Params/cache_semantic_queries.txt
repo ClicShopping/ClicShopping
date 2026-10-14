@@ -1,0 +1,4 @@
+cfg_chatgpt_cache_semantic_queries_title = Enable RAG Cache for Semantic Queries
+cfg_chatgpt_cache_semantic_queries_description = Enable caching for semantic queries to improve response speed and reduce costs. Cached results are reused for identical queries, significantly reducing processing time and API calls. When enabled, the system stores query embeddings and their results, allowing instant retrieval for similar questions. Recommended: True for production environments to optimize performance and minimize LLM API usage.
+cfg_chatgpt_cache_semantic_queries_status_true = True
+cfg_chatgpt_cache_semantic_queries_status_false = False

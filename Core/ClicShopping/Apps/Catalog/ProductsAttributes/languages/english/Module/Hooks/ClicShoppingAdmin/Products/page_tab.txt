@@ -1,0 +1,29 @@
+tab_products_attributes_inline = Attributes
+
+text_products_attributes_inline = Product attributes
+text_help_general = Help
+text_help_attributes_inline = Add or update the variants for this product. Options and option values must first be created in the Products Attributes app. Changes are saved when you click Save on the product.
+
+table_heading_id = ID
+table_heading_image = Image
+table_heading_reference = Ref. Attribute
+table_heading_option = Option
+table_heading_value = Option value
+table_heading_customers_group = B2B / B2C
+table_heading_price = Price
+table_heading_price_prefix = Prefix
+table_heading_status = Status
+table_heading_sort_order = Display order
+table_heading_action = Action
+
+text_select_option = -- Select an option --
+text_select_value = -- Select a value --
+text_status_active = Active
+text_status_inactive = Inactive
+text_no_image = No image
+
+button_add = Add a variant
+button_remove = Remove
+button_restore = Restore
+
+js_confirm_remove = Remove this variant ? The deletion will only be applied when you save the product.

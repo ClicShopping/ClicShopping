@@ -1,0 +1,2 @@
+module_header_page_manager_header_menu_title = Souhaitez vous afficher le gestionnaire de Page Menu entete ?
+module_header_page_manager_header_menu_description = Affiche le gestionnaire de Page Menu entete

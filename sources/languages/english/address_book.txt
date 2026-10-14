@@ -1,0 +1,19 @@
+navbar_title_1 = My Account
+navbar_title_2 = Address Book
+
+heading_title = My Personal Address Book
+
+heading_description = Create antoher address : your main residence, your word address, etc...
+
+primary_address_title = Primary Address
+primary_address_description = This address is used as the pre-selected shipping and billing address for orders placed on this {{store_name}}<br /><br />This address is also used as the base for product and service tax calculations.
+
+address_book_title = Address Book Entries
+
+primary_address = (primary_address)
+primary_book_title = Adresse
+text_maximum_entries = <p style="color="#ff0000;"><strong>NOTE:</strong></font> A maximum of {{max_entries}} address book entries allowed.</p>
+
+button_edit = Edit
+button_delete = Delete
+button_back = Back

@@ -1,0 +1,3 @@
+cfg_chatgpt_temperature_title = Temperature
+cfg_chatgpt_temperature_description = Veuillez insérer un nombre<br />
+Quelle température d'échantillonnage utiliser, entre 0 et 2. Des valeurs plus élevées comme 0,8 rendront la sortie plus aléatoire, tandis que des valeurs plus basses comme 0,2 la rendront plus concentrée et déterministe.

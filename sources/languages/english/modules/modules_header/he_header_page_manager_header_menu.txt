@@ -1,0 +1,2 @@
+module_header_page_manager_header_menu_title = Do you want to display the Page Manager Menu
+module_header_page_manager_header_menu_description = display the Page Manager Menu

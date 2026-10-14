@@ -1,0 +1,4 @@
+cfg_item_zone_title = Shipping Zone
+cfg_item_zone_desc = Enable this module globally or limit it to customers shipping to the selected zone only.
+
+cfg_item_zone_none = -- None --

@@ -1,0 +1,7 @@
+module_login_mode_b2b = Souhaitez-vous afficher le bouton B2B pour la création de compte client ?
+module_login_mode_b2b_description = Affiche le bouton B2B pour la création de compte client<br>Note : Attention ce mode dépend de la configuration que vous avez effectuée dans la section configuration de la boutique Gestion des clients B2B / configuration
+
+heading_title_b2b = S'enregistrer et ouvrir un compte
+
+text_intro_b2b =
+button_retailers = Revendeurs / Professionnels

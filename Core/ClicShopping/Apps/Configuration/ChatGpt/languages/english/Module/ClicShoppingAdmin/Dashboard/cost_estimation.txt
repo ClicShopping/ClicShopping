@@ -1,0 +1,3 @@
+ module_admin_dashboard_total_cost_estimation_app_title = Tokens evaluation cost by month GPT
+ module_admin_dashboard_total_cost_estimation_app_description = Tokens evaluation cost by month GPT
+ module_admin_dashboard_total_cost_estimation_app_chart_link = Tokens evaluation cost by month GPT

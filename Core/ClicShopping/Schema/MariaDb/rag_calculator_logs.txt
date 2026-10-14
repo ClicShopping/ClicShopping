@@ -1,0 +1,25 @@
+log_id INT(11) unsigned not_null auto_increment comment(Primary key - unique identifier for each calculation log entry)
+user_id VARCHAR(100) not_null comment(User who initiated the calculation)
+expression TEXT not_null comment(Mathematical expression that was evaluated)
+result DOUBLE default null comment(Calculated result (null if calculation failed))
+success TINYINT(1) not_null default(0) comment(Success flag - 0: failed, 1: succeeded)
+error_message TEXT default null comment(Error message if calculation failed)
+execution_time FLOAT not_null comment(Time taken to execute calculation in milliseconds)
+step_id VARCHAR(100) default null comment(Step identifier in multi-step calculations)
+plan_id VARCHAR(100) default null comment(Plan identifier for grouped calculations)
+metadata JSON default null comment(Additional metadata in JSON format)
+created_at DATETIME not_null comment(When the calculation was logged)
+
+--
+primary log_id
+idx_user_id user_id
+idx_created_at created_at
+idx_success success
+idx_plan_id plan_id
+idx_user_success_date user_id success created_at
+idx_plan_step plan_id step_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

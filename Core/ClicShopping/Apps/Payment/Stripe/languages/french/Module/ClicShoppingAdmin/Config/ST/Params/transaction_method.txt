@@ -1,0 +1,5 @@
+cfg_stripe_transaction_method_title = Méthode de transaction
+cfg_stripe_transaction_method_description = Type de processus de tranaction faite pour chaque paiement
+
+cfg_stripe_transaction_method_authorization = Automatique
+cfg_stripe_transaction_method_manual = Manuelle

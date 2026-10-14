@@ -1,0 +1,16 @@
+languages_id int not_null auto_increment comment(Primary key - unique identifier for each language)
+name varchar(255) not_null comment(Full language name - e.g. English, Français, Español)
+code char(2) not_null comment(ISO 639-1 two-letter language code - e.g. en, fr, es)
+image varchar(255) comment(Path to language flag icon image)
+directory varchar(255) comment(Directory name for language files)
+sort_order int(3) comment(Display order for language selection)
+status tinyint(1) default(1) not_null comment(Language status - 0: inactive, 1: active for selection)
+locale varchar(255) not_null comment(System locale identifier - e.g. en_US.UTF-8, fr_FR.UTF-8)
+--
+primary languages_id
+idx_languages_name name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Available languages for multi-language support

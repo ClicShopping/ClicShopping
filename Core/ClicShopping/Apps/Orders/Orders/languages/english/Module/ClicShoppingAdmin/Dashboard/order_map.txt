@@ -1,0 +1,7 @@
+module_admin_dashboard_order_map_app_title = Global mapping of sales delivery made
+module_admin_dashboard_order_map_app_description = disply a map with all sells delivery by country
+
+text_sale_total_ht = Total without taxes :
+text_order_number = Orders number :
+text_orders_status = Order status :
+text_order_delivery = Delivery

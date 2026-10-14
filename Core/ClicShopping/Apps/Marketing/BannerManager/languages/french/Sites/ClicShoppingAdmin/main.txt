@@ -1,0 +1,141 @@
+heading_title = Gestionnaire de bannières
+module_bm_title = Gestionnaire de bannières
+module_bm_short_title = Gestionnaire de bannières
+
+text_banner_manager =  Gestionnaire de bannières
+text_configure =  Configurer App Module
+
+text_intro = TCette app vous permet d'installer un gestionaire de bannières. <br /><br />
+- Activer ce module et vous pouvez y accéder via le menu Marketing
+
+module_bm_introduction = Le processus d'installation installe la base de données et le menu
+module_bm_short_title = Banner Manager
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_new_banner = Nouvelle bannière
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_banner_manager = Gestionnaire de bannières
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+
+alerte_notice_image = Ne pas mettre plus d'une image dans chaque section.
+notice_image = Si une image existe déjà, veuillez d'abord la sélectionner avant d'en choisir une autre.
+text_delete_image = Supprimer l'image actuellement visible du serveur
+
+tab_general = General
+tab_img = Images
+tab_code_html = Code Html
+
+heading_title = Gestionnaire de bannières
+heading_title_search = Rechercher
+
+table_heading_banners = Bannières Catalogue
+table_heading_banners_admin = Bannières Admin
+table_heading_groups = Groupes
+table_heading_statistics = Affichages / Clics
+table_heading_status = Statut
+table_heading_action = Action
+table_heading_customers_group = Groupes Client
+table_heading_language = Langues
+table_heading_banners_theme = Thème template
+
+text_banners_title = Titre bannière catalogue:
+text_banners_title_admin = Titre bannière administration:
+text_banners_url = URL de redirection :
+text_banners_group = Groupe :
+text_banners_target = Réaction au clic :
+text_banners_same_windows = Même fenêtre
+text_banners_new_windows = Nouvelle fenêtre
+text_banners_new_group = Nouveau groupe :
+
+text_banners_customers_group = Groupe de client pour affichage
+text_banners_language = Langue d'affichage
+text_all_languages = Toutes les langues
+normal_customer = Client normal
+text_all_groups = Tous les groupes
+text_banners_all_themes =  Tous les thèmes
+text_banners_theme = Thème template
+
+text_banners_image = Image de la bannière
+text_banners_image_local = Image sur serveur :
+text_banners_image_target = Dossier de sauvegarde :
+text_banners_image_delete = Ne plus afficher d'image sur cette bannière
+text_banners_image_visuel = Image actuellement visible
+
+text_banners_html = Bannière HTML
+text_banners_html_text = Code HTML :
+text_banners_expires_on = Expire le :
+text_banners_or_at = ou
+text_banners_impressions = nombres d'impressions :
+text_banners_scheduled_at = Planifié le :
+text_banners_banner_note = <li>Veuillez ne pas saisir l'utilisation d'une image lors d'une utilisation d'un code HTML..</li>
+text_banners_insert_note = <li>Si vous avez inséré des plugins dans Firefox, il peut y avoir des incompatibilités (ex : adblock plus)</li><li>Les images ne sont pas prioritaires dans le cas d'utilisation d'un code HTML</li>
+text_banners_expircy_note = <u>Date d'expiration</u> :<ul><li>Veuillez saisir un seul des 2 champs.</li><li>Pour laisser la bannière active, sans expiration automatique, laisser ces champs vides.</li></ul>
+text_banners_schedule_note = <u>Date de planification</u> :<ul><li>Si la date de planification est précisée, la bannière ne sera pas affichée avant la date prévue.</li><li>Toutes les bannières planifiées seront marquées inactives jusqu'à ce que la date de planification soit atteinte.</li><li>Les bannnières sont automatiquement mises à jour (la partie catalogue de la boutique gère cet élément), il est inutile de changer le statut de la bannière après son enregistrement.</li></ul>
+
+text_banners_date_added = Date d'ajout :
+
+text_banners_data = D<br />A<br />T<br />A
+text_banners_last_3_days = Les 3 derniers jours
+text_banners_banner_views = Nombre d'affichages
+text_banners_banner_clicks = Nombre de clics
+
+text_info_delete_intro = Etes vous sur de vouloir supprimer cette bannière ?
+text_info_delete_image = Supprimer l'image de la bannière
+
+success_banner_inserted = Succès : La bannière a été insérée.
+success_banner_updated = Succès : La bannière a été mise à jour.
+success_banner_removed = Succès : La bannière a été supprimée.
+success_banner_status_updated = Succès : Le statut de la bannière a été mis à jour.
+
+error_banner_title_required = Erreur : Titre de bannière requis.
+error_banner_group_required = Erreur : Groupe de bannière requis.
+
+error_unknown_status_flag = Erreur : Statut flag inconnu.
+
+title_banners_general = Informations générales
+title_banners_groupe = Groupe
+title_banners_date = Date
+title_banners_image = Image bannière
+title_banners_html = Code HTML d'une bannière
+
+text_help_banners_image = Aide
+title_help_banners_image = Note sur l'image d'une bannière
+title_help_banners_date = Note sur l'utilisation des dates d'une bannière
+title_help_banners_html_text = Note sur le code HTML d'une bannière
+
+icon_view_banner = Voir la bannière
+icon_edit = Editer
+icon_delete = Supprimer
+icon_copy_to = Copier vers
+icon_statistics = Statistiques
+
+set_inactive = Inactif
+set_active = Actif
+
+error_image_is_not_writable = Impossible de supprimer l'image (mode non écriture)
+error_image_does_not_exist = L'image n'existe pas
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+text_banners_expiracy_note = <strong>Notes calendrier:</strong><ul><li> Un seul des deux champs doit être soumis </li> <li> si la bannière ne doit pas expirer automatiquement, laissez ces champs vides</li></ul>
+text_banners_scheduled_note = <strong>Notes calendrier:</strong><ul><li> si une planification est définie, la bannière sera activée à cette date. </li> <li> toutes les bannières planifiées sont marquées comme déactives jusqu'à leur date d'arrivée, à laquelle elles seront ensuite marquées comme actives.</li></ul>

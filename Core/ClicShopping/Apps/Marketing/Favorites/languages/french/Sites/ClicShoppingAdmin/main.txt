@@ -1,0 +1,94 @@
+heading_title = Coups de coeur
+module_fa_title = Coups de coeur
+module_fa_short_title = Coups de coeur
+
+text_products_favorites =  Coups de coeur
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure de créer des coups de coeur. <br /><br />
+- Ce module est fournit avec le module coup de coeur pour la boutique.<br />
+- Active ce module de gestion et celui du catalogue qui est localisé dans le Listing des Produits
+- N'oubliez pas de créer un lien pour y accéder à partir du catalogue
+
+text_intro_fa =  Veuillez créer ce lien dans votre boutique pour accéder aux Coups de Coeur<br />
+return_url = Lien Url : {{return_url_fa}}<br />
+
+module_fa_introduction = Le processus d'installation installe la base de données et le menu
+module_fa_short_title = Favorites
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_favorites = Coups de Coeur
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+text_all_groups = Tous les groupes
+visitor_name = Client Normaux
+icon_edit = Editer
+icon_preview =  Prévisualiser
+tab_general = General
+
+table_heading_products = Produits
+table_heading_products_price = Prix du produits
+table_heading_status = Statut
+table_heading_action = Action
+table_heading_products_group = Groupe client
+table_heading_expires_date = Date expiration
+table_heading_archive = Produits archivés
+table_heading_scheduled_date = Date début
+table_heading_model = Réf
+
+text_products_favorites_product = Produit :
+text_products_favorites_special_price = tarif coups de coeur taxes non comprises:
+text_products_favorites_expires_date = Date d'expiration :
+text_products_favorites_groups = Groupe Client :
+text_products_favorites_scheduled_date = Date début
+
+text_info_date_added = Date d'ajout :
+text_info_last_modified = dernière modification :
+text_info_new_price = Nouveau Prix :
+text_info_original_price = Prix original :
+text_info_percentage = Pourcentage :
+text_info_schedule_date = Débt le :
+text_info_expires_date = Expire le :
+text_info_status_change = Changement de statut :
+
+text_new_products_favorites_twitter = Notre coups de coeur sur {{store_name}} !
+text_products_favorites_twitter = Souhaitez vous publier ce coup de coeur sur Twitter ?
+text_yes = Oui
+text_no = non
+text_status = Statut du produit
+text_info_heading_delete_products_favorites = Supprimer le coup de coeur
+text_info_delete_intro = Etes vous s&ucirc;r de vouloir supprimer ce coup de coeur ?
+
+title_products_favorites_general = Informations sur le produit
+title_products_favorites_groupe = Prix et Groupe client
+title_products_favorites_date = Date d'affichage
+title_help_products_favorites_price = Note sur les coups de coeur
+
+text_help_products_favorites_price = <ul><li>Laissez la date d'échéance vide pour aucune expiration</li>
+<li>la date de début a des droits supérieurs sur la date d'expiration.</li>
+<li>si vous souhaitez réinitialiser les dates, veuillez changer de statut dans la page générale.</li>
+<li>les coups de coeur sont automatiquement mises à jour (la partie catalogue de la boutique gère cet élément), il est inutile de changer le statut du coup de coeur après son enregistrement.</li>
+<li>la publication d'une information sur Twitter ne fonctionne qu'à la création du produit (avec un statut sur on et avec un groupe client normal). Si le nom de votre boutique + URL de votre produit fait plus de 140 caractères, le coup de coeur ne sera pas publié (contrainte forte)</li>
+</ul>

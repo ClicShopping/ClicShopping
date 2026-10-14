@@ -1,0 +1,3 @@
+box_entry_order_total_delivery = Achat moyen par commande (HT hors port, après remises, statut livré)
+box_entry_basket = Achat moyen par client (HT hors port, après remises, statut livré)
+box_entry_refunded = Montant remboursé (HT hors port, après remises, statut remboursement)

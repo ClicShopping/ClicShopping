@@ -1,0 +1,13 @@
+module_account_customers_my_account_title = Do you want to display the informations of customers account ?
+module_account_customers_my_account_desription = Display the informations of customers account
+
+module_account_customers_my_account_information = Display or modify my information on my account
+module_account_customers_my_account_address_book = Display or change my address book
+module_account_customers_my_account_password = Change my account password
+module_account_customers_my_account_newsletters = Change the newsletter setting
+module_account_customers_my_account_notifications = Change the products and specials settings
+module_account_customers_my_account_my_feed_back = Display or write a feedback order / product ....
+module_account_customers_my_account_customer = Account management
+module_account_customers_my_account_delete_account = Delete my account
+module_account_customers_my_account_gdpr = My data access management
+module_account_customers_my_account_return_history = Product Return management

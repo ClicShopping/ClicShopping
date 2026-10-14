@@ -1,0 +1,16 @@
+heading_title = Gestion du cache Memcached
+text_reset_memcached = Réinitialiser Memcached
+heading_memory_usage = Utilisation de la mémoire
+heading_cache_statistics = Statistiques du cache
+text_memory_type = Type de mémoire
+text_value = Valeur
+text_used_memory = Mémoire utilisée
+text_total_memory = Mémoire totale
+text_statistic = Statistique
+text_memcache_flushed = Le cache Memcache a été vidé avec succès
+text_memcache_not_available = Memcached n'est pas disponible sur ce serveur
+success_memcached_reset = Memcached a été réinitialisé avec succès
+error_memcached_reset = Échec de la réinitialisation de Memcached
+warning_opcache_function = Fonction Memcached non disponible
+text_memcache_not_available = Veuillez activer memcached pour utiliser cette fonctionnalité
+text_memcache_error = Memcached n'est pas disponible ou pas correctement configuré.

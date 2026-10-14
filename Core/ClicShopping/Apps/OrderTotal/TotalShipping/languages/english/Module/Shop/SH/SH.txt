@@ -1,0 +1,4 @@
+module_sh_title = Shipping
+module_sh_public_title = Shipping
+module_sh_short_title = Shipping
+

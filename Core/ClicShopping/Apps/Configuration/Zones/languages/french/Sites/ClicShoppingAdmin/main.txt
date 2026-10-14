@@ -1,0 +1,60 @@
+heading_title = Zones
+module_zn_title = Zones
+module_zn_short_title = Zones
+
+text_zones = Zones
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des Zones <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_zn_introduction = Le processus d'installation installe la base de données et le menu
+module_zn_short_title = Zones
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_zones = Zones
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_status = Tout mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+table_heading_country_name = Pays
+ table_heading_zone_name = Zones
+ table_heading_zone_code = Code
+ table_heading_action = Action
+ heading_title_search = Recherche
+ table_heading_zone_status = Statut
+
+ text_info_edit_intro = Veuillez faire les changements nécessaires
+ text_info_zones_name = Nom zone :
+ text_info_zones_code = Code zone:
+ text_info_country_name = Pays :
+ text_info_insert_intro = Veuillez insérer la nouvelle zone
+ text_info_delete_intro = Est vous sur de supprimer cette zone ?
+ text_info_heading_new_zone = Nouvelle Zone
+ text_info_heading_edit_zone = Editer Zone
+ text_info_heading_delete_zone = Supprimer Zone
+ text_info_delete_info = Supprimer Zone

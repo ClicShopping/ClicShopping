@@ -1,0 +1,33 @@
+{
+  "title": "Weight App",
+  "app": "Weight",
+  "vendor": "Configuration",
+  "version": "1.0.1",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "ClicShoppingAdmin/Products": {
+        "ProductsContentTab2": "Module\\Hooks\\ClicShoppingAdmin\\Products\\ProductsContentTab2",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Update",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Insert",
+        "CopyConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Products\\CopyConfirm",
+        "CloneProducts": "Module\\Hooks\\ClicShoppingAdmin\\Products\\CloneProducts"
+      },
+      "ClicShoppingAdmin/Preview": {
+        "PreviewContent": "Module\\Hooks\\ClicShoppingAdmin\\Preview\\PreviewContent"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

@@ -1,0 +1,74 @@
+heading_title = Newsletter Manager
+
+tab_general = General
+tab_description = Description
+
+table_heading_newsletters = Newsletters
+table_heading_size = Size
+table_heading_module = Module
+table_heading_sent = Sent
+table_heading_status = Status
+table_heading_action = Action
+table_heading_language = Language
+table_heading_b2b = Customer group
+
+text_all_languages = All languages
+text_all_customers = Normal Customer
+text_newsletter_customers_group = Customers group
+text_newsletter_language = Customer type referred
+text_newsletter_create_file_html = Do you want create a html file ? *
+text_newsletter_twitter = Do you want publish this newsletter on Twitter ?
+text_newsletter_customer_no_account = Do you want include the customer without no account ?
+text_send_newsletter_subject = Newsletter from :
+text_send_newsletter_email =
+
+
+text_customers = Subscribers
+text_b2c = B2C
+text_b2b = B2B
+text_average_newsletter = Newsletter
+text_male = Men
+text_female = Women
+text_subscribers_anonymous = Subsc. / Anony.
+text_anonymous = Anonymous
+text_subscribers = Subscribers
+
+text_yes = Yes
+text_no = No
+
+text_newsletter_module = Module:
+text_newsletter_title = Newsletter Title:
+text_newsletter_content = Content:
+
+text_newsletter_date_added = Date Added:
+text_newsletter_date_sent = Date Sent:
+
+text_info_delete_intro = Are you sure that you want to delete this newsletter?
+
+text_please_wait = Please wait and do not interrupt this process !<br /><br />Sending emails...<br /><br />The treatment may be longer or shorter depending on the number of mail to deal
+text_finished_sending_email = Finished sending e-mails!
+
+text_help_wysiwyg = Wysiwyg
+
+icon_edit = Edit
+image_locked = Lock
+icon_unlocked = Unlock
+image_send = send
+icon_preview = Preview
+
+error_newsletter_title = Error: Newsletter title required
+error_newsletter_module = Error: Newsletter module required
+error_remove_unlocked_newsletter = Error: Please lock the newsletter before deleting it.
+error_newsletter_module_not_exists = Error: Module does not exist
+error_twitter = Newsletter no sent to twitter, just email : File no writable
+
+title_help_description = Note on the use of the wysiwyg
+help_description = <li>If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock more)</li>
+<li>we advise you create a file only for normal customers. This file will be visible to all who have access to the directory boutique/pub.</li>
+<li>the twitter publication is allowed only if you create a html file on the server.</li>
+
+text_count_customers_no_account = Number of anonymous newsletter :
+text_count_customers = Number of newsletter customers :
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

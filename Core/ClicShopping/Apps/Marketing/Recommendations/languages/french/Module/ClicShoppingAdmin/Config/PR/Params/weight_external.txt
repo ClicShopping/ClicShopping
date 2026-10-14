@@ -1,0 +1,4 @@
+cfg_products_recommendations_weight_external_title = Pondération des sources externes
+cfg_products_recommendations_weight_external_description = Poids appliqué au score issu des recommandations externes (moyenne des scores de recommandations normalisée entre min et max). Utilisé dans la stratégie Multiple.
+
+

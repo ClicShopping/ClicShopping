@@ -1,0 +1,6 @@
+cfg_order_total_shipping_destination_title = Provide free shipping for orders sent to the set destination
+cfg_order_total_shipping_destination_description = Provide Free Shipping For Orders Made
+
+cfg_order_total_shipping_destination_national = National
+cfg_order_total_shipping_destination_international = International
+cfg_order_total_shipping_destination_both = Both

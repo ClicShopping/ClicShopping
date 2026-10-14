@@ -1,0 +1,5 @@
+cfg_chatgpt_parallel_enabled_title = Enable/Disable parallel LLM execution for multiple prompts
+cfg_chatgpt_parallel_enabled_description = When enabled, multiple LLM calls are executed concurrently using Guzzle async. his significantly improves performance
+
+cfg_chatgpt_parallel_enabled_status_true = True
+cfg_chatgpt_parallel_enabled_status_false = False.

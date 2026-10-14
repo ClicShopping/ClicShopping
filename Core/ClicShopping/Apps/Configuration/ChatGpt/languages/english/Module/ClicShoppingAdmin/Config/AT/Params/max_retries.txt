@@ -1,0 +1,2 @@
+cfg_chatgpt_max_retries_title = Max Retries
+cfg_chatgpt_max_retries_description = Number of times the actor-critic coordination retries a transient failure before giving up. Higher = more resilient but slower and costlier. Recommended: 2.

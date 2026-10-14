@@ -1,0 +1,91 @@
+heading_title = Clients en ligne
+module_wo_title =  Clients en ligne
+module_wo_short_title =  Clients en ligne
+
+text_whos_online = Clients en ligne
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'accéder à un fomulaire clients en ligne<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+- Cette app est dans le menu Outils<br />
+
+module_wo_introduction = Le processus d'installation crée la base de données et le menu pour ce module
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+button_whos_online = Clients en ligne
+button_reset = Reset
+button_analyse = Analyser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+table_heading_online = En ligne
+table_heading_customer_id = ID
+table_heading_full_name = Nom & Prénom
+table_heading_ip_address = Adresse IP
+table_heading_entry_time = Heure d'arrivée
+table_heading_last_click = Dernier Clic
+table_heading_last_page_url = Dernière URL
+table_heading_user_agent = Agent
+table_heading_http_referer = Référant
+table_heading_action = Action
+table_heading_shopping_cart = Panier utilisateur
+text_shopping_cart_subtotal = Sous-total
+text_number_of_customers = Actuellement il y a {{number_online}} client(s) en ligne
+table_heading_http_referer = Reférée
+text_http_referer_url = HTTP URL Reférée
+text_http_referer_found = Oui
+text_http_referer_not_found = non trouvée
+text_status_active_cart = Actif avec panier
+text_status_active_nocart = Actif avec aucun panier
+text_status_inactive_cart = Inactif avec panier
+text_status_inactive_nocart = Inactif avec aucun panier
+text_status_no_session_bot = Bot avec aucune session active
+text_status_inactive_bot = Bot avec session inactive
+text_status_active_bot = Bot avec session active
+table_heading_country = Pays
+table_heading_user_session = Session?
+text_in_session = Oui
+text_no_session = Non
+
+text_oscid = clicshopid
+text_profile_display = Affichage du profil
+text_user_agent = User Agent
+text_error = Erreur!
+text_admin = Administrateur
+text_duplicate_ips = IP(s) dupliquée(s)
+text_bots = Bots
+text_me = Moi meme!
+text_all = Tous
+
+text_active_user =  Client(s) Actif(s)
+text_your_ip_address = Votre Addresse IP
+text_set_refresh_rate = Délais de rafraichissement
+text_none_ = Aucun
+text_customers = Cients
+text_show_bots = Montrer les Bots
+azer_whosonline_whois_url = https://www.dnsstuff.com/tools/whois.ch?ip= ; //for version 2.9 by azer - whois ip
+text_not_available =    <strong>Note:</strong> N/A = IP non disponible  //for version 2.9 by azer was missing
+text_last_refresh = Dernier refraichissement à  //for version 2.9 by azer was missing
+text_empty = Vide  //for version 2.8 by azer was missing
+text_my_ip_address = Mon adresse IP   //for version 2.8 by azer was missing
+table_heading_country = Pays  // azerc : 25oct05 for contrib whos_online with country and flag
+title_help_whois_date = Légende
+text_real_customers = Clients
+text_active_customers =  Client actifs

@@ -1,0 +1,2 @@
+cfg_item_logo_title = Shipping Logo
+cfg_item_logo_desc = Please, indicate the file of the logo with the extension(.gif, .jpg, etc...) to display in the shipping page.<br /><strong>Note :</strong></font><br />The logo must be in the directory  sources/images/logos/shipping/

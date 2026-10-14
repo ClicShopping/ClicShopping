@@ -1,0 +1,3 @@
+module_boxes_page_manager_title = Souhaitez-vous afficher la boxe information principale dans la boutique ?
+module_boxes_page_manager_description = Affiche la boxe information et l'ensemle du contenu qui lui est attibuée
+module_boxes_page_manager_box_title = Nos services

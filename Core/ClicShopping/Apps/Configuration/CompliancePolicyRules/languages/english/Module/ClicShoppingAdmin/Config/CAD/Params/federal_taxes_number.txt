@@ -1,0 +1,3 @@
+cfg_configuration_compliance_policy_rules_federal_taxes_number_title = Federal tax Number
+cfg_configuration_compliance_policy_rules_federal_taxes_number_description = Please specify the number of administrative federal tax(ex TVQ/QST : 1006197104). - Leave blank if it does not apply to you.
+

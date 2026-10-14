@@ -1,0 +1,3 @@
+module_advanced_search_criteria_title = Souhaitez-vous afficher le champs de recherche par critère ?
+module_advanced_search_criteria_description = Affiche un champ de recherche permettant au client de mettre des critères afin de rechercher par le nom du produit ou dans la description du produit
+module_advanced_search_criteria_text = Critère de recherche

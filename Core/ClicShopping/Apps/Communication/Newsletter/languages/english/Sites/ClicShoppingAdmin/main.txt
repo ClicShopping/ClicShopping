@@ -1,0 +1,48 @@
+heading_title = Newsletter
+module_nl_title = Newsletter
+module_nl_short_title = Newsletter
+
+text_newsletter =  Newsletter
+text_configure =  configure App Module
+
+text_intro = This app allow you a newsletter manager in your administratopn. <br /><br />
+- Activate this module and activate the module Newsletter fields located in the Communication menu
+
+module_nl_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_insert = Insert
+button_statistics =  Statistics
+button_newsletter = Newsletter
+button_update = Update
+button_send =  Send
+
+button_global = Global
+button_select = Select
+button_unselect = Unselect
+button_submit = Submit
+
+text_products = Products
+text_selected_products = Products selected
+js_please_select_products = Please select at least one product.
+text_count_customers = Number of customers
+text_unsubscribe = Unsebscribe
+
+email_from = Email from
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.

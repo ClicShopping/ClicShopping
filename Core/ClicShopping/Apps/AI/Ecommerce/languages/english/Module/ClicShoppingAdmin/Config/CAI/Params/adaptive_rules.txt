@@ -1,0 +1,4 @@
+cfg_ecommerce_cockpit_ai_adaptive_rules_title = Enabling AI Feedback loop Adpdative rules
+cfg_ecommerce_cockpit_ai_adaptive_rules_description = In True mode, Feedback loop are updated else use static by default
+cfg_ecommerce_cockpit_ai_adaptive_rules_true = True
+cfg_ecommerce_cockpit_ai_adaptive_rules_false = False

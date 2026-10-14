@@ -1,0 +1,4 @@
+cfg_table_zone_title = Zone d'expédition
+cfg_table_zone_desc = Veuillez sélectionner la zone que vous souhaitez appliquée pour l'envoie de vos colis
+
+cfg_table_zone_none = -- Aucune --

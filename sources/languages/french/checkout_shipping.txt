@@ -1,0 +1,8 @@
+
+navbar_title_1 = Expédition
+navbar_title_2 = Livraison
+
+heading_title_checkout_shipping = Information expédition
+
+error_no_shipping_available_to_shipping_address = Erreur : aucune méthode d'envoie disponible à cette addresse
+error_during_process = Erreur : une erreur s\est produite durant le processus de traitement des frais d'envoies

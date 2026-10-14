@@ -1,0 +1,12 @@
+module_account_customers_history_info_download_title = Historique Info : Souhaitez-vous permettre au client dans les historiques de commande de voir le téléchargement de fichiers?
+module_account_customers_history_info_download_description = Permettre dans l'historiques de commande de voir le téléchargement de fichiers
+
+
+module_account_customers_history_info_download_text_heading_title = Téléchargement
+module_account_customers_history_info_download_table_heading_download_date = Date d'expiration :
+module_account_customers_history_info_download_able_heading_download_count =  Téléchargements restant.
+module_account_customers_history_info_download_text_download_files = Télécharger le fichier
+
+module_account_customers_history_info_download_text_download_header_title_my_account =  Mon compte
+
+module_account_customers_history_info_download_text_download_header_footer_download = You can also download your products at a later time at {{url}}

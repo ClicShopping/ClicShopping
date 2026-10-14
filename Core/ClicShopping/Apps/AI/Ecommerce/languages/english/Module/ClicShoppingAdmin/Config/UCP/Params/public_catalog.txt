@@ -1,0 +1,5 @@
+cfg_ecommerce_ucp_public_catalog_title = Public product catalog (read-only)
+cfg_ecommerce_ucp_public_catalog_description = Set True to let AI agents read the product catalog endpoint (?UCP&retailers/products) without an API key, as advertised in llms.txt. Checkout endpoints always require a Bearer key; rate limiting still applies.
+
+cfg_ecommerce_ucp_public_catalog_true = True
+cfg_ecommerce_ucp_public_catalog_false = False

@@ -1,0 +1,2 @@
+text_products_manufacturer = Brands / Manufacturers
+text_create = Create

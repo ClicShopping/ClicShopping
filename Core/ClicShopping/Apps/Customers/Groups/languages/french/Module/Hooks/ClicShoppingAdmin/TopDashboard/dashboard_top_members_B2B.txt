@@ -1,0 +1,2 @@
+text_number_members_b2b = Membres B2B attente
+text_view = - Plus d'informations

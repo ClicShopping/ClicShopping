@@ -1,0 +1,18 @@
+text_rag_semantic_no_data_indicator_1 = no information
+text_rag_semantic_no_data_indicator_2 = no data
+text_rag_semantic_no_data_indicator_3 = cannot find
+text_rag_semantic_no_data_indicator_4 = not found
+text_rag_semantic_no_data_indicator_5 = no results
+text_rag_semantic_no_data_indicator_6 = unable to find
+
+text_rag_semantic_source_type = RAG Knowledge Base
+text_rag_semantic_source_details = Information retrieved from vector embeddings database
+
+text_rag_semantic_error_execution = Unable to execute semantic search. Please try again.
+
+text_rag_semantic_no_data_indicator_1 = no data
+text_rag_semantic_no_data_indicator_2 = no results
+text_rag_semantic_no_data_indicator_3 = no data found
+text_rag_semantic_no_data_indicator_4 = no results found
+text_rag_semantic_no_data_indicator_5 = insufficient data
+text_rag_semantic_no_data_indicator_6 = no information

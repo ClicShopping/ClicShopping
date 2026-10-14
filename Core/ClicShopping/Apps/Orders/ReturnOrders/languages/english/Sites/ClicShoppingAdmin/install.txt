@@ -1,0 +1,2 @@
+title_menu = Product Return
+title_menu_return_orders_status = Products return status

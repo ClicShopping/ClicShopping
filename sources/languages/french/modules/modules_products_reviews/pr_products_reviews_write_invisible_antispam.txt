@@ -1,0 +1,2 @@
+modules_products_reviews_write_invisible_antispam_title = Ecriture Commentaire : Souhaitez-vous afficher un antispam caché ?
+modules_products_reviews_write_invisible_antispam_description = Affiche un antispam caché

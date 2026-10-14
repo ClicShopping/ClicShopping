@@ -1,0 +1,69 @@
+<?php
+
+/*
+ * This file is part of the EmailChecker package.
+ *
+ * (c) Matthieu Moquet <matthieu@moquet.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace EmailChecker\Laravel;
+
+use EmailChecker\EmailChecker;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\ServiceProvider;
+
+/**
+ * Laravel service provider.
+ *
+ * @author Oliver Green <dubious@codeblog.co.uk>
+ */
+final class EmailCheckerServiceProvider extends ServiceProvider
+{
+    /**
+     * Register the factory in the application container.
+     */
+    public function register(): void
+    {
+        /*
+         * Register the e-mail checker
+         */
+        $this->app->singleton(EmailChecker::class, function ($app) {
+            return new EmailChecker();
+        });
+
+        /*
+         * Alias the dependency for ease.
+         */
+        $this->app->alias(EmailChecker::class, 'email.checker');
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(EmailChecker $checker): void
+    {
+        /*
+         * Add a custom validator filter.
+         */
+        $check = function ($attr, $value, $param, $validator) use ($checker) {
+            return $checker->isValid($value);
+        };
+
+        Validator::extend(
+            'not_throw_away', $check, 'The :attribute domain is invalid.'
+        );
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array<string>
+     */
+    public function provides(): array
+    {
+        return ['email.checker', EmailChecker::class];
+    }
+}

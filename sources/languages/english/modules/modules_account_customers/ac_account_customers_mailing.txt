@@ -1,0 +1,6 @@
+ module_account_customers_mailing_title = Do you want to display the customer mailing menu access  ?
+ module_account_customers_mailing_description = Display the  the customer mailing menu acces (notifications and newsletter
+
+ module_account_customers_email_mailing_title = Newsletter and Products Notifications subscription
+ module_account_customers_email_mailing_newsletters = Subscribe or unsubscribe from newsletters.
+ module_account_customers_email_mailing_products = View or change my product notification list.

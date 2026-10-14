@@ -1,0 +1,3 @@
+module_admin_dashboard_sum_total_gpt_token_app_title = Total tokens consumption GPT
+module_admin_dashboard_sum_total_gpt_token_app_description = Total tokens consumption GPT
+module_admin_dashboard_sum_total_gpt_token_app_chart_link = Total tokens consumption GPT

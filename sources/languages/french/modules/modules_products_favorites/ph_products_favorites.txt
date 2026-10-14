@@ -1,0 +1,49 @@
+module_products_favorites_title = Souhaitez-vous afficher les coups de coeur ?
+module_products_favorites_description = Affiche les coups de coeur
+
+
+text_date_added = En vente depuis le :
+text_product_options = Options possibles
+min_qty_order_product = Qté min :
+text_no_products = Aucun coups de coeur en ce moment
+
+text_stock = Stock
+text_flash_discount = Remise flash
+text_customer_quantity = qté
+text_products_quantity_type = Type qté
+text_products_free = Gratuit
+text_manufacturer = Marque
+text_products_price_kilo = Px/Kg
+text_date_available = date disponibilité
+text_only_shop = Seulement au magasin
+text_only_web = Seulement sur le web
+text_products_info_packaging_text = Produit
+text_products_packaging_new = neuf
+text_products_packaging_repackaged = reconditionné
+text_products_packaging_used = utilisé
+text_display_shipping_delay = Délais expédition
+text_display_shipping_delay_out_of_stock = Délais expédition produit hors stock
+text_products_volume = Volume produit
+text_display_products_weight = Poids
+text_price =
+
+text_sort_by = Trier par
+
+text_out_of_stock = Hors stock
+text_out_of_stock_pre_order = Pré-commande
+text_out_of_stock_allow_checkout = Commande hors stock acceptée
+
+text_alert_stock = Alerte stock
+text_in_stock = En stock
+
+table_heading_price = Tarif
+table_heading_model = Modèle
+table_heading_quantity = Quantité
+table_heading_weight = poids
+table_heading_date = Date
+
+button_details = Détails
+button_buy_now = Acheter
+button_sold_out = Epuisé
+
+template_does_not_exist = Ce template n'existe pas, veuillez en sélectionner un autre

@@ -1,0 +1,34 @@
+heading_title = E-mail
+module_em_title = E-mail
+module_em_short_title = E-mail
+
+title_menu = E-mail
+text_email =  E-mail
+
+text_configure = Configure App Module
+
+text_intro = This app allow you to include an E-mail page<br />
+- Activate this module and activate the module E-mail located in the E-mail menu
+
+module_em_introduction = The install process create the menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+
+button_email = E-mail
+button_cancel = Cancel
+button_send = Send
+button_save = Save
+button_delete = Delete
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.

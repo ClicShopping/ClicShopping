@@ -1,0 +1,2 @@
+cfg_ecommerce_web_fuzzy_match_threshold_title = Fuzzy matching threshold for price tracking
+cfg_ecommerce_web_fuzzy_match_threshold_description = Higher values = stricter matching, lower values = more matches. between : (0.5-0.95)

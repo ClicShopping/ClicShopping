@@ -1,0 +1,5 @@
+cfg_chatgpt_use_reranking_title = Activer le reranking du RAG
+cfg_chatgpt_use_reranking_description = Active le reranking pour optimiser la pertinence des résultats de recherche. Lorsqu'activé, les documents récupérés sont réordonnés en fonction de la similarité sémantique et de la pertinence contextuelle par rapport à la requête, garantissant que les informations les plus précises apparaissent en premier. Cela améliore la qualité des réponses en priorisant les meilleures correspondances de votre base de connaissances. Utilise des algorithmes de scoring avancés pour affiner les résultats de récupération initiaux. Recommandé : True pour une précision et une pertinence accrues des réponses.
+
+cfg_chatgpt_use_reranking_status_true = True
+cfg_chatgpt_use_reranking_status_false = False

@@ -1,0 +1,5 @@
+cfg_chatgpt_use_reranking_title = Enable RAG Reranking
+cfg_chatgpt_use_reranking_description = Enable reranking to optimize search result relevance. When activated, retrieved documents are reordered based on semantic similarity and contextual relevance to the query, ensuring the most accurate information appears first. This improves response quality by prioritizing the best matches from your knowledge base. Uses advanced scoring algorithms to refine initial retrieval results. Recommended: True for enhanced answer accuracy and relevance.
+
+cfg_chatgpt_use_reranking_status_true = True
+cfg_chatgpt_use_reranking_status_false = False

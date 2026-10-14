@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_delivery_latest_title = Latest delivery time
+cfg_ecommerce_ucp_delivery_latest_description = Relative time used to compute latest delivery (e.g. +5 days)

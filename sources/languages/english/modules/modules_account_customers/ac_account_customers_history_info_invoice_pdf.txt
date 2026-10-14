@@ -1,0 +1,4 @@
+module_account_customers_history_info_invoice_pdf_title = History Info : Do you want allow to download the pdf invoice ?
+module_account_customers_history_info_invoice_pdf_description = Allow to download the pdf invoice
+
+module_account_customers_history_info_invoice_pdf_text = Invoice

@@ -1,0 +1,24 @@
+{
+  "title": "Item App",
+  "app": "Item",
+  "vendor": "Shipping",
+  "version": "1.0.1",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Shipping": {
+      "IT": "Module\\Shipping\\IT"
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

@@ -1,0 +1,21 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each product recommendation)
+customers_id int(11) not_null comment(FK to customers table - customer receiving recommendation)
+products_id int(11) not_null comment(FK to products table - recommended product)
+score float default null comment(Recommendation score - higher score indicates stronger recommendation)
+recommendation_date date default null comment(Date when recommendation was generated)
+product_tag VARCHAR(255) default null comment(Tag or category for recommendation grouping - e.g. frequently_bought, similar_items)
+customers_group_id int(11) default(0) not_null comment(FK to customers_groups table - customer group for targeted recommendations)
+status int(1) not_null default(1) comment(Recommendation status - 0: inactive, 1: active and displaying)
+--
+primary id
+idx_products_id products_id
+idx_customers_id customers_id
+idx_score score
+idx_customers_group_id customers_group_id
+idx_recommendation_date recommendation_date
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment PER-CUSTOMER RECOMMENDATIONS produced by the system - one row per customer and recommended product, with a score and a grouping tag. Unlike products_favorites and products_featured, which are admin picks, these are targeted at one customer (customers_id).

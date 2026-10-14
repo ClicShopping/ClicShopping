@@ -1,0 +1,2 @@
+cfg_item_sort_order_title = Ordre d'affichage
+cfg_item_sort_order_description = Ordre d'affichage pour l'affichage (Le plus petit nombre est montré en premier)

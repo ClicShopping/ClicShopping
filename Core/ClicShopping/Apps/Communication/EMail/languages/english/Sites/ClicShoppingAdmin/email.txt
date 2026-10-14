@@ -1,0 +1,39 @@
+heading_title = Send Email To Customers
+
+tab_general = general
+
+text_select_customer = -- Select --
+text_all_customer = All Customers
+text_newsletter_customer = All subscribers
+
+text_email = E-mail
+text_customer = Customer:
+text_subject = Subject:
+text_from = From:
+text_message = Message:
+text_select_customer = Select Customer
+text_all_customers = All Customers
+text_newsletter_customers = To All Newsletter Subscribers
+text_help_wysiwyg = wysiwyg
+
+email_text_from = Email from
+subject = Subject
+
+
+notice_email_sent_to = Email sent to: {{mail_sent_to}}
+error_no_customer_selected = Error: No customer has been selected.
+error_email_sent = Error email
+success_email_sent =  Email sent with success
+
+title_help_image = Note on the use of the wysiwyg
+title_help_description = Note on the use of the wysiwyg
+help_description = <li>If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock more)</li>
+
+text_message_customer = Hello Mr, Mme .....<br />
+.....<br />
+.....<br />
+.....<br />
+Regard,<br />
+The team<br />
+
+text_please_wait = Sending in progress, please wait...

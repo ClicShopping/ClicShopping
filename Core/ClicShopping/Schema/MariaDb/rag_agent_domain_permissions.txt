@@ -1,0 +1,18 @@
+permission_id int(11) not_null auto_increment
+agent_id varchar(100) not_null
+domain varchar(100) not_null
+permission_level enum('read','write','full') not_null
+created_at timestamp NULL default(current_timestamp)
+updated_at timestamp NULL default(current_timestamp) ON UPDATE current_timestamp()
+
+--
+primary permission_id
+unique unique_agent_domain agent_id domain
+idx_agent_id agent_id 
+idx_domain domain 
+idx_permission_level permission_level
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

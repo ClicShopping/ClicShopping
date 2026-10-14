@@ -1,0 +1,5 @@
+cfg_ecommerce_cockpit_ai_auto_mode_title = Enabling AI to make decisions
+cfg_ecommerce_cockpit_ai_auto_mode_description = In True mode, AI can make marketing decisions to create promotions, features, favorites, additions, modifications, and deletions
+
+cfg_ecommerce_cockpit_ai_auto_mode_true = True
+cfg_ecommerce_cockpit_ai_auto_mode_false = False

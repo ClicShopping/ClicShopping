@@ -1,0 +1,2 @@
+cfg_ecommerce_web_shopping_max_results_title = Display the results for Analysis google shopping and Amazon
+cfg_ecommerce_web_shopping_max_results_description = Provide a max number to display result. SERPAPI must be active

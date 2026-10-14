@@ -1,0 +1,5 @@
+navbar_title_1 = Account
+navbar_title_2 = Gdpr
+
+text_success_gdpr = Success, you action has been realised
+text_error_delete = An error has been detected, please retry or contact us.

@@ -1,0 +1,2 @@
+cfg_table_cost_title = Couts d'expédition
+cfg_table_cost_desc = Couts d'expédition pour toutes les commandes liées à cette méthode d'expédition.

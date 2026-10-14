@@ -1,0 +1,59 @@
+rag_context_builder_text = ## [INFO CRITIC] CRITICAL: CURRENT DATE CONTEXT (MANDATORY FOR ALL DATE QUERIES) [INFO CRITIC]
+**YOU MUST READ AND APPLY THIS SECTION FOR ANY QUERY INVOLVING DATES OR TIME PERIODS**
+**Today's Date**: {{currentDate}} ({{currentMonthName}} {{currentDayOfMonth}}, {{currentYear}})
+**Current Year**: {{currentYear}}
+**Current Month**: {{currentMonth}} ({{currentMonthName}})
+
+rag_context_builder_text_warn = [WARN][WARN][WARN] **CRITICAL YEAR BOUNDARY WARNING** [WARN][WARN][WARN]
+We are in January {{currentYear}}. This means:
+- "last month" = December {{lastYear}} (NOT December {{currentYear}}!)
+- You MUST use year {{lastYear}} for December queries
+- Using year {{currentYear}} for December will return NO DATA (December {{currentYear}} hasn't happened yet!)
+**ABSOLUTE RULE**: When in January, "last month" queries MUST use the PREVIOUS YEAR.
+
+rag_context_builder_relative_mappings = ### [INFO MANDATORY] MANDATORY Relative Date Mappings (USE THESE EXACT VALUES)
+**When user says "last month"**:
+- Means: **{{lastMonthName}}**
+- Start date: **{{lastMonthStart}}**
+- End date: **{{lastMonthEnd}}**
+- **REQUIRED SQL**: `date_column > or equal {{lastMonthStart}} AND date_column < {{thisMonthStart}}
+
+rag_context_builder_relative_mappings_warn_jan = - [WARN] **NOTE**: This is December {{lastYear}}, NOT December {{currentYear}}!
+
+rag_context_builder_this_month = **When user says "this month"**:
+- Means: **{{currentMonthName}} {{currentYear}}**
+- Start date: **{{thisMonthStart}}**
+- End date (today): **{{currentDate}}**
+- **REQUIRED SQL**: `date_column > or equal {{thisMonthStart}} AND date_column < or equal {{currentDate}}
+
+rag_context_builder_last_year = **When user says "last year"**:
+- Means: **{{lastYear}}**
+- Start date: **{{lastYearStart}}**
+- End date: **{{lastYearEnd}}**
+- **REQUIRED SQL**: `date_column > or equal {{lastYearStart}} AND date_column <= or equal {{lastYearEnd}}
+
+rag_context_builder_sql_best_practices = ### [OK] SQL Date Best Practices (MANDATORY)
+**ABSOLUTE RULE**: ALWAYS use explicit date ranges. NEVER use YEAR() or MONTH() functions.
+[OK] **CORRECT** (use this approach):
+```sql
+WHERE date_purchased > or equal {{lastMonthStart}} AND date_purchased < {{thisMonthStart}}
+-- This correctly queries {{lastMonthName}}
+```
+[ERROR] **INCORRECT** (NEVER do this):
+```sql
+WHERE YEAR(date_purchased) equal {{currentYear}} AND MONTH(date_purchased) equal {{lastMonthNumber}}
+{{incorrectComment}}
+```
+**Why explicit date ranges are MANDATORY**:
+1. [OK] Correctly handles year boundaries (December -> January)
+2. [OK] Better index usage (date columns can use indexes)
+3. [OK] Avoids function calls on every row (YEAR(), MONTH())
+4. [OK] More readable and maintainable SQL
+5. [OK] Returns correct data (doesn't query future dates)
+
+rag_context_builder_january_final = ### [INFO CRITIC] FINAL REMINDER FOR JANUARY [INFO CRITIC]
+If the user asks about "last month", you MUST:
+1. Use dates from December {{lastYear}} (NOT December {{currentYear}})
+2. Use the SQL: `date_column > or equal {{lastMonthStart}} AND date_column < {{thisMonthStart}}
+3. NEVER use YEAR() equal {{currentYear}} for December queries
+

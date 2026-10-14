@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.moduleReviewTitle {
+}
+
+.moduleReviewTitle A {
+  color: #682b0e;
+  text-decoration: none;
+}
+
+.moduleReviewTextBy {
+  padding-top: 0.30rem;
+  padding-bottom: 0.30rem;
+}
+
+.moduleReviewAuthor {
+  font-weight: bold;
+  text-decoration: underline;
+  text-align: left;
+}
+
+.moduleReviewAuthor A {
+  font-weight: bold;
+  text-decoration: underline
+}
+
+.moduleReviewRating {
+  text-align: right;
+}
+
+.moduleReviewDateAdded {
+  padding-top: 0.30rem;
+  padding-bottom: 0.30rem;
+}
+
+.moduleReviewText {
+  padding-top: 0.30rem;
+  padding-bottom: 0.30rem;
+}

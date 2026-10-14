@@ -1,0 +1,24 @@
+evaluation_id varchar(100) not_null
+critic_id varchar(100) not_null
+output_id varchar(100) not_null
+output_type varchar(50) not_null
+producer_agent_id varchar(100) not_null
+accuracy_score decimal(3,2) not_null
+completeness_score decimal(3,2) not_null
+efficiency_score decimal(3,2) not_null
+clarity_score decimal(3,2) not_null
+overall_score decimal(3,2) not_null
+feedback text not_null
+strengths longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`strengths`))
+improvements longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`improvements`))
+evaluation_time_ms int(11) not_null
+evaluated_at timestamp NULL default(current_timestamp)
+
+--
+primary evaluation_id
+idx_critic_evaluations_agreement  critic_id  evaluated_at DESC overall_score
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

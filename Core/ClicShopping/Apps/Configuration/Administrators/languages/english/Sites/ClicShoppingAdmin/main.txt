@@ -1,0 +1,95 @@
+heading_title = Administrators
+module_ad_title = Administrators
+module_ad_short_title = Administrators
+
+text_administrators = Administrators
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a administrators page. <br /><br />
+- Activate this module located in the Configuration menu
+
+module_ad_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_administrators = Administrators
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+icon_edit = Edit
+icon_delete = delete
+
+
+table_heading_administrators = User name
+table_heading_user = Users
+table_heading_action = Action
+table_heading_right = Users Right
+table_heading_status = Status
+
+text_info_name = Name
+text_info_firstname = First Name
+text_info_admin = Is it an administrator ?
+text_info_insert_intro = Please enter the new administrator with its related data
+text_info_edit_intro = Please make any necessary changes
+text_info_delete_intro = Are you sure you want to delete this administrator?
+text_info_heading_new_administrator = New Administrator
+text_info_username = Username (your email):
+text_info_new_password = New Password
+text_info_password = Password
+text_info_access = Rights access
+
+icon_edit_user = Edit user
+
+error_administrator_exists = Error: Administrator already exists
+error_administrator_select = please select an administrator right
+success_status_updated = Status updated
+
+text_no_secured = No secured
+text_secured = Secured
+
+button_insert = Insert
+button_cancel = Cancel
+button_delete = Delete
+
+image_edit = Edit
+image_delete = Delete
+
+text_selected = -- Select --
+text_rights_visitor = Visitor
+text_all_rights_admin = Administrator
+text_rights_employee = Employee
+
+text_email_verification_title = Email Verification
+text_email_verification = Allow email verification
+text_email_verification_code = Verification code
+text_email_verification_expiry = Expiry date
+
+text_help = Administrator rights
+text_help_note = Note :
+Admin Rights : All menus, edit, save, delete
+Employee Rights : Partial menu, edit, save
+Visitor Rights : Partial menu, edit
+
+report_password_change_subject = new password for the username : {{username}}
+report_password_change_text = The new password has been changed for the username : {{username}}

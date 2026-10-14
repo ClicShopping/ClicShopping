@@ -1,0 +1,96 @@
+heading_title = Administrateurs
+module_ad_title = Administrateurs
+module_ad_short_title = Administrateurs
+
+text_administrators = Administrateurs
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des administrateurs <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_ad_introduction = Le processus d'installation installe la base de données et le menu
+module_ad_short_title = Products quantities units
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_administrators = Administrateurs
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+
+table_heading_administrators = Pseudonymes
+table_heading_user = Utilisateurs
+table_heading_action = Action
+table_heading_right = Droit Utilisateurs
+table_heading_status = statut
+
+text_info_name = Nom
+text_info_firstname = Prénom
+text_info_admin = Est ce un administrateur ?
+text_info_insert_intro = Veuillez entrer un nouvel administrateur
+text_info_edit_intro = Veuillez réaliser les changements nécessaires
+text_info_delete_intro = Etes vous sur de supprimer cet administrateur ?
+text_info_heading_new_administrator = Nouvel Administrateur
+text_info_username = Pseudonyme (votre email)
+text_info_new_password = Nouveau mot de passe
+text_info_password = Mot de passe
+text_info_access = Droits d'accès
+
+icon_edit_user = Editer l'utilisateur
+
+error_administrator_exists = Erreur : L'administrateur existe déjà.
+error_administrator_select = Veuillez sélectionner un droit administrateur
+success_status_updated = Le statut à été mis à jour
+
+text_no_secured = Non sécurisé
+text_secured = Sécurisé
+
+button_insert = Insérer
+button_cancel = Annuler
+button_delee = Supprimer
+
+image_edit = Editer
+image_delete = Supprimer
+
+text_selected = -- Sélectionner --
+text_rights_visitor = Visiteur
+text_all_rights_admin = Administrateur
+text_rights_employee = Employé
+
+text_email_verification_title = Vérification de l'email
+text_email_verification = Autoriser la vérification de l'email
+text_email_verification_code = Code de vérification
+text_email_verification_expiry = Date d'expiration
+
+
+text_help = Droits Adminstrateur
+text_help_note = Note :
+Admin Rights : Tous les menus, editer, sauver, supprimer, déplacer
+Employee Rights : Menu partiel, editer, sauver, déplacer
+Visitor Rights : Menu partiel, editer
+
+report_password_change_subject = Un nouveau mot de passe a été demandé pour le nom d'utilisateur : {{username}}
+report_password_change_text = Le mot de passe a été changé pour le nom d'utilisateur : {{username}}

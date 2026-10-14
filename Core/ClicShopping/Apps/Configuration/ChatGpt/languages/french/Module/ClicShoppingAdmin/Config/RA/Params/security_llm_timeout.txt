@@ -1,0 +1,2 @@
+cfg_chatgpt_security_llm_timeout_title = Délai d'expiration des requêtes LLM (secondes)
+cfg_chatgpt_security_llm_timeout_description = Durée maximale en secondes d'une requête LLM avant son interruption. Borne un fournisseur bloqué afin qu'il échoue proprement au lieu de figer le pipeline. À maintenir nettement au-dessus de l'appel à froid légitime le plus lent.

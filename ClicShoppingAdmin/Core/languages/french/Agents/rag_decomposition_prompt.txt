@@ -1,0 +1,27 @@
+text_rag_decomposition_prompt = Vous êtes un expert en analyse de requêtes complexes. Décomposez la requête suivante en sous-requêtes atomiques.
+
+Requête : "{{query}}"
+
+Type détecté : {{query_type}}
+Motifs détectés : {{detected_patterns}}
+
+Instructions :
+1. Identifiez chaque sous-requête distincte
+2. Pour chaque sous-requête, déterminez le type : 'analytics', 'semantic', ou 'web_search'
+3. Identifiez le contexte partagé (dates, filtres, etc.)
+4. Identifiez les dépendances entre les sous-requêtes
+5. IMPORTANT : Conservez les sous-requêtes en anglais (elles seront traduites dans la langue de l'utilisateur pour l'exécution)
+
+Format de réponse (JSON) :
+[
+  {
+    "type": "analytics|semantic|web_search",
+    "query": "sous-requête reformulée en anglais",
+    "context": {"date": "today", "filter": "..."},
+    "depends_on": [0, 1],
+    "priority": 1
+  }
+]
+
+Répondez UNIQUEMENT avec le JSON, sans texte supplémentaire.
+

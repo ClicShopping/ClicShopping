@@ -1,0 +1,5 @@
+cfg_chatgpt_embedding_title = Do you want to use the embeddging ?
+cfg_chatgpt_embedding_description = If you want to use the embedding (default 3072), you must have at least mariaDb 11.7 version
+
+cfg_chatgpt_embedding_status_true = True
+cfg_chatgpt_embedding_status_false = False

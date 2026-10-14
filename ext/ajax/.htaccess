@@ -1,0 +1,11 @@
+Options -Indexes
+
+<FilesMatch "\.(s?p?html|cgi|pl|exe)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+   order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

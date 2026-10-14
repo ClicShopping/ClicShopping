@@ -1,0 +1,16 @@
+collaboration_id varchar(36) not_null
+collaborative_objective_id varchar(36) not_null comment(ID of the merged collaborative objective)
+original_objectives longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`original_objectives`)) comment(Array of original objective IDs that were merged)
+participating_agents longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`participating_agents`)) comment(Array of agent IDs participating in the collaboration)
+similarity_score decimal(3,2) not_null comment(Similarity score that led to the merge (0.00-1.00))
+created_at timestamp NULL default(current_timestamp)
+
+--
+primary collaboration_id
+idx_collaborative_objective collaborative_objective_id
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

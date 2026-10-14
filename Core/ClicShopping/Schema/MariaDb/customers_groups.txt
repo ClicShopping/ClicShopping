@@ -1,0 +1,17 @@
+customers_group_id int not_null auto_increment comment(Primary key - unique identifier for each customer group)
+customers_group_name varchar(32) not_null comment(Display name of the customer group - e.g. Wholesale, Retail, VIP)
+customers_group_discount decimal(11,2) default(0.00) not_null comment(Default discount percentage for this group - 0.00 to 100.00)
+color_bar varchar(8) default('#FFFFFF') not_null comment(Hex color code for UI display - e.g. #FF0000 for red)
+group_order_taxe tinyint(1) default(0) not_null comment(Tax application flag - 0: tax excluded, 1: tax included in prices)
+group_payment_unallowed varchar(255) default('cc') comment(Comma-separated list of disallowed payment methods for this group)
+group_shipping_unallowed varchar(255) comment(Comma-separated list of disallowed shipping methods for this group)
+group_tax varchar(5) default('false') not_null comment(Tax calculation mode - true: apply tax, false: no tax)
+customers_group_quantity_default int(4) default(0) not_null comment(Default minimum order quantity for this group)
+--
+primary customers_group_id
+idx_customers_group_name customers_group_name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Customer groups with pricing rules, discounts, and access restrictions

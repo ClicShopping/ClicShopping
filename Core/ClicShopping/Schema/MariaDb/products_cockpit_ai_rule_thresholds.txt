@@ -1,0 +1,13 @@
+rule_key varchar(100) not_null comment(Primary key -  identifier)
+threshold decimal(8,4) not_null comment(threshold value)
+default_val decimal(8,4) not_null comment(default-value value)
+date_modified datetime not_null comment(date modified)
+
+--
+primary rule_key
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

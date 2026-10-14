@@ -1,0 +1,23 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+div.moduleAccountCustomersNotificationstitle h3 {
+  padding-top: 0.625rem;
+}
+
+div.moduleAccountCustomersNotificationsList {
+
+}
+
+.moduleAccountCustomersNotificationsIcon {
+  color: #C0392B;
+}
+
+.moduleAccountCustomersNotificationsIconArrow {
+  color: #C0392B;
+}

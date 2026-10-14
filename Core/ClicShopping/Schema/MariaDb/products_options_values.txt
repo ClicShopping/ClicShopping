@@ -1,0 +1,10 @@
+products_options_values_id int default(0) not_null comment(Primary key - unique identifier for each option value)
+language_id int default(1) not_null comment(FK to languages table - language for this value name)
+products_options_values_name varchar(255) default('') not_null comment(Option value name - e.g. Small, Medium, Large or Red, Blue, Green)
+--
+primary products_options_values_id language_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language value of a product option (red, XL). The option it belongs to is in products_options.

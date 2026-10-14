@@ -1,0 +1,24 @@
+feedback_id varchar(36) not_null comment(Unique identifier for the feedback (UUID))
+target_agent_id varchar(100) not_null comment(Agent receiving the feedback)
+source_agent_id varchar(100) not_null comment(Agent providing the feedback)
+output_id varchar(36) not_null comment(Output that triggered the feedback)
+feedback_type enum('correctness','efficiency','completeness','best_practice') not_null comment(Category of feedback)
+feedback_text text not_null comment(Detailed feedback content)
+acknowledged tinyint(1) default 0 comment(Whether the target agent has acknowledged)
+agent_response text default null comment(Optional response from the target agent)
+created_at timestamp NULL default(current_timestamp) comment(When the feedback was created)
+acknowledged_at timestamp NULL default null comment(When the feedback was acknowledged)
+
+--
+primary feedback_id
+idx_target_agent target_agent_id
+idx_source_agent source_agent_id
+idx_output_id output_id
+idx_acknowledged acknowledged
+idx_feedback_type feedback_type
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

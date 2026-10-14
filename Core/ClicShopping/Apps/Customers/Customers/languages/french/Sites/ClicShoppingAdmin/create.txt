@@ -1,0 +1,37 @@
+heading_title = Créer un compte client
+
+tab_general = General
+tab_societe = Société
+tab_orders = Facture
+tab_options = Options
+
+email_subject = Création de compte client sur  {{store_name}}
+
+email_greet_mr = Bonjour Mr {{greet_mr}}
+email_greet_ms = Bonjour Mme {{greet_ms}}
+email_greet_none = Bonjour {{greet_none}}
+
+email_welcome = Bienvenue sur {{store_name}}, nous avons créé un comptepour vous. Pour vous connecter à notre boutique, vous devez suvre la procédure suivant pour retrouver votre mot de passe. si vous avez des questions n'hésitez pas à nous contacter
+
+email_network = '. "\n\n" . 'Suivez nous en temps réel sur :<br />
+email_twitter = http://www.twitter.com/
+email_facebook = http://www.facebook.com/
+
+text_info_country_zone = Etat / Département
+
+entry_state_error_select = Erreur Please select a good state
+error_email_address_exist = Erreur Email address: Exists in database, please change by another
+error_erreur_country = Erreur Pays
+
+error_code_iso = Erreur code ISO
+error_firstname = Erreur Prénom
+error_lastname = Erreur Nom
+error_email = Erreur email
+error_street_address = Erreur adresse
+error_postcode = Erreur code postal
+error_city = Erreur ville
+error_country = Erreur pays
+error_state = Erreur Etat/département
+error_telephone = Erreur Telephone
+error_email_exists = Erreur email existe
+error_tva_intracom = Erreur tva Intracom, veuillez vérifier votre tva

@@ -1,0 +1,28 @@
+heading_help = Help
+
+section_help = Frequently Asked Questions
+section_documentation = Documentation
+section_support = Support
+
+faq_1_question = What is the AI Ecommerce Domain?
+faq_1_answer = The AI Ecommerce Domain is a specialized domain app for e-commerce operations. It provides AI-powered features for product management, order processing, and customer analytics.
+
+faq_2_question = How do I query the system?
+faq_2_answer = You can query the system in any language. The system will translate your query to English for processing, execute the query, and translate the results back to your language.
+
+faq_3_question = What entities are supported?
+faq_3_answer = The e-commerce domain supports four main entities: Products, Orders, Customers, and Categories. Each entity has specific attributes and relationships.
+
+faq_4_question = Is my data secure?
+faq_4_answer = Yes, the system includes security guardrails that prevent access to sensitive data like passwords, payment information, and personal contact details.
+
+faq_5_question = How can I extend the domain?
+faq_5_answer = You can extend the domain by adding new entities, creating custom hooks, or implementing domain-specific helpers. Refer to the developer documentation for detailed instructions.
+
+doc_architecture = Architecture Documentation
+doc_api = API Reference
+doc_examples = Code Examples
+
+support_contact = Contact Support
+support_email = Email: support@clicshopping.org
+support_forum = Forum: https://www.clicshopping.org/forum/

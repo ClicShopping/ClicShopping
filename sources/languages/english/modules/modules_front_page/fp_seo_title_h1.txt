@@ -1,0 +1,2 @@
+module_seo_title_h1_title = Do you want to display the title of the Website ?
+module_seo_title_h1_description = Do you want to display the title of the Website ?

@@ -1,0 +1,14 @@
+association_id int not_null auto_increment comment(Primary key - unique identifier for each zone-to-geo-zone association)
+zone_country_id int not_null comment(FK to countries table - country identifier)
+zone_id int comment(FK to zones table - specific zone/region, NULL for all zones in country)
+geo_zone_id int comment(FK to geo_zones table - geographic zone group identifier)
+last_modified datetime comment(Timestamp of last modification)
+date_added datetime not_null comment(Timestamp when association was created)
+--
+primary association_id
+idx_zones_to_geo_zones_country_id zone_country_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Mapping between zones and geographic zone groups for tax and shipping rules

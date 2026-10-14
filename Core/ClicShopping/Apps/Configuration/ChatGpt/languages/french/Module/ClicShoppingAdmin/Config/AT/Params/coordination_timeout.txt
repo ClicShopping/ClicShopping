@@ -1,0 +1,2 @@
+cfg_chatgpt_coordination_timeout_title = Coordination Timeout (seconds)
+cfg_chatgpt_coordination_timeout_description = Maximum time in seconds for actor-critic coordination. If exceeded, returns best available response. Recommended: 30 seconds.

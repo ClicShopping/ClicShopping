@@ -1,0 +1,105 @@
+llm_prompt_insights_summary = You are an order insights analyst for an e-commerce platform.
+
+Analyze PRECISELY the following order data:
+
+{{order_data}}
+
+IMPORTANT INSTRUCTIONS:
+- Analyze ONLY the provided data, do NOT make assumptions
+- Each product's quantity is clearly indicated (Quantity)
+- Line Total is already calculated (Quantity × Unit Price)
+- Final Total includes all fees (shipping, taxes, etc.)
+- Customer information is encrypted for GDPR - DO NOT analyze it
+- Base your analysis on exact figures provided
+
+Provide insights including:
+1. Total value and order composition (number of DISTINCT products and quantities)
+2. Analysis of ordered products (types, categories)
+3. Order status and date
+4. Key highlights or relevant observations
+
+Return your analysis in JSON format:
+{
+  "insights": ["insight1", "insight2", ...],
+  "confidence": 0.95,
+  "recommendations": ["recommendation1", "recommendation2", ...],
+  "summary": "Brief and accurate summary"
+}
+
+llm_prompt_insights_recommendations = You are an order insights analyst for an e-commerce platform.
+
+Analyze the following order data and provide actionable recommendations:
+
+{{order_data}}
+
+IMPORTANT INSTRUCTIONS:
+- Base your recommendations on ACTUALLY ordered products
+- Do NOT suggest fixing "errors" that don't exist
+- Use exact quantities and totals provided
+- Customer information is encrypted for GDPR - DO NOT analyze it
+
+Provide recommendations for:
+1. Upsell opportunities based on ordered products
+2. Relevant cross-sell suggestions
+3. Customer retention strategies
+4. Fulfillment or service optimization
+
+Return your analysis in JSON format:
+{
+  "insights": ["insight1", "insight2", ...],
+  "confidence": 0.95,
+  "recommendations": ["recommendation1", "recommendation2", ...],
+  "summary": "Brief summary of recommendations"
+}
+
+embedding_key_domain = Domain
+embedding_key_entity = Entity
+embedding_key_order_id = Order ID
+embedding_key_language = Language
+embedding_key_summary = Summary
+embedding_key_key_insights = Key Insights
+embedding_key_insight = Insight
+embedding_key_recommendations = Recommendations
+embedding_key_recommendation = Recommendation
+embedding_value_domain = Ecommerce
+embedding_value_entity = Order Insights
+
+text_key_domain = domain
+text_key_entity = entity
+
+text_key_order_id = order.id
+text_key_order_date = order.date
+text_key_order_status = order.status
+text_key_order_currency = order.currency
+text_key_order_payment_method = order.payment_method
+
+text_key_customer_name = customer.name
+text_key_customer_company = customer.company
+text_key_customer_city = customer.city
+text_key_customer_country = customer.country
+
+text_key_delivery_city = delivery.city
+text_key_delivery_country = delivery.country
+
+text_key_product_name = product.name
+text_key_product_model = product.model
+text_key_product_price = product.price
+text_key_product_quantity = product.quantity
+text_key_product_tax_rate = product.tax_rate
+
+text_key_product_attribute_option = product.attribute.option
+text_key_product_attribute_value = product.attribute.value
+
+text_key_total_subtotal = total.subtotal
+text_key_total_shipping = total.shipping
+text_key_total_tax = total.tax
+text_key_total_total = total.total
+
+text_key_history_date = history.date
+text_key_history_status = history.status
+text_key_history_comment = history.comment
+text_key_history_tracking = history.tracking
+text_key_history_admin = history.admin
+
+text_value_domain_ecommerce = ecommerce
+text_value_entity_order = order

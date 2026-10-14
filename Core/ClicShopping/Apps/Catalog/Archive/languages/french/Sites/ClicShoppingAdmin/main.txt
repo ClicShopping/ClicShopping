@@ -1,0 +1,50 @@
+heading_title = Archive produits
+module_ar_title = Archive produits
+module_ar_short_title = Archive produits
+
+text_products_archive =  Archive produits
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'installer unsystème de gestion d'archive des produits. <br /><br />
+- Activer ce module. Pour y accéder, veuillez aller dans le Menus Produits/Archives
+
+module_ar_introduction = Le processus d'installation installe le menu
+module_ar_short_title = Archive
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_archive = Archive
+button_cancel = Annuler
+button_new = Nouveau
+button_unpack = Désarchiver
+button_reset = Reset
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+icon_unpack = Désarchiver
+
+heading_title = Gestion des produits archivés
+heading_title_search = Rechercher
+
+table_heading_model_archives = Référence
+table_heading_products_archives = Nom des produits archivés
+table_heading_date_archives = Date de mise en archive
+table_heading_status = Visibilité du produit
+table_heading_action = Actions
+table_heading_edit_products_archive = Ré-activation du produit
+text_edit_intro = Souhaitez vous ré-activer ce produit ?
+text_archive = <strong>Note : </strong>la réactivation de l'article fera ré-apparaitre le produit dans le catalogue des produits de l'admin à la même place ou il était précédement.<br /> En fonction du statut, celui-ci peut apparaitre ou pas dans la partie catalogue cité client
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

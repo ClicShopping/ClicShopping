@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+div.moduleProductsInfoName, span.moduleProductsInfoName h1 {
+}
+
+.moduleProductsInfoName A {
+  color: #682b0e;
+  text-decoration: none;
+}
+
+h1.moduleProductsInfoName {
+  font-size: 1.5rem
+}

@@ -1,0 +1,2 @@
+title_menu = Brands
+title_menu_stock = Stocks by brand

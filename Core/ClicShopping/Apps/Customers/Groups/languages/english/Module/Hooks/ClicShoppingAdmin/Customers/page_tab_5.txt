@@ -1,0 +1,5 @@
+title_tab_shipping = Shipping
+category_shipping_customer_group = B2B customer shipping
+category_shipping_customer = Normal customer shipping
+
+

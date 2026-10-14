@@ -1,0 +1,18 @@
+id int(11)  not_null auto_increment
+critic_id varchar(255) default null
+anomaly_type varchar(100) not_null
+severity varchar(50) not_null
+llm_analysis text not_null
+detected_at timestamp NULL default(current_timestamp)
+
+--
+primary id
+idx_critic critic_id 
+idx_severity severity 
+idx_detected detected_at 
+idx_type anomaly_type
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

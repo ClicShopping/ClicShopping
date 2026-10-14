@@ -1,0 +1,5 @@
+cfg_chatgpt_display_sql_title = Display SQL Query in Response
+cfg_chatgpt_display_sql_description = Show the generated SQL query in the AI response. When enabled, users can see the exact SQL query that was executed to retrieve the data. Useful for transparency, debugging, and learning. Recommended: True for admin users, False for end users.
+
+cfg_chatgpt_display_sql_true = True
+cfg_chatgpt_display_sql_false = False

@@ -1,0 +1,14 @@
+{
+  "Semantics": {
+    "classification_threshold": 3,
+    "max_retries": 3,
+    "translation_cache_ttl": 86400,
+    "enable_fallback": true,
+    "enable_competitor_detection": true
+  },
+  "ConversationMemory": {
+    "max_history_size": 10,
+    "max_context_window": 5,
+    "similarity_threshold": 0.7
+  }
+}

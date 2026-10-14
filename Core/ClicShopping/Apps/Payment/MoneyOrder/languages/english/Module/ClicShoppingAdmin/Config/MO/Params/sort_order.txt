@@ -1,0 +1,2 @@
+cfg_moneyorder_sort_order_title = Sort Order
+cfg_moneyorder_sort_order_description = The sort order location shown in the available methods listing (lowest is displayed first).

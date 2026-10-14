@@ -1,0 +1,40 @@
+{
+  "title": "Manufacturers App",
+  "app": "Manufacturers",
+  "vendor": "Catalog",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "Manufacturers": "Module\\HeaderTags\\Manufacturers"
+    },
+    "Hooks": {
+      "Shop/SiteUrl": {
+        "Canonical": "Module\\Hooks\\Shop\\SiteUrl\\Canonical"
+      },
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      },
+      "ClicShoppingAdmin/Products": {
+        "ProductsContentTab1": "Module\\Hooks\\ClicShoppingAdmin\\Products\\ProductsContentTab1",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Insert",
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Update",
+        "CopyConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Products\\CopyConfirm",
+        "CloneProducts": "Module\\Hooks\\ClicShoppingAdmin\\Products\\CloneProducts"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

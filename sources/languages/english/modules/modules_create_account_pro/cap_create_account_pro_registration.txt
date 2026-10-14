@@ -1,0 +1,69 @@
+
+module_create_account_pro_registration_title = Do you want to display the registration form for the professional account creation ?
+module_create_account_pro_registration_description = Display the registration form for the professional account creation
+
+form_required = * Required information
+
+category_address_pro =  Address
+category_company = Company Details
+category_personal_pro = Your Personal Details
+category_address = Your Address
+category_contact = Your Contact Information
+category_options = Options
+category_password = Your Password
+
+male = Male
+female = Female
+male_address = Mr.
+female_address = Ms.
+
+entry_gender = Gender:
+entry_gender_text = *
+
+entry_first_name = First Name:
+entry_first_name_text = *
+entry_last_name = Last Name:
+entry_last_name_text = *
+entry_date_of_birth = Date of Birth:
+entry_date_of_birth_text = * (eg. 05/21/1970)
+entry_email_address = E-Mail Address:
+entry_email_address_confirmation = Email confirmation :
+entry_email_address_confirmation_text = * Confirm your email
+entry_telephone_number = Telephone Number:
+entry_telephone_number_text = *
+entry_cellular_phone_number = Cellular phone Number:
+entry_cellular_phone_number_text =
+entry_company_website = WebSite
+entry_company = Company Name:
+entry_company_text = *
+entry_company_text_pro = *
+entry_siret = N° of registration :
+entry_siret_text = *
+entry_siret_exemple = (ex : SIRET Code for the French company)
+entry_code_ape = Nomenclature Number :
+entry_code_ape_text = *
+entry_code_ape_exemple = (ex : APE Code for the French company)
+entry_tva_intracom = No of VAT intracom :
+entry_tva_intracom_text = * Select the country in first.
+entry_country = Country:
+entry_country_text = *
+entry_suburb = Suburb :
+entry_suburb_error =
+entry_suburb_text =
+entry_street_address = Address :
+entry_street_address_text = *
+entry_post_code =  Post code :
+entry_post_code_text = *
+entry_city = City:
+entry_city_text = *
+entry_state = State :
+entry_state_text = *
+entry_newsletter = Newsletter :
+entry_newsletter_text =
+entry_password = Password :
+entry_password_text = *
+entry_password_confirmation = Password confirmation :
+entry_password_confirmation_text = * Confirm your password
+
+text_create_account_pro_dgrp = We must use your email to create your account and allow you to access it. At any time you can change this information.
+text_create_account_pro_dob_dgrp = Your birth date helps us identify your age and allow you to place an order. We do not display your date of birth without your explicit consent

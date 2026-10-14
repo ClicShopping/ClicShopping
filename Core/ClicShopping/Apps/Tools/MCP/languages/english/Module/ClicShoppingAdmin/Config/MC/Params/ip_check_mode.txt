@@ -1,0 +1,6 @@
+cfg_mcp_ip_check_mode_title = IP check mode
+cfg_mcp_ip_check_mode_description = Controls how the session's client IP is verified on every request. <strong>strict</strong> = exact match (most secure, may break mobile/NAT/CDN clients). <strong>subnet</strong> = same /24 (IPv4) or /64 (IPv6) — recommended default. <strong>off</strong> = no IP check (token secret only, OAuth-like).
+
+cfg_mcp_ip_check_mode_strict = strict (exact IP match)
+cfg_mcp_ip_check_mode_subnet = subnet (/24 IPv4 or /64 IPv6 — recommended)
+cfg_mcp_ip_check_mode_off = off (no IP verification)

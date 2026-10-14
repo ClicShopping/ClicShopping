@@ -1,0 +1,24 @@
+log_id bigint(20) not_null
+selection_id varchar(50) not_null
+action_id varchar(100) not_null
+output_type varchar(100) not_null
+domain varchar(100) default(NULL)
+num_selected int(11) not_null
+avg_reputation decimal(3,2) not_null
+reputation_std_dev decimal(4,3) not_null
+selection_time_ms decimal(8,2) not_null
+selected_critics longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`selected_critics`))
+created_at timestamp NULL default(current_timestamp)
+
+--
+primary log_id 
+idx_selection_id selection_id
+idx_action_id action_id
+idx_output_type output_type
+idx_domain domain
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,16 @@
+pages_id int default(0) not_null comment(FK to pages_manager table - page identifier)
+pages_title varchar(255) not_null comment(Translated page title)
+pages_html_text longtext comment(HTML content of the page)
+externallink varchar(255) comment(External URL if page links to external content)
+language_id int default(1) not_null comment(FK to languages table - language for this translation)
+page_manager_head_title_tag text null comment(SEO meta title tag for this page)
+page_manager_head_desc_tag text null comment(SEO meta description tag for this page)
+page_manager_head_keywords_tag text null comment(SEO meta keywords tag for this page)
+--
+primary pages_id language_id
+idx_pages_title pages_title
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language title, HTML body and SEO tags of a CMS page. This is where the text of the terms and conditions is read.

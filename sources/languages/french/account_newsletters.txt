@@ -1,0 +1,7 @@
+
+navbar_title_1 = Mon compte
+navbar_title_2 = Bulletin d'information
+
+heading_title = Bulletin d'information
+
+success_newsletter_updated = Votre abonnement à été mise à jour.

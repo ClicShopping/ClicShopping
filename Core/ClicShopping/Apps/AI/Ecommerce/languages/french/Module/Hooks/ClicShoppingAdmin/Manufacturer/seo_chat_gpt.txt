@@ -1,0 +1,24 @@
+text_seo_page_title = SEO Page de Titre
+
+text_seo_action = Cliquez pour avoir une réponse de Gpt
+
+text_seo_expertise = Tu es un expert en e-commerce et en marketing SEO.
+text_seo_page_title_question = Donnes-moi en moins de 50 caractères le SEO Titre concernant cette marque : {{brand_name}}. Maximum 70 caractères, sans emoji, sans guillemets, sans point final. Réponse brute uniquement.
+text_seo_page_tag_question = Donnes-moi juste en 5 mots clefs sèparè par une virgule concernant cette marque : {{brand_name}}. 1 à 3 mots par tag, séparés par des virgules, sans #. Réponse brute uniquement.
+text_seo_page_keywords_question = Donnes-moi juste en 7 mots clefs sèparè par une virgule concernant cette marque : {{brand_name}}. Inclure un mélange de termes informationnels et transactionnels, séparés par des virgules. Réponse brute uniquement.
+text_seo_page_summary_description_question = Donnes-moi en moins de 50 mots une description trés courte concernant cette marque : {{brand_name}}. Maximum 160 caractères, avec un bénéfice client et un appel à action léger. Réponse brute uniquement.
+text_seo_page_translate_language = Peux tu traduire la réponse en
+
+text_categories_description = Sans ré-écrire la question, écris moi une longue description concernant cette marque :
+
+tab_gpt_options = Gpt
+text_gpt_options = Gpt
+text_options_gpt_description = Autorisez l'IA à générer votre contenu automatiquement ?
+text_options_gpt_seo_title = Autorisez l'IA à générer le titre SEO concernant marque ?
+text_options_gpt_seo_description = Autorisez l'IA à générer la description SEO concernant marque ?
+text_options_gpt_seo_keywords = Autorisez l'IA à générer les mots clefs SEO concernant marque ?
+text_options_gpt_image =  Autorisez l'IA à générer une image concernant cette marque ?
+
+title_help_seo = Aide
+text_help_seo = - Veuillez noter que si vous utilisez l'IA pour générer votre contenu, le temps de sauvegarde de l'information peut être plus long du au traitement. Merci de patienter.<br>
+- Le contenu généré est léger ne contient pas de vérifications avancées et peut être soumis à des hallucinations. Veuillez bien vérifier les résultats et la pertinence du contenu généré.

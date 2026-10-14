@@ -1,0 +1,2 @@
+cfg_products_api_session_timeout_minutes_title = Session Timeout Duration
+cfg_products_api_session_timeout_minutes_description = Specifies the session expiration time in minutes.

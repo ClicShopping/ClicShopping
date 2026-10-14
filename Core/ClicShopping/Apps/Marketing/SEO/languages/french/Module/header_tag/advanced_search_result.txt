@@ -1,0 +1,3 @@
+module_header_tags_advanced_search_result_title = Souhaitez-vous utiliser les balises meta dans la recherche avancée ?
+module_header_tags_advanced_search_result_description = Ajouter les balises meta dans la recherche avancée
+

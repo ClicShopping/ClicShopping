@@ -1,0 +1,7 @@
+module_create_account_pro_introduction_title = Souhaitez-vous afficher un texte introductif à la création du compte au professionnel ?
+module_create_account_pro_introduction_description = Affiche un texte introductif à la création du compte au professionnel
+
+module_create_account_pro_introduction_text_origin_login = <p style="color:#000000;">Ouvrir un compte professionnel sur {{store_name}} est absolument gratuit si vous êtes une société !<br /><br />Vous pourrez alors bénéficier de tous les avantages que nous proposons à nos partenaires. Toutes les informations que vous nous donnerez resteront bien évidemment strictement privées et réservées. A aucun moment vos informations ne seront divulguées à d'autres parties ou pour aucune action ou propos commercial. Toutes ces informations ne servent à {{store_name}} que pour mieux vous suivre et vous servir...<br /><br /> Vous pourrez à tout moment voir, mettre &agrave jour ou supprimer les informations que vous nous aurez données. Il vous suffira pour cela de vous identifier sur notre site et de cliquez sur le lien "Mon compte" Vous garder ainsi à tout moment le plein contr&ocirc;le sur les informations que vous nous avez transmis...</p><br /><br />
+module_create_account_pro_introduction_text_b2b = <span style="text-decoration: underline;">Note</span> : Pour ouvrir un compte client particulier, veuillez cliquez sur ce bouton
+
+button_continue = Continue

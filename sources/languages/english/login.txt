@@ -1,0 +1,14 @@
+navbar_title = Login
+heading_title_login = Open an account
+
+heading_new_customer = New Customer
+
+text_new_customer_introduction = Choose an option below. Creating an account on {{store_name}} you will be able to shop faster, be up to date on an orders status, and keep track of the orders you have previously made.
+
+text_login_error =  Error: No match for E-Mail Address and/or Password.
+text_visitors_cart =  <strong>Note:</strong></font> Your &quot;Visitors Cart&quot; contents will be merged with your &quot;Members Cart&quot; contents once you have logged on. <a href="javascript:session_win(;">[More Info]</a>
+
+email_text_warning_login_subject = Login to your {{store_name}} space
+email_text_warning_login_message = A new login has been made in your space on {{store_name}}.<br />
+If you are not the origin of this connection, please notify us and change your password as soon as possible.<br />
+Thank you so much.<br />

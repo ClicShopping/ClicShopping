@@ -1,0 +1,2 @@
+module_checkout_shipping_step_title = Do you want to display the step about the order process ?
+module_checkout_shipping_step_description = display the step about the order process ?

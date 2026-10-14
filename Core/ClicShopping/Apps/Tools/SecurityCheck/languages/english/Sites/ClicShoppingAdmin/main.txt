@@ -1,0 +1,56 @@
+heading_title = Security check
+module_sc_title = Security check
+module_sc_short_title = Security check
+
+text_security_check = Security check
+text_configure =  configure App Module
+
+text_intro = This app allow you to include ae security check form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_sc_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall = Uninstall
+button_uninstall = Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_security_check = Security check
+button_reset = Reset
+button_update = Update
+button_reload = Reload
+button_new = new Ip Address
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+table_heading_title = Title
+table_heading_info = Info
+table_heading_module = Modules
+
+table_heading_ip = Ip restrictions
+table_heading_comment = Comments
+table_heading_status = Status
+table_heading_status_shop = Shop Status
+table_heading_status_admin = Admin Status
+table_heading_action = Action
+table_heading_count = Attempt
+
+title_iprestricton_general = Ip restriction
+text_ip_restriction = Ip restriction
+text_ip_comment = Comment
+
+tab_general = General
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)

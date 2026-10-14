@@ -1,0 +1,13 @@
+navbar_title = Commentaires
+navbar_title_1 = Rédaction
+
+heading_title_reviews = Voulez-vous nous faire part de vos impressions ?
+
+email_subject_customer = Votre commentaire sur {{store_name}}
+email_text_customer = Bonjour, <br /><br />Nous vous remercions d'avoir insérer un commentaire. Nous allons le réviser et le valider. Veuillez noter que tout commentaire ne répondant pas à notre charte éthique ne sera pas validé. <br /><br />. Cordialement, Le service client.
+
+email_subject = Nouveau commentaire proposé par un client sur {{store_name}}
+email_text = Un nouveau commentaire a été inséré par un client concernant un produit. Veuillez consulter votre administration pour valider ou non le commentaire du client
+
+message_customer = Merci, Votre commentaire a été pris en compte et sera mis en ligne sous peu s'il répond à notre charte éthique
+text_alert_products_reviews = Veuillez insérer plus de mots dans votre commentaire

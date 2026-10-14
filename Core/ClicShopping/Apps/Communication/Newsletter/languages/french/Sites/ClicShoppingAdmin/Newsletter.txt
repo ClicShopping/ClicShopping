@@ -1,0 +1,74 @@
+heading_title = Bulletin d'informations
+
+tab_general = General
+tab_description = Description
+
+table_heading_newsletters = Bulletin d'informations
+table_heading_size = Taille
+table_heading_module = Module
+table_heading_sent = Envoyer
+table_heading_status = Statut
+table_heading_action = Action
+table_heading_language = Langue
+table_heading_b2b = Groupe client
+
+text_all_languages = Toutes les langues
+text_all_customers = Clients normaux
+text_newsletter_customers_group =  Groupes Client
+text_newsletter_language = Type de client visé
+text_newsletter_create_file_html = Souhaitez vous créer un fichier html ? *
+text_newsletter_twitter = Souhaitez vous publier cette newsletter sur Twitter ?
+text_newsletter_customer_no_account = Souhaitez vous inclure les clients sans compte ?
+text_send_newsletter_subject = Bulletin d'information de :
+text_send_newsletter_email =
+
+text_customers = Abonnées
+text_b2c = B2C
+text_b2b = B2B
+text_average_newsletter = Newsletter
+text_male = Hommes
+text_female = Femmes
+text_subscribers_anonymous = Abon. / Anony.
+text_anonymous = Anonymes
+text_subscribers = Abonnées
+
+text_yes = Oui
+text_no = non
+
+text_newsletter_module = Module :
+text_newsletter_title = Titre du bulletin d'informations :
+text_newsletter_content = Contenu :
+
+text_newsletter_date_added = Date d'ajout :
+text_newsletter_date_sent = Date d'envoi :
+
+text_info_delete_intro = Etes vous sur de vouloir supprimer ce bulletin d'informations ?
+
+text_please_wait = Veuillez patienter et ne pas interrompre ce traitement !<br /><br />Envois en cours...<br /><br />Le traitement peut être plus ou moins long en fonction du nombre de mail à traiter
+text_finished_sending_email = Fini.. Tous les courriers électroniques sont envoyés !
+
+text_help_wysiwyg = Wysiwyg
+
+icon_edit = Editer
+image_locked = Vérrouiller
+icon_unlocked = Dévérrouiller
+image_send = Envoyer
+icon_preview = Prévisualiser
+
+error_newsletter_title = Erreur : Titre du bulletin d'informations requis
+error_newsletter_module = Erreur : Module bulletin d'informations requis
+error_remove_unlocked_newsletter = Erreur : Merci de fermer le bulletin d'informations avant de le supprimer.
+error_newsletter_module_not_exists = Erreur: le module n'existe pas
+error_twitter = Newsletter non envoyée sur twitter, juraitement des emails seulement : Non écriture du fichier sur le serveur
+
+title_help_image = Note sur l'utilisation des images
+title_help_description = Note sur l'utilisation du wysiwyg
+help_description = <li>Si vous avez inséré des plugin dans Firefox, il peut y avoir des incompatibilités (ex : adblock plus)</li>
+  <li>nous vous conseillons de créer un fichier uniquement pour les clients normaux. Ce fichier sera visible par toutes les personnes ayant un accès au répertoire boutique/pub.</li><li>La publication sur Twitter ne fonctionne que si vous créez un fichier html.</li>
+
+
+text_count_customers_no_account = Nbr de clients annonymes :
+text_count_customers = Nbr de clients :
+
+text_result_page = Page {{listing_from}} à {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

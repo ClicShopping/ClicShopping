@@ -1,0 +1,23 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each customer group pricing rule)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group this pricing applies to)
+customers_group_price decimal(15,4) default(0.0000) not_null comment(Special price for this customer group)
+products_id int default(0) not_null comment(FK to products table - product with group-specific pricing)
+products_price decimal(15,4) default(0.0000) not_null comment(Base product price for reference)
+price_group_view char(1) default(1) not_null comment(Price visibility - 0: hidden, 1: visible to group)
+products_group_view char(1) default(1) not_null comment(Product visibility - 0: hidden, 1: visible to group)
+orders_group_view char(1) default(1) not_null comment(Order capability - 0: cannot order, 1: can order)
+products_quantity_unit_id_group int(5) default(0) not_null comment(FK to products_quantity_unit table - unit of measure for this group)
+products_model_group varchar(255) comment(Group-specific product model or SKU)
+products_quantity_fixed_group int default(1) not_null comment(Fixed quantity requirement - minimum or exact quantity for group orders)
+
+--
+primary id
+idx_customers_group_id customers_group_id
+idx_products_group_view products_group_view
+idx_price_group_view price_group_view
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment CUSTOMER-GROUP PRICING - one row per product and customer group, carrying the price that group pays (customers_group_price) and its visibility flags. This is B2B / group pricing, not a promotion (specials) and not the price actually sold (orders_products).

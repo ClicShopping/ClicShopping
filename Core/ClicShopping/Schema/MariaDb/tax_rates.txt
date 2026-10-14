@@ -1,0 +1,16 @@
+tax_rates_id int not_null auto_increment comment(Primary key - unique identifier for each tax rate)
+tax_zone_id int not_null comment(FK to geo_zones table - geographic zone where this tax rate applies)
+tax_class_id int not_null comment(FK to tax_class table - tax class this rate applies to)
+tax_priority int(5) default(1) comment(Priority for applying multiple tax rates - lower numbers applied first)
+tax_rate decimal(7,4) not_null comment(Tax rate as decimal - e.g. 0.0850 for 8.5% tax)
+tax_description varchar(255) not_null comment(Description of the tax - e.g. State Sales Tax, VAT)
+last_modified datetime comment(Timestamp of last modification)
+date_added datetime not_null comment(Timestamp when tax rate was created)
+code_tax_erp varchar(255) null comment(External ERP system tax code reference)
+--
+primary tax_rates_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Tax rates for different geographic zones and product classes

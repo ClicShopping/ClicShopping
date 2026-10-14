@@ -1,0 +1,38 @@
+{
+  "title": "Api App",
+  "app": "Api",
+  "vendor": "Configuration",
+  "version": "1.0.0",
+  "req_core_version": "3.3",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "Hooks": {
+        "Shop/Cronjob": {
+          "Process": "Module\\Hooks\\Shop\\Cronjob\\Process"
+        }
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "api&token": "Sites\\Shop\\Pages\\Token",
+      "api&product": "Sites\\Shop\\Pages\\Product",
+      "api&categories": "Sites\\Shop\\Pages\\Category",
+      "api&customers": "Sites\\Shop\\Pages\\Customers",
+      "api&orders": "Sites\\Shop\\Pages\\Orders",
+      "api&manufacturers": "Sites\\Shop\\Pages\\Manufacturers",
+      "api&suppliers": "Sites\\Shop\\Pages\\Suppliers",
+      "api&productGpt": "Sites\\Shop\\Pages\\ProductGpt"
+    }
+  }
+}

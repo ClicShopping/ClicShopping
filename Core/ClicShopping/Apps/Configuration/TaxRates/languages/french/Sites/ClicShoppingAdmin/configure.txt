@@ -1,0 +1,1 @@
+module_tr_short_title = Taux fiscaux

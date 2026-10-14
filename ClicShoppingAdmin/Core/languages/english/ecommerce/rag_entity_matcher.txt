@@ -1,0 +1,36 @@
+prompt_extract_entities = Extract specific numbered entities from this query. Return ONLY a JSON array of entities.
+
+Query: "{{query}}"
+
+Identify any specific numbered items mentioned, such as:
+- Articles (article 3, article 4, l'article 5)
+- Products (product 123, produit 456)
+- Orders (order 789, commande 101)
+- Categories (category 5, catégorie 3)
+- Sections, chapters, items, paragraphs, clauses, pages with numbers
+- Any other numbered references
+
+For each entity found, return:
+{
+  "type": "article|product|order|category|section|chapter|item|paragraph|clause|page|other",
+  "value": "the number or identifier",
+  "pattern": "the exact phrase from the query"
+}
+
+If NO specific numbered entities are found, return an empty array: []
+
+Return ONLY valid JSON, no explanation.
+
+prompt_match_entities = Determine if this content matches the specified entities.
+
+Query Entities: {{entities}}
+
+Content: "{{content}}"
+
+Does the content contain references to ANY of the specified entities (same type AND same value)?
+
+For example:
+- If query entity is "article 4", content must mention "article 4" (not "article 3")
+- If query entity is "product 123", content must mention "product 123" (not "product 456")
+
+Answer with ONLY "YES" or "NO".

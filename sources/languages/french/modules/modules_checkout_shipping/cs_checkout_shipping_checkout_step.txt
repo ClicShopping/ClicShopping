@@ -1,0 +1,2 @@
+module_checkout_shipping_step_title = Souhaitez-vous afficher les étapes de la commande ?
+module_checkout_shipping_step_description = Afficher les étapes de la commande

@@ -1,0 +1,6 @@
+
+ module_advanced_search_date_title = Do  you want to display a date field ?
+ module_advanced_search_date_description = Display a date field allowing to customer to insert criterias
+
+ modules_advanced_search_date_entry_date_from = Date From
+ modules_advanced_search_date_entry_date_to = Date To

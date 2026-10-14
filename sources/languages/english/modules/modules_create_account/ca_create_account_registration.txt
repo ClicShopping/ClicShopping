@@ -1,0 +1,38 @@
+module_create_account_registration_title = Do you want to display the registration form for the account creation ?
+module_create_account_registration_description = Display the registration form for the account creation
+
+entry_password_error_not_matching = The password confirmation must be the same at your password.
+
+form_required = Required
+
+category_company = Company Details
+category_personal = Your Personal Details
+category_address = Your Address
+category_contact = Your Contact Information
+category_options = Options
+category_password = Your Password
+
+entry_first_name = First Name
+entry_first_name_text = *
+
+entry_last_name = Last Name
+entry_last_name_text = *
+
+entry_date_of_birth = Birth date
+entry_date_of_birth_text = * Format : JJ/MM/AAAA
+
+entry_email_address = Email
+entry_email_address_text = *
+entry_email_address_confirmation = Email confirmation
+
+entry_newsletter = Newsletter
+entry_newsletter_text =
+
+entry_password = Password
+entry_password_text = *
+
+entry_password_confirmation = Password confirmation
+entry_password_confirmation_text = * Password confirmation
+
+text_create_account_dgrp = We must use your email to create your account and allow you to access it. At any time you can change this information.
+text_create_account_dob_dgrp = Your birth date helps us identify your age and allow you to place an order. We do not display your date of birth without your explicit consent

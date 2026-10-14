@@ -1,0 +1,52 @@
+{
+  "title": "Reviews App",
+  "app": "Reviews",
+  "vendor": "Customers",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "Reviews": "Module\\HeaderTags\\Reviews"
+    },
+    "AdminDashboard": {
+      "Reviews": "Module\\ClicShoppingAdmin\\Dashboard\\Reviews"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/StatsDashboard": {
+        "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\StatsDashboard\\PageTabContent"
+      },
+      "ClicShoppingAdmin/Products": {
+        "RemoveProduct": "Module\\Hooks\\ClicShoppingAdmin\\Products\\RemoveProduct"
+      },
+      "ClicShoppingAdmin/TopDashboard": {
+        "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\DashboardTopReviews"
+      },
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      }
+    }
+  },
+  "canonical": {
+    "Shop": {
+      "parameters": ["products_id", "reviews_id", "Success"]
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "Products&Reviews": "Sites\\Shop\\Pages\\Reviews",
+      "Products&ReviewsInfo": "Sites\\Shop\\Pages\\ReviewsInfo",
+      "Products&ReviewsWrite": "Sites\\Shop\\Pages\\ReviewsWrite"
+    }
+  }
+}

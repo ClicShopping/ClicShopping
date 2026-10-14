@@ -1,0 +1,2 @@
+modules_products_reviews_write_invisible_antispam_title = Write comment : Do you want to display a antispam hidden (trap)?
+modules_products_reviews_write_invisible_antispam_description = Display a antispam hidden

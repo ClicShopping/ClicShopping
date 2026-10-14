@@ -1,0 +1,10 @@
+
+
+-- french
+INSERT INTO clic_configuration VALUES(null, 'Fenetre de contexte d\'analyse maximum des donnnées analytiques', 'CLICSHOPPING_APP_CHATGPT_RA_MAX_ROWS_FOR_LLM_INTERPRETATION', '150', 'Le nombre maximum de lignes qui seront envoyées à l\'IA pour analyse. Si le nombre de lignes est supérieur, l\'IA ne pourra pas analyser les données. Veuillez affiner votre requête ou ajuster les paramètres.', 6, 0, NULL, '2025-07-28 11:21:54', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Afficher la requête SQL du rapport dans la réponse de ChatGPT', 'CLICSHOPPING_APP_CHATGPT_RA_DISPLAY_SQL', 'True', 'Afficher la requête SQL du rapport dans la réponse de ChatGPT.', 6, 0, NULL, '2025-07-30 13:54:50', NULL, NULL);
+
+
+--english
+INSERT INTO clic_configuration VALUES(null, 'Maximum analytical data context window', 'CLICSHOPPING_APP_CHATGPT_RA_MAX_ROWS_FOR_LLM_INTERPRETATION', '150', 'The maximum number of rows that will be sent to the AI for analysis. If the number of rows exceeds this limit, the AI will not be able to analyze the data. Please refine your query or adjust the settings.', 6, 0, NULL, '2025-07-28 11:21:54', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'Sql Display inside the report', 'CLICSHOPPING_APP_CHATGPT_RA_DISPLAY_SQL', 'True', 'Set True to display the report SQL query in the ChatGPT response.', 6, 0, NULL, '2025-07-30 13:54:50', NULL, NULL);

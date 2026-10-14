@@ -1,0 +1,8 @@
+navbar_title_1 = Create an Account
+navbar_title_2 = Success
+
+heading_title_account_created = Your Account Has Been Created
+heading_title_account_wait = Request for validation for professionnal account !
+
+module_create_account_pro_success_text_account_created = Congratulation ! your accont has been created with success !<br /><br />You can now access at all specials prices make for you.<br /><br />Do not hesitate to contact our <a href="'index.php?Info&Contact'">professional customer service</a> for all questions.<br /><br />Note : A confirmation has been sent you by email. If you don't receive this confirmation under 1 hour, do not hesitate to contact our <a href="{{url_support}}">support</a>
+module_create_account_pro_success_text_account_created_1 = We have take your request to open an professional account.<br /><br />You will received an email with your access code and allowing you to beneficit our specials prices after verification by our customer service.<br /><br />Do not hesitate to contact us for more information .<br /><br />Regards,<br />{{{store_name}}} team;

@@ -1,0 +1,6 @@
+module_account_customers_mailing_title = Souhaitez-vous afficher le menu mailing souscription au client?
+module_account_customers_mailing_description = Affiche les informationsle menu mailing souscription le client (notification et newsletter)
+
+module_account_customers_email_mailing_title = Newsletter et produits à surveiller
+module_account_customers_email_mailing_newsletters = S'abonner ou se désabonner de la lettre d'informations.
+module_account_customers_email_mailing_products = Afficher ou modifier ma liste des produits à surveiller.

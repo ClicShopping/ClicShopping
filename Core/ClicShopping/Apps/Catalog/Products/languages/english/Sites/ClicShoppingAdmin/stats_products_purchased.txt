@@ -1,0 +1,12 @@
+heading_title = Best Products Purchased
+
+table_heading_number = No.
+table_heading_products = Products
+table_heading_purchased = Purchased
+table_heading_clear = Clear
+
+image_delete = Delete
+text_preview = Preview
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

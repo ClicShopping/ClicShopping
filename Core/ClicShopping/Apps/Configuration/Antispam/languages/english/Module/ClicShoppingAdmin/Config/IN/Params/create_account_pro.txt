@@ -1,0 +1,7 @@
+cfg_antispam_create_account_pro_title = Create account pro
+cfg_antispam_create_account_pro_description = Set True to enable or not the module
+<br /><strong>option: You must install the module or Apps to use it and the modules activated</strong>
+
+cfg_antispam_create_account_pro_true = True
+cfg_antispam_create_account_pro_false = False
+

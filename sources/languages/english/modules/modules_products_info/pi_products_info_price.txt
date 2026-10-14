@@ -1,0 +1,14 @@
+
+ module_products_info_price = Do you want to enable the product price button ?
+ module_products_info_price_description = Display the product price button
+
+ text_price_info =
+ text_products_info_price_by_weight = Price by Kg :
+ button_cart = Add Shopping cart
+ button_pre_order = Pre order
+
+ customer_quantity = Quantité
+
+ min_qty_order_product = This product has a minimum quantity of
+ products_not_sell = products not sell
+ button_continue = continue

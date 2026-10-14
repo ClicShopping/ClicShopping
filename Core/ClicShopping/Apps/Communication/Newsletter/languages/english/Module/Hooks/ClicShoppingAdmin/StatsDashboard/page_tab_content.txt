@@ -1,0 +1,3 @@
+box_entry_newsletter_b2c = Newsletter subscription number (B2C)
+box_entry_newsletter_b2b = Newsletter subscription number (B2B)
+box_text_newsletter = Newsletter subscriptions

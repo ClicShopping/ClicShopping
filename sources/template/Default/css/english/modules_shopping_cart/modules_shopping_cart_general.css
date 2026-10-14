@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+span.ModulesShoppingCartBootstrapTickerPourcentage {
+  font: 700 14px/12px Arial, Helvetica, sans-serif;
+  color: #FFF;
+  background: #FF6600 none repeat scroll 0% 0%;
+  text-transform: uppercase;
+  padding: 0.375rem 0px 0.4375rem;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.24);
+  width: 3.125rem;
+  text-align: center;
+  display: block;
+  float: right;
+  position: relative;
+  right: 1rem;
+  z-index: 2;
+}
+
+div.shoppingCartInformationSave {
+  text-align: center;
+}
+
+div.shoppingCartSubTotal {
+  font-weight: bold;
+}
+
+.ShoppingCardHeading {
+}
+
+.ModulesShoppingCartColorSwatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+

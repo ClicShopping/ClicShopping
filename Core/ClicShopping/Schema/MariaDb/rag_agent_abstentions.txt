@@ -1,0 +1,20 @@
+abstention_id int not_null auto_increment comment(Primary key - unique identifier for each Auto-incrementing abstention ID)
+agent_id varchar(100) not_null comment(Agent that abstained)
+task_id varchar(36) not_null comment(Task identifier)
+task_type varchar(50) not_null comment(Type of task)
+confidence_score decimal(3,2) not_null comment(Confidence score that triggered abstention (0.00-1.00))
+abstention_reason text not_null comment(Explanation for abstention)
+action_taken enum('escalate_human','delegate_peer','defer') not_null comment(Action taken after abstention)
+delegated_to varchar(100) default(null) comment(Agent ID if delegated to peer)
+abstained_at timestamp default(current_timestamp) comment(When abstention occurred)
+--
+primary abstention_id
+idx_agent_id agent_id
+idx_task_type task_type
+idx_confidence_score confidence_score
+idx_abstained_at abstained_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,6 @@
+cfg_seo_status_title = Statut
+cfg_seo_status_description = Souhaitez vous activer ce module à votre boutique
+
+cfg_seo_status_true = True
+cfg_seo_status_false = False
+

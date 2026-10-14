@@ -1,0 +1,24 @@
+notification_id varchar(36) not_null
+target_agent_id varchar(100) not_null comment(Agent receiving the notification)
+source_agent_id varchar(100) not_null comment(Agent who created the related objective)
+source_objective_id varchar(36) not_null comment(ID of the related objective)
+target_objective_id varchar(36) not_null comment(ID of the target agent's objective)
+similarity_score decimal(3,2) not_null comment(Similarity score between objectives (0.00-1.00))
+notification_type enum('related_objective_detected','related_objective_exists','merge_suggested') not_null
+status enum('pending','acknowledged','accepted','declined','deferred') not_null default('pending')
+agent_response varchar(50) default null comment(Agent response to the notification)
+created_at timestamp NULL default(current_timestamp)
+acknowledged_at timestamp NULL default(NULL)
+
+--
+primary notification_id
+idx_target_agent target_agent_id
+idx_source_objective source_objective_id
+idx_target_objective target_objective_id
+idx_status status
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,8 @@
+navbar_title_1 = Créer un comtpe
+navbar_title_2 = Succès
+
+heading_title_account_created = 'Votre compte a été créé
+heading_title_account_wait = Demande de requpete d'ouverture de compte!
+
+module_create_account_pro_success_text_account_created = Félicitations ! Votre nouveau compte a été créé avec succès !<br /><br />Vous pouvez maintenant profiter de tous les privilèges notre magasin en ligne.<br /><br />N'hésitez pas à contacter notre <a href="'index.php?Info&Contact'">service commercial</a> pour toute question sur le fonctionnement de nos services.<br /><br />Note : Une confirmation de votre inscription a été envoyée dans votre boite e-mail. Si vous ne l'avez pas reçu d'ici une heure, n'hésitez pas à  contacter notre <a href="{{url_support}}">support</a>
+module_create_account_pro_success_text_account_created_1 = Nous avons bien pris en compte votre demande d'inscription pour l'ouverture d'un compte professionnel auprès de notre réseau.<br /><br />Vous recevrez rapidement un e-mail comportant vos codes d'accès et vous permettant de bénéficier d'un tarif préférentiel après vérification et validation de votre compte par notre service commercial.<br /><br />N'hésitez pas à contacter notre support en ligne pour toutes demandes d'informations complémentaires.<br /><br />Cordialement,<br />L'équipe {{{store_name}}}

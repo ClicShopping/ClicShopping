@@ -1,0 +1,1 @@
+INSERT INTO clic_cron VALUES(8, 'productCockpitAi', 'Analyse and update the product cockpit AI)', 'daily', 'productCockpitAi', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');

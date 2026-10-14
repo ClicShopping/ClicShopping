@@ -1,0 +1,70 @@
+text_translation_article_critical_examples = ❌ WRONG: "article 5 et article 6 des cgv" → "Give me the revenue by quarter" (HALLUCINATION!)
+✅ CORRECT: "article 5 et article 6 des cgv" → "article 5 and article 6 of the terms and conditions"
+❌ WRONG: "article 5 and article 6 of terms and conditions" → "Give me the revenue by quarter" (HALLUCINATION!)
+✅ CORRECT: "article 5 and article 6 of terms and conditions" → "article 5 and article 6 of terms and conditions" (already English)
+❌ WRONG: "donnes moi article 3 et article 4 des cgv" → "Give me revenue analysis" (HALLUCINATION!)
+✅ CORRECT: "donnes moi article 3 et article 4 des cgv" → "give me article 3 and article 4 of the terms and conditions"
+
+text_translation_article_examples = * "article 5 et article 6 des cgv" → "article 5 and article 6 of the terms and conditions" (NOT "revenue by quarter")
+* "donnes moi article 3 des cgv" → "give me article 3 of the terms and conditions" (NOT "give me revenue")
+* "article 4 of terms and conditions" → "article 4 of the terms and conditions" (already English, keep as-is)
+
+text_translation_clause_examples = * "les 3 clauses des cgv" → "3 clauses of the terms and conditions" (NOT "article 3")
+* "3 clauses des CGV" → "3 clauses of the terms and conditions"
+* "les 3 derniers articles des CGV" → "the last 3 articles of the terms and conditions" (NOT "article 3")
+
+text_translation_code_examples = EAN, SKU, UUID
+
+text_translation_domain_terminology = This is an e-commerce system. Use e-commerce terminology:
+- Purchase transaction → "order" (NOT "command")
+- Person who buys → "customer"
+- Item for sale → "product"
+- Shopping basket → "cart"
+- Available quantity → "stock"
+- Product transport → "shipping"
+- Money transaction → "payment"
+- Bill document → "invoice"
+- Product classification → "category"
+- Product maker → "manufacturer"
+- Product provider → "supplier"
+- Catalog merchandising STATES (whatever the source language, map the concept to its canonical English term — never paraphrase a state into a sales metric):
+  - Products with an active special/discounted price → "on promotion"
+  - The shop's own curated selection of products put forward on the storefront — the products the shop has picked out, i.e. products spoken of as "selected", as "in the selection", or as "the selection" of products → "featured selection"
+  - Admin-curated affection picks (the shop's beloved/heart picks — a curated list, NOT "best-selling", NOT "popular": it is not a sales ranking) → "favorites selection"
+  - Products suggested to a customer by the recommendation system → "recommended products"
+  ⚠️ DEFAULT SELECTION RULE: a bare reference to the shop's selection of products, carrying no further qualifier, IS a clear state reference — it denotes the curated storefront selection → "featured selection". It becomes "favorites selection" ONLY when the text carries an explicit affection marker (beloved, heart, cherished), and "on promotion" ONLY when it carries an explicit price or discount marker. Never leave a bare selection reference as a plain adjective ("selected products", "the product selection"): that loses the catalog state.
+  ⚠️ Map to a state ONLY when the source text clearly names that catalog state. Vague or unintelligible wording (e.g. "the thing with the stuff") is NOT a state reference: translate it literally and keep it vague — never resolve vagueness into a merchandising state. A bare selection reference is NOT vague wording: it is covered by the DEFAULT SELECTION RULE above.
+
+text_translation_entity_examples = product, order, customer
+
+text_translation_financial_terms_mapping = - CONCEPT: TOP-LINE TOTALS (The total monetary value of goods/services sold)
+-> ALWAYS use: "revenue"
+-> FORBIDDEN: "sales", "turnover", "income", "chiffre d'affaires", "营业额", "Umsatz", etc.
+- CONCEPT: MARGIN (What is left of the revenue once the cost of the goods sold is deducted, before general expenses)
+-> ALWAYS use: "gross margin"
+-> FORBIDDEN: "profit", "markup", "marge", "marge brute", "marge commerciale", "Marge", "margen", "毛利", etc.
+- CONCEPT: BOTTOM-LINE TOTALS (The net profit after all expenses)
+-> ALWAYS use: "profit"
+-> FORBIDDEN: "earnings", "net", "gain", "bénéfice", "利润", "Gewinn", etc.
+⚠️ MARGIN vs BOTTOM-LINE: these are two different figures, computed from different columns. A bare reference to the margin of a product, a category, an order or the shop IS the MARGIN concept and maps to "gross margin" - never to "profit", whatever the source language and even with no qualifier such as "gross" or "commercial". Keep "profit" for the net result after ALL expenses.
+- CONCEPT: OPERATIONAL OUTFLOWS (The money spent to generate revenue)
+-> ALWAYS use: "expenses"
+-> FORBIDDEN: "costs", "charges", "fees", "depenses", "支出", "Kosten", etc.
+
+text_translation_metric_examples = revenue, price, stock, count
+
+text_translation_redundancy_examples = - "revenue by month" vs "revenue monthly" → SAME metric, SAME period, SYNONYMS → REDUNDANT ✓
+- "revenue by month" vs "revenue by quarter" → SAME metric, DIFFERENT period → NOT REDUNDANT ✗
+- "revenue" vs "profit" → DIFFERENT metric → NOT REDUNDANT ✗
+- "price" vs "stock" → DIFFERENT metric → NOT REDUNDANT ✗
+- "count products" vs "list products" → SAME entity, DIFFERENT aggregation → NOT REDUNDANT ✗
+
+text_translation_sales_volume_mapping = - CONCEPT: SALES VOLUME / UNITS SOLD (How MANY items were sold — a QUANTITY, NOT money)
+-> This is DISTINCT from revenue. "sold" / "vendus" refers to the COUNT of units sold, never to a monetary total.
+-> ALWAYS keep it quantity-based: use "best-selling" / "least-selling" / "most sold" / "units sold".
+-> ⚠️ NEVER map "sold" / "best-selling" / "most sold" to "revenue":
+* "the most sold products" -> "the best-selling products" (NOT "products with the highest revenue")
+* "the least sold products" -> "the least-selling products" (NOT "products with the lowest revenue")
+* "the best-selling product" -> "the best-selling product" (already correct — NOT "the product with the most revenue")
+-> Use "revenue" ONLY when the input EXPLICITLY names a monetary total (revenue, turnover, sales amount, €/$). "sold"/"best-selling" alone is volume, not money.
+

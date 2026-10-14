@@ -1,0 +1,30 @@
+heading_title_monitoring = Configuration de la Surveillance MCP
+text_monitoring_settings = Paramètres de Surveillance
+
+text_error_rate_threshold = Seuil de Taux d'Erreur
+text_error_rate_threshold_desc = Alerter lorsque le taux d'erreur dépasse ce pourcentage
+text_latency_threshold = Seuil de Latence
+text_latency_threshold_desc = Alerter lorsque le temps de réponse dépasse cette valeur
+
+text_alert_notifications = Activer les Notifications
+text_alert_notifications_desc = Envoyer des notifications pour les alertes de surveillance
+
+text_data_retention = Période de Conservation des Données
+text_data_retention_desc = Durée de conservation des données historiques
+
+text_one_week = Une Semaine
+text_one_month = Un Mois
+text_three_months = Trois Mois
+
+button_save = Enregistrer
+button_cancel = Annuler
+button_back = Retour
+
+text_save_success = Configuration de surveillance mise à jour avec succès
+text_configuration_error = Erreur lors de l'enregistrement de la configuration : %s
+
+text_monitor_status_title = État du Moniteur MCP
+text_last_check = Dernière Vérification : %s
+text_current_status = État Actuel : %s
+text_total_alerts = Total des Alertes : %d
+text_performance_score = Score de Performance : %d/100

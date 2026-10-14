@@ -1,0 +1,38 @@
+text_rag_hybrid_decomposer_domain_name = E-commerce
+text_rag_hybrid_decomposer_terminology = products, categories, orders, customers, inventory, manufacturers, suppliers
+text_rag_hybrid_decomposer_data_types = products, orders, customers, categories, reviews, manufacturers, suppliers
+text_rag_hybrid_decomposer_examples = Example 1 (E-commerce):
+Query: "top 5 products and their reviews"
+Sub-queries: [{"type": "analytics", "text": "top 5 products"}, {"type": "semantic", "text": "their reviews"}]
+
+Example 2 (E-commerce):
+Query: "number of categories and article 2 of terms"
+Sub-queries: [{"type": "analytics", "text": "number of categories"}, {"type": "semantic", "text": "article 2 of terms"}]
+
+Example 3 (E-commerce):
+Query: "total orders this month and shipping policy"
+Sub-queries: [{"type": "analytics", "text": "total orders this month"}, {"type": "semantic", "text": "shipping policy"}]
+
+Example 4 (E-commerce, several distinct intents of the same type):
+Query: "the price of the iPhone, then the last 3 orders, and 3 important clauses of the terms of sale"
+Sub-queries: [{"type": "analytics", "text": "the price of the iPhone"}, {"type": "analytics", "text": "the last 3 orders"}, {"type": "semantic", "text": "3 important clauses of the terms of sale"}]
+
+
+text_rag_hybrid_decomposer_extract_target_site_with_llm = TASK : Extract the e-commerce website mentioned in the query.
+Rules:
+  - Return ONLY the site/domain name
+  - No explanation
+  - No JSON
+  - No extra text
+  - If no site exists, return NULL
+
+Examples:
+  "compare with amazon" => amazon
+  "price on fnac" => fnac
+  "vs cdiscount" => cdiscount
+  "site:amazon.fr" => amazon.fr
+  "cheaper than darty" => darty
+  "compare iphone prices" => NULL
+
+Query:
+{{query}}

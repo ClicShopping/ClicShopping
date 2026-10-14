@@ -1,0 +1,53 @@
+{
+  "name": "yethee/tiktoken",
+  "type": "library",
+  "license": "MIT",
+  "description": "PHP version of tiktoken",
+  "keywords": ["openai", "tiktoken", "tokenizer", "bpe", "encode", "decode"],
+  "require": {
+    "php": "^8.1",
+    "symfony/service-contracts": "^2.5 || ^3.0"
+  },
+  "require-dev": {
+    "doctrine/coding-standard": "^13",
+    "mikey179/vfsstream": "^1.6.11",
+    "phpbench/phpbench": "^1.2",
+    "phpunit/phpunit": "^10.5.45",
+    "psalm/plugin-phpunit": "^0.19.2",
+    "vimeo/psalm": "6.10.0"
+  },
+  "suggest": {
+    "ext-ffi": "To allow use LibEncoder"
+  },
+  "autoload": {
+    "psr-4": {
+      "Yethee\\Tiktoken\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Yethee\\Tiktoken\\Tests\\": "tests"
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "scripts": {
+    "check": [
+      "@cs-check",
+      "@analyse",
+      "@test"
+    ],
+    "analyse": "psalm",
+    "cs-check": "phpcs",
+    "cs-fix": "phpcbf",
+    "test": "phpunit --colors=always --no-coverage",
+    "bench": [
+      "Composer\\Config::disableProcessTimeout",
+      "phpbench run -l dots --report=agg_by_subject --report=enc_chart --profile=jit"
+    ]
+  }
+}

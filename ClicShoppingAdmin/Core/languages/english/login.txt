@@ -1,0 +1,65 @@
+heading_title = Administrator Login
+
+text_username = Username:
+text_password = Password:
+text_name = Administrator name:
+text_firstname = Administrator First name:
+text_create_first_administrator = No administrators exist in the database table. Please fill in the following information to create the first administrator. (A manual login is still required after this step)
+heading_title_sent_password = Recovery lost password
+text_sent_password = If you've forgotten your password, enter your e-mail address below and we will send you a link to choose a new one.
+text_no_email_address_found = Error: The E-Mail Address or user was not found in our records, please try again.
+
+email_password_reminder_subject = {{store_name}} (Administrator Control Panel) - Password reset
+email_password_reminder_body = A password reset was requested from {{remote_address}}.<br /><br />To choose a new password for {{store_name}} (Administrator Control Panel), open this link within {{expiry_minutes}} minutes:<br /><a href="{{reset_url}}">{{reset_url}}</a><br /><br />If you did not request it, ignore this e-mail: your current password stays valid.<br /><br />
+
+success_password_sent = If this address matches an administrator account, an e-mail with a reset link has been sent.
+button_submit = Submit
+text_new_text_password = New password
+text_administration_panel = Administration panel
+text_email_lost_password = Your email
+error_invalid_administrator = Error: Invalid administrator login attempt.
+button_login = Login
+button_create_administrator = Create Administrator
+
+error_action_recorder = Error: The maximum number of login attempts has been reached. Please try again in {{module_action_recorder_admin_login_minutes}} minutes. An email has been sent to the administrator with your contact information (geolocation). You can try to connect again one time after the administration panel before being permanently blocked
+
+report_email_subject = Intempestive connexion on ClicShopping
+report_access_login = Someone try to connect at your admin, below the information. <br />
+More information can be found there : https://ipinfo.io/ (copy IP : {{IP}})
+
+report_sender_ip_address = Senders ip address : {{IP}}
+report_sender_host_name = Senders host name : {{HOST}}
+report_subject_email = [Report] Admin-Login connexion error
+report_sender_username = Username : {{USERNAME}}
+
+
+heading_title_email_verification = Two-Factor Authentication
+button_verify = Send Code
+entry_email_verification_code_placeholder = Verification Code
+text_email_verification_instruction = For security purposes, a verification code has been sent to your email address. Please enter the code below to access your account.
+email_verification_subject = Verification Code to Access Your {{store_name}} Account
+email_verification_body = Hello,<br /><br />
+A verification code was requested to access your account on {{store_name}}.<br />
+Your verification code is: {{verification_code}}<br />
+This code is valid for {{expiry_minutes}} minutes.<br />
+If you did not request this code, please ignore this email and contact our customer support.<br />
+Request IP address: {{remote_address}}<br />
+
+Best regards,
+The {{store_name}} Team
+
+text_email_verification_code = Please enter the verification code
+error_email_verification_code_invalid = The verification code is invalid. Please try again.
+error_email_verification_code_expired = The verification code has expired. Please request a new code.
+button_resend_code = Resend Code
+
+success_email_verification_code_sent = The verification code has been sent to your email address.
+error_email_verification_failed = Error: Verification failed. Please try again.
+text_email_code_invalid = Invalid code. Please try again.
+
+heading_title_reset_password = Choose a new password
+text_password_confirmation = Confirm the new password
+error_reset_link_invalid = Error: This reset link is invalid or has expired. Please request a new one.
+error_password_too_short = Error: The password must contain at least {{min_length}} characters.
+error_password_not_matching = Error: The two passwords do not match.
+success_password_reset = Success: Your password has been changed. You can now log in.

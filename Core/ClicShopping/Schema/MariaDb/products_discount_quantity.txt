@@ -1,0 +1,14 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each quantity discount rule)
+products_id int not_null comment(FK to products table - product with quantity discount)
+suppliers_id int  not_null comment(FK to suppliers table - supplier offering the discount)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group eligible for discount, 0: all groups)
+discount_quantity int not_null comment(Minimum quantity required to receive discount)
+discount_supplier_price decimal(10,2) not_null comment(Supplier cost at this quantity level)
+discount_customer decimal(10,2) not_null comment(Customer discount percentage or amount at this quantity level)
+--
+primary id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Quantity price breaks of a product, per customer group and supplier. It is a pricing RULE, not a sale: quantities actually sold are in orders_products.

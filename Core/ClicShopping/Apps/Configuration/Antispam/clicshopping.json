@@ -1,0 +1,38 @@
+{
+  "title": "Antispam App",
+  "app": "Antispam",
+  "vendor": "Configuration",
+  "version": "1.0.4",
+  "req_core_version": "3.3",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "Shop/Contact": {
+        "PreAction": "Module\\Hooks\\Shop\\Info\\Contact\\PreAction"
+      },
+      "Shop/Create": {
+        "PreAction": "Module\\Hooks\\Shop\\Account\\Create\\PreAction"
+      },
+      "Shop/CreatePro": {
+        "PreAction": "Module\\Hooks\\Shop\\Account\\CreatePro\\PreAction"
+      },
+      "Shop/ReviewsWrite": {
+        "PreAction": "Module\\Hooks\\Shop\\Customers\\ReviewsWrite\\PreAction"
+      },
+      "Shop/TellAFriend": {
+        "PreAction": "Module\\Hooks\\Shop\\Products\\TellAFriend\\PreAction"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

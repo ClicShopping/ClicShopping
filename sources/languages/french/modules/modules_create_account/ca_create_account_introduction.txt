@@ -1,0 +1,6 @@
+module_create_account_introduction_title = Souhaitez-vous afficher un texte introductif à la création du compte au client ?
+module_create_account_introduction_description = Affiche un texte introductif à la création du compte au client
+
+module_create_account_introduction_text_origin_login = Créer un compte sur {{store_name}} se fait très simplement !<br /><br />Toutes les informations que vous nous donnerez resteront bien évidemment strictement privées et réservées. A aucun moment vos informations ne seront divulguées à d'autres parties ou pour aucune action ou propos commercial autre que celles de {{store_name}} et que vous avez autorisé . Toutes ces informations ne servent à {{store_name}} que pour mieux vous suivre et vous servir...<br /><br /> Vous pourrez à tout moment voir, mettre à jour ou supprimer les informations que vous nous aurez données. Il vous suffira pour cela de vous identifier sur notre site et de cliquez sur le lien "Mon compte". Vous gardez ainsi à tout moment le plein contr&ocirc;le sur les informations que vous nous avez transmis...</font><br /><br />{{store_name}} respecte les chartes Informatiques et Libertés existantes.
+module_create_account_introduction_text_b2b = <span style="text-decoration: underline;">Note</span> : Pour ouvrir un compte client professionnel, veuillez cliquez sur ce bouton
+button_continue = Continuer

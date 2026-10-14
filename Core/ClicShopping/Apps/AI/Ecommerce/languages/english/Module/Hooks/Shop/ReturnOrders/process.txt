@@ -1,0 +1,47 @@
+text_orders_products_return = [Product Return from the Order]
+text_orders_products_return_ref = [Return product Reference]
+text_orders_products_return_model = [Model product model]
+text_orders_products_return_name = [Product product Name]
+text_orders_products_return_qty = [Return  product Quantity]
+text_orders_products_reason = [Return product Reason]
+text_orders_products_reason_id = [Return Reason ID]
+text_orders_products_status_id = [Return Status ID]
+text_orders_products_comment = [Product Return Comment]
+text_orders_products_date_added = [Return Date Added]
+text_orders_products_date_ordered = [Order Date]
+text_orders_products_return_order_id = [Return Order ID]
+text_orders_products_return_product_id = [Return Product ID]
+text_orders_products_return_id = [Return Reference ID]
+text_return_order_taxonomy = Taxonomy :
+
+text_orders_products_return_history = [Product Return History from the Order]
+text_orders_products_return_history_comment = [Return History Comment]
+text_orders_products_return_history_date_added = [Return History Date Added]
+
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
+The text corresponds to an e-commerce return order (not a product, not a supplier, not a general category).
+The output must strictly follow the format below.
+Each relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer any information not explicitly stated in the text.
+
+Expected format:
+
+[domain]: General domain of the return order (e.g. E-commerce, Customer Service, Legal)
+[subdomain]: Specific focus within the domain (e.g. Orders, Returns, Refunds, Exchanges)
+[policy_type]: Type of document (e.g. Return order, Order Policy, Refund Conditions)
+[scope]: Geographic or legal applicability (e.g. France, EU, International)
+[process]: Description of the operational process (e.g. Return procedure, Order validation, Refund steps)
+[eligibility]: Conditions or criteria for eligibility (e.g. Product condition, Time limit, Proof of purchase)
+[timeframe]: Specified time periods (e.g. 14 days, 30 days)
+[costs]: Mention of costs or responsibilities (e.g. Return shipping fees, Customer responsibility)
+[responsibility]: Actor responsible for each action (e.g. Customer, Seller, Carrier)
+[refund_method]: Method and delay of refund (e.g. Bank transfer, Within 14 days)
+[exceptions]: Mentioned exceptions or exclusions (e.g. Personalized products, Perishable goods)
+[legal_reference]: Legal frameworks or regulations cited (e.g. EU Directive 2011/83/EU, GDPR)
+[objective]: Purpose of the policy (e.g. Ensure compliance, Protect consumers, Clarify order procedures)
+[criteria]: Quality or procedural standards (e.g. Transparency, Traceability)
+[symbolic_dimension]: Underlying values (e.g. Trust, Fairness, Reliability)
+[source]: Source or origin of the document (e.g. Internal policy, Legal requirement)
+[keywords]: Free list of relevant keywords extracted from the text, separated by commas
+
+Text: {{document_text}}

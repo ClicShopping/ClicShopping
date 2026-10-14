@@ -1,0 +1,2 @@
+module_header_tags_page_manager_title = Do you want to install the meta tags for the page manager ?
+module_header_tags_page_manager_description = Add the meta tags for the page manager

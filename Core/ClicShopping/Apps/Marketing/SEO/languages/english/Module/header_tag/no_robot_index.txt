@@ -1,0 +1,2 @@
+module_header_tags_no_robot_index_title = Do you want to use Robots meta tags to indicate that certain pages are not indexed?
+module_header_tags_no_robot_index_description = Add meta tags to indicate that certain pages are not indexed

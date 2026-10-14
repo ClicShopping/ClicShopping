@@ -1,0 +1,39 @@
+navbar_title_1 = Comptes
+navbar_title_2 = Gdpr
+
+module_account_customers_gdpr_title = Accès et rectifications de mes données
+module_account_customers_gdpr_account_intro = Soucieux de la vie privée de nos fidèles clients, nous essayons de vous aider à paramétrer au mieux la confidentialités de vos données.<br />
+Cette section peut évoluer en fonction de nouveaux paramètres que nous mettons en place sur le site et ayant un impact sur l'utilisation de vos données.<br />
+votre compte client vous permet d'activer et de désactiver un certains nombres de fonctionnalité. Afin de mieux vous servir, nous vous conseillons de bien réfléchir avant de réaliser une action.<br /><br />
+<strong>Certaines actions peuvent être irréversible car elles effaceront toutes vos données.</strong>
+module_account_customers_gdpr_no_ip_address = Ne pas stocker mon adresse IP et le nom de mon provider lors de ma commande
+module_account_customers_gdpr_delete_all_reviews = Supprimer tous mes commentaires
+module_account_customers_gdpr_count_customers_reviews = Nombre de commentaires que vous avez crée
+module_account_customers_gdpr_delete_customers_info = Supprimer les informations relatives à mes connexions sur le site
+module_account_customers_gdpr_delete_my_orders_feedback = Supprimer mes commentaires sur les commandes réalisées
+module_account_customers_gdpr_count_orders_feedback = Nombre de commentaires
+module_account_customers_more_info = Si vous souhaitez que nous réalisions une action concernant vos données personnelles, n'hésitez pas à nous contacter. Il nous fera plaisir d'étuder votre demande et de voir comment elle peut être réaliser.
+module_account_customers_contact_us = Nous contacter
+module_account_customers_gdpr_delete_action_recorder = Supprimer l'enregistrement de mes actions
+module_account_customers_gdpr_customer_bidth = Supprimer ma date de naissance
+module_account_customers_gdpr_account_delete_title = Supprimer mon compte
+module_account_customers_gdpr_account_intro_delete = En confirmant cette action, votre compte client et vos données seront définitivement supprimés <br />
+- Vous ne devez pas avoir de commande en cours de traitement.<br />
+- Vous recevrez un email de confirmation de suppression de compte.<br />
+- Pour tout problème, veuillez nous contacter.<br />
+- Merci de nous avoir octroyé votre confiance et au plaisir de vous revoir.
+
+module_account_customers_gdpr_account_checkbox = Confirmation de votre suppression de compte :
+
+module_account_customers_gdpr_email_text_subject = Suppression de compte
+module_account_customers_gdpr_email_text_message = Nous vous confirmons que votre demande a bien été effectuée sur <br /><br />Nous espérons vous revoir bientôt.<br />Cordialement, l'équipe
+
+module_account_customers_gdpr_checkbox = Veuillez confirmer votre choix
+
+module_account_customers_gdpr_text_error_delete = Erreur durant le traitement. Veuillez vérifier que vous n'avez pas de commandes en cours de traitement. <br />Si l'erreur persite, veuillez nous contacter.
+
+module_account_customers_gdpr_delete_code_label = Numéro de confirmation reçu par e-mail :
+module_account_customers_gdpr_delete_code_sent = Un numéro de confirmation vient d'être envoyé à votre adresse e-mail. Saisissez-le dans la rubrique « Supprimer mon compte » dans les {{minutes}} minutes : votre compte n'est supprimé qu'à ce moment-là.
+module_account_customers_gdpr_delete_code_invalid = Le numéro de confirmation est erroné ou a expiré. Après {{attempts}} numéros erronés, demandez-en un nouveau.
+module_account_customers_gdpr_delete_code_email_subject = Confirmez la suppression de votre compte
+module_account_customers_gdpr_delete_code_email_message = Vous avez demandé la suppression de votre compte client. Votre numéro de confirmation est : <strong>{{code}}</strong><br /><br />Saisissez-le dans les {{minutes}} minutes, dans la rubrique « Supprimer mon compte » de cette page : {{link}}<br /><br />Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : rien ne sera supprimé. Nous vous conseillons de changer votre mot de passe.

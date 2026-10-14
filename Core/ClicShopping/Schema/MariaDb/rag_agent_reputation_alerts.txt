@@ -1,0 +1,23 @@
+alert_id bigint(20) not_null auto_increment comment(Auto-incrementing alert ID)
+critic_id varchar(100) not_null comment(Critic agent this alert concerns)
+alert_type enum('low_reputation','rapid_change','gaming_detected','anomaly') not_null comment(Type of alert)
+severity enum('low','medium','high','critical') not_null comment(Alert severity level)
+message text not_null comment(Human-readable alert message)
+context longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default(NULL) CHECK (json_valid(`context`)) comment(Additional context data for the alert)
+acknowledged tinyint(1) default(0) comment(Whether alert has been acknowledged)
+acknowledged_by varchar(100) default(NULL) comment(Administrator who acknowledged the alert)
+acknowledged_at timestamp NULL default(NULL) comment(When alert was acknowledged)
+created_at timestamp NULL default(current_timestamp) comment(When alert was created)
+--
+primary alert_id
+idx_critic_id critic_id 
+idx_alert_type alert_type 
+idx_severity severity 
+idx_acknowledged acknowledged 
+idx_created_at created_at 
+idx_critic_unacknowledged critic_id acknowledged created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

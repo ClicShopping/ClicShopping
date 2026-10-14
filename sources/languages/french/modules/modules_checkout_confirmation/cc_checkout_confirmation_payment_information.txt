@@ -1,0 +1,4 @@
+module_checkout_confirmation_payment_information_title = Souhaitez-vous afficher le récapitulatif de détail du paiement à effectuer par le client ?
+module_checkout_confirmation_payment_information_description = Affiche le récapitulatif de détail du paiement à effectuer par le client
+
+module_checkout_confirmation_payment_information_heading_payment_information = Paiement destiné à :

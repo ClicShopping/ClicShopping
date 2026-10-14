@@ -1,0 +1,2 @@
+cfg_products_categories_sort_order_title = Ordre de tri d'affichage
+cfg_products_categories_sort_order_description = Ordre de tri pour l'affichage (Le plus petit nombre est montré en premier)

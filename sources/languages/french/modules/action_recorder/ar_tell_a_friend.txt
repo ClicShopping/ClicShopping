@@ -1,0 +1,2 @@
+ module_action_recorder_tell_a_friend_title = Envoyer à un ami
+ module_action_recorder_tell_a_friend_description = Enregistrement des utilisations du module envoyer à un ami.

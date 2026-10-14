@@ -1,0 +1,6 @@
+
+
+navbar_title_1 = Commande
+navbar_title_2 = Confirmation
+
+heading_title_Confirmation = Confirmation commande

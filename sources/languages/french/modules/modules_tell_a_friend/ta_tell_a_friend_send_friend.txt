@@ -1,0 +1,11 @@
+
+modules_tell_a_friend_send_friend_title = Souhaitez-vous afficher le formulaire pour l'ami du client
+modules_tell_a_friend_send_friend_description = Afficher le formulaire pour l'ami du client
+
+modules_tell_a_friend_title_friend_details = Coordonnées de votre ami
+modules_tell_a_friend_field_friend_name = Le nom de votre ami(e)
+modules_tell_a_friend_field_friend_email = L'adresse électronique de votre ami(e)
+modules_tell_a_friend_field_entry_email_address_text = *
+modules_tell_a_friend_field_entry_first_name_text = *
+
+modules_tell_a_friend_message_email_send_to_dgrp = Nous avons besoin du courriel de votre ami pour lui envoyer votre message

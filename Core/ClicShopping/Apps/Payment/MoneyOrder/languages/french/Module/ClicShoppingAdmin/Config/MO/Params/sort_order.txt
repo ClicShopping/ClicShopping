@@ -1,0 +1,2 @@
+cfg_moneyorder_sort_order_title = Ordre d'affichage
+cfg_moneyorder_sort_order_description = Ordre d'affichage pour l'affichage (Le plus petit nombre est montré en premier)

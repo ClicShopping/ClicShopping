@@ -1,0 +1,3 @@
+module_security_check_extended_admin_images_directory_listing_title = ClicShoppingAdmin/images/ directory Listing
+module_security_check_extended_admin_images_directory_listing_http_200 = This directory ClicShoppingAdmin/Core/ could s accessible, please change the rights
+includes_directory_listing = ClicShoppingAdmin/images

@@ -1,0 +1,205 @@
+/**
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+/*
+***************************
+résolution 320
+ ****************************/
+
+@media (max-width: 320px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  span.textContent {
+    font-size: xx-small;
+  }
+
+
+  div.normalPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+  .stepwizard {
+    display: none;
+  }
+}
+
+
+/***************************
+résolution 360
+ ****************************/
+
+@media (min-width: 320px) and (max-width: 360px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  span.textContent {
+    font-size: xx-small;
+  }
+
+  div.normalPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: xx-small;
+    float: none;
+  }
+}
+
+
+/***************************
+résolution 480
+ ****************************/
+
+@media (min-width: 360px) and (max-width: 480px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  span.textContent {
+    font-size: xx-small;
+  }
+
+
+  div.normalPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: xx-small;
+    float: none;
+  }
+}
+
+/***************************
+résolution 533
+ ****************************/
+
+@media (min-width: 480px) and (max-width: 533px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  span.textContent {
+    font-size: xx-small;
+  }
+
+  div.normalPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: xx-small;
+    float: none;
+  }
+}
+
+
+/***************************
+résolution 600
+ ****************************/
+
+@media (min-width: 533px) and (max-width: 600px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  span.textContent {
+    font-size: xx-small;
+  }
+
+  div.normalPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: xx-small;
+    float: none;
+  }
+}
+
+/***************************
+résolution 640
+ ****************************/
+
+@media (min-width: 600px) and (max-width: 640px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  div.normalPrice {
+    font-size: xx-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: xx-small;
+    float: none;
+  }
+}
+
+
+/***************************
+résolution 800
+ ****************************/
+
+@media (min-width: 640px) and (max-width: 800px) {
+
+  span.markProductOutOfStock {
+    font-size: xx-small;
+  }
+
+  span.textContent {
+    font-size: xx-small;
+  }
+
+
+  div.normalPrice {
+    font-size: x-small;
+    float: none;
+  }
+
+
+  div.specialPrice {
+    font-size: x-small;
+    float: none;
+  }
+}
+
+/***************************
+resolution 1024
+ ****************************/
+@media (min-width: 800px) and (max-width: 1024px) {
+  span.textContent {
+    font-size: x-small;
+  }
+}

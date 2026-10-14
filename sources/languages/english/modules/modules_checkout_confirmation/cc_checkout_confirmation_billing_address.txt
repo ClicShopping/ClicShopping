@@ -1,0 +1,10 @@
+
+ module_checkout_confirmation_billing_address_title = Do you to display the Delivery order address  ?
+ module_checkout_confirmation_billing_address_description = Display the Delivery order address
+
+ module_checkout_confirmation_billing_heading_billing_information = Order Information
+ module_checkout_confirmation_billing_address_text_delivery_address = Order address
+
+ module_checkout_confirmation_billing_address_text_billing_title = Payment method
+ module_checkout_confirmation_billing_address_heading_payment_method = Payment method
+ module_checkout_confirmation_billing_address_text_edit = Edit

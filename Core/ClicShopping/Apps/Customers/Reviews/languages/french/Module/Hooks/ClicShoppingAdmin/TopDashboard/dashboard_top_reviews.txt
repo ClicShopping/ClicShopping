@@ -1,0 +1,2 @@
+text_number_of_reviews = Commentaires attente
+text_view = - Plus d'informations

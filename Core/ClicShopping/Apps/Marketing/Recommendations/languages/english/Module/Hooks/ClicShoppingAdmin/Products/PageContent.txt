@@ -1,0 +1,1 @@
+text_products_recommendations = Do you want insert this product as customers recommendations ?

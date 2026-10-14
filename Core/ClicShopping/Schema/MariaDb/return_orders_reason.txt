@@ -1,0 +1,11 @@
+return_reason_id int not_null default(0) comment(Primary key - unique identifier for each return reason)
+language_id int default(1) not_null comment(FK to languages table - language for reason name)
+name varchar(255) not_null comment(Reason name - e.g. Defective, Wrong Item, Changed Mind, Not as Described)
+--
+primary return_reason_id language_id
+idx_name name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language label of a return reason (damaged, wrong size). Lookup table: join it for the label, never count returns here - the returns are in return_orders.

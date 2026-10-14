@@ -1,0 +1,7 @@
+module_create_account_pro_introduction_title = Do you want to display an introduction for the professional account creation ?
+module_create_account_pro_introduction_description = Display an introduction for the professional account creation
+
+module_create_account_pro_introduction_text_origin_login = <p style="color:#000000;"> Open a professionnal account is free if you are a company ! <br /><br /> You can have all the advantages that we propose us. All the informations are condidentiatly and reserved. We conserve all your informations and we do not sell ours informations at different marketing company.</p><br /><br />
+module_create_account_pro_introduction_text_b2b = <span style="text-decoration: underline;">Note</span> : To open a regular client account, please, click on the button
+
+button_continue = Continue

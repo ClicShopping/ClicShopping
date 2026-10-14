@@ -1,0 +1,27 @@
+address_book_id int not_null auto_increment comment(Primary key - unique identifier for each address)
+customers_id int not_null comment(FK to customers table - customer who owns this address)
+entry_gender char(1) comment(Gender for address - m: male, f: female, o: other)
+entry_company varchar(255) comment(Company name for business addresses)
+entry_siret varchar(255) comment(French SIRET business registration number)
+entry_ape varchar(255) comment(French APE business activity code)
+entry_tva_intracom varchar(14) comment(Intra-community VAT number for EU businesses)
+entry_cf varchar(255) comment(Italian Codice Fiscale - tax identification number)
+entry_piva varchar(255) comment(Italian Partita IVA - VAT number)
+entry_firstname varchar(255) not_null comment(First name of address recipient)
+entry_lastname varchar(255) not_null comment(Last name of address recipient)
+entry_street_address varchar(255) comment(Street address line)
+entry_suburb varchar(255) comment(Suburb or district)
+entry_postcode varchar(255) comment(Postal code or ZIP code)
+entry_city varchar(255) comment(City name)
+entry_state varchar(255) comment(State or province name)
+entry_country_id int default(0) not_null comment(FK to countries table - country identifier)
+entry_zone_id int default(0) not_null comment(FK to zones table - zone/region identifier)
+entry_telephone varchar(255) comment(Contact telephone number for this address)
+--
+primary address_book_id
+idx_address_book_customers_id customers_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Postal addresses of the customers, one or more rows per customer, including the company identifiers used for B2B.

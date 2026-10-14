@@ -1,0 +1,105 @@
+heading_title = Specials products
+module_sp_title = Specials products
+module_sp_short_title = Specials products
+
+text_products_specials =  Specials products
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a specials pages and a shortcut in products page. <br /><br />
+- this modules come from with the module product specials for the shop.<br />
+- Activate this module and activate the module products specials located in the design menu
+- Go to Marketing specials to access at the specials page
+
+text_intro_sp =  Please create in your shop this link to products specials access
+return_url = Shop Url : {{return_url_sp}}<br />
+
+module_sp_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_specials = Specials
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_all_groups = All groups
+visitor_name = Normal customer
+icon_edit = Edit
+icon_preview = Preview
+tab_general = General
+
+table_heading_products = Products
+table_heading_products_price = Products price
+table_heading_status = Status
+table_heading_action = Action
+table_heading_products_group = Customer groups
+table_heading_start_date = Start date
+table_heading_expires_date = Expiry date
+table_heading_archive = Archives products
+table_heading_model = Models
+table_heading_scheduled_date = Start date
+table_heading_percentage = Pourcentage
+table_heading_flash_discount = Flash
+table_heading_percentage = Percentage
+
+text_specials_product = Product:
+text_specials_price = Special Price TAX exc.:
+text_specials_expires_date = Expiry date:
+text_specials_group = Customer Group:
+text_specials_flash_discount = Is it a flash discount ?
+
+text_info_date_added = Date added:
+text_info_last_modified = Last modified:
+text_info_new_price = New price:
+text_info_original_price = Original price:
+text_info_percentage = Percentage:
+text_info_start_date = Start at :
+text_info_expires_date = Expires at:
+text_info_status_change = Status change:
+
+text_new_specials_twitter = Specials new on  {{store_name}} !
+text_flash_discount_twitter = BECAREFULL : Flash Discount Now and not after !
+
+text_specials_twitter = Do you want publish this special or the flash discount on Twitter ?
+text_yes = yes
+text_no = No
+text_status = Product status
+
+text_info_heading_delete_specials = Delete special
+text_info_delete_intro = Are you sure you want to delete the special products price?
+text_specials_start_date = Start date
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+title_specials_general = Information on the product
+title_specials_group = Price and customer group
+title_specials_date = Display date
+title_help_products_specials_price = Specials notes
+
+text_help_specials_price = <ul><li>You can insert a percentage in the Specials Price field, for example: <strong>20%</strong></li>
+<li>if you enter a new price, the decimal separator must be a '.' (decimal-point), example: <strong>49.99</strong></li>
+<li>leave the expiry date empty for no expiration.</li><li>The start date has more rights that the expire date.</li>
+<li>if you want initialize the dates, please change the status on the main page.</li>
+<li>the twitter publication information is only allow on the product creation (with a status on it and a normal customer group). If your store name + URL of your product is more than 140 characters, the promotion will not be published (strong constraint)</li>
+<li>the specials are automatically updated (the store catalog manages this element), it is unnecessary to change the status of the specials after registration.</li>
+<li>the flash discount has a function expiry date and start date.</li>
+</ul>
+
+

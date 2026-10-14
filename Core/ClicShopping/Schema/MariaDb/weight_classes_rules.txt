@@ -1,0 +1,11 @@
+weight_class_from_id int(11) not_null comment(FK to weight_classes table - source weight class for conversion)
+weight_class_to_id int(11) not_null comment(FK to weight_classes table - target weight class for conversion)
+weight_class_rule decimal(15,4) not_null comment(Conversion multiplier - e.g. 1 kg = 2.2046 lb, so rule would be 2.2046)
+--
+primary weight_class_from_id weight_class_to_id
+idx_weight_class_from_id weight_class_from_id
+idx_weight_class_to_id weight_class_to_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

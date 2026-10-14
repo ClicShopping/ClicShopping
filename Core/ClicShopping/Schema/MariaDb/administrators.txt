@@ -1,0 +1,23 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each administrator)
+user_name varchar(255) not_null comment(Administrator username for login - must be unique)
+user_password varchar(255) not_null comment(Hashed administrator password)
+name varchar(255) not_null comment(Administrator last name)
+first_name varchar(255) not_null comment(Administrator first name)
+access tinyint(1) default(0) not_null comment(Access level - 0: limited, 1: full access)
+double_authentification_secret varchar(255) null comment(Secret key for two-factor authentication - TOTP)
+status tinyint(1) default(1) not_null comment(Administrator account status - 0: disabled, 1: active)
+date_added datetime not_null comment(Timestamp when administrator account was created)
+last_modified datetime null comment(Timestamp of last account modification)
+email_verification tinyint(1) default(1) not_null comment(Email verification requirement - 0: not required, 1: required)
+email_verification_code varchar(32) NULL comment(Temporary code for email verification)
+email_verification_expiry datetime NULL comment(Expiration timestamp for verification code)
+
+--
+primary id
+idx_id id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Administrator accounts with authentication and access control
+ai_schema = exclude

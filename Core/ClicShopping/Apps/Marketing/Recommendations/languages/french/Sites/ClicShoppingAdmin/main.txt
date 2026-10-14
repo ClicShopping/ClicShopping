@@ -1,0 +1,80 @@
+heading_title = Recommandations clients
+module_pr_title = Recommandations clients
+module_pr_short_title = Recommandations clients
+
+text_products_recommendations =  Recommandations clients
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure de créer des Recommandations clients. <br /><br />
+- Active ce module et sélectonner votre stratégie
+
+text_intro_pr =  Veuillez créer ce lien dans votre boutique pour accéder aux Recommandations clients<br />
+return_url = Lien Url : {{return_url_pr}}<br />
+
+module_pr_introduction = Le processus d'installation installe la base de données et le menu
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_product_recommendations = Recommandations clients
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_help = Aide
+button_delete_all = Supprimer les données
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_all_groups = Tous les groupes
+visitor_name = Client normal
+icon_edit = Editer
+tab_analytics = Analytiques
+
+table_heading_products = Produits
+table_heading_recommendations = Recommandations
+table_heading_rejected = Rejectés
+table_heading_score = Score
+
+text_analytics = Analytiques
+text_customers_group = Groupes client
+text_display_limit = Limite affichage
+text_rejection_score = Score
+text_start_date_analysis = date analyse
+text_ok = Ok
+text_range = <strong> - stratégie sélectionnée: </strong> recommandation basée sur une plage
+text_multiple = <strong> - Stratégie sélectionnée: </strong> Recommandation de plusieurs sources <br>
+
+text_most_recommended_products = la plupart des Recommandations clients
+text_most_rejected_products = la plupart des produits rejetés
+
+table_heading_products_price = Prix
+table_heading_status = Statut
+table_heading_action = Action
+table_heading_products_group = Groupe client
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+text_help = <strong> aide </strong> <br /> <br />
+text_help_description =
+- Vous pouvez sélectionner qu'une seule stratégie. Si vous souhaitez changer, vous devez supprimer toutes vos données<br />
+- Score positif (supérieur à 0): un score de recommandation positif indique que le produit est susceptible d'être recommandé à l'utilisateur. Un score positif plus élevé implique souvent une recommandation plus forte. L'ampleur du score peut représenter le niveau de confiance dans la recommandation. <br />
+- Score neutre (près de 0): un score proche de 0 peut impliquer que l'algorithme de recommandation n'est pas fortement biaisé vers ou contre la recommandation du produit. Cela pourrait indiquer une recommandation neutre ou incertaine. <br />
+- Score négatif (moins de 0): un score négatif suggère que le produit est moins susceptible d'être recommandé. Plus le score négatif est faible, plus l'indication indique que le produit n'est pas un bon ajustement pour l'utilisateur. <br /> <br />
+<strong> - Option 1: </strong> recommandation basée sur la plage <br>
+La recommandation basée sur la plage est un type de stratégie de recommandation qui se concentre sur les gammes numériques ou les seuils de divers facteurs pour déterminer l'adéquation d'un produit pour un utilisateur. Dans cette approche, différents attributs de produits tels que les notes des utilisateurs, les scores d'examen et les commentaires des utilisateurs se voient attribuer des pondérations spécifiques et combinés pour calculer un score de recommandation. Le score de recommandation est ensuite comparé aux gammes ou seuils prédéfinis pour déterminer le niveau de recommandation pour un produit particulier. Par exemple, les produits avec des scores de recommandation tombant dans une plage spécifique peuvent être considérés comme fortement recommandés, modérément recommandés ou non recommandés du tout. <br /> <br />
+<strong> - Option 2: </strong> Recommandation de plusieurs sources <br>
+La recommandation de plusieurs sources est une stratégie de recommandation qui tire parti de plusieurs sources de données ou canaux d'information pour générer des recommandations personnalisées pour les utilisateurs. Au lieu de s'appuyer uniquement sur des données spécifiques à l'utilisateur (par exemple, les notes des utilisateurs ou les commentaires), cette approche considère un large éventail de données provenant de diverses sources, telles que le comportement des utilisateurs, les réseaux sociaux, les fonctionnalités des éléments et les informations contextuelles. En combinant des informations provenant de diverses sources, le système de recommandation peut créer un profil utilisateur plus complet et précis, conduisant à des recommandations de produits plus pertinentes et diverses. La recommandation de plusieurs sources est particulièrement utile dans les situations où des données utilisateur limitées sont disponibles ou lorsque le système de recommandation doit tenir compte d'un éventail plus large de facteurs influençant les préférences des utilisateurs.

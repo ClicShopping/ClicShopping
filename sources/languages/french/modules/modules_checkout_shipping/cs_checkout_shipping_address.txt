@@ -1,0 +1,5 @@
+module_checkout_shipping_address_title = Souhaitez-vous afficher l'adresse d'expédition ?
+module_checkout_shipping_address_description = Afficher l'adresse d'expédition
+module_checkout_shipping_address_title_shipping_address = Adresse d'expédition :
+module_checkout_shipping_address_text_choose_shipping_destination = Veuillez choisir l'adresse de l'expédition de votre commande.
+module_checkout_shipping_address_button_change_address = Changer votre adresse

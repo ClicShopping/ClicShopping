@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.ModulesProductsInfoBoostrapColumn5Image {
+  text-align: center;
+}
+
+.ModulesProductsInfoBoostrapColumn5Title h3 {
+  text-align: center;
+  vertical-align: text-top;
+  padding-top: 0.3125rem;
+  height: auto;
+  min-height: 2.4em;
+  line-height: 1.2;
+  padding-left: 0.3125rem;
+  padding-right: 5px;
+  font-size: 0.875rem !important;
+}
+
+.ModulesProductsInfoBoostrapColumn5Title A {
+  text-decoration: none;
+}
+
+.ModulesProductsInfoBoostrapColumn5ShortDescription h6 {
+  text-align: center;
+  padding-top: 3rem;
+  color: #7F736F;
+  text-transform: lowercase;
+  padding-left: 0.3125rem;
+  padding-right: 5px;
+}
+
+.ModulesProductsInfoBoostrapColumn5TextPrice {
+  color: #000000;
+  text-align: center;
+  vertical-align: text-top;
+  padding-top: 0.625rem;
+}
+
+.ModulesProductsInfoBoostrapColumn5StockImage {
+  text-align: center;
+  vertical-align: text-top;
+  color: #7F736F;
+  padding-top: 0.625rem;
+}
+
+.ModulesProductsInfoBoostrapColumn5ImageNewArrival {
+  text-align: center;
+  vertical-align: text-top;
+  color: #7F736F;
+  padding-top: 0.625rem;
+}
+
+.ModulesProductsInfoBoostrapColumn5ImageNewArrival {
+  text-align: center;
+  color: #7F736F;
+  padding-top: 0.625rem;
+  padding-bottom: 5px;
+}
+
+.ModulesProductsInfoBoostrapColumn5ProductsQuantityUnit {
+  text-align: center;
+  color: #7F736F;
+  padding-top: 0.625rem;
+}
+
+.ModulesProductsInfoBoostrapColumn5QuantityMinOrder {
+  text-align: center;
+  color: #7F736F;
+  padding-top: 0.3125rem;
+}
+
+.ModulesProductsInfoBoostrapColumn5ViewDetails {
+  text-align: center;
+}
+
+.ModulesProductsInfoBoostrapColumn5SubmitButton {
+  text-align: center;
+  text-transform: uppercase;
+}

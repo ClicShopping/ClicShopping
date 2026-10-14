@@ -1,0 +1,81 @@
+heading_title = Customers recommendations
+module_pr_title = Customers recommendations
+module_pr_short_title = Customers recommendations
+
+text_products_product_Recommendations =  Customers recommendations
+text_configure = Configure App Module
+
+text_intro = This app allow you to include customers recommendations pages and a shortcut in products page. <br /><br />
+- Activate this module and select your straegy<br />
+
+text_intro_pr =  Please create in your shop this link to products customers recommendations access<br />
+return_url = Shop Url : {{return_url_pr}}<br />
+
+module_pr_introduction = The install process create the database settings for this module and the access menu
+
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_product_recommendations = Customers recommendations
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_back = Back
+button_reset = Reset
+button_update = Update
+button_help = Help
+button_delete_all = Delete Datas
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_all_groups = All groups
+visitor_name = Normal customer
+icon_edit = Edit
+tab_analytics = Analytics
+
+table_heading_products = Products
+table_heading_recommendations = Recommendations
+table_heading_rejected = Rejected
+table_heading_score = Score
+
+text_analytics = Analytics
+text_customers_group = Customers group
+text_display_limit = Limit display
+text_rejection_score = Score
+text_start_date_analysis = Analysis date
+text_ok = Ok
+text_range = <strong>- Strategy selected :</strong> Range-Based Recommendation
+text_multiple = <strong>- Strategy selected:</strong> Multiple-Sources Recommendation<br>
+
+text_most_recommended_products = Most Recommended Products
+text_most_rejected_products = Most Rejected Products
+
+table_heading_products_price = Products price
+table_heading_status = Status
+table_heading_action = Action
+table_heading_products_group = Customer group
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+
+text_help = <strong>Help</strong><br /><br />
+text_help_description =
+- You can select only one strategy. If you want to change, yu must delete all your data<br />
+- Positive Score (Greater than 0): A positive recommendation score indicates that the product is likely to be recommended to the user. A higher positive score often implies a stronger recommendation. The magnitude of the score can represent the level of confidence in the recommendation.<br />
+- Neutral Score (Close to 0): A score close to 0 may imply that the recommendation algorithm is not strongly biased towards or against recommending the product. It might indicate a neutral or uncertain recommendation.<br />
+- Negative Score (Less than 0): A negative score suggests that the product is less likely to be recommended. The lower the negative score, the stronger the indication that the product is not a good fit for the user.<br /><br />
+<strong>- Option 1:</strong> Range-Based Recommendation<br>
+Range-Based Recommendation is a type of recommendation strategy that focuses on the numerical ranges or thresholds of various factors to determine the suitability of a product for a user. In this approach, different product attributes such as user ratings, review scores, and user feedback are assigned specific weightings and combined to calculate a recommendation score. The recommendation score is then compared against predefined ranges or thresholds to determine the level of recommendation for a particular product. For example, products with recommendation scores falling within a specific range may be considered as highly recommended, moderately recommended, or not recommended at all.<br /><br />
+<strong>- Option 2:</strong> Multiple-Sources Recommendation<br>
+Multiple-Sources Recommendation is a recommendation strategy that leverages multiple data sources or information channels to generate personalized recommendations for users. Instead of relying solely on user-specific data (e.g., user ratings or feedback), this approach considers a wide range of data from diverse sources, such as user behavior, social networks, item features, and contextual information. By combining information from various sources, the recommendation system can create a more comprehensive and accurate user profile, leading to more relevant and diverse product recommendations. Multiple-Sources Recommendation is especially useful in situations where limited user data is available or when the recommendation system needs to account for a broader range of factors influencing user preferences.

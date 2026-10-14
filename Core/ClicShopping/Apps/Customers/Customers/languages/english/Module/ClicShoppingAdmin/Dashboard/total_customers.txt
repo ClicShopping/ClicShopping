@@ -1,0 +1,4 @@
+module_admin_dashboard_total_customers_app_title = Do you want to install Total Customers Chart (15 days)
+module_admin_dashboard_total_customers_app_description = Show the total customers chart of the last 15 days
+module_admin_dashboard_total_customers_app_chart_link = Total Customers  (15 days)
+

@@ -1,0 +1,7 @@
+cfg_antispam_status_title = Status
+cfg_antispam_status_description = Set True to enable or not the module<br />
+This configuration allows you to create two invisible fields in order to catch spam bots
+
+cfg_antispam_status_true = True
+cfg_antispam_status_false = False
+

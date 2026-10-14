@@ -1,0 +1,3 @@
+cfg_chatgpt_api_key_voyage_ai_title = VoyageAI Api Key
+cfg_chatgpt_api_key_voyage_ai_description = Please, insert the Api Key (https://www.voyageai.com)<br />
+Only for the embedding.

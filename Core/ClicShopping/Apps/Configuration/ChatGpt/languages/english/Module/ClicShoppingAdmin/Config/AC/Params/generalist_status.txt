@@ -1,0 +1,5 @@
+cfg_chatgpt_generalist_status_title = Enable Generalist Critic
+cfg_chatgpt_generalist_status_description = Activate the Generalist critic for broad evaluation across all domains without specific specialization. Provides balanced assessment from a general perspective.
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

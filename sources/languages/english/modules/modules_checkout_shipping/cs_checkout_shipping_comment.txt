@@ -1,0 +1,5 @@
+
+ module_checkout_shipping_comment_title = Do you want to display a fields comment to allow the customer to let you a comment ?
+ module_checkout_shipping_comment_description = Display a fields comment to allow the customer to let you a comment
+ module_checkout_shipping_comment_table_heading_comments = Add comments about your order
+ module_checkout_shipping_comment_text = Insert your comment

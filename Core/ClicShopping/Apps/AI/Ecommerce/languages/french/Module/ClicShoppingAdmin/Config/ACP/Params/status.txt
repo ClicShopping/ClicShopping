@@ -1,0 +1,6 @@
+cfg_ecommerce_acp_status_title = Statut
+cfg_ecommerce_acp_status_description = Souhaitez vous activer ce module à votre boutique
+
+cfg_ecommerce_acp_status_true = True
+cfg_ecommerce_acp_status_false = False
+

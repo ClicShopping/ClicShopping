@@ -1,0 +1,40 @@
+heading_title = RAG Web Search Configuration
+
+button_rag_websearch_dashboard = Dashboard
+button_insert_rag_websearch = Add New Source
+button_back = Back
+button_save = Save
+button_delete = Delete
+
+table_heading_site_domain = Site Domain
+table_heading_authority_score = Authority Score
+table_heading_status = Status
+table_heading_description = Description
+table_heading_action = Actions
+
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+tab_general = General
+text_description = Description
+
+text_site_domain = Site Domain
+text_authority_score = Authority Score
+text_status = Status
+text_search_pattern = Search Pattern
+text_description = Description
+
+text_ino_authority_score = Enter domain (e.g., wikipedia.org)
+text_info_authority_score = Score between 0 and 0.15 (higher = more authoritative)
+text_info_search_pattern = Optional: Regex pattern to filter search results
+
+text_pattern_usage_title = Pattern Usage Information
+text_pattern_usage_info = The search pattern field accepts regular expressions to filter web search results. This allows you to:
+text_pattern_usage_example1 = • Filter by specific keywords or phrases
+text_pattern_usage_example2 = • Exclude certain content types or sections
+text_pattern_usage_example3 = • Match specific URL patterns or page structures
+text_pattern_usage_example4 = • Combine multiple conditions using regex operators
+text_pattern_usage_note = Leave empty to include all results from this domain. Use standard regex syntax (e.g., /pattern/i for case-insensitive matching).
+
+icon_edit = Edit
+
+id = ID

@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_display_shipping_delay_title = Veuillez saisir par défaut le délai de livraison que vous indiquerez à vos clients.
+cfg_configuration_compliance_policy_rules_display_shipping_delay_description = Veuillez indiquer par défaut le délai de livraison de vos produits à vos clients. Pour la France, cette information est obligatoire (loi Châtel).

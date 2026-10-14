@@ -1,0 +1,36 @@
+
+navbar_title = Create a professionnal account
+
+heading_title_create_pro = Create a professionnal account
+
+email_subject = Ask for opening of client account on {{store_name}}
+
+email_subject = Welcome to {{store_name}}
+email_greet_mr = Dear Mr. {{lastname}},
+email_greet_ms = Dear Ms. {{lastname}},
+
+email_welcome = We thank you for confidence that you us testified by recording you like new customer on site {{store_name}}.
+we have well took into account your request of inscription for the opening of an office account near our network.<br />
+you will receive an email notifying the creation of your account, after validation of your request by our service customers, with the whole of information allowing you to connect and carry out your purchases on {{store_name}}<br /><br />
+you will be able under privileged customer to then profit from exceptional prices on the whole of our articles by connecting you on your space customer of {{store_name}}. <br />
+for any help on our services, do not hesitate with to contact our support: {{store_owner_email_address}}
+
+admin_email_subject = New Customer registrer on {{store_name}} - Create account Pro
+admin_email_welcome = hello,'. "\n\n" . '
+admin_email_text = New client (B2B mode) is registered, below user details:<br />
+name : {{customer_name}} <br />
+surname :{{customer_firstname}}<br />
+company : {{customer_company}}<br />
+e-mail : {{customer_mail}}<br />
+
+email_text_coupon = {{store_name}} are pleased to offer you a discount coupon that you can use at any time on the shop.<br /><br /> The coupon number is : <strong>
+
+email_network = Follow us in real time on  :<br />
+email_twitter = http://www.twitter.com/
+email_facebook = http://www.facebook.com/
+
+entry_website_text_pro = *
+entry_company_website = Web site :
+
+error_action_recorder = Error: An enquiry has already been sent. Please try again in {{module_action_recorder_create_account_pro_email_minutes}} minutes.
+entry_county_error_pro = Error : Please enter a country or state

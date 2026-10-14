@@ -1,0 +1,8 @@
+module_header_tags_gdpr_title = Display a pop up to accept GDPR policy
+module_header_tags_gdpr_description = Display a pop up to accept GDPR policy
+
+module_header_tags_text_info = We use our own and third-party cookies to personalize content and to analyze web traffic.
+module_header_tags_text_info_read_more = Read more about cookies
+module_header_tags_text_info_title = {{store_name}} use
+module_header_tags_text_info_reject = Reject
+module_header_tags_text_info_accept = Accept All

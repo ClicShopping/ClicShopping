@@ -1,0 +1,11 @@
+INSERT INTO `clic_administrator_menu` VALUES(814, '', 2, 50, 1, '', 0, NULL, 1);
+INSERT INTO clic_administrator_menu VALUES(811, 'index.php?A&AI\\Ecommerce', 814, 5, 1, '', 0, NULL, 1);
+
+INSERT INTO `clic_administrator_menu_description` VALUES(810, 'AI', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(810, 'IA', 2);
+INSERT INTO `clic_administrator_menu_description` VALUES(811, 'Ecommerce Agent', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(811, 'Agent Ecommerce', 2);
+
+UPDATE `clic_administrator_menu` SET `parent_id` = '814' WHERE `clic_administrator_menu`.`id` = 809;
+
+INSERT INTO clic_cron VALUES(7, 'reputationUpdateProcessor', 'Reputation update queue processor - processes pending reputation update jobs every 5 minutes (batch size: 50, max attempts: 3)', 'minutes', 'ReputationUpdateProcessor', 0, '2026-02-08 09:59:22', '2026-02-22 19:52:40');

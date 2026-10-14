@@ -1,0 +1,10 @@
+address_format_id int not_null auto_increment comment(Primary key - unique identifier for each address format)
+address_format varchar(255) not_null comment(Template for formatting full addresses - uses placeholders for address components)
+address_summary varchar(255) not_null comment(Template for formatting short address summaries)
+--
+primary address_format_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Address formatting templates for different countries and regions

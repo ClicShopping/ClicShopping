@@ -1,0 +1,4 @@
+title_tab_shipping = Expédition
+category_shipping_customer_group = B2B expédition client
+category_shipping_customer = Normal (B2C) expédition client
+

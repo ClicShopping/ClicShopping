@@ -1,0 +1,15 @@
+config_id int(11) auto_increment not_null
+config_key varchar(100) not_null
+config_value text not_null
+description text default null
+created_at timestamp NULL default(current_timestamp)
+updated_at timestamp NULL default(current_timestamp) ON UPDATE current_timestamp()
+--
+primary config_id
+unique config_key
+idx_config_key config_key
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+

@@ -1,0 +1,5 @@
+cfg_products_recommendations_featured_status_title = Do you want to activate the automatic creation / remove featured product ?
+cfg_products_recommendations_featured_status_description = Activate the automatic creation / remove featured product
+
+cfg_products_recommendations_featured_status_true = True
+cfg_products_recommendations_featured_status_false = False

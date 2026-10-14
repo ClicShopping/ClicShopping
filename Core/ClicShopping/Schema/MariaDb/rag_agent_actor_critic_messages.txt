@@ -1,0 +1,30 @@
+id bigint(20) not_null auto_increment
+message_id varchar(100) not_null
+message_type varchar(50) not_null
+version varchar(10) not_null default (1.0)
+sender_id varchar(100) not_null
+recipient_id varchar(100) not_null
+correlation_id varchar(100) default null
+payload longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(payload))
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(metadata))
+status enum('sent','delivered','failed','max_retries_exceeded') not_null default (sent)
+retry_count int(11) not_null default 0
+error_message text default null
+created_at timestamp NULL default(current_timestamp)
+updated_at timestamp NULL default null ON UPDATE current_timestamp()
+
+--
+primary id
+unique message_id message_id
+idx_message_id message_id
+idx_message_type message_type
+idx_sender_id sender_id
+idx_recipient_id recipient_id
+idx_correlation_id correlation_id
+idx_status status
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

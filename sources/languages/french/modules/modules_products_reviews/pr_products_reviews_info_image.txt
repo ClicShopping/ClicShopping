@@ -1,0 +1,6 @@
+modules_products_reviews_info_image_title = Lecture Commentaire : Souhaitez vous afficher l'image du produit ?
+modules_products_reviews_info_image_description = Afficher l'image du produit
+
+ text_price =
+
+

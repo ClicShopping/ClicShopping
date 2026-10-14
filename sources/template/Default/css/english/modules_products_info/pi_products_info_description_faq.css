@@ -1,0 +1,238 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+/* ============================================
+   DEFENSIVE OVERRIDES
+   Force visibility of all accordion elements
+   regardless of theme interference
+   ============================================ */
+
+.modulesProductsInfoFaq .accordion,
+.modulesProductsInfoFaq .accordion * {
+    visibility: visible !important;
+}
+
+.modulesProductsInfoFaq .accordion-item {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+    border-radius: 0.375rem !important;
+    overflow: hidden !important;
+}
+
+.modulesProductsInfoFaq .accordion-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Force button to always be visible — collapsed AND open states */
+.modulesProductsInfoFaq .accordion-button,
+.modulesProductsInfoFaq .accordion-button.collapsed,
+.modulesProductsInfoFaq .accordion-button:not(.collapsed) {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 1 !important;
+    width: 100% !important;
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    padding: 1rem 1.25rem !important;
+    border: 0 !important;
+    text-align: left !important;
+}
+
+/* Active (open) state */
+.modulesProductsInfoFaq .accordion-button:not(.collapsed) {
+    color: #0c63e4 !important;
+    background-color: #e7f1ff !important;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.125) !important;
+}
+
+/* Arrow icon: always visible */
+.modulesProductsInfoFaq .accordion-button::after {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+}
+
+/* Span (question text) */
+.modulesProductsInfoFaq .accordion-button span {
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: inherit !important;
+    pointer-events: none;
+}
+
+/* Header: never hide, never block clicks */
+.modulesProductsInfoFaq .accordion-header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    pointer-events: auto !important;
+}
+
+/* Body */
+.modulesProductsInfoFaq .accordion-body {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding: 1.25rem !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    color: #212529 !important;
+}
+
+.modulesProductsInfoFaq .accordion-body p {
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #212529 !important;
+    margin-bottom: 0 !important;
+}
+
+/* ============================================
+   Container
+   ============================================ */
+
+.modulesProductsInfoFaq {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #0d6efd;
+}
+
+.modulesProductsInfoFaq h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+/* ============================================
+   Schema.org
+   ============================================ */
+
+.modulesProductsInfoFaq [itemprop="name"] { color: inherit; }
+.modulesProductsInfoFaq [itemprop="text"] { margin-bottom: 0; }
+
+/* ============================================
+   Cards
+   ============================================ */
+
+.modulesProductsInfoFaq .card {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    margin-bottom: 0.5rem;
+}
+.modulesProductsInfoFaq .card:last-child { margin-bottom: 0; }
+.modulesProductsInfoFaq .card-title { font-size: 1.1rem; font-weight: 500; color: #212529; margin-bottom: 0.75rem; }
+.modulesProductsInfoFaq .card-text  { font-size: 1rem; line-height: 1.6; color: #495057; }
+
+/* ============================================
+   Table of Contents
+   ============================================ */
+
+.seo-toc {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #0d6efd;
+    padding: 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.seo-toc ul { margin: 0; padding: 0; list-style: none; }
+.seo-toc-item { margin-bottom: 0.75rem; line-height: 1.6; }
+.seo-toc-item:last-child { margin-bottom: 0; }
+.seo-toc-link { color: #495057; text-decoration: none; transition: all 0.2s ease; display: inline-flex; align-items: center; padding: 0.25rem 0; font-size: 1rem; }
+.seo-toc-link:hover { color: #0d6efd; padding-left: 0.5rem; text-decoration: none; }
+.seo-toc-link i { color: #0d6efd; font-size: 0.875rem; transition: transform 0.2s ease; flex-shrink: 0; }
+.seo-toc-link:hover i { transform: translateX(0.25rem); }
+.seo-toc-item.ms-3 { margin-left: 1rem !important; font-size: 0.95rem; }
+.seo-toc-item.ms-6 { margin-left: 2rem !important; font-size: 0.9rem; }
+.seo-toc-item.ms-9 { margin-left: 3rem !important; font-size: 0.85rem; }
+
+/* ============================================
+   Print
+   ============================================ */
+@media print {
+    .modulesProductsInfoFaq { background: transparent; border: 1px solid #000; page-break-inside: avoid; }
+    .accordion-button::after { display: none; }
+    .accordion-collapse { display: block !important; }
+    .modulesProductsInfoFaq .accordion-item,
+    .modulesProductsInfoFaq .card { border: none; box-shadow: none; }
+}
+
+/* ============================================
+   Dark Mode
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    .modulesProductsInfoFaq { background: #1a1a1a; border-left-color: #4dabf7; }
+    .modulesProductsInfoFaq h2 { color: #e9ecef; }
+    .modulesProductsInfoFaq .accordion-item { background-color: #2d2d2d; border-color: #495057 !important; }
+    .modulesProductsInfoFaq .accordion-button,
+    .modulesProductsInfoFaq .accordion-button.collapsed { background-color: #2d2d2d !important; color: #e9ecef !important; }
+    .modulesProductsInfoFaq .accordion-button:not(.collapsed) { background-color: #212529 !important; color: #4dabf7 !important; }
+    .modulesProductsInfoFaq .accordion-body { background-color: #2d2d2d !important; color: #ced4da !important; }
+    .modulesProductsInfoFaq .accordion-body p { color: #ced4da !important; }
+    .modulesProductsInfoFaq .card { background-color: #2d2d2d; border-color: #495057; }
+    .modulesProductsInfoFaq .card-title { color: #e9ecef; }
+    .modulesProductsInfoFaq .card-text  { color: #ced4da; }
+    .seo-toc { background-color: #2d2d2d; border-color: #495057; border-left-color: #4dabf7; }
+    .seo-toc-link { color: #ced4da; }
+    .seo-toc-link:hover { color: #4dabf7; }
+    .seo-toc-link i { color: #4dabf7; }
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+    .modulesProductsInfoFaq { padding: 1.5rem; margin: 1.5rem 0; }
+    .modulesProductsInfoFaq h2 { font-size: 1.25rem; }
+    .modulesProductsInfoFaq .accordion-button { font-size: 1rem !important; padding: 0.875rem 1rem !important; min-height: 44px; }
+    .modulesProductsInfoFaq .accordion-body   { padding: 1rem !important; font-size: 0.9375rem !important; }
+    .seo-toc { padding: 1rem; }
+    .seo-toc-link { font-size: 0.95rem; }
+    .seo-toc-item.ms-3, .seo-toc-item.ms-6, .seo-toc-item.ms-9 { margin-left: 0.75rem !important; }
+}
+
+@media (max-width: 576px) {
+    .modulesProductsInfoFaq { padding: 1rem; margin: 1rem 0; border-radius: 6px; }
+    .modulesProductsInfoFaq h2 { font-size: 1.125rem; margin-bottom: 0.75rem; }
+    .modulesProductsInfoFaq .accordion-button { font-size: 0.9375rem !important; padding: 0.75rem 0.875rem !important; }
+    .modulesProductsInfoFaq .accordion-body   { padding: 0.875rem !important; font-size: 0.875rem !important; }
+    .modulesProductsInfoFaq .card-body  { padding: 0.875rem; }
+    .modulesProductsInfoFaq .card-title { font-size: 1rem; }
+    .modulesProductsInfoFaq .card-text  { font-size: 0.875rem; }
+    .seo-toc { padding: 0.875rem; }
+    .seo-toc-link { font-size: 0.875rem; }
+    .seo-toc-item.ms-3, .seo-toc-item.ms-6, .seo-toc-item.ms-9 { margin-left: 0.5rem !important; }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+.modulesProductsInfoFaq .accordion-button:focus { box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important; outline: none; }
+@media (prefers-contrast: high) {
+    .modulesProductsInfoFaq { border-left-width: 6px; }
+    .modulesProductsInfoFaq .accordion-item { border-width: 2px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .modulesProductsInfoFaq .accordion-button::after { transition: none; }
+    .modulesProductsInfoFaq .accordion-collapse { transition: none; }
+}

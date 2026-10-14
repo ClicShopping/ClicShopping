@@ -1,0 +1,2 @@
+box_entry_products_archives = Products archives number
+box_entry_products_no_archives = Products no archives number

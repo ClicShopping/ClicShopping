@@ -1,0 +1,19 @@
+execution_id bigint(20) auto_increment not_null
+action_id varchar(100) not_null
+result_id varchar(100) not_null
+actor_id varchar(100) not_null
+action_type varchar(50) not_null
+status enum('success','partial','failed') not_null
+execution_time_ms int(11) not_null
+quality_score decimal(3,2) default null
+output_type varchar(50) not_null
+executed_at timestamp NULL default(current_timestamp)
+
+--
+primary execution_id
+idx_actor_executions_performance actor_id executed_at DESC status
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

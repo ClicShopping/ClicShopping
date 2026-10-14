@@ -1,0 +1,6 @@
+
+module_advanced_search_price_title = Do  you want to display a price field ?
+module_advanced_search_price_description = Display a price field allowing to customer to insert criterias
+
+modules_advanced_search_price_entry_price_from = Price From
+modules_advanced_search_price_entry_price_to = Price To

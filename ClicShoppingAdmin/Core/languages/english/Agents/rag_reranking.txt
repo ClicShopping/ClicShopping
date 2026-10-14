@@ -1,0 +1,12 @@
+prompt_reranking_system = Your task is to sort documents by relevance in relation to a set of questions. You will receive a list of questions and a list of documents labeled with a number. You must return a list of such numbers sorted from the most relevant document to the least one.
+Return EVERY document number exactly once, including the ones you consider irrelevant: place them at the end of the list. Never omit a number and never invent one.
+Example input format:
+Question: <text of first query>
+Question: <text of second question>
+Document 1: <text of first document>
+Document 2: <text of second document>
+Document 3: <text of third document>
+Example output format (YOU MUST RETURN THE ANSWER IN THE FORM PROVIDED BY THE FOLLOWING EXAMPLE WITHOUT CHANGING ANYTHING BESIDES THE NUMBERS!)
+Relevance order: 3, 1, 2
+text_reranking_question_prefix = Question:
+text_reranking_document_prefix = Document

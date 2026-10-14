@@ -1,0 +1,60 @@
+{
+  "title": "Products Products App",
+  "app": "Products",
+  "vendor": "Products",
+  "version": "1.0.1",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "ProductsDescription": "Module\\HeaderTags\\ProductsDescription",
+      "ProductsNews": "Module\\HeaderTags\\ProductsNews",
+      "TwitterCard": "Module\\HeaderTags\\TwitterCard",
+      "ProductsConditions": "Module\\HeaderTags\\ProductsConditions",
+      "FacebookOpengraph": "Module\\HeaderTags\\FacebookOpengraph",
+      "ProductStock": "Module\\HeaderTags\\ProductStock"
+    },
+    "AdminDashboard": {
+      "ProductsMonitor": "Module\\ClicShoppingAdmin\\Dashboard\\ProductsMonitor"
+    },
+    "Hooks": {
+      "Shop/SiteUrl": {
+        "Canonical": "Module\\Hooks\\Shop\\SiteUrl\\Canonical"
+      },
+      "ClicShoppingAdmin/StatsDashboard": {
+        "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\StatsDashboard\\PageTabContent"
+      },
+      "ClicShoppingAdmin/Stats": {
+        "StatsProductsOutOfStock": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsProductsOutOfStock",
+        "StatsProductsAlert": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsProductsAlert",
+        "StatsProductsInfo": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsProductsInfo"
+      },
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      },
+      "ClicShoppingAdmin/Categories": {
+        "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\Categories\\PageTabContentProducts"
+      },
+      "ClicShoppingAdmin/TopDashboard": {
+        "TopDashboard": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\dashboardProductsOutOfStock",
+        "dashboardProductsWarning": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\dashboardProductsWarning",
+        "dashboardProductsExpected": "Module\\Hooks\\ClicShoppingAdmin\\TopDashboard\\dashboardProductsExpected"
+      },
+      "ClicShoppingAdmin/DashboardShortCut": {
+        "DashboardShortCut": "Module\\Hooks\\ClicShoppingAdmin\\DashboardShortCut\\DashboardShortCutProducts"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_invoice_number_format_title = Format de date du numéro de facture
+cfg_configuration_compliance_policy_rules_invoice_number_format_description = Partie date du numéro de facture, par exemple 09/02/2026S12. Volontairement distinct du format d'affichage des dates, pour que le numéro de facture ne change pas selon la langue dans laquelle il est lu.
+cfg_configuration_compliance_policy_rules_invoice_number_format_dmy = Jour / mois / année (02/09/2026)
+cfg_configuration_compliance_policy_rules_invoice_number_format_mdy = Mois / jour / année (09/02/2026)
+cfg_configuration_compliance_policy_rules_invoice_number_format_ymd = Année-mois-jour (2026-09-02)

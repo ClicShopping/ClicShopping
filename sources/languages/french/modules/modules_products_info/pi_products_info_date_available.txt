@@ -1,0 +1,4 @@
+module_products_info_date_available = Souhaitez-vous afficher les dates de disponibilités de ce produit dans la page de description ?
+module_products_info_date_available_description = Affiche les  les dates de disponibilités de produit dans la page de description du produit
+
+text_date_available = <p style="color:#ff0000;"><strong>Cet article sera disponible le {{date}}.<br />Vous pouvez dès à présent le réserver</strong></p>

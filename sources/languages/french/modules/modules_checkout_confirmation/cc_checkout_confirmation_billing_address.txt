@@ -1,0 +1,9 @@
+module_checkout_confirmation_billing_address_title = Souhaitez-vous afficher l'adresse de facturation de la commande ?
+module_checkout_confirmation_billing_address_description = Affiche dans l'adresse de facturation de la commande
+
+module_checkout_confirmation_billing_heading_billing_information = Information sur la facturation
+module_checkout_confirmation_billing_address_text_delivery_address = Adresse de facturation
+
+module_checkout_confirmation_billing_address_text_billing_title = Mode de Paiement
+module_checkout_confirmation_billing_address_heading_payment_method = Mode de Paiement
+module_checkout_confirmation_billing_address_text_edit = Editer

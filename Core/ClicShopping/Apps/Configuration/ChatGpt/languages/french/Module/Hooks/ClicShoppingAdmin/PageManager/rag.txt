@@ -1,0 +1,99 @@
+
+text_key_domain = domain
+text_key_entity = entity
+
+text_key_document_id = document.id
+text_key_document_type = document.type
+text_key_document_title = document.title
+text_key_document_language = document.language
+
+text_key_seo_title = seo.title
+text_key_seo_description = seo.description
+text_key_seo_keywords = seo.keywords
+
+text_key_jurisdiction = document.jurisdiction
+text_key_party_seller = party.seller
+text_key_party_buyer = party.buyer
+text_key_governing_law = clause.governing_law
+text_key_court = clause.court
+
+text_key_clause_order = clause.commande
+text_key_clause_prices = clause.prix
+text_key_clause_payment_methods = clause.payment.methods
+text_key_clause_delivery_method = clause.delivery.method
+text_key_clause_withdrawal = clause.withdrawal
+text_key_clause_warranty = clause.warranty
+text_key_clause_liability = clause.liability
+text_key_clause_data_protection = clause.data_protection
+
+text_value_domain_ecommerce = ecommerce
+text_value_entity_document = document
+
+text_value_type_terms = conditions_generales_vente
+text_value_type_privacy = politique_confidentialite
+text_value_type_faq = faq
+text_value_type_about = a_propos
+text_value_type_contact = contact
+text_value_type_general = page_generale
+text_value_present = present
+text_value_absent = absent
+
+text_prompt_extract_metadata = Vous êtes un système d'extraction de métadonnées de documents juridiques spécialisé dans les documents e-commerce.
+Analysez attentivement ce document et extrayez TOUTES les métadonnées pertinentes :
+
+**Titre du document :** {title}
+**Langue du document :** {language_code}
+**Contenu du document :**
+{content}
+
+Retournez UNIQUEMENT un objet JSON valide avec cette structure EXACTE (pas de markdown, pas de blocs de code, pas d'explication) :
+
+{
+  "document_type": "type spécifique comme : terms_and_conditions, privacy_policy, faq, user_guide, etc.",
+  "jurisdiction": "nom du pays si mentionné, sinon null",
+  "party_seller": "present si vendeur mentionné, sinon null",
+  "party_buyer": "present si acheteur/client mentionné, sinon null",
+  "payment_methods": ["listez TOUS les moyens de paiement trouvés : paypal, credit_card, bank_transfer, check, stripe, etc."],
+  "delivery_method": "méthode de livraison trouvée, sinon null",
+  "withdrawal_period": "période de rétractation comme : 14_days, 7_days, 30_days, 60_days, sinon null",
+  "warranty": "type de garantie trouvé, sinon null",
+  "liability": "type de responsabilité trouvé, sinon null",
+  "data_protection": "loi de protection des données comme : gdpr, ccpa, law_78_17_1978, sinon null",
+  "governing_law": "pays dont la loi s'applique, sinon null",
+  "court": "ville/juridiction pour les litiges, sinon null"
+}
+
+INSTRUCTIONS CRITIQUES :
+1. Analysez l'INTÉGRALITÉ du contenu fourni
+2. Recherchez les termes juridiques, moyens de paiement, infos de livraison, politiques de retour
+3. Soyez SPÉCIFIQUE avec document_type (pas seulement "general_page")
+4. Extrayez TOUS les moyens de paiement trouvés (pas seulement un)
+5. Utilisez snake_case pour les valeurs (ex : "terms_and_conditions", "credit_card")
+6. Retournez UNIQUEMENT l'objet JSON, rien d'autre
+7. Si l'information n'est pas trouvée, utilisez null (pas de chaîne vide)
+8. Travaillez dans N'IMPORTE QUELLE langue - comprenez le français, l'anglais, le chinois, l'arabe, etc.
+
+EXEMPLES :
+- Si vous voyez "conditions générales de vente" → document_type: "terms_and_conditions"
+- Si vous voyez "PayPal, carte bancaire, chèque" → payment_methods: ["paypal", "credit_card", "check"]
+- Si vous voyez "14 jours" ou "14 days" → withdrawal_period: "14_days"
+- Si vous voyez "Tribunal de Fréjus" → court: "Frejus"
+
+text_create_taxonomy = Tu es un système d'analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à une page du site (pas un produit, ni une catégorie, ni un fournisseur) : conditions générales, politique de confidentialité, FAQ, à propos, contact, ou une page générale.
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine]: Domaine général de la page (ex. Juridique, Support, Entreprise)
+[type_page]: Type de page (ex. Conditions générales, Politique de confidentialité, FAQ, À propos, Contact)
+[audience]: Lecteur visé (ex. Client, Acheteur, Visiteur)
+[sujet]: Sujet principal traité (ex. Retours, Protection des données, Livraison, Paiement)
+[obligations]: Devoirs ou engagements décrits (ex. Garantie, Responsabilité, Délai de rétractation)
+[juridiction]: Pays ou juridiction légale mentionnée, le cas échéant
+[ton]: Ton général du contenu (ex. Formel, Informatif, Promotionnel)
+[tags]: Liste libre de mots-clés pertinents dérivés du texte, séparés par virgules
+
+Texte : {{document_text}}

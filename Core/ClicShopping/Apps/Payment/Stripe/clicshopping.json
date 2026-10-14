@@ -1,0 +1,32 @@
+{
+  "title": "Stripe App",
+  "app": "Stripe",
+  "vendor": "Payment",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Payment": {
+      "ST": "Module\\Payment\\ST"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/Orders": {
+        "PageContentTab3": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\PageContentTab3"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "order&stripe&webhook&st": "Sites\\Shop\\Pages\\ST"
+    }
+  }
+}

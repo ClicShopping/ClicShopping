@@ -1,0 +1,5 @@
+cfg_products_recommendations_favorites_status_title = Do you want to activate the automatic creation / remove favorites ?
+cfg_products_recommendations_favorites_status_description = Activate the automatic creation / remove favorites
+
+cfg_products_recommendations_favorites_status_true = True
+cfg_products_recommendations_favorites_status_false = False

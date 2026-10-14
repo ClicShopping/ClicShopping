@@ -1,0 +1,25 @@
+navbar_title = Contact Us
+
+email_subject = Enquiry from a client of {{store_name}}
+
+entry_information_admin =  A question about an order of a client {{store_name}} you requested. <br /><br /> Please log in to your admin panel (control section) to see this demand. '."\n\n".' Meanwhile the treatment of this issue, the status of the article. were amended and returned by default . <br /><br /> Please find enclosed information concerning order number  on the customer :
+entry_additional_information = For all correspondance with our services, please use the website contact form.
+entry_admin_read_message = Message for administrator
+text_administrator_department = No department
+entry_customers_id = Your Customer number :
+entry_order = Your order number :
+entry_date = Date :
+entry_customers_phone = Phone :
+entry_customer = Customer Request :
+
+entry_name = Full Name:
+entry_email = E-Mail Address:
+entry_enquiry = Enquiry:
+entry_enquiry_customer = Your message :
+entry_enquiry_customer_information = Customer message :
+entry_email_object_customer = Request copy
+entry_customers_subject = Subject of your request :
+
+error_action_recorder = Error: An enquiry has already been sent. Please try again in {{module_action_recorder_contact_us_email_minutes}} minutes.
+entry_error_contact = Error : Please retry
+entry_antispam_error = Error: The anti-spam verification failed. Please check your answer and try again.

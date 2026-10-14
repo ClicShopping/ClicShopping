@@ -1,0 +1,2 @@
+module_action_recorder_create_account_pro_title = Création de compte Pro- Catalog
+module_action_recorder_create_account_pro_description = Enregistrement des créations de comptes à partir du catalog.

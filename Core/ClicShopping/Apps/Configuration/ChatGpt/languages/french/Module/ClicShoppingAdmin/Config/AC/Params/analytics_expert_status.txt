@@ -1,0 +1,5 @@
+cfg_chatgpt_analytics_expert_status_title = Enable Analytics Expert Critic
+cfg_chatgpt_analytics_expert_status_description = Activate the Analytics Expert critic for evaluating data analysis, SQL queries, and business intelligence operations. Specializes in assessing data accuracy and query optimization.
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

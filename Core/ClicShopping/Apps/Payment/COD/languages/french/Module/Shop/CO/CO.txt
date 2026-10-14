@@ -1,0 +1,4 @@
+module_cod_title = Paiement à réception
+module_cod_short_title = Paiement à réception
+module_cod_public_title = Paiement à réception
+module_cod_public_description = Paiement à réception

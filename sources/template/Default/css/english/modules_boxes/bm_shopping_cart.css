@@ -1,0 +1,94 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.boxeContainerShoppingCart {
+  margin-top: 0.625rem;
+  border-radius: 0.25rem;
+}
+
+.card-img-top.ClicShoppingboxContentShoppingCartBanner {
+  text-align: center;
+}
+
+.card-header.ClicShoppingboxHeadingShoppingCart {
+
+
+  padding-left: 3px;
+  overflow: hidden;
+  text-transform: uppercase;
+
+}
+
+.card-header.boxeHeadingShoppingCart A {
+  text-transform: uppercase;
+
+}
+
+.card-title.boxeTitleShoppingCart {
+  overflow: hidden;
+  padding: 3px;
+  text-transform: uppercase;
+
+
+}
+
+.card-title.boxeTitleShoppingCart A {
+}
+
+span.boxeTitleShoppingCart {
+
+}
+
+.card-text.boxeContentsShoppingCart {
+  overflow: hidden;
+  padding: 3px;
+
+}
+
+.card-text.boxeContentsShoppingCart a {
+  text-transform: uppercase;
+
+  font-weight: normal
+}
+
+
+.card-block.boxeContentArroundShoppingCart {
+  overflow: hidden;
+  padding-right: 0.1rem;
+  padding-left: 0.1rem;
+
+}
+
+
+.card-footer.boxeBottomContentsShoppingCart {
+  border-top: none;
+  padding: 0;
+}
+
+
+.boxeNewItemShoppingCart {
+
+  font-weight: bold;
+}
+
+A.boxeNewItemShoppingCart {
+
+  font-weight: bold;
+  color: #000000;
+}
+
+.boxeShowTotalShoppingCart {
+  text-align: right;
+  padding-top: 0.3125rem;
+}
+
+.boxeShowTextShoppingCart {
+  text-align: center;
+  padding-top: 0.625rem
+}
+

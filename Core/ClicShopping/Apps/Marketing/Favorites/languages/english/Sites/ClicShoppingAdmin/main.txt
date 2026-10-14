@@ -1,0 +1,96 @@
+heading_title = Favorites products
+module_fa_title = Favorites products
+module_fa_short_title = Favorites products
+
+text_products_favorites =  Favorites products
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a favorites pages and a shortcut in products page. <br /><br />
+- this modules come from with the module product favorites for the shop.<br />
+- Activate this module and activate the module products favorites located in Products Listing menu<br />
+- Don't forget to create the link in your catalog
+
+text_intro_fa =  Please create in your shop this link to products favorites access<br />
+return_url = Shop Url : {{return_url_fa}}<br />
+
+module_fa_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_favorites = Favorites
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+text_all_groups = All groups
+visitor_name = Normal customer
+icon_edit = Edit
+icon_preview = Preview
+tab_general = General
+
+table_heading_products = Products
+table_heading_products_price = Products price
+table_heading_status = Status
+table_heading_action = Action
+table_heading_products_group = Customer group
+table_heading_expires_date = Expiry date
+table_heading_archive = Archives products
+table_heading_scheduled_date = Start date
+table_heading_model = Models
+
+text_products_favorites_product = Product:
+text_products_favorites_special_price = Favorites price TAX exc.:
+text_products_favorites_expires_date = Expiry gate:
+text_products_favorites_groups = Product name
+text_products_favorites_scheduled_date = Start date
+
+text_info_date_added = Date added:
+text_info_last_modified = Last modified:
+text_info_new_price = New price:
+text_info_original_price = Original price:
+text_info_percentage = Percentage:
+text_info_schedule_date = Start at :
+text_info_expires_date = Expires at:
+text_info_status_change = Status change:
+
+text_new_products_favorites_twitter = New favorite on  {{store_name}} !
+text_products_favorites_twitter = Do  you want publish this favorite on Twitter ?
+text_products_favorites_group = Customer groups
+text_yes = yes
+text_no = No
+text_status = Product status
+
+text_info_heading_delete_products_favorites = Delete favorites
+text_info_delete_intro = Are you sure you want to delete the favorites products price?
+
+title_products_favorites_general = Information on the product
+title_products_favorites_group = Price and customer Group
+title_products_favorites_date = Display date
+title_help_products_favorites_price = Favorites Notes
+
+text_help_products_favorites_price = <ul><li>Leave the expiry date empty for no expiration.</li>
+<li>the related products are automatically updated (the store catalog manages this element), it is unnecessary to change the status of the related products after registration.</li>
+<li>leave the expiry date empty for no expiration.</li><li>The start date has more rights that the expire date.</li>
+<li>if  you want initialize the dates, please change the status on the main page.</li>
+<li>the twitter publication information is only allow on the product creation (with a status on it and a normal customer group). If your store name + URL of your product is more than 140 characters, the promotion will not be published (strong constraint)</li>
+<li>the favorites are automatically updated (the store catalog manages this element), it is unnecessary to change the status of the favorite after registration.</li>
+</ul>

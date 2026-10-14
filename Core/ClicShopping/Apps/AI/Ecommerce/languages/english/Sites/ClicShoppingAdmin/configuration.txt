@@ -1,0 +1,25 @@
+heading_configuration = Configuration
+
+section_domain_configuration = Domain Configuration
+text_configuration_info_title = Configuration Information
+text_configuration_info = This page shows the configuration details for the e-commerce domain.
+
+subsection_entity_config = Entity Configuration
+subsection_guardrails = Security Guardrails
+subsection_llm_prompts = LLM Prompts
+
+text_entity_config_desc = The following entities are configured for the e-commerce domain:
+column_entity = Entity
+column_table = Database Table
+column_id_column = ID Column
+
+entity_products = Products
+entity_orders = Orders
+entity_customers = Customers
+entity_categories = Categories
+
+text_guardrails_desc = Security guardrails prevent access to sensitive data:
+text_sensitive_tables = Sensitive Tables
+
+text_llm_prompts_desc = LLM prompts are stored in language files and loaded dynamically:
+text_prompts_location = Prompts Location

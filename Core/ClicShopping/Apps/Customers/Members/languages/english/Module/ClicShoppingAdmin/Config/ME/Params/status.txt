@@ -1,0 +1,6 @@
+cfg_members_status_title = Status
+cfg_members_status_description = Set True to enable or not the module
+
+cfg_members_status_true = True
+cfg_members_status_false = False
+

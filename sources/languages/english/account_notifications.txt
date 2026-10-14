@@ -1,0 +1,9 @@
+
+ navbar_title_1 = My Account
+ navbar_title_2 = Product Notifications
+
+ heading_title = Product Notifications
+
+ my_notifications_title = My Product Notifications
+
+ success_notifications_updated = Your product notifications have been successfully updated.

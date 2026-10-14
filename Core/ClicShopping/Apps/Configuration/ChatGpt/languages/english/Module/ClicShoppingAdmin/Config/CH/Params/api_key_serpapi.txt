@@ -1,0 +1,2 @@
+cfg_chatgpt_api_key_serpapi_title = Serp Api API key
+cfg_chatgpt_api_key_serpapi_description = Please, insert the Api Key (https://serpapi.com)

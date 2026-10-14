@@ -1,0 +1,6 @@
+cfg_chatgpt_status_title = Status
+cfg_chatgpt_status_description = Set True to enable or not the module
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False
+

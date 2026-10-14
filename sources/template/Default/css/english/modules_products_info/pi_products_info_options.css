@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.ModuleProductsInfoOptionsText {
+  font-weight: bold;
+  width: 150px;
+  font-size: 0.875rem;
+}
+
+.ModuleProductsInfoOptionsName {
+  font-weight: bold;
+  width: 40%;
+}
+
+
+.ModuleProductsInfoOptionsPullDownMenu {
+}
+
+.ModuleProductsInfoOptionsPullDownMenuOptionsInside {
+
+  width: 280px;
+  /*
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.27);
+    -webkit-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.27);
+    -moz-box-shadow:    2px 2px 5px rgba(0, 0, 0, 0.27);
+    border-radius: 8px;
+    background-color: #fff;
+  */
+}
+
+div.ModuleProductsInfoPositionOption {
+  padding-left: 0.625rem;
+  width: 450px;
+}
+
+/* Color picker swatches */
+.ModuleProductsInfoOptionsColorSwatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ModuleProductsInfoOptionsColorSwatchItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ModuleProductsInfoOptionsColorSwatchLabel {
+  display: inline-block;
+  width: 32px; /* Un peu plus grand pour faciliter le clic */
+  height: 32px;
+  border: 2px solid #dee2e6;
+  border-radius: 50%; /* Pastilles rondes */
+  transition: transform 0.2s, border-color 0.2s;
+  padding: 0;
+}
+
+/* État au survol */
+.ModuleProductsInfoOptionsColorSwatchLabel:hover {
+  border-color: #adb5bd;
+  transform: scale(1.1);
+}
+
+/* État sélectionné (Géré par le JS via la classe .swatch-selected) */
+.ModuleProductsInfoOptionsColorSwatchLabel.swatch-selected {
+  border-color: #212529 !important;
+  box-shadow: 0 0 0 3px rgba(33, 37, 41, 0.2);
+  transform: scale(1.1);
+}
+
+.ModuleProductsInfoOptionsColorSwatchPrice {
+  display: block;
+  font-size: 0.7rem;
+  margin-top: 3px;
+  color: #6c757d;
+}

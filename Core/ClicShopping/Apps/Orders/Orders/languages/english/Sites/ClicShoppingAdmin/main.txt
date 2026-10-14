@@ -1,0 +1,257 @@
+heading_title = Orders
+heading_title_archive = Archives
+module_od_title = Orders
+module_od_short_title = Orders
+
+text_products_orders =  Orders
+text_configure = Configure App Module
+
+text_intro = This app allow you to include an order page and a shortcut in order page. <br /><br />
+- Activate this module and activate the module orders located in the customers menu
+
+module_od_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_orders = Orders
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+button_archive = See Archives
+button_archive_batch = Archive last 30 d.
+button_archive_consult = Consult
+button_history = History
+button_invoice = Invoice
+button_packingslip = Packingslip
+button_archive_batch = Archive
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+visitor_name = Normal customer
+
+heading_title_search = Order ID
+heading_title_status = Status:
+
+tab_general = General
+tab_orders_details =  Details
+tab_statut = Status
+
+title_orders_address = Address
+title_orders_customers = Information on the customer
+title_orders_paiement = Payment
+title_orders_history = History
+
+table_heading_comments = Comments
+table_heading_customers = Customers
+table_heading_order_total = Order Total
+table_heading_date_purchased = Date Purchased
+table_heading_status = Status
+table_heading_action = Actions
+table_heading_quantity = Qty.
+table_heading_products_model = Model
+table_heading_products = Products
+table_heading_realised_by = Modified by
+table_heading_tax = Tax
+table_heading_total = Total
+table_heading_price_excluding_tax = Price (ex)
+table_heading_price_including_tax = Price (inc)
+table_heading_total_excluding_tax = Total (ex)
+table_heading_total_including_tax = Total (inc)
+table_heading_color_group = B2B
+table_heading_orders = Orders No
+table_heading_erp = ERP
+table_heading_support = Support
+table_heading_guest = Guest
+table_heading_qty = Quantity
+table_heading_customer_notified = Customer Notified
+table_heading_date_added = Date Added
+
+entry_customer = Customer:
+entry_sold_to = SOLD TO:
+entry_delivery_to = Delivery To:
+entry_ship_to = SHIP TO:
+entry_shipping_address = Shipping Address:
+entry_billing_address = Billing Address:
+entry_payment_method = Payment Method:
+entry_credit_card_type = Credit Card Type:
+entry_credit_card_owner = Credit Card Owner:
+entry_credit_card_number = Credit Card Number:
+entry_credit_card_expires = Credit Card Expires:
+entry_sub_total = Sub-Total:
+entry_tax = Tax:
+entry_shipping = Shipping:
+entry_total = Total:
+entry_date_purchased = Date Purchased:
+entry_status = Status:
+entry_atos_board_informations = Transaction Informations
+entry_status_orders_tracking_name = Tracking company (shipping) :
+entry_status_orders_tracking_number = Tracking number :
+entry_status_orders_support_name = Customer support
+entry_status_evidence = Customer evidence :
+entry_credit_card_express = Credit card express
+
+entry_status_invoice = PDF to create :
+entry_status_comment_invoice = PDF  created; :
+entry_status_invoice_realised = Realised by :
+entry_status_invoice_note = <u>Others Informations</u> :<br />
+
+entry_client_computer_ip = Client address ip :
+entry_provider_name_client = Client provider :
+text_condition_general_of_sales =  Contract of general conditions sales concerning this order
+
+entry_date_last_updated = Date Last Updated:
+entry_notify_customer = Notify Customer:
+entry_notify_comments = Append Comments:
+entry_printable = Print Invoice
+
+entry_telephone_number = Phone
+entry_cellular_phone_number = Cellulaire
+entry_email_address = Email Address
+
+customers_company = Company
+entry_first_name = First Name
+entry_last_name = Last Name
+entry_address = address
+entry_suburb = Suburb
+entry_postcode = Post code
+entry_city = city
+entry_country_id = Country
+entry_zone_id = Zone
+
+text_info_heading_delete_order = Delete Order
+text_info_delete_intro = Are you sure you want to delete this order?
+text_info_restock_product_quantity = Restock product quantity
+text_date_order_created = Date Created:
+text_date_order_last_modified = Last Modified:
+text_info_payment_method = Payment Method:
+entry_customer_location = Location
+
+text_all_orders = All Orders
+text_no_order_history = No Order History Available
+
+text_info_heading_archive = Archive this order
+text_info_archive_intro = Do  you want archive this order ?
+text_preview = Preview
+
+text_archive_batch_heading = Archive orders
+
+label_button = Labels
+label_button_archive = Archives
+label_title = Labels
+label_text_date_order = Date :
+label_text_order_number = Order N° :
+label_text_print_type = Print Type :
+label_text_note_label = <br /><u>Note:</u> Select yours criterias for print delivery address<br /><br />
+label_text_start = Start N° :
+label_text_end = End N° :
+label_text_select = Select
+label_button_print = Print
+label_text_24hr = Last 24hr
+label_text_48hr = Last 48hr
+label_text_72hr = Last 72hr
+label_text_week = Week
+
+text_info_heading_delete_order =  Delete order
+text_info_delete_info = Delete
+
+text_orders_status = Status
+text_orders_pending = Pending
+text_orders_processing = Process
+text_orders_support = Support
+text_orders_support_request = Request
+text_orders_support_threatment = Threatm.
+text_orders_customers = Customers
+text_orders = Orders
+text_orders_b2c = B2C
+text_orders_b2b = B2B
+
+text_errors_archive = Veuillez sélection un numéro de commande de départ et de fin
+text_errors_order = Erreur archive
+
+suppliers_title = order supplier report
+suppliers_button = Supplier Report
+entry_supliers_name = Supplier* :
+text_note_supplier = <br /><u>Note:</u> <br> - You can combine or not the criterias<br />- To update the orders status, the final status must be different to initial status<br />- An update order email is automatically sent to customer.
+
+text_order_update_status = Uptade all orders status ? pease choose :
+
+email_separator = ------------------------------------------------------
+
+email_text_subject = Order Update on {{store_name}}
+
+email_intro_command = Hello,<br /><br />An actualization of your order was carried out. Please find the whole of information below. <br /><br /> {{store_name}} <br /> {{store_name_address}}.'
+
+email_text_order_number = Order Number:
+email_text_invoice_url = Detailed Invoice:
+email_text_date_ordered = Date Ordered:
+
+email_text_new_order_status = New status : {{status}}
+
+email_text_comments_update = The comments for your order are :
+{{comment}}
+
+error_order_does_not_exist = Error: Order does not exist : N° {{order_id}}
+success_order_updated = Success: Order has been successfully updated.
+warning_order_not_updated = Warning: Nothing to change. The order was not updated.
+
+entry_order_siret = Registration Code (ex: RCS):
+entry_tva_intracom = N&deg; of VAT intracom:
+entry_order_code_ape = Nomenclatur Number (ex: APE):
+
+icon_edit = Edit
+icon_edit_customer = Edit customer
+icon_edit_order = Edit order
+icon_invoice = Edit invoice
+icon_packingslip = Edit packingslip
+icon_delete = Delete
+icon_archive_to = Archive / Unpack
+
+packingslip_batch_heading = Batch Packingslip print
+button_packingslip_batch = Packingslip print
+orders_batch_heading = Batch orders print
+button_orders_batch =  Orders print
+
+success_order_updated = Your request have been made with success
+warning_order_not_updated = Becarefull : order not updated
+alert_invoice_locked_title = Order locked – invoice validated
+alert_invoice_locked_body = In accordance with Article L441-9 of the French Commercial Code, a validated invoice is immutable. Set the invoice status back to "Pending" to modify the order.
+alert_invoice_locked_tab2 = Order lines are read-only because the invoice has been validated.
+table_heading_qty_edit = Qty
+table_heading_price_edit = Price excl. tax
+title_add_product = Add product line
+entry_add_product_id = Product ID (catalog)
+placeholder_product_id = e.g. 42
+button_add_product = Add
+confirm_delete_product = Remove this line from the order?
+error_order_invoice_locked = Modification not allowed: the invoice for this order has been validated.
+success_product_updated = Line updated successfully.
+success_product_added = Product added to the order.
+success_product_deleted = Line removed from the order.
+error_product_update_failed = Update failed (invalid quantity or price).
+error_product_add_failed = Add failed (product not found or invalid data).
+error_product_delete_failed = Delete failed.
+
+text_info_product_updated = Quantity or price updated
+warning_order_stock_not_updated = Stock not updated
+error_order_invoice_locked = Invoice locked
+warning_order_not_updated = Order not updated
+text_info_product_added = Product added
+text_info_product_deleted = Product deleted
+text_info_new_quantity = Quantity orders updated : New Quantity is {{new_quantity}} about the product name : {{products_name}}
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

@@ -1,0 +1,5 @@
+cfg_chatgpt_display_memory_context_title = Enable Context Memory
+cfg_chatgpt_display_memory_context_description = Enable conversation memory to maintain context across multiple interactions. When activated, the LLM retains previous conversation history, allowing you to reference earlier messages and continue discussions naturally. This feature enables follow-up questions, clarifications, and contextual responses without repeating information. Recommended: True for enhanced user experience and coherent multi-turn conversations.
+
+cfg_chatgpt_display_memory_context_status_true = True
+cfg_chatgpt_display_memory_context_status_false = False

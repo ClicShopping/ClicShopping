@@ -1,0 +1,5 @@
+ modules_tell_a_friend_button_process_title = Do you want to display the process button to send the message
+ modules_tell_a_friend_button_process_description = Display the process button to send the message
+
+ button_continue = Continue
+ button_back = Back

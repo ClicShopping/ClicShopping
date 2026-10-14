@@ -1,0 +1,17 @@
+module_shopping_cart_products_listing_title = Do you want to display the shopping cart items ?
+module_shopping_cart_products_listing_description = Display the shopping cart items
+
+table_heading_quantity = Qty.
+table_heading_products = Product(s)
+table_heading_total = Total
+
+button_remove = Remove this product from Cart
+text_shopping_cart_save_money_for_this_product = If you buy this product you save :
+text_shopping_cart_save_money_by_product = by quantity
+text_shopping_cart_products_discount_quantity = Your discount based on quantities ordered products have been applied. You saved
+text_shopping_cart_products_discount_without_tax = Without taxes
+
+button_cancel = Cancel
+button_delete = Delete
+text_title_modal_delete = Are you sure about this?
+text_title_modal_info = This action will remove the item from your cart

@@ -1,0 +1,10 @@
+heading_dynamic_pricing_title = Historique tarification dynamique
+table_heading_rules_id = ID Règle
+table_heading_products = Produit
+table_heading_base_price = Prix de base
+table_heading_dynamic_price = Prix dynamique
+table_heading_rule_applied = Règle appliquée
+table_heading_last_date = Dernier ajout
+table_heading_total_occurrences = total occurrences
+table_heading_action = Action
+button_delete_all = Tout supprimer

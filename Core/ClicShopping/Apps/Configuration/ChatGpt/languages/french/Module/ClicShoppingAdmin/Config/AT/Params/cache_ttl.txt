@@ -1,0 +1,2 @@
+cfg_chatgpt_cache_ttl_title = Cache TTL (seconds)
+cfg_chatgpt_cache_ttl_description = Cache time-to-live in seconds for agent responses. Longer = lower API costs but potentially stale data. Recommended: 3600 (1 hour)

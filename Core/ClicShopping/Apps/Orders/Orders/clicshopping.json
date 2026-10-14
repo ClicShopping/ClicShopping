@@ -1,0 +1,56 @@
+{
+  "title": "Orders App",
+  "app": "Orders",
+  "vendor": "Orders",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "AdminDashboard": {
+      "Orders": "Module\\ClicShoppingAdmin\\Dashboard\\Orders",
+      "SalesCommission": "Module\\ClicShoppingAdmin\\Dashboard\\SalesCommission",
+      "TotalCaByYear": "Module\\ClicShoppingAdmin\\Dashboard\\TotalCaByYear",
+      "TotalMonth": "Module\\ClicShoppingAdmin\\Dashboard\\TotalMonth",
+      "TotalRevenue": "Module\\ClicShoppingAdmin\\Dashboard\\TotalRevenue",
+      "OrderMap": "Module\\ClicShoppingAdmin\\Dashboard\\OrderMap"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/StatsDashboard": {
+        "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\StatsDashboard\\PageTabContent"
+      },
+      "ClicShoppingAdmin/Stats": {
+        "StatsOrdersStatus": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsOrdersStatus",
+        "StatsOrdersTurnover": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsOrdersTurnover",
+        "StatsOrdersAverageTurnover": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsOrdersAverageTurnover",
+        "StatsOrdersSupport": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsOrdersSupport",
+        "StatsOrdersCustomersB2BB2C": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsOrdersCustomersB2BB2C",
+        "StatsOrdersArchive": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsOrdersArchive"
+      },
+      "ClicShoppingAdmin/Invoice": {
+        "InvoiceBatch": "Module\\Hooks\\ClicShoppingAdmin\\Invoice\\InvoiceBatch",
+        "PackingSlipBatch": "Module\\Hooks\\ClicShoppingAdmin\\Invoice\\PackingSlipBatch",
+        "SuppliersBatch": "Module\\Hooks\\ClicShoppingAdmin\\Invoice\\SuppliersBatch",
+        "InvoiceLabelBatch": "Module\\Hooks\\ClicShoppingAdmin\\Invoice\\InvoiceLabelBatch",
+        "ArchiveBatch": "Module\\Hooks\\ClicShoppingAdmin\\Invoice\\ArchiveBatch"
+      },
+      "Shop/Contact": {
+        "DisplayRowContent": "Module\\Hooks\\Shop\\Info\\Contact\\Evidence",
+        "PreAction": "Module\\Hooks\\Shop\\Info\\Contact\\PreActionEvidence"
+      },
+      "ClicShoppingAdmin/DashboardShortCut": {
+        "DashboardShortCut": "Module\\Hooks\\ClicShoppingAdmin\\DashboardShortCut\\DashboardShortCutOrders"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

@@ -1,0 +1,109 @@
+heading_title = AI Ecommerce Domain
+heading_dashboard = Dashboard
+heading_overview = Overview
+heading_configuration = Configuration
+heading_help = Help
+
+button_dashboard = Dashboard
+button_overview = Overview
+button_configuration = Configuration
+button_help = Help
+button_back = Back
+button_install_title = Install
+button_save = Save
+button_ecommerce = Ecommerce
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+tab_overview = Overview
+tab_entities = Entities
+tab_queries = Queries
+tab_performance = Performance
+
+section_welcome = Welcome to AI Ecommerce Domain
+text_welcome_message = This is the AI Ecommerce Domain management interface. Here you can monitor and manage all e-commerce related AI operations.
+
+module_ec_short_title = Ecommerce Agent
+module_ec_title = Ecommerce Agent
+module_ec_introduction = This module is mandatory if you want to use the rag BI and save all the embeddings.
+
+module_acp_title = OpenAI ACP Beta Ecommerce
+module_acp_short_title =  OpenAI ACP Beta Ecommerce
+module_acp_introduction = OpenAI has developed a ecommerce protocol called Agentic Commerce Protocol.<br>
+It allows to display the product inside Gpt with a payment instant. This module implement this protocol, the payment and allow to follow the order accross ClicShopping.<br>
+You must be registred at OpenAI to use this ACP protocol.
+
+module_ucp_title = Google UCP Beta Ecommerce
+module_ucp_short_title =  Google UCP Beta Ecommerce
+module_ucp_introduction = Google has developed an open ecommerce protocol called Universal Commerce Protocol (UCP).<br>
+It allows agents to retrieve products, create checkout sessions, and complete payments through standardized endpoints.
+
+
+module_cai_title = Product Cockpit AI
+module_cai_short_title =  Product Cockpit AI
+module_cai_introduction = Product Cockpit AI analyse your product with different settings and give recommendations.<br>
+
+section_domain_overview = Domain Overview
+subsection_domain_info = Domain Information
+subsection_supported_entities = Supported Entities
+subsection_query_capabilities = Query Capabilities
+subsection_semantic_queries = Semantic Queries
+subsection_analytics_queries = Analytics Queries
+subsection_hybrid_queries = Hybrid request
+
+label_domain_name = Domain Name
+label_domain_id = Domain ID
+label_pure_llm_mode = Pure LLM Mode
+label_language_processing = Language Processing
+
+status_enabled = Enabled
+domain_ecommerce = E-Commerce
+text_english_processing = All internal processing is done in English
+
+entity_products = Products
+entity_products_desc = Product catalog with descriptions, prices, and inventory
+entity_orders = Orders
+entity_orders_desc = Customer orders with status, items, and payment information
+entity_customers = Customers
+entity_customers_desc = Customer profiles with contact and account information
+entity_categories = Categories
+entity_categories_desc = Product categories and hierarchies
+entity_manufacturers = Manufacturers
+entity_manufacturers_desc = Product manufacturers and brand information
+entity_suppliers = Suppliers
+entity_suppliers_desc = Product suppliers and sourcing information
+entity_reviews = Reviews
+entity_reviews_desc = Customer product reviews and ratings
+entity_return_orders = Return orders
+entity_return_orders_desc = Product return requests and refund information
+entity_reviews_sentiment = Review sentiment
+entity_reviews_sentiment_desc = Sentiment analysis of customer reviews
+
+
+text_info_message_warning = This module is not activate. Please activate it in the configuration page.
+
+
+text_query_capabilities = The e-commerce domain supports both semantic, analytics and hybrid queries:
+
+query_example_1 = Find products similar to "running shoes"
+query_example_2 = What are the top-selling products this month?
+query_example_3 = Show me customer reviews for product X
+
+query_example_4 = Calculate total revenue by category
+query_example_5 = List orders with status "pending"
+query_example_6 = Show customer purchase history
+
+query_example_7 = Give me the price of the iPhone 17 Pro and Article 4 of the terms and conditions
+query_example_8 = Give me the price of the iPhone 17 Pro and the stock quantities of the products
+query_example_9 = Calculate the revenue by quarter and give me the best-selling products per quarter in descending order

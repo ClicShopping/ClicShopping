@@ -1,0 +1,7 @@
+cfg_ecommerce_insight_title = Order Insight
+cfg_ecommerce_insight_description = This agent is linked to the ordering process and provides analytical information.
+It's a basic module that can be expanded to create more added value. Set True to enable or not the module
+
+cfg_ecommerce_insight_true = True
+cfg_ecommerce_insight_false = False
+

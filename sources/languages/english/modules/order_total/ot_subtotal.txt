@@ -1,0 +1,2 @@
+ module_order_total_subtotal_title = Sub-Total
+ module_order_total_subtotal_description = Order Sub-Total<br /><br /><font color="#FF0000"> <strong> Warning! </strong> Disabling this module will restore the default values</font>

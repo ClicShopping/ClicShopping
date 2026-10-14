@@ -1,0 +1,93 @@
+.bi-power::before {
+  color: #f80404;
+  font-weight: bold;
+  padding-bottom: 0.2rem;
+}
+
+.bi-exclamation-circle-fill::before {
+  padding-bottom: 0.2rem;
+}
+
+.bi-layout-three-columns::before {
+  font-weight: bold;
+}
+
+.bi-check::before {
+  font-weight: bold !important;
+  font-size: 2rem;
+}
+
+.bi-x::before {
+  font-weight: bold !important;
+  font-size: 2rem;
+}
+
+.bi-folder-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-bell-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-cone-striped::before {
+  font-size: 1.5rem;
+}
+
+.bi-archive-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-list-ul::before {
+  font-size: 1.5rem;
+}
+
+.bi-person-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-bag-check-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-shop::before {
+  font-size: 1.5rem;
+}
+
+.bi-plus-circle-fill {
+  font-size: 1.2rem;
+  padding-bottom: 0.2rem;
+}
+
+.bi bi-dash-circle-fill {
+  font-size: 1.2rem;
+  padding-bottom: 0.2rem;
+}
+
+.bi-arrow-up-right-square::before {
+  font-size: 1.5rem;
+}
+
+.bi-geo-alt-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi bi-truck::before {
+  font-size: 1.5rem;
+}
+
+.bi bi-arrows-move::before {
+  font-size: 1.5rem;
+}
+
+.bi-skip-backward-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-info-circle-fill::before {
+  font-size: 1.5rem;
+}
+
+.bi-info-circle::before {
+  font-size: 1.5rem;
+}

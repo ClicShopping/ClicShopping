@@ -1,0 +1,5 @@
+cfg_chatgpt_websearch_global_status_title = Enable WebSearch Globally
+cfg_chatgpt_websearch_global_status_description = Global control for WebSearch functionality. When disabled, no agents can perform web searches regardless of individual actor settings. Useful for internal-only deployments
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

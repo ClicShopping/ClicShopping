@@ -1,0 +1,36 @@
+text_label_seo_analyzed = Launch SEO Analysis
+text_seo_not_analyzed = Product has not been analyzed by SEO agent. Launch SEO analysis to compute seo_score and identify optimization opportunities.
+
+text_label_optimize_seo = Optimize SEO
+text_seo_low_score = SEO score is below {{seoThreshold}}/100. Improve meta tags, keywords, structured data, and content optimization.
+
+text_label_optimize_description = Optimize Description
+text_description_poor = Product description score is below {{$descThreshold}}. Enrich description with detailed features, benefits, and use cases.
+
+text_label_create_promotion = Optimize Commercial Offer
+text_special_needed = Product is underperforming (Q2/Q3). A strategic promotion (new or updated) is recommended to move it toward Q1.
+
+text_label_add_featured_status = Boost Visibility (Featured)
+text_featured_needed = Increase exposure for this high-quality product. Ensure Featured status is active to drive more traffic.
+
+text_label_add_favorites_status = Boost Visibility (Favorites)
+text_favorites_needed = Increase exposure for this high-quality product. Ensure Favorites status is active to drive more traffic.
+
+text_label_add_cross_recommendations = Enhance Recommendations
+text_cross_sell_needed = Leverage this product's quality by adding related items to increase the average basket size. Minimum {{recoMin}} recommendations required.
+
+text_label_reposition_category = Reposition Category
+text_category_reposition = Product in Q3 with return rate ≤ {{$retThreshold}}. Consider repositioning in a different category or adjusting pricing strategy.
+
+text_label_consider_removal = Consider Removal
+text_consider_removal = Product in Q3 with return rate above {{$retThreshold}}. Strongly consider removing from catalog to reduce costs and customer dissatisfaction.
+
+text_label_add_featured_status = Boost Hidden Gem !
+text_hidden_gem = This product receives qualified traffic (intent ratio > {{$highIntentMin}}) but has not yet generated any sales.
+Its commercial potential is real, but its visibility is insufficient.
+Action: Featured placement to trigger the first conversion.
+
+text_label_create_promotion = Boost Trending Product
+text_trending_product = The weighted popularity of this product exceeds {{$trendMultiplier}} × catalog average — organic trend signal detected.
+Action: Immediate promotion to maximize conversion while traffic is qualified.
+

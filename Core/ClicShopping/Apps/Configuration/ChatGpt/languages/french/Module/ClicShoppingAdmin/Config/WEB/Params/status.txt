@@ -1,0 +1,5 @@
+cfg_ecommerce_web_status_title = Statut
+cfg_ecommerce_web_status_description = Activer ou désactiver le module (valeur True)
+
+cfg_ecommerce_web_status_true = True
+cfg_ecommerce_web_status_false = False

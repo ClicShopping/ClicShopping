@@ -1,0 +1,30 @@
+id bigint(20) unsigned not_null auto_increment comment(Primary key - unique identifier for each product impression event)
+products_id int(11) unsigned not_null comment(FK to products table - product identifier)
+language_id int(11) not_null comment(FK to languages table - language identifier (context of display))
+page_code varchar(64) not_null comment(Logical page identifier (index, product_info, specials, featured, favorites, search, etc.))
+module_code varchar(64) not_null comment(Display module identifier (box_new_products, box_featured, box_specials, etc.), reusable across pages)
+module_position varchar(10) not_null comment(Position of the module can be left, right, middle, top, bottom)
+module_sort_order smallint(5) unsigned not_null default (0) comment(Sort order of the module inside the module (ordering index starting at 0 or 1))
+weight decimal(3,2) not_null default (0.10) comment(Module weight)
+displayed_at datetime not_null comment(Timestamp when the product was rendered/displayed to the user)
+session_hash binary(32) not_null comment(SHA-256 hash of session ID (32 bytes) for deduplication and session-level analysis)
+customer_id int(11) default null comment(FK to customers table - null if visitor is not authenticated)
+customer_group_id int(11) default null comment(FK to customer groups - pricing/segmentation context)
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(metadata)) comment(Optional JSON payload (A/B test, device, source context, campaign, rendering details))
+
+--
+primary id
+idx_products_date products_id displayed_at
+idx_page_module_date page_code module_code displayed_at
+idx_language_date language_id displayed_at
+idx_customer customer_id
+idx_customer_group customer_group_id
+idx_session session_hash
+idx_module_position page_code module_code module_position module_sort_order
+idx_spam_check session_hash products_id module_code displayed_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment PRODUCT IMPRESSIONS - one row each time a product is displayed to a visitor, with the page, the module, the position and a weight. It measures EXPOSURE: how often a product was shown and by which module. Use it for merchandising visibility questions.

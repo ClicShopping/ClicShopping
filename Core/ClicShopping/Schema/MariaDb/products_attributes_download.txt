@@ -1,0 +1,11 @@
+products_attributes_id int not_null comment(FK to products_attributes table - product attribute that is downloadable)
+products_attributes_filename varchar(255) default('') not_null comment(Filename of downloadable file for this attribute)
+products_attributes_maxdays int(2) default(0) comment(Maximum days for download availability - 0 for unlimited)
+products_attributes_maxcount int(2) default(0) comment(Maximum number of downloads allowed - 0 for unlimited)
+--
+primary products_attributes_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Downloadable file attached to a product attribute: its filename and the download quota (maximum count and availability window).

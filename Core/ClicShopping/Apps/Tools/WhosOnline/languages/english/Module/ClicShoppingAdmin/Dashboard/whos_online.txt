@@ -1,0 +1,10 @@
+module_admin_dashboard_whos_online_app_title = Do you want to install Whos Online Dashboard ?
+module_admin_dashboard_whos_online_app_description = Show who's online on the dashboard.
+
+module_admin_dashboard_whos_online_app_table_heading_online = Online
+module_admin_dashboard_whos_online_app_table_heading_full_name = Name
+module_admin_dashboard_whos_online_app_table_heading_ip_address = IP Address
+module_admin_dashboard_whos_online_app_table_heading_user_agent = Agent
+
+module_admin_dashboard_whos_online_app_customers_online = Currently the online customers is :
+

@@ -1,0 +1,193 @@
+<?php
+/**
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+namespace ClicShopping\AI\CoreAI\Memory\SubConversationMemory;
+
+use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Config\DomainConfig;
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
+
+/**
+ * ReferenceResolver
+ *
+ * Agnostic, agentic resolution of contextual references for a search (sub-)query.
+ * Given a query, the last discussed entity and the recent conversation turns, an LLM decides
+ * whether the query references that entity and, if so, rewrites it into a self-contained query.
+ * Self-contained queries (documents, policies, unrelated topics) are returned untouched — no
+ * entity pollution (§R).
+ *
+ * Fail-safe: any uncertainty (missing name, bare id, LLM error, unparseable output) returns
+ * the original query with references_entity=false. The worst case is a clean, un-enriched
+ * search — never a polluted one.
+ */
+class ReferenceResolver
+{
+  private const MAX_ANSWER_CHARS = 400;
+  private SecurityLogger $logger;
+  private bool $debug;
+  /** @var callable(string):string */
+  private $llm;
+
+  /**
+   * @param bool $debug Enable debug logging
+   * @param callable|null $llm Optional LLM callable (string $prompt): string — injected in tests.
+   *                           Defaults to the Gpt façade.
+   * @param SecurityLogger|null $logger Optional logger — injected in tests (e.g. a higher log
+   *                                    level) so the fail-safe warnings do not pollute the
+   *                                    shared security log during test runs.
+   */
+  public function __construct(bool $debug = false, ?callable $llm = null, ?SecurityLogger $logger = null)
+  {
+    $this->logger = $logger ?? new SecurityLogger();
+    $this->debug = $debug;
+    $this->llm = $llm ?? static fn(string $prompt): string => (string)Gpt::getGptResponse($prompt, 300, 0.0);
+  }
+
+  /**
+   * Resolve contextual references in a query against the last entity.
+   *
+   * @param string $query Search query (in English — already translated upstream)
+   * @param array $lastEntity Last entity context (keys: type, name, id)
+   * @param array<int, array{user: string, assistant: string}> $history Recent turns in English,
+   *                                                                    oldest first
+   * @return array{resolved_query: string, references_entity: bool}
+   */
+  public function resolve(string $query, array $lastEntity, array $history = []): array
+  {
+    $unchanged = ['resolved_query' => $query, 'references_entity' => false];
+
+    $name = $lastEntity['name'] ?? null;
+    // §R guard: a missing name or a bare numeric id is never a useful search token.
+    if ($name === null || trim((string)$name) === '' || ctype_digit(trim((string)$name))) {
+      return $unchanged;
+    }
+
+    $entityType = (string)($lastEntity['type'] ?? 'entity');
+
+    // Internal prompt -> English, from the agnostic Agents/ layer.
+    DomainConfig::loadAgnosticLanguageFile('rag_reference_resolution', 'en');
+    $turns = $this->formatHistory($history);
+
+    if ($turns === '') {
+      $turns = CLICSHOPPING::getDef('text_reference_resolution_no_history');
+    }
+
+    $prompt = CLICSHOPPING::getDef('text_reference_resolution_prompt', [
+      'query' => $query,
+      'entity_type' => $entityType,
+      'entity_name' => (string)$name,
+      'history' => $turns,
+    ]);
+
+    try {
+      $raw = ($this->llm)($prompt);
+    } catch (\Throwable $e) {
+      $this->logger->logSecurityEvent('ReferenceResolver LLM error: ' . $e->getMessage(), 'warning');
+      return $unchanged;
+    }
+
+    $parsed = $this->parseJson((string)$raw);
+    if ($parsed === null) {
+      $this->logger->logSecurityEvent('ReferenceResolver JSON parse failure', 'warning');
+      return $unchanged;
+    }
+
+    $references = (bool)($parsed['references_entity'] ?? false);
+    $resolved = trim((string)($parsed['resolved_query'] ?? ''));
+
+    if (!$references || $resolved === '') {
+      return $unchanged;
+    }
+
+   // A resolution that rewrote nothing resolved nothing. 
+    if ($this->isNoOpRewrite($query, $resolved)) {
+      $this->logger->logSecurityEvent(
+        "ReferenceResolver: claimed a reference but rewrote nothing on '{$query}' - verdict refused",
+        'info'
+      );
+
+      return $unchanged;
+    }
+
+    if ($this->debug) {
+      $this->logger->logSecurityEvent("ReferenceResolver: '{$query}' → '{$resolved}'", 'info');
+    }
+
+    return ['resolved_query' => $resolved, 'references_entity' => true];
+  }
+
+  /**
+   * Whether the "resolved" query is the input again, once spacing and case are set aside.
+   *
+   * Comparison is deliberately loose: trimming or re-capitalising is not a rewrite either, and a
+   * verdict resting on that much is not evidence that a reference was resolved.
+   *
+   * @param string $query Query submitted to the resolver
+   * @param string $resolved Query the model returned
+   * @return bool True when nothing meaningful changed
+   */
+  private function isNoOpRewrite(string $query, string $resolved): bool
+  {
+    $normalise = static fn(string $s): string => mb_strtolower(preg_replace('/\s+/u', ' ', trim($s)) ?? '');
+
+    return $normalise($query) === $normalise($resolved);
+  }
+
+  /**
+   * Render the recent turns for the prompt. Assistant answers are capped: only their opening
+   * matters here (did the entity come from a result list), and a full analytics answer would
+   * bury the user turns that carry the decision.
+   *
+   * Pure formatter — reads no language definition; the caller substitutes the "no history"
+   * wording when this returns an empty string.
+   *
+   * @param array<int, array{user: string, assistant: string}> $history
+   * @return string Empty when there is no usable turn
+   */
+  private function formatHistory(array $history): string
+  {
+    $lines = [];
+    foreach ($history as $turn) {
+      $user = trim((string)($turn['user'] ?? ''));
+      if ($user === '') {
+        continue;
+      }
+
+      $assistant = trim((string)($turn['assistant'] ?? ''));
+      if (mb_strlen($assistant) > self::MAX_ANSWER_CHARS) {
+        $assistant = mb_substr($assistant, 0, self::MAX_ANSWER_CHARS) . '…';
+      }
+
+      $lines[] = "User: {$user}\nAssistant: {$assistant}";
+    }
+
+    return implode("\n", $lines);
+  }
+
+  /**
+   * Parse a JSON object out of a possibly noisy LLM response (markdown fences, prose).
+   *
+   * @return array<string,mixed>|null
+   */
+  private function parseJson(string $raw): ?array
+  {
+    $s = trim($raw);
+    if (str_starts_with($s, '```')) {
+      $s = (string)preg_replace('/^```[a-zA-Z]*\s*|\s*```$/', '', $s);
+    }
+    $start = strpos($s, '{');
+    $end = strrpos($s, '}');
+    if ($start === false || $end === false || $end < $start) {
+      return null;
+    }
+    $data = json_decode(substr($s, $start, $end - $start + 1), true);
+
+    return is_array($data) ? $data : null;
+  }
+}

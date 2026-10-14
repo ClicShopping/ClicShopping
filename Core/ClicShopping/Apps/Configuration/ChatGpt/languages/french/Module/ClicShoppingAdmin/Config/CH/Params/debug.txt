@@ -1,0 +1,7 @@
+cfg_chatgpt_debug_title = Debug / Log
+cfg_chatgpt_debug_description = Son activation vous permettra d'avoir des informations complétes sur les erreurs et les problèmes rencontrés par l'application ChatGPT.<br>
+Il est recommandé de l'activer uniquement en cas de besoin pour le débogage.
+
+cfg_chatgpt_debug_true = True
+cfg_chatgpt_debug_false = False
+

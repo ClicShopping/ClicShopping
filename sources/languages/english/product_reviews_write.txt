@@ -1,0 +1,13 @@
+navbar_title = Reviews
+navbar_title_1 = Write
+
+heading_title_reviews = Do you want to let a comments ?
+
+email_subject_customer = Your comment on {{store_name}}
+email_text_customer = Hello, <br /><br />Thank you to let us your comment. We will check and valid. Please, note than all comment not responding at our ethic chart will not validate. <br /><br />. Regards, Customer services.
+
+email_subject = New comment by a customer on {{store_name}}
+email_text = A new comment has been inserted by a customer concerning a product. You can consult your administration to validate or not this comment
+
+message_customer = Thank you. Your comment a been taken and online soon if it meets our ethical charter
+text_alert_products_reviews = please, insert more words in your comment

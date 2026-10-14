@@ -1,0 +1,21 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier for each marketplace file record)
+file_id int(11) not_null comment(FK to marketplace_files table - file identifier)
+file_name varchar(255) default null comment(Name of the marketplace file or extension)
+date_created date default null comment(Date when file was originally created by author)
+date_updated date default null comment(Date when file was last updated by author)
+file_version varchar(255) default null comment(Version number of the file - e.g. 1.0.0, 2.3.1)
+file_downloads int(11) not_null comment(Total number of downloads for this file)
+file_rating int(11) not_null comment(Average rating score for this file)
+file_prices decimal(15,4) default null comment(Price of the file in marketplace currency - NULL for free files)
+file_date_added date default null comment(Date when file was added to marketplace)
+file_url_screenshot text default null comment(URL to screenshot or preview image of the file)
+file_url_download text default null comment(URL to download the file from marketplace)
+is_installed tinyint(4) not_null default(0) comment(Installation status - 0: not installed, 1: installed locally)
+--
+primary id
+index_file_id file_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

@@ -1,0 +1,2 @@
+module_seo_title_h1_title = Souhaitez-vous afficher sur le titre de la boutique ?
+module_seo_title_h1_description = Affiche le titre de la boutique

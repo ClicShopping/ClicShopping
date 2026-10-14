@@ -1,0 +1,6 @@
+module_table_text_title = Expédition par Table
+module_table_short_title = Expédition par Table
+module_table_public_title = Expédition par Table
+module_table_title = Expédition par Table
+module_table_text_way = Meilleur chemin
+module_shipping_table_text_way = Meilleur chemin

@@ -1,0 +1,6 @@
+modules_products_reviews_write_button_process_title = Ecriture Commentaire : Souhaitez vous permettre au client de publier son commentaire (boutons de process) ?
+modules_products_reviews_write_button_process_description = Permettre au client de valider son commentaire)
+
+ button_continue = Continuer
+ button_write = Retour
+

@@ -1,0 +1,11 @@
+heading_dynamic_pricing_title = Dynamic Pricing History
+table_heading_rules_id = Rule ID
+table_heading_products = Product
+table_heading_base_price = Base Price
+table_heading_dynamic_price = Dynamic Price
+table_heading_rule_applied = Applied Rule
+table_heading_last_date = Last added
+table_heading_total_occurrences = total occurrences
+table_heading_action = Action
+
+button_delete_all = Delete All

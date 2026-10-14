@@ -1,0 +1,12 @@
+heading_title = Products viewed
+
+image_delete = Delete
+icon_preview = Preview
+
+table_heading_number = No.
+table_heading_products = Products
+table_heading_viewed = Viewed
+table_heading_clear = Clear
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

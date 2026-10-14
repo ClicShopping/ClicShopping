@@ -1,0 +1,2 @@
+module_header_message_stack_title = Souhaitez-vous activer le module d'affichage des erreurs ou des infos?
+module_header_message_stack_description = Affiche une erreur ou une info si quelque chose se passe sur le site au client

@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+div.advancedSearchHelpTitle {
+  padding-top: 0.625rem;
+}
+
+span.advancedSearchHelpTitle {
+  font-weight: bold;
+}
+
+
+div.advancedSearchHelpText {
+  height: 51.25rem;
+}
+
+span.advancedSearchHelpText {
+  font-size: small;
+}
+
+li.modulesAdvancedSearchHelp {
+  font-size: small;
+}

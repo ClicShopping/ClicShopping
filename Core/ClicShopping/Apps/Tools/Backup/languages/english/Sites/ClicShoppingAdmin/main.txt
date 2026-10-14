@@ -1,0 +1,87 @@
+heading_title = Backup BD
+module_bc_title = Backup BD
+module_bc_short_title = Backup BD
+
+text_backup = Backup BD
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a backup BD form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_bc_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_backup_access = Backup BD
+button_reset = Reset
+button_analyse = Analyse
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+
+table_heading_title = Title
+table_heading_file_date = Date
+table_heading_file_size = Size
+table_heading_statistics = Statistics
+table_heading_action = Action
+table_heading_info_compression = Compression
+
+text_info_heading_new_backup = New Backup
+text_info_heading_restore_local = Restore Local
+text_info_new_backup = Do not interrupt the backup process which might take a couple of minutes.
+text_info_unpack = <br /><br />(after unpacking the file from the archive)
+
+text_info_restore =  Restore {{restore}}
+text_info_restore_local = Do not interrupt the restoration process.<br /><br />The larger the backup, the longer this process takes!
+text_info_restore_local_raw_file = The file uploaded must be a raw sql (text) file.
+text_info_date = Date:
+text_info_size = Size:
+text_info_compression = Compression:
+text_info_use_gzip = Use GZIP
+text_info_use_zip = Use ZIP
+text_info_use_no_compression = No Compression (Pure SQL)
+text_info_download_only = Download only (do not store server side)
+text_info_best_through_https = Best through a HTTPS connection
+text_delete_intro = Are you sure you want to delete this backup?
+text_no_extension = None
+text_backup_directory = Backup Directory:
+text_last_restoration = Last Restoration:
+text_forget = (<u>forget</u>)
+
+error_backup_directory_does_not_exist = Error: Backup directory does not exist. Please set this in configure.php.
+error_backup_directory_not_writeable = Error: Backup directory is not writeable.
+error_download_link_not_acceptable = Error: Download link not acceptable.
+error_file_not_removeable = Error : File not removeable
+success_last_restore_cleared = Success: The last restoration date has been cleared.
+success_database_saved = Success: The database has been saved.
+success_database_restored = Success: The database has been restored.
+success_backup_deleted = Success: The backup has been removed.
+
+button_backup = Save
+button_restore = Restore
+button_cancel = Cancel
+button_restore_file = Restore
+
+icon_delete = Delete
+icon_restore = Restore
+icon_file_downlad = Download
+
+php_date_time_format = m/d/Y H:i:s

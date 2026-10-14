@@ -1,0 +1,16 @@
+  id int(10) unsigned not_null auto_increment comment(Primary key - unique identifier for each page)
+  user_id varchar(255) not_null comment(id of administrator - unique administrator id)
+  started_at int(10) unsigned not_null comment(Start date)
+  process_id int(10) unsigned default null comment(process id)
+
+  --
+  primary id
+  idx_user_id user_id
+  idx_started_at started_at
+  idx_user_started user_id started_at
+
+  ##
+  engine innodb
+  character_set utf8mb4
+  collate utf8mb4_unicode_ci
+  ai_schema = exclude

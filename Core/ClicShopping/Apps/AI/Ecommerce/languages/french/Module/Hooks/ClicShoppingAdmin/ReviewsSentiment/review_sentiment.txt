@@ -1,0 +1,13 @@
+text_review_sentiment_products_id = product_id
+text_review_sentiment_review_id = review_id
+text_review_sentiment_language_id = language_id
+text_review_sentiment_sentiment_status = sentiment status
+text_review_sentiment_sentiment_approved = sentiment apporuvé
+text_review_sentiment_date_added = date ajout
+text_review_sentiment_description = Description sentiment
+text_review_sentiment_vote = Vote
+text_review_sentiment_customer_id = ID du client (vote)
+text_review_sentiment_vote_sentiment = Sentiment du vote
+text_warning_mesage = Analyse des sentiments des consommateurs non realisés: vous devez avoir au moins {{review_number}} commentaire(s) pour être analysé(s).
+text_warning_gpt_disabled = ChatGPT doit être activé et configuré pour générer l'analyse de sentiment.
+text_succes_mesage = Analyse des sentiments effectués.

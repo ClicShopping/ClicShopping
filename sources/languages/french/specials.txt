@@ -1,0 +1,9 @@
+navbar_title = Promotions
+heading_title = A ne pas manquer !
+
+text_specials_seo_title = Specials
+text_no_products = Aucune promotion en ce moment
+text_date_added = Date d'ajout
+text_manufacturer = Modèle
+text_price = Prix
+text_product_options = Options

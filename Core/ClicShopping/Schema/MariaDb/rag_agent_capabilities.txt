@@ -1,0 +1,18 @@
+capability_id int(11) not_null auto_increment comment(Auto-incrementing capability ID)
+agent_id varchar(100) not_null comment(Agent identifier)
+output_type varchar(50) not_null comment(Type of output the agent can evaluate)
+capability_level enum('novice','competent','expert') not_null comment(Proficiency level for this output type)
+registered_at timestamp null default(current_timestamp) comment(When the capability was registered)
+updated_at timestamp null default(current_timestamp) on update current_timestamp() comment(Last update timestamp)
+
+--
+primary capability_id
+unique unique_agent_output agent_id output_type
+idx_output_type output_type
+idx_capability_level capability_level
+idx_agent_id agent_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

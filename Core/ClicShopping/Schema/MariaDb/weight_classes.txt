@@ -1,0 +1,11 @@
+weight_class_id int(11) not_null comment(Primary key - unique identifier for each weight class)
+weight_class_key varchar(255) not_null comment(Unique key for weight class - e.g. kg, lb, oz, g)
+language_id int(11) not_null comment(FK to languages table - language for this weight class name)
+weight_class_title varchar(255) not_null comment(Display name for weight class - e.g. Kilograms, Pounds, Ounces)
+--
+primary weight_class_id language_id
+idx_weight_classes_language_id language_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

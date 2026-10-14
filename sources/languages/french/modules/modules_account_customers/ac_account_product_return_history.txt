@@ -1,0 +1,11 @@
+module_account_product_return_history_title =  Souhaitez-vous installer le résumé des retours du client ?
+module_account_product_return_history_description = Installe le résumé des retours du client ?
+
+module_account_product_return_history_heading_title = Historiques retour produit
+module_account_product_return_history_ref = Référence :
+module_account_product_return_history_info = Détail du suivi
+module_account_product_return_history_product_name = Nom du produit :
+module_account_product_return_history_product_product_model = Référence produit :
+module_account_product_return_closed = Fermé
+module_account_product_return_history_product_order = Référence commande :
+module_account_product_return_history_product_quantity = Quantité retournée :

@@ -1,0 +1,19 @@
+specials_id int not_null auto_increment comment(Primary key - unique identifier for each special price)
+products_id int not_null comment(FK to products table - product with special pricing)
+specials_new_products_price decimal(15,4) not_null comment(Special discounted price for the product)
+specials_date_added datetime comment(Timestamp when special price was created)
+specials_last_modified datetime comment(Timestamp of last modification to special price)
+expires_date datetime comment(Expiration date when special price ends - null for no expiration)
+date_status_change datetime comment(Timestamp when status was last changed)
+status int(1) default(1) not_null comment(Special price status - 0: inactive, 1: active)
+scheduled_date datetime comment(Future date when special price becomes active - null for immediate)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group eligible for special, 0: all groups)
+flash_discount int(1)  default(0) not_null comment(Flash sale flag - 0: regular special, 1: flash discount with urgency)
+--
+primary specials_id
+idx_specials_products_id products_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment DISCOUNT CAMPAIGN - one row per product on promotion, with the promotional price (specials_new_products_price) and its validity window. It overrides the catalogue price of products while active. It is not the price actually sold, which is in orders_products.

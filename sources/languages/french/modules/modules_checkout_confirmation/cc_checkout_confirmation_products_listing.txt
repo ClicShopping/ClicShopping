@@ -1,0 +1,9 @@
+module_checkout_confirmation_products_listing_title = Souhaitez-vous afficher dans le récapitulatif de la liste des produits commandés ?
+module_checkout_confirmation_products_listing_description = Affiche dans le récapitulatif de la liste des produits commandés
+
+module_checkout_confirmation_products_listing_text_edit = Editer
+module_checkout_confirmation_products_listing_heading_products = Produits
+module_checkout_confirmation_products_listing_heading_tax = Taxes
+module_checkout_confirmation_products_listing_heading_total = Total
+module_checkout_confirmation_products_listing_information = Votre commande
+

@@ -1,0 +1,2 @@
+module_header_tags_products_description_title = Souhaitez vous ajouter les metas tag pour la page des description de produit ?
+module_header_tags_products_description_description = Ajoute la meta tag pour la page des description de produits

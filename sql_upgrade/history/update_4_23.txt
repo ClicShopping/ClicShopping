@@ -1,0 +1,10 @@
+
+INSERT INTO `clic_administrator_menu` VALUES(818, '', 7, 3, 1, '', 1, 'app_ai_ecommerce', 1);
+INSERT INTO `clic_administrator_menu` VALUES(819, 'index.php?A&AI\\Ecommerce&DashboardProductCockpitAI', 818, 1, 1, '', 1, 'app_ai_ecommerce', 1);
+
+
+
+INSERT INTO `clic_administrator_menu_description` VALUES(818, 'Cockpit AI', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(818, 'Cockpit IA', 2);
+INSERT INTO `clic_administrator_menu_description` VALUES(819, 'Products AI', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(819, 'Produits IA', 2);

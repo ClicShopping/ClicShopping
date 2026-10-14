@@ -1,0 +1,6 @@
+navbar_title_1 = Succès
+
+text_success = Votre demande a été envoyée avec succès au service client {{store_name}}
+modules_contact_us_success_text_success = Merci, nous allons étudier attentivement votre requête et vous renvenir sous peu
+
+

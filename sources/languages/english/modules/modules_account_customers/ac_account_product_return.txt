@@ -1,0 +1,42 @@
+module_account_product_return_title = Product return
+module_account_product_return_order_title = order information
+
+module_account_product_return_heading_title = Back product information
+module_account_product_return_product_return_title = Product return
+
+text_name = name
+text_email_address = email
+text_telephone_number = phone
+text_address = address
+text_customer_information = customer address
+text_customer_shipping_information = shipping information
+text_opened = unpacked product
+text_unopened = unlocked product
+
+module_account_product_return_order_id = order id:
+module_account_product_return_order_date = Purchase date:
+module_account_product_return_product_name = product name:
+module_account_product_return_product_model = product reference:
+
+module_account_product_return_product_quantity = quantity to return
+module_account_product_return_reason_return = reason for the return
+module_account_product_return_product_opened = open / unpacked product
+module_account_product_return_faulty = comments useful for treatment
+
+button_back = return
+button_continue = continue
+
+
+email_text_subject = product return request {{store_name}}
+email_text_content = a customer sent you a request for information concerning the possible return of a product. Please connect to your administration space in order to know the reasons for this request
+email_text_subject_customer = taking into account your request {{store_name}}
+email_text_subject_customer = hello, <br />
+We have taken into account your request for support. We will treat it very quickly. <br />
+By connecting to your administration space, you can consult the history of processing your request and contact us if you have comments to submit. <br />
+We wish you a good day </br>
+Regards <br />
+The support team
+
+
+text_alert_info = Products from the products are subject to clauses. Please refer to our general conditions to find out the details of the information and the return conditions.
+Your withdrawal time is set to {{withdrawal}} days from the date of purchase. Regarding the product warranty, if the product is guaranteed, please refer to the specificity of the product.

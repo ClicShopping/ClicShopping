@@ -1,0 +1,1 @@
+error_sql_suggestion_2 = Example: "What are today's sales?"

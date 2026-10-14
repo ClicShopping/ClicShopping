@@ -1,0 +1,2 @@
+module_action_recorder_admin_login_title = Administration des connexions
+module_action_recorder_admin_login_description = Enregistrement des connexions dans l'administration.

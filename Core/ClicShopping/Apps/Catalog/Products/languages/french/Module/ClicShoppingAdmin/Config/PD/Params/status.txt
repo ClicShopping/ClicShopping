@@ -1,0 +1,6 @@
+cfg_catalog_products_status_title = Statut
+cfg_catalog_products_status_description = Souhaitez vous activer ce module à votre boutique
+
+cfg_catalog_products_status_true = True
+cfg_catalog_products_status_false = False
+

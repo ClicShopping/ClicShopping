@@ -1,0 +1,5 @@
+
+ modules_contact_us_form_button_process_title = Do you want to display the process button inside the contact form ?
+ modules_contact_us_form_button_process_description = Display the process button inside the contact form (important to let on true)
+
+ button_continue = Continue

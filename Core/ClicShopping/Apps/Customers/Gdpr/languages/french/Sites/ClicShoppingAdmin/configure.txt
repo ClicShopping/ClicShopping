@@ -1,0 +1,4 @@
+heading_title = Membres B2B
+module_me_short_title = Membres B2B
+
+title_menu = Membres B2B

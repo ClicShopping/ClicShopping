@@ -1,0 +1,11 @@
+module_checkout_shipping_listing_title = Souhaitez-vous afficher le listing des modules d'expéditions ?
+module_checkout_shipping_listing_description = Affiche le listing des modules d'expéditions
+
+module_checkout_shipping_table_heading_shipping_method = Méthode d'expédition
+module_checkout_shipping_text_choose_shipping_method = Veuillez sélectionner une méthode d'expédition
+module_checkout_shipping_title_please_select = Veuillez choisir
+
+module_checkout_shipping_text_enter_shipping_information = This is currently the only shipping method available to use on this order
+module_checkout_shipping_free_shipping_title = Expédition gratuite
+module_checkout_shipping_free_shipping_description = Expédition gratuite pour les commandes supérieures à %s
+

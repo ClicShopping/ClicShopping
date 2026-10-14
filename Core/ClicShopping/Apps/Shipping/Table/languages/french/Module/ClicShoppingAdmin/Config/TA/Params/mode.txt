@@ -1,0 +1,6 @@
+cfg_table_mode_title = Mode d'expédition
+cfg_table_mode_description = Veuillez choisir le cout des frais d'expédition, basé sur la commande totale ou le poids
+
+cfg_table_mode_weight = Poids
+cfg_table_mode_price = Prix
+

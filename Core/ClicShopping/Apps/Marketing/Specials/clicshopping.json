@@ -1,0 +1,42 @@
+{
+  "title": "Specials Products App",
+  "app": "Specials",
+  "vendor": "Marketing",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "HeaderTags": {
+      "Specials": "Module\\HeaderTags\\Specials"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/Products": {
+        "PageTab": "Module\\Hooks\\ClicShoppingAdmin\\Products\\PageContent",
+        "Save": "Module\\Hooks\\ClicShoppingAdmin\\Products\\Save",
+        "RemoveProduct": "Module\\Hooks\\ClicShoppingAdmin\\Products\\RemoveProduct"
+      },
+      "ClicShoppingAdmin/CustomersGroup": {
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\CustomersGroup\\Delete"
+      }
+    }
+  },
+  "canonical": {
+    "Shop": {
+      "parameters": []
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "Products&Specials": "Sites\\Shop\\Pages\\Specials"
+    }
+  }
+}

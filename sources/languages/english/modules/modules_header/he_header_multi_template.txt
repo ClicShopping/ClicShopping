@@ -1,0 +1,42 @@
+modules_header_multi_template_title = Do you want to enable this multi-template system in the header ?
+modules_header_multi_template_description = Add a multi-template system in the header store
+
+modules_header_multi_template_template_categories = Categories
+modules_header_multi_template_template_toggle_nav = Catégories
+
+modules_header_multi_template_site_settings = Options
+modules_header_multi_template_account_logged_in = Login
+modules_header_multi_template_cart_no_contents = No product
+
+modules_header_multi_template_account_logoff = Log off
+modules_header_multi_template_account_login = Sign in - Create
+modules_header_multi_template_account_register = Sign up
+
+modules_header_multi_template_create_account = Create an account
+modules_header_multi_template_my_account = My account
+modules_header_multi_template_account_history = My order history
+modules_header_multi_template_account_address_book = My book address
+
+modules_header_multi_template_account_password = Password
+modules_header_multi_template_title_advanced_search = Advanced search
+
+modules_header_multi_template_header_search = Search
+modules_header_multi_template_currency = Currency
+modules_header_multi_template_title_contact_us = Contact us
+modules_header_multi_template_header_email_address = Email
+modules_header_multi_template_password_forgotten = lost password
+
+modules_header_multi_template_shopping_cart_view_cart = Your Cart
+modules_header_multi_template_shopping_cart_no_content = no items
+modules_header_multi_template_shopping_cart_product = item(s)
+modules_header_multi_template_shopping_cart_view_cart = View Cart
+modules_header_multi_template_shopping_cart_checkout = Checkout
+modules_header_multi_template_shopping_cart_total_content = Total
+
+table_heading_quantity = Quantity
+table_heading_total_cart = Total
+table_heading_products = Product
+
+template_does_not_exist = No template
+
+pull_down_default_manufacturer = Our brands

@@ -1,0 +1,18 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each recorded action)
+module varchar(255) not_null comment(Module name that triggered the action - e.g. login, password_reset, api_access)
+user_id int comment(FK to customers or administrators table - user who performed action, null for anonymous)
+user_name varchar(255) comment(Username or email of user who performed action)
+identifier varchar(255) not_null comment(Unique identifier for tracking - IP address, session ID, or user identifier)
+success char(1) comment(Action result - 1: success, 0: failure)
+date_added datetime not_null comment(Timestamp when action was recorded)
+--
+primary id
+idx_action_recorder_module module
+idx_action_recorder_user_id user_id
+idx_action_recorder_identifier identifier
+idx_action_recorder_date_added date_added
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

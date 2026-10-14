@@ -1,0 +1,3 @@
+module_security_check_extended_admin_backup_directory_listing_title = ClicShopping/Work/Backups/ Directory Listing
+module_security_check_extended_admin_backup_directory_listing_http_200 = Je suis capable d'accéder au répertoire backup - veuillez éviter que la liste des répertoires s'affiche.
+

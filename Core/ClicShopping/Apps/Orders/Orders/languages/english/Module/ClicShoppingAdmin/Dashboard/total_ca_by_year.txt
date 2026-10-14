@@ -1,0 +1,3 @@
+module_admin_dashboard_total_ca_by_year_app_title = Do you want to install Total turnover / year in sales
+module_admin_dashboard_total_ca_by_year_app_description = Chart to see the evolution of the turnover of sales by year based on the subtotal
+module_admin_dashboard_total_ca_by_year_app_chart_link = Total turnover per year (delivery)

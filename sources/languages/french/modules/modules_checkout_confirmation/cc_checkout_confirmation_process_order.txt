@@ -1,0 +1,5 @@
+module_checkout_confirmation_process_order_title = Souhaitez-vous afficher le bouton de process de commande définitif ?
+module_checkout_confirmation_process_order_description = Affiche le bouton de process de commande définitif
+
+module_checkout_confirmation_process_order_button_pay = Confirmer la commande avec paiement
+

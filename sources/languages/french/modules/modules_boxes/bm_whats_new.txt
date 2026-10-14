@@ -1,0 +1,8 @@
+module_boxes_whats_new_title = Souhaitez-vous afficher les nouveautés dans la boutique ?
+module_boxes_whats_new_description = Affiche les nouveaut�s par ordre aléatoire
+module_boxes_whats_new_box_title = Nouveautés
+module_boxes_new_products_all_products = Toutes les nouveautés
+
+text_flash_discount = Vente flash
+
+button_detail = Détails

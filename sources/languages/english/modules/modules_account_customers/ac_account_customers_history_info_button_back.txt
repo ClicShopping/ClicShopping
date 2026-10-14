@@ -1,0 +1,2 @@
+ module_account_customers_history_info_button_back_title = History Info : Do you want to display the back button ?
+ module_account_customers_history_info_button_back_description = Display the back button

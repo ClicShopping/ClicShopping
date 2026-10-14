@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_promo_p1_title = Promotion au seuil P1
+cfg_ecommerce_cockpit_ai_promo_p1_description = Promotion appliquée par l'IA au seuil défini

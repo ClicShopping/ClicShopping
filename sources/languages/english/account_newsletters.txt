@@ -1,0 +1,7 @@
+
+ navbar_title_1 = My Account
+ navbar_title_2 = Newsletter Subscriptions
+
+ heading_title = Newsletter Subscriptions
+
+ success_newsletter_updated = Your newsletter subscriptions have been successfully updated.

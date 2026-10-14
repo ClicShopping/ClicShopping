@@ -1,0 +1,7 @@
+
+ module_boxes_search_title = Search
+ module_boxes_search_description = Show search field
+ module_boxes_search_box_text =
+
+ module_boxes_search_box_title = Search
+ module_boxes_search_box_advanced_search = Advanced search

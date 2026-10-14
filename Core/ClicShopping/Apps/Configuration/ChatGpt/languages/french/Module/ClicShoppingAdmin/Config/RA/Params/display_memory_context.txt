@@ -1,0 +1,5 @@
+cfg_chatgpt_rag_manager_title = Activer la mémoire de contexte
+cfg_chatgpt_rag_manager_description = Active la mémoire conversationnelle pour maintenir le contexte à travers plusieurs interactions. Lorsqu'activé, le LLM conserve l'historique des conversations précédentes, vous permettant de référencer des messages antérieurs et de poursuivre les discussions naturellement. Cette fonctionnalité permet les questions de suivi, les clarifications et les réponses contextuelles sans répéter les informations. Recommandé : True pour une expérience utilisateur améliorée et des conversations multi-tours cohérentes.
+
+cfg_chatgpt_rag_manager_status_true = True
+cfg_chatgpt_rag_manager_status_false = False

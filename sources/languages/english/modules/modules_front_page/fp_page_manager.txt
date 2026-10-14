@@ -1,0 +1,2 @@
+module_front_page_manager_title = Do  you want  display the Page Manager ?
+module_front_page_manager_description = Do  you want to display the page manager on the front page ?

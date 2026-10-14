@@ -1,0 +1,83 @@
+heading_title = API
+module_ai_title = API
+module_ai_short_title = API
+
+text_api = Pays
+text_configure = API App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des API <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_ai_introduction = Le processus d'installation installe la base de données et le menu
+module_ai_short_title = API
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall = Désinstaller
+button_uninstall = Désinstaller
+button_delete = Supprimer
+button_api = API
+button_cancel = Annuler
+button_new = Nouveau
+button_insert = Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_configure_api = Configurer Api
+buuton_add = Ajouter
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+table_heading_api_id = Id
+table_heading_api_username = Nom utilsateur
+table_heading_api_key_text = Clef
+table_heading_api_status = Statut
+table_heading_api_date_added = Date ajout
+table_heading_api_date_modified = Date modifée
+table_heading_action = Action
+
+tab_general = Général
+tab_ip_address = Adresse IP
+tab_session = Session
+
+text_api_username = Nom utilisateur
+text_api_key = Clef Api
+text_add_ip = Ajouter IP
+text_add = Ajouter IP
+text_ip = Adresse IP
+text_action = Action
+text_token = Token
+text_date_added = Date ajout
+text_date_modified = Date modifiée
+text_api_generate_key = Générer une clef
+text_comment = Commentaire
+
+text_heading_product_management = Gestion produits
+text_heading_categories_management = Gestion catégories
+text_heading_customers_management = Gestion clients
+text_heading_orders_management = Gestion commandes
+text_heading_manufacturers_management = Gestion marques
+text_heading_suppliers_management = Gestion fournisseurs
+text_heading_comment = Commentaires
+
+text_get_status = Afficher (GET)
+text_delete_status = Supprimer (DELETE)
+text_update_status = Mettre à jour / Insérer (PUT /POST)
+text_insert_status = Insérer (POST)
+
+text_info_warning = Vous devez sauvegarder votre API avant de pouvoir ajouter d'autres information
+text_info_message = Vous pouvez créer ci-dessous une liste d'adresse IP permises. Votre adresse actuelle est {{ip_address}}

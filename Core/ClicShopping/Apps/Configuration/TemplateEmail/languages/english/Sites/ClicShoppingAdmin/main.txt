@@ -1,0 +1,67 @@
+heading_title = Template email
+module_te_title = Template email
+module_te_short_title = Template Email
+
+text_template_email =  Template email
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a template_email pages and a shortcut in products page. <br /><br />
+- Activate this module located in the Configuration menu
+
+module_te_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_template_email = Template Email
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+table_heading_template_email_name = Template name
+table_heading_template_email_description = Description
+table_heading_template_email_type = Email sending of
+table_heading_template_customer_groups = Customer type
+table_heading_action = Actions
+
+text_info_template_catalog = Admin / Catalog template
+
+template_email_text_name = Template name :
+template_email_text_short_description = Short description :
+template_email_text_description = Message description :
+template_text_catalog_admin = Message sent from :
+template_email_text_customer_group = Customer group :
+template_email_text_variable = Variable
+text_template_email_catalog = Catalog
+text_template_email_admin = Administration
+text_template_email_admin_catalog = Administration and catalog
+text_template_email_b2c = Mode B2C
+text_template_email_b2c_b2b = Mode B2B B2C
+
+tab_description = Description
+tab_general = General
+title_information_name = General informations
+title_message = Message to sent
+
+image_edit = Edit
+
+help_title_onglet_general = Informations on template management
+
+text_help_template = <ul>
+<li>{{http_shop}} will allow to insert a catalog url of you site in the email : ex : {{http_shop}}index.php?Account&login = http://www.domain.com/shop/index.php?Account&LogIn</li>
+<li>{{store_name}} will allow to insert the name the shop in your email</li>
+<li>{{store_owner_email_address}}  will allow to insert an email address of the the shop in your email</li>
+</ul>

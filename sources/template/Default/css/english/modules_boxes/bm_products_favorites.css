@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.card.boxeContainerFavorites {
+  margin-top: 0.625rem;
+  border-radius: 0.25rem;
+}
+
+.card-img-top.boxeBannerContentsFavorites {
+  text-align: center;
+}
+
+.card-header.boxeHeadingFavorites {
+  padding-left: 3px;
+  overflow: hidden;
+  text-transform: uppercase;
+
+}
+
+.card-header.boxeHeadingFavorites A {
+  text-transform: uppercase;
+
+
+}
+
+.card-title.boxeTitleFavorites {
+  overflow: hidden;
+  padding: 3px;
+  text-transform: uppercase;
+
+
+}
+
+.card-title.boxeTitleFavorites A {
+}
+
+span.boxeTitleFavorites {
+
+}
+
+.card-text.boxeContentFavorites {
+  overflow: hidden;
+
+  text-align: center;
+  padding-bottom: 0.625rem;
+  padding-top: 0.625rem;
+  padding-right: 0.1rem;
+}
+
+.card-text.boxeContentsFavorites a {
+  text-decoration: none;
+  text-align: center;
+}
+
+.card-footer.boxeBottomContentsFavorites {
+  border-top: none;
+  padding: 0;
+}
+
+
+.card-block.boxeContentArroundFavorites {
+  overflow: hidden;
+  /* border: 1px solid #e5e5e5!important;*/
+  padding-right: 0.1rem;
+  padding-left: 0.1rem;
+  text-align: center;
+}
+
+.card-img-top.boxeImageFavorites {
+}
+
+div.boxeProductTitleFavorites {
+  text-align: center;
+}
+
+div.boxeProductTitleFavorites A {
+  text-transform: none;
+}

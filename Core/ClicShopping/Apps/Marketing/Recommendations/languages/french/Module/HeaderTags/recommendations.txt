@@ -1,0 +1,2 @@
+module_header_tags_recommendations_title = Souhaitew vous utiliser des meta tage pour la page des recommandations clients ?
+module_header_tags_recommendations_description = Ajoute la balise meta tag pour sur la page recommandations des clients

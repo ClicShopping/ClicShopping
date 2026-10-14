@@ -1,0 +1,49 @@
+heading_title = GDPR
+module_me_title = GDPR
+module_me_short_title = GDPR
+
+text_gdpr =  GDPR
+text_configure =  configure App Module
+
+text_intro = This app allow you to manage the GDPR in your administratopn. <br /><br />
+- Activate this module and activate the module GDPR
+
+module_me_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_insert = Insert
+button_reset = Réinitialiser
+button_update = Update
+button_activate = Activate
+button_gdpr = RGPD
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_info = GDPR account deletion requests will process after {{date_info}} days so any fraud detection, chargebacks or refunds can be processed.
+
+table_heading_lastname = Name
+table_heading_firstname = First name
+table_heading_email = Email
+table_heading_account_last_logon = Last logon
+table_heading_action = Action
+heading_title_search = Search
+heading_title = GDPR
+
+icon_edit_customer = Editer la fiche client
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

@@ -1,0 +1,7 @@
+module_footer_chatbot_gpt_title = Souhaitez-vous installer le Chatbot IA (gpt)?
+module_footer_chatbot_gpt_description = Affiche un chatbot dans votre catalogue
+module_footer_chatbot_gpt_listen = à votre écoute
+module_footer_chatbot_gpt_prompt = Posez une question sur un produit (incluant son nom)...
+module_footer_chatbot_gpt_send = Demander
+module_footer_chatbot_gpt_close = Fermer
+module_footer_chatbot_gpt_prompt_text = I sent your request, please be patient...

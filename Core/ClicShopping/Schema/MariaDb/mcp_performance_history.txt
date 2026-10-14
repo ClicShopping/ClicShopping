@@ -1,0 +1,18 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier for each performance history entry)
+timestamp int(11) not_null comment(Unix timestamp when the performance metrics were recorded)
+request_rate decimal(10,2) not_null default 0.00 comment(Number of requests per second during this period)
+average_latency decimal(10,2) not_null default 0.00 comment(Average response latency in milliseconds)
+error_frequency decimal(5,2) not_null default 0.00 comment(Percentage of requests that resulted in errors - 0.00 to 100.00)
+uptime_percentage decimal(5,2) not_null default 0.00 comment(Server uptime percentage during this period - 0.00 to 100.00)
+total_requests int(11) not_null default 0 comment(Total number of requests processed during this period)
+created_at datetime not_null default(current_timestamp) comment(Timestamp when this record was created)
+--
+primary id
+idx_timestamp timestamp
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

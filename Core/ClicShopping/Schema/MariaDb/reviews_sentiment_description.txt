@@ -1,0 +1,14 @@
+id int not_null comment(FK to reviews_sentiment table - sentiment analysis identifier)
+language_id int not_null comment(FK to languages table - language for this translation)
+description text not_null comment(Translated description or summary of the sentiment analysis)
+critic text null comment (Agent critic result)
+critic_verdict varchar(30) null comment(reliable | partial | unreliable | ...)
+analysis_json text null comment(Structured LLM sentiment output - themes, quotes, strengths, issues, summary)
+
+--
+primary id language_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language output of the review sentiment analysis: prose description, structured LLM analysis (analysis_json), and the critic verdict. Metrics are not here, they are in reviews_sentiment.

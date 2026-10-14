@@ -1,0 +1,2 @@
+cfg_products_categories_sort_order_title = Sort Order
+cfg_products_categories_sort_order_description = The sort order location of the module shown in the available methods listing (lowest is displayed first).

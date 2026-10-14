@@ -1,0 +1,3 @@
+cfg_chatgpt_api_key_openai_retails_title = OpenAI API Key for Retail (Agentic Commerce Protocol)
+cfg_chatgpt_api_key_openai_retails_description = Enter your OpenAI API key to use retail.
+You can obtain an API key by signing up on the OpenAI Retails platform. (https://chatgpt.com/merchants)

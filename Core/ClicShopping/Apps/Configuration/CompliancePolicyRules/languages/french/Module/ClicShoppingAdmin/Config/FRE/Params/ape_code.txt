@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_ape_code_title = Numéro de nomenclature (ou autre) de l'entreprise
+cfg_configuration_compliance_policy_rules_ape_code_description = Veuillez indiquer le numéro de nomenclature de votre entreprise (ex.: Code APE: 721z). - Laissez vide si cela ne vous concerne pas.

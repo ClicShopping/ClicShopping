@@ -1,0 +1,1 @@
+box_entry_notification = Nombre de produits surveillés

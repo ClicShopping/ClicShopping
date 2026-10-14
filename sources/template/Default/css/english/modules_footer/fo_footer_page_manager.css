@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+span.moduleFooterPageManager A {
+  background-color: #F0EDEC;
+  color: #000;
+}
+
+span.moduleFooterPageManager A {
+  background-color: #F0EDEC;
+}
+
+div.moduleFooterPageManager {
+  padding-top: 0.625rem;
+  text-align: center;
+  background-color: #F0EDEC;
+  color: #000;
+}
+
+span.menuFooterPageManager A {
+  background-color: #F0EDEC;
+  color: #000;
+}

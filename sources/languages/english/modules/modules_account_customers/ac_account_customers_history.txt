@@ -1,0 +1,20 @@
+module_account_customers_history_title = Do you want to display the order history ?
+module_account_customers_history_description = Display order history
+
+module_account_customers_history_heading_title = Orders history
+module_account_customers_history_heading_description = Follow the development of your order and see your historic.
+
+module_account_customers_history_order_number = Order / Invoice Number:
+module_account_customers_history_order_status = Status :
+module_account_customers_history_order_date = Date of the order :
+module_account_customers_history_order_shipped_to = Shipped To:
+module_account_customers_history__order_billed_to = Billed To:
+module_account_customers_history_order_products = Products:
+module_account_customers_history_order_cost = Total amount:
+module_account_customers_history_order_order = View Order
+
+module_account_customers_history_text_no_purchases = You have not yet made any purchases or your order is being processed.
+
+button_view = View
+button_back = Back
+

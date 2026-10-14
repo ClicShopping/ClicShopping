@@ -1,0 +1,12 @@
+configuration_group_id int not_null auto_increment comment(Primary key - unique identifier for each configuration group)
+configuration_group_title varchar(255) not_null comment(Display title of the configuration group)
+configuration_group_description varchar(255) not_null comment(Description of what settings this group contains)
+sort_order int(5) comment(Display order of configuration groups in admin)
+visible int(1) default(1) comment(Visibility flag - 0: hidden, 1: visible in admin)
+--
+primary configuration_group_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

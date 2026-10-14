@@ -1,0 +1,2 @@
+cfg_upgrade_username_title = Forum username
+cfg_upgrade_username_description = the username is your email

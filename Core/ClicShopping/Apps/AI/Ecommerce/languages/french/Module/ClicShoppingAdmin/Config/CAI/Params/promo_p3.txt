@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_promo_p3_title = Promotion au seuil P3
+cfg_ecommerce_cockpit_ai_promo_p3_description = Promotion appliquée par l'IA au seuil défini

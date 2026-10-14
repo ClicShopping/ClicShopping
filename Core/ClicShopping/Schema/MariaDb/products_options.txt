@@ -1,0 +1,12 @@
+products_options_id int default(0) not_null comment(Primary key - unique identifier for each product option type)
+language_id int default(1) not_null comment(FK to languages table - language for this option name)
+products_options_name varchar(255) default('') not_null comment(Option name - e.g. Size, Color, Material)
+products_options_sort_order int(3) default(1) not_null comment(Display order for option presentation)
+products_options_type varchar(255) not_null comment(Option input type - select, radio, checkbox, text, textarea)
+--
+primary products_options_id language_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment CATALOGUE definition of a product option - the name of the axis a customer can choose (size, colour), one row per option and per language.

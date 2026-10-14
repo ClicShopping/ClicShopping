@@ -1,0 +1,24 @@
+reputation_id bigint(20) not_null auto_increment comment(Auto-incrementing reputation ID)
+critic_id varchar(100) not_null comment(Identifier of the critic agent)
+reputation_score decimal(3,2) not_null comment(Overall reputation score (0.50-1.00))
+consensus_alignment decimal(3,2) not_null comment(Percentage of evaluations within 0.1 of consensus (0.00-1.00))
+feedback_quality decimal(3,2) not_null comment(Percentage of feedback accepted by actors (0.00-1.00))
+consistency_score decimal(3,2) not_null comment(Inverse of normalized standard deviation (0.00-1.00))
+expertise_accuracy decimal(3,2) not_null comment(Accuracy within claimed expertise domains (0.00-1.00))
+total_evaluations int(11) not_null default(0) comment(Total number of evaluations performed)
+status enum('bootstrapping','establishing','established') not_null default('bootstrapping') comment(Reputation status based on evaluation count)
+calculated_at timestamp NULL default(current_timestamp) comment(When reputation was last calculated)
+last_decay_at timestamp NULL default(current_timestamp) comment(When decay was last applied)
+
+--
+primary reputation_id
+unique idx_critic_id critic_id
+idx_reputation_score reputation_score
+idx_status status
+idx_calculated_at calculated_at
+idx_last_decay_at last_decay_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

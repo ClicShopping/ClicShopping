@@ -1,0 +1,7 @@
+ module_checkout_confirmation_delivery_address_title = Do you want to display the order delivery address ?
+ module_checkout_confirmation_delivery_address_description = display the order delivery address
+ module_checkout_confirmation_delivery_address_text_edit = Edit
+
+ module_checkout_confirmation_delivery_address_heading_delivery = Delivery Information
+ module_checkout_confirmation_delivery_address_text_delivery_title = Shipping delivery
+ module_checkout_confirmation_delivery_address_text_shipping_title = Shipping method

@@ -1,0 +1,113 @@
+heading_title = Gpt
+module_ch_title = Gpt
+module_ch_short_title = Gpt
+
+text_chatgpt = Gpt
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des pays <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+- Insérer votre Clef Api OpenAI
+- Poser une question en fonction de ce que vous souhaitez résoudre
+
+module_ch_introduction = Le processus d'installation installe la base de données et le menu
+
+module_ra_title = RAG BI
+module_ra_short_title = RAG BI
+module_ra_introduction = Rag Bi (business intelligence) avec agent est une technique qui combine la puissance des modèles de gros langage (LLM) avec des sources de connaissances externes pour améliorer la précision et la pertinence des réponses générées. En intégrant RAG dans votre chatbot, vous pouvez fournir des réponses plus précises et plus pertinentes aux requêtes utilisateur, améliorant l'expérience utilisateur globale.<br />
+Pour utilisez cette fonctionnalité vous devez vérifier si votre base de données est compatible avec <strong>Mariab Db version 11.7</strong> au minimum. >C'est une version beta fonctionnelle.<br />
+MySQL server n'est pas compatible avec cette fonctionnalité.<br>Veuillez activer les autres modules pour une meilleure analyse
+
+module_web_title = Web Search
+module_web_short_title = Web Search
+module_web_introduction = Cette application vous permet d'utiliser l'API SERPAPI de Google pour créer des analyses, effectuer des recherches (marché, tendances ...) et comparer les prix. Elle fonctionne avec Agnostic AI.
+L'API SERPAPI est disponible avec l'APPS GPT.
+
+module_ac_agent_critics_short_title = Agents critiques
+module_ac_agent_critics_title = Agents critiques
+module_ac_agent_critics_introduction = Ce module évalue, compare et critique les comportements, les productions et les processus décisionnels des agents afin d’identifier les forces, les faiblesses et les modes de défaillance selon des critères définis.
+
+module_aa_agent_actors_title = Agents acteurs
+module_aa_agent_actors_short_title = Agents acteurs
+module_aa_agent_actors_introduction = Ce module définit, orchestre et exécute les rôles des agents responsables de la génération d’actions, de l’exécution des tâches et de l’interaction avec l’environnement, sur la base d’objectifs et de contraintes assignés.
+
+module_asy_agent_system_title = Agents systèmes
+module_asy_agent_system_short_title = Agents systèmes
+module_asy_agent_system_introduction = Ce module spécifie le cadre structurel, opérationnel et de gouvernance coordonnant les agents, en définissant les règles au niveau système, les interfaces, les cycles de vie et les protocoles d’interaction.
+
+module_at_agent_technical_short_title = Agents Techniques
+module_at_agent_technical_short_title = Agents Techniques
+module_at_agent_technical_introduction = Ce module fournit les fondations techniques du fonctionnement des agents, incluant les architectures, environnements d’exécution, outils, intégrations, contraintes de performance et mécanismes de fiabilité.
+
+module_ad_agent_domains_title = Agent Domaines
+module_ad_agent_domains_short_title = Agent Domaines
+module_ad_agent_domains_introduction = Ce module définit et structure les domaines de connaissance (commerce électronique, ressources humaines, finance), les périmètres et les frontières contextuelles dans lesquels les agents opèrent, incluant les règles spécifiques aux domaines, les modèles de données, les contraintes et les critères d’évaluation.
+
+module_at_agent_technical_title = Agent Technique
+module_at_agent_technical_short_title = Agent Technique
+module_at_agent_technical_introduction = Ce module fournit les bases techniques du fonctionnement des agents,
+
+
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_chatgpt = Gpt
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour Statut
+button_edit = Editer
+button_rag_dashboard = Tableau de bord
+button_rag_websearch = Compétiteurs
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+table_heading_chatgpt_id = Id
+table_heading_chatgpt_question = Questions
+table_heading_chatgpt_response = Réponses
+table_heading_chatgpt_date_added = Dates ajout
+table_heading_action = Actions
+table_heading_chatgpt_user_admin = Administrateur
+
+stat_total_tokens = Jetons total utilisés sur 1 mois
+stat_completion_tokens = Jetons d'achévement utilisés sur 1 mois
+stat_prompt_tokens = Jetons du prompt utilisés sur 1 mois
+stat_total_no_response = Erreur Gpt réponses
+text_rate_error_gpt = Taux d'erreurs
+
+tab_general = Général
+text_description = Description
+
+text_error_context_sql_number_request = Trop d’informations sont envoyées au LLM. Le contexte est limité. Veuillez affiner votre demande ou ajuster les paramètres.<br />
+Nbr de ligne max : {{maxRows}}<br />
+Nbr de résultat : {{count}}<br />
+
+text_error_composer = Composer n'est pas installé sur votre machine, veuillez réaliser cette commande dans votre terminal : apt-get install composer
+text_error_exec = La fonction exec n'est pas initialisé. Vous ne pouvez pas réaliser de mise à jour ou d'installation d'une librairie Composer. Veuillez vérifier votre php.ini ou contacter votre hébergeur
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+
+button_reset_cache = 🗑️ Réinitialiser Cache
+button_reset_all_stats = Réinitialiser Stats
+
+text_query_too_ambiguous = Votre requête est trop ambiguë. Veuillez être plus précis sur ce que vous voulez savoir.
+text_alert_dashboard = Pour avoir bénéficier de l'ensemble des résultats données par les indicateurs, veuillez activer le RAG-BI
+
+title_help_llm = Aide choix LLM
+text_help_options = Tous les LLms ne sont pas égaux dans les analyses, cela dépend de différents facteurs qui sont liés à des constantes paramétrables mais surtout dans les capacités du llm à interpréter la question et à la traiter.<br>
+Nous ne vous conseillons pas d'utiliser les llm avec un faible contexte. Idéalement prendre un llm qui peut traiter un contexte de 128 000 au minimum.

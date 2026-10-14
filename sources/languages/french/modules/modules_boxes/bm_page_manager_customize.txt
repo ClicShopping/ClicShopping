@@ -1,0 +1,4 @@
+
+module_boxes_page_manager_customize_title = Souhaitez-vous afficher la boxe information secondaire dans la boutique ?
+module_boxes_page_manager_customize_description = Affiche la boxe information secondaire et l'ensemble du contenu qui lui est attibuée
+module_boxes_page_manager_customize_box_title = Boite à idée

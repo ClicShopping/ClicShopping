@@ -1,0 +1,2 @@
+module_lg_short_title = Langages
+

@@ -1,0 +1,6 @@
+cfg_chatgpt_reasoning_mode_title = Mode de raisonnement par défaut
+cfg_chatgpt_reasoning_mode_description = Sélectionnez le mode de raisonnement pour le traitement IA. Différents modes offrent des niveaux variables de profondeur d'analyse et de complexité de réponse. <br />
+<strong>Standard :</strong> Réponses rapides avec raisonnement basique pour les requêtes simples. <br />
+<strong>Avancé :</strong> Analyse approfondie avec raisonnement multi-étapes pour les questions complexes. <br />
+<strong>Chain-of-Thought :</strong> Raisonnement étape par étape explicite visible dans les réponses. <br />
+Note : Chaque mode a des exigences de paramètres et des temps de traitement différents. Choisissez en fonction de la complexité de votre cas d'usage et de vos besoins en performance.

@@ -1,0 +1,63 @@
+heading_title = Quantités unitaires
+module_pq_title = Quantités unitaires
+module_pq_short_title = Quantités unitaires
+
+text_products_quantity_unit =  Quantités unitaires
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion de quantité unitaire des produits <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+
+module_pq_introduction = Le processus d'installation installe la base de données et le menu
+module_pq_short_title = Products quantities units
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_products_quantity_unit = Quantité unitaire des produits
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+text_set_default = Défaut
+text_info_heading_products_quantity_unit = Unités quantité des produits
+table_heading_action = Action
+
+text_info_edit_intro = Editer le statut
+text_info_products_unit_quantity_name = Statut :
+
+text_info_heading_products_unit_quantity_delete = Etes vous sur de vouloir supprimer ce statut ?
+text_info_delete_intro = Souhaitez vous supprimer ce type de quantité ?
+text_info_delete_intro = Supprimer ce statut
+
+table_heading_products_unit_quantity_status = Statut
+text_info_heading_products_unit_quantity_status = Nouveau statut
+text_info_products_quantity_unit_intro = Merci de faire les changements nécessaires
+text_default = Défaut
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+error_remove_default_products_unit_quantity_status = Erreur : Le statut par défaut ne peut pas être supprimé. Merci de choisir un autre statut par défaut et de réessayer
+error_status_used_in_products_unit_quantity = Erreur : Ce statut est actuellement utilisé.
+
+

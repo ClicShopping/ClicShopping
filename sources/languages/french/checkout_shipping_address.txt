@@ -1,0 +1,21 @@
+
+navbar_title_1 = Commande
+navbar_title_2 = Changer l'adresse d'expédition
+
+heading_title = Information expédition
+
+table_heading_shipping_address = Adresse d'expédition
+text_selected_shipping_destination = Veuillez choisir dans votre carnet d'adresses l'adresse o&ucirc; vous voudriez que les articles soient livrés.
+title_shipping_address = Adresse d'expédition :
+
+table_heading_address_book_entries = Carnet d'adresses
+text_select_other_shipping_destination = Veuillez choisir l'adresse d'expédition  si les articles de cette commande doivent être livrés ailleurs.
+title_please_select = Veuillez choisir
+
+table_heading_new_shipping_address = Nouvelle adresse d'expédition
+text_create_new_shipping_address = Veuillez utiliser ce formulaire pour créer une nouvelle adresse d'expédition pour cette commande.
+
+table_heading_new_shipping_address_problem = Erreur sur la nouvelle adresse de livraison
+
+title_continue_checkout_procedure = Continuer la commande
+text_continue_checkout_procedure = pour choisir la méthode préférée d'expédition

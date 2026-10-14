@@ -1,0 +1,5 @@
+module_advanced_search_date_title = Souhaitez-vous afficher le champs de recherche par date ?
+module_advanced_search_date_description = Affiche un champ de recherche par date permettant au client de mettre des critères
+
+modules_advanced_search_date_entry_date_from = Depuis la date :
+modules_advanced_search_date_entry_date_to = Jusqu'à la date :

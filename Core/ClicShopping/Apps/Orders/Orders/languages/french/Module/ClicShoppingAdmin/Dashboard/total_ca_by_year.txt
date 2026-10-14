@@ -1,0 +1,4 @@
+module_admin_dashboard_total_ca_by_year_app_title = Total du CA / année (ventes réalisées)
+module_admin_dashboard_total_ca_by_year_app_description = Graphique permettant de voir l'évolution du chiffre d'affaires des ventes réalisées par année en fonction du sous-total?
+module_admin_dashboard_total_ca_by_year_app_chart_link = Total CA par année (ventes réalisées)
+

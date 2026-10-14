@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_delivery_earliest_title = Earliest delivery time
+cfg_ecommerce_ucp_delivery_earliest_description = Relative time used to compute earliest delivery (e.g. +3 days)

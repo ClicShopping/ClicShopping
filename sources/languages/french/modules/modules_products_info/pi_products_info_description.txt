@@ -1,0 +1,2 @@
+module_products_info_description = Souhaitez-vous afficher une description du produit ?
+module_products_info_description_description = Affiche une description du produit dans la page de description du produit

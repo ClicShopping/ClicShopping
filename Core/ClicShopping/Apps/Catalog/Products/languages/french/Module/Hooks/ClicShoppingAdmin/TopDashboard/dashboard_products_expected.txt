@@ -1,0 +1,2 @@
+text_number_products_expected = Alerte produits attente
+text_view = - Plus d'informations

@@ -1,0 +1,2 @@
+cfg_products_api_max_request_per_window_title = Maximum Requests Per Window
+cfg_products_api_max_request_per_window_description = Limits the number of requests to 20 within a 15-minute interval.

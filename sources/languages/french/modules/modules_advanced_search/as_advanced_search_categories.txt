@@ -1,0 +1,6 @@
+module_advanced_search_categories_title = Souhaitez-vous afficher le champs de recherche par catégorie ?
+module_advanced_search_categories_description = Affiche un champ de recherche permettant au client rechercher par catégorie
+
+modules_advanced_search_category_text_all_categories = Toutes les catégories
+modules_advanced_search_category_entry_categories = Catégories:
+modules_advanced_search_category_entry_include_subcategories = Inclure les sous-catégories

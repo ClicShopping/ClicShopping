@@ -1,0 +1,4 @@
+cfg_products_recommendations_weight_sales_title = Weight Sales
+cfg_products_recommendations_weight_sales_description = Weight applied to the sales-derived score. Controls the influence of product sales (normalized by max ordered) in the Multiple strategy.
+
+

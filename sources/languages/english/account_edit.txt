@@ -1,0 +1,8 @@
+
+navbar_title_1 = My Account
+navbar_title_2 = Edit Account
+heading_title = My Account Information
+success_account_updated = Your account has been successfully updated.
+
+error_address_modify_company = You are not authorized to modify information of your company. Do not hesitate to contact us to receive more information over this impossibility.
+entry_email_address_text = *

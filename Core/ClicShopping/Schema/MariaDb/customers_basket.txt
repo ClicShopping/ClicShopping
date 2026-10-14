@@ -1,0 +1,14 @@
+customers_basket_id int not_null auto_increment comment(Primary key - unique identifier for each basket item)
+customers_id int not_null comment(FK to customers table - customer who owns this basket)
+products_id tinytext not_null comment(Product identifier - may include variant information)
+customers_basket_quantity int(2) comment(Quantity of this product in the basket)
+final_price decimal(15,4) comment(Final calculated price including discounts and options)
+customers_basket_date_added char(8) comment(Date when item was added to basket - format YYYYMMDD)
+--
+primary customers_basket_id
+idx_customers_basket_customers_id customers_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment LIVE shopping cart - items a customer has added but NOT yet purchased. Rows disappear when the cart is emptied or checked out. This is NOT a sale: never use it for revenue, average basket, seasonality or any sales metric - those come from orders and orders_total.

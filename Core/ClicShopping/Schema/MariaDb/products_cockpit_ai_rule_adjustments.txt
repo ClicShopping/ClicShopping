@@ -1,0 +1,19 @@
+id int(11) unsigned not_null auto_increment comment(Primary key - unique identifier)
+rule_key varchar(100) not_null comment(Ex: promo_p1, margin_rate, featured_effectiveness)
+old_value decimal(8,4) not_null comment(old rule adjustment)
+new_value decimal(8,4) not_null comment(new rule adjustment)
+delta decimal(8,4) not_null comment(mean between old and new rule adjustment)
+sample_size int(11) not_null comment(Number of cycles analyzed)
+avg_delta_score_y decimal(5,2) not_null comment(Observed mean Y-score)
+date_created datetime not_null comment(rule adjustment date created)
+
+--
+primary id
+idx_rule_key rule_key
+idx_date_created date_created
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

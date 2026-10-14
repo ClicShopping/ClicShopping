@@ -1,0 +1,8 @@
+module_admin_dashboard_check_api_app_title = Do you want install the GPT alert Info ?
+module_admin_dashboard_check_api_app_description = Check if the API key is configured or not
+
+module_admin_dashboard_check_api_app_link = Gpt
+module_admin_dashboard_check_api_app_alert = Please do not forget to create you API Key on OpenAI.com to use the Generative IA inside ClicShoppingAI : {{gpt_link}}<br />
+Some update may be required to use the Agentic IA inside ClicShopping AI, look the Gpt / RAG ... Setting and update your database if you use mariaDb 11.7 at least (not work with MySQL 9.x and MariaDb < 11.7).<br />
+but you can use the default Setting nt the Agentic Rag BI technology.
+You can remove this module in Configuration / Backoffice / Dashboard

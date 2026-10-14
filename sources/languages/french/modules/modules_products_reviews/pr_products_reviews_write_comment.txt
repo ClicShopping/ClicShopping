@@ -1,0 +1,10 @@
+modules_products_reviews_write_comment_title = Ecriture Commentaire : Souhaitez vous permettre au client d'écrire un commentaire ?
+modules_products_reviews_write_comment_description = Permettre au client d'écrire un commentaire
+
+modules_products_reviews_write_comment_sub_title_from = De :
+modules_products_reviews_write_min_caracters = Minimum de caractères accepté dans le commentaire :
+modules_products_reviews_write_comment_sub_title_from_sub_title_review = Commentaires :
+modules_products_reviews_write_comment_sub_title_from_sub_title_review_text_no_html = NOTE: Le HTML n'est pas converti !
+modules_products_reviews_write_comment_customer_group = If you submit a comment, the comment will only be available to customer groups. You can between professionals share a review on the product and the perception your customers have.
+
+modules_products_reviews_write_error = Erreur sur la création du commentaire.

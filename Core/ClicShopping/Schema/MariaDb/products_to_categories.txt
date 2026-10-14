@@ -1,0 +1,12 @@
+products_id int not_null comment(FK to products table - product identifier)
+categories_id int not_null comment(FK to categories table - category identifier)
+
+--
+primary products_id categories_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+
+comment LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a category.

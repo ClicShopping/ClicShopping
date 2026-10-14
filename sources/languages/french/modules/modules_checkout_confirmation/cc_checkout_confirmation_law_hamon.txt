@@ -1,0 +1,7 @@
+module_checkout_confirmation_law_hamon_title = Souhaitez-vous afficher dans le récapitulatif de commande un bouton de confirmation de commande ?
+module_checkout_confirmation_law_hamon_description = Un bouton de confirmation de commande oblige le consommateur à accepter sa commande
+
+module_checkout_confirmation_law_hamon_text_error_agreement = Erreur : Veuillez cocher la case à cocher et actualiser la page
+module_checkout_confirmation_law_hamon_text_conditions = <strong>En validant cette case à cocher et en appuyant sur le bouton "confirmer la commande", je consens à accepter la commande des produits que j'ai sélectionné</strong>
+module_checkout_confirmation_law_hamon_text_title = Acceptation paiement
+form_required_information = Requis

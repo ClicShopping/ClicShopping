@@ -1,0 +1,80 @@
+heading_title = Langues
+module_lg_title = Langues
+module_lg_short_title = Langues
+
+text_languages = Langues
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des pays <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_lg_introduction = Le processus d'installation installe la base de données et le menu
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_languages = Langues
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_languages = Langages
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+table_heading_language_name = Langue
+table_heading_language_code = Code
+table_heading_action = Action
+table_heading_language_status = Actif / Non actif
+text_info_edit_intro = Merci de faire les changements nécessaires
+text_info_common_langues = -- Monnaies communes --
+text_info_language_name = Nom :
+text_info_language_code = Code :
+text_info_language_image = Image :
+text_info_language_directory = Répertoire :
+text_info_language_sort_order = Ordre de tri :
+text_info_insert_intro = Veuillez remplir les divers informations ci-dessous pour insérer une nouvelle langue.
+text_info_delete_intro = Etes vous sur de vouloir supprimer cette langue ?<br /><br /><strong><font color="#FF0000">Note :</font></strong> Si vous supprimez cette langue, cela supprimera tous les enregistrements associés.
+text_info_heading_new_language = Nouvelle langue
+text_info_heading_edit_language = Editer langue
+text_info_heading_delete_language = Supprimer langue
+text_create_language = Confirmation de la création des répertoires
+text_create_directory = où créer un nouveau répertoire de langue
+text_info_language_locale = Locale
+text_locale = en_US.UTF-8;en_US.UTF8;enu_usa
+text_default = Défaut
+text_set_default = Défaut
+
+text_info_create_language = Souhaitez-vous créer les répertoires ?
+
+title_help = Aide
+
+icon_edit = Editer
+icon_delete = Supprimer
+
+text_note_create_language = <br /><strong>Notes :</strong><br /> La création des répertoires se fera à partir d'une copie des fichiers du répertoire de langue par défaut. <br /><strong>En fonction des caractéristiques des serveurs, cette opération peut ne pas fonctionner.</strong> Veuillez alors faire cette opération manuellement.<br /><br />Les répertoires ou seront créés les fichiers sont : <br />- Dans l'administration<br />- Dans le répertoire par défaut des langues du catalogue<br /><br />- Dans le répertoire langue du template du catalogue.<br />- Dans le répertoire graphisme du template par défaut.<br /><br />Veuillez vous connecter à la market place pour télécharger la langue et l'installer à partir du module d'installation de votre administration.
+
+text_info_delete_info = Supprimer cette langue
+error_remove_default_language = Erreur : La langue par défaut ne peut être supprimée. Merci de choisir une nouvelle langue par défaut et réessayer.
+error_language_directory_not_writeable = Attention : le répertoire Languages n'est pas en mode écriture. Veuillez soit créer un nouveau répertoire dans langage ou mettre le répertoires langages en mode écriture
+
+text_help = <li>Dans l'hypothèse ou vous rajouter une langue, veuillez faire attention à ces éléments. Un non respect peut engendrer une erreur au niveau de l'application</li>
+<li>Une langue par défaut toujours active</li>
+<li>Ne pas supprimer la langue anglaise qui peut être utilisée dans le cas ou une définition de langue ne contient pas les fichiers de la langue</li>
+<li>Ne pas être dans la langue qui sera supprimée</li>
+<li>Supprimer l'ensemble des langues (Outils / Editeurs / langues)</li>

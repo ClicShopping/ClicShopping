@@ -1,0 +1,2 @@
+modules_create_account_pro_invisible_antispam_title = Do you want to display an antispam hidden (trap)?
+modules_create_account_pro_invisible_antispam_description = Display a hidec_antispam

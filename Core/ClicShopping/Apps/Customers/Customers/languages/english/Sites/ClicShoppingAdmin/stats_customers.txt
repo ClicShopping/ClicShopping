@@ -1,0 +1,41 @@
+heading_title = Customer Orders-Total
+module_sc_title = Customers Orders-Total
+module_sc_short_title = Customers Orders-Total
+
+text_stats_customers =  Customers Orders-Total
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a new stats customers orders. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Report / Financial statistics / Stats customers orders<br />
+
+module_sc_introduction = The install process create the database settings for this module and the access menu
+
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_stats_customers = Customers orders-total
+button_cancel = Cancel
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+icon_edit_customer = Edit customer
+
+table_heading_number = No.
+table_heading_customers = Customers
+table_heading_total_purchased = Total Purchased
+table_heading_action = Action
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+

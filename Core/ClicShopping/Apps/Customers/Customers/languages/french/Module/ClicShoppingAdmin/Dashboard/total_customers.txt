@@ -1,0 +1,3 @@
+module_admin_dashboard_total_customers_app_title = Total des clients inscrits / 15 jours <br /><br />
+module_admin_dashboard_total_customers_app_description = Affiche les inscriptions client des 15 derniers jours
+module_admin_dashboard_total_customers_app_chart_link = Nbr de clients inscrits (15 jours)

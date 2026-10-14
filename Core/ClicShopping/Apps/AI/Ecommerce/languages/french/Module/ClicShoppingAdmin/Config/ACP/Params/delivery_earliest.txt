@@ -1,0 +1,2 @@
+cfg_ecommerce_acp_delivery_earliest_title = Date de livraison la plus proche
+cfg_ecommerce_acp_delivery_earliest_description = Date de livraison la plus proche pour l'envoie d'une commande au client.

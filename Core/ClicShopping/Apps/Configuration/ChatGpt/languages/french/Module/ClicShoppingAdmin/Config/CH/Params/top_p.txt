@@ -1,0 +1,3 @@
+cfg_chatgpt_top_p_title = Top P
+cfg_chatgpt_top_p_description = Veuillez insérer un nombre<br />
+Une alternative à l'échantillonnage avec la température, appelée échantillonnage par noyau, où le modèle considère les résultats des jetons avec une masse de probabilité top_p. Ainsi, 0,1 signifie que seuls les jetons comprenant la masse de probabilité supérieure de 10 % sont pris en compte.

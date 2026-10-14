@@ -1,0 +1,4 @@
+navbar_title = Commentaires
+heading_title = Commentaires de nos clients concernant ce produit
+text_no_reviews = Il n'y a aucun commentaire actuellement
+text_reviews_seo_title = Commentaires

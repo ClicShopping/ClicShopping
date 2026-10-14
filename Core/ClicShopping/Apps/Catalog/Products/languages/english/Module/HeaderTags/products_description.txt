@@ -1,0 +1,2 @@
+module_header_tags_products_description_title = Do  you want use Products description meta tag ?
+module_header_tags_products_description_description = Add the meta tag balise in the Products description page

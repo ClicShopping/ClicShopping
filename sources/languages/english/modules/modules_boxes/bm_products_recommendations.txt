@@ -1,0 +1,6 @@
+module_boxes_products_recommendations_title = Customers recommendations
+module_boxes_products_recommendations_description = Customers recommendations display
+module_boxes_products_recommendations_box_title = Customers recommendations
+module_boxes_products_recommendations_all_products_recommendations = All customers recommendations
+text_flash_discount = Flash Discount
+button_detail = Details

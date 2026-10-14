@@ -1,0 +1,54 @@
+heading_title = Erreur Application
+module_el_title =  Erreur Application
+module_el_short_title =  Erreur Application
+
+text_edit_log_error = Erreur Application
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'accéder à un éditeur de Log d'erreurs d'application<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+- Cette app est dans le menu Outils / Editeurs<br />
+
+module_el_introduction = Le processus d'installation crée la base de données et le menu pour ce module
+
+button_back = Retour
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+button_edit_log_error = Erreur Application
+button_reset = Reset
+button_analyse = Analyser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+icon_edit = Edit
+
+table_heading_filename = Error Log
+table_heading_filesize = File Size
+
+button_delete_all = Delete All
+button_view = View
+
+log_directory = <strong>Log Directory:</strong> {{path}}
+
+ms_success_delete = The error log file ({{log}}) was successfully deleted.
+ms_error_delete = The error log file ({{log}}) could not be deleted.
+
+ms_success_delete_all = All error log files were successfully deleted.
+ms_error_delete_all = Not all error log files could be deleted.
+
+title_menu_log_error = Log erreur
+title_menu_log_error_ai = Log erreur AI
+title_menu_phpmailer = Log erreur PhpMailer

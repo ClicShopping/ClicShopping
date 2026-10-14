@@ -1,0 +1,4 @@
+cfg_products_recommendations_max_score_title = Max Score
+cfg_products_recommendations_max_score_description = Get the products that are frequently rejected by customers recommendations (must be between -1 and 1)<br />
+Must be inferior min score or egal
+

@@ -1,0 +1,5 @@
+module_item_text_title = Expédition par produit
+module_item_short_title = Expédition par produit
+module_item_public_title = Expédition par produit
+module_item_title = Expédition par produit
+module_item_text_way = Meilleur chemin

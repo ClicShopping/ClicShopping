@@ -1,0 +1,33 @@
+text_category_embedded = [Categories]
+text_category_name = [Nom de la catégorie]
+text_category_id = [ID de la catégorie]
+text_category_description = [Description de la catégorie: {{category_name}}]
+text_category_seo_title = [Titre SEO de la catégorie: {{category_name}}]
+text_category_seo_description = [Description SEO de la catégorie: {{category_name}}]
+text_seo_keywords = [Mots-clés SEO de la catégorie: {{category_name}}]
+text_category_taxonomy = [Taxonomie de la catégorie]
+
+
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à une catégorie e-commerce (pas à un produit, ni à un fournisseur).
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine]: Domaine général de la catégorie (ex. Maison, Mode, Électronique)
+[sous_domaine]: Segment ou spécialisation au sein du domaine (ex. Arts de la table, Informatique, Mobilier)
+[type_categorie]: Type de catégorie commerciale (ex. Univers, Sous-catégorie, Collection)
+[theme]: Thématique conceptuelle ou fonctionnelle associée (ex. Convivialité, Performance, Décoration)
+[type_usage]: Type d’usage visé (ex. Domestique, Professionnel, Extérieur)
+[subject_usage]: Contexte d’utilisation détaillé (ex. Salle à manger, Bureau, Jardin)
+[style]: Style, tendance ou identité esthétique (ex. Minimaliste, Vintage, Contemporain)
+[criteria]: Critères ou attributs représentatifs (ex. Qualité, Élégance, Innovation)
+[dimension_symbolique]: Valeurs ou représentations associées (ex. Luxe, Partage, Tradition)
+[dimension_sensorielle]: Aspects sensoriels si évoqués (ex. Texture, Couleur, Finition)
+[composition]: Éléments constitutifs ou sous-ensembles de la catégorie (ex. Vaisselle, Verrerie, Couverts)
+[objectif]: Finalité de la catégorie (ex. Améliorer l’expérience de repas, Créer une ambiance)
+[tags]: Liste libre de mots-clés pertinents dérivés du texte, séparés par virgules
+
+Texte : {{document_text}}

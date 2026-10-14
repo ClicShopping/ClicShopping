@@ -1,0 +1,67 @@
+heading_title = Commentaires des clients
+
+table_heading_products = Produits
+table_heading_rating = Evaluations
+table_heading_date_added = Date d'ajout
+table_heading_action = Action
+
+table_heading_review_author = Auteur
+table_heading_products_average_rating = Moyenne
+table_heading_review_read = Lu
+table_heading_last_modified = Modifié
+table_heading_approved = Approuver ?
+table_heading_review_group = Groupe clients
+
+tab_general = General
+
+icon_edit = Editer
+icon_preview_comment = Prévisualiser le commentaire
+
+entry_products = Nom du produit
+entry_from = Nom du client
+entry_date = Date de l'avis
+entry_review = Avis du client
+entry_review_text = <small><font color="#ff0000"><strong>REMARQUE :</strong></font></small>&nbsp;Le code HTML n'est pas traduit !&nbsp;
+entry_rating = Evaluations
+entry_status = Statut
+entry_status_yes = Accepter le commentaire
+entry_status_no = Refuser le commentaire
+entry_actual_status = <br />Statut en cours
+entry_status_actual_yes = Commentaire accepté
+entry_status_actual_no = Commentaire refusé
+customers_name = Nom Client
+
+text_info_delete_review_intro = Voulez vous vraiment effacer ce commentaire ?
+
+text_info_date_added = Date d'ajout
+text_info_last_modified = Dernière modification
+text_info_image_nonexistent = L'IMAGE N'EXISTE PAS
+text_info_review_author = Auteur
+text_info_review_rating = Classement
+text_info_review_read = Lu
+text_info_review_size = Taille
+text_info_products_average_rating = Moyenne
+
+text_of_5_stars = %s sur 5 étoiles !
+text_good = <small><font color="#ff0000"><strong>BON</strong></font></small>
+text_bad = <small><font color="#ff0000"><strong>MAUVAIS</strong></font></small>
+text_info_heading_delete_review = Effacer commentaires
+
+title_reviews_general = Informations générales
+title_reviews_entry = Avis du client
+title_reviews_rating = Classement
+
+text_statistics_customer_review_evaluation = Evaluation des commentaires
+text_count_vote_yes = Vote positif :
+text_count_vote_no =  Vote négatif :
+
+visitor_name = Client normal
+
+text_statistics = Statistiques
+text_count_reviews = Total commentaires :
+text_average_reviews = Moyennes commentaires :
+entry_customer_sentiment_tag = Sentiment client : 
+text_count_customers_tag = Tags sentiment clients :
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

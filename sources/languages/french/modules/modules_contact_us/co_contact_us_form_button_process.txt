@@ -1,0 +1,5 @@
+
+ modules_contact_us_form_button_process_title = Souhaitez-vous afficher le button Continuer dans le formulaire de contact ?
+ modules_contact_us_form_button_process_description = Afficher le button Continuer dans le formulaire de contact (important de le laisser sur true)
+
+ button_continue = Continuer

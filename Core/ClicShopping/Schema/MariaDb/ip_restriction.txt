@@ -1,0 +1,12 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each IP restriction rule)
+ip_restriction varchar(64) not_null comment(IP address or CIDR range to restrict - supports wildcards)
+ip_comment varchar(255) null default null comment(Administrative note about why this IP is restricted)
+ip_status_shop tinyint(1) default(0) not_null comment(Shop access restriction - 0: allowed, 1: blocked)
+ip_status_admin tinyint(1) default(0) not_null comment(Admin access restriction - 0: allowed, 1: blocked)
+--
+primary id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

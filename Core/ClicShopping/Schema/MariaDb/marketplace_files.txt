@@ -1,0 +1,20 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier for each marketplace file)
+file_id int(11) not_null comment(External marketplace file identifier)
+file_categories_id int(11) not_null comment(FK to marketplace_categories table - category this file belongs to)
+file_name varchar(255) default null comment(Name of the marketplace file or extension)
+file_url text default null comment(URL to the file page on marketplace)
+file_description text default null comment(Description of what the file does or provides)
+file_author varchar(255) not_null comment(Author or developer name who created the file)
+file_photo_url text not_null comment(URL to author photo or file icon)
+file_profil_url text not_null comment(URL to author profile page on marketplace)
+date_added date default null comment(Date when file was added to local database)
+date_modified date default null comment(Date when file record was last modified)
+
+--
+primary Id
+idx_file_id file_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

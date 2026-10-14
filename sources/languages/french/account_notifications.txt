@@ -1,0 +1,10 @@
+
+
+navbar_title_1 = Mon compte
+navbar_title_2 = Surveillance Produits
+
+heading_title = Surveillance Produits
+
+my_notifications_title = Mes surveillances produits
+
+success_notifications_updated = Votre demande a été mise &agrave jour.

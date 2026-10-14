@@ -1,0 +1,3 @@
+
+ module_products_info_name = Do you want to display the product name ?
+ module_products_info_name_description = Display the product name

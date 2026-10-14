@@ -1,0 +1,11 @@
+
+navbar_title_1 = Mon compte
+navbar_title_2 = Téléchargement de fichiers
+
+heading_title = Téléchargement de fichiers
+
+text_products_file_download_introduction = Veuillez remplir les éléments ci dessous, votre fichier une fois téléchargeé sera vérifier.
+text_products_file_download_select_categories = Sélectionner une catégorie
+text_products_file_download = Télléchargement de votre fichier
+text_products_file_download_message = Veuillez remplir cet élément et décrire votre module
+text_products_file_download_success_uploading = Succès

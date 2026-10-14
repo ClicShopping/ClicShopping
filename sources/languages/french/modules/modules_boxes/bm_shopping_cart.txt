@@ -1,0 +1,5 @@
+module_boxes_shopping_cart_title = Souhaitez-vous afficher le panier de commande ?
+module_boxes_shopping_cart_description = Affiche le panier des commandes au client
+module_boxes_shopping_cart_box_title = Mon panier
+ header_title_cart_contents = Mon panier
+module_boxes_shopping_cart_box_cart_empty = Panier vide

@@ -1,0 +1,191 @@
+<?php
+/**
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+namespace ClicShopping\Sites\Shop;
+
+use ClicShopping\OM\Apps;
+use ClicShopping\OM\OrderTotalSequence;
+use ClicShopping\OM\Registry;
+use function count;
+use function defined;
+use function is_array;
+use function is_null;
+/**
+ * The OrderTotal class is responsible for managing, processing, and rendering
+ * order total modules in a shopping cart system. It dynamically loads and executes
+ * installed order total modules to determine the calculation and output of order totals.
+ */
+class OrderTotal
+{
+  public array $modules = [];
+
+// class constructor
+
+  /**
+   * Constructor method for initializing the class.
+   *
+   * Checks if the module order total is installed and processes the installed modules.
+   * Splits the modules into an array and registers each module in the application's registry.
+   *
+   * @return void
+   */
+  public function __construct()
+  {
+    if (defined('MODULE_ORDER_TOTAL_INSTALLED') && !is_null(MODULE_ORDER_TOTAL_INSTALLED)) {
+      $this->modules = explode(';', MODULE_ORDER_TOTAL_INSTALLED);
+
+      foreach ($this->modules as $value) {
+        if (str_contains($value, '\\')) {
+          $class = Apps::getModuleClass($value, 'OrderTotal');
+
+          if (empty($class) || !class_exists($class)) {
+            continue;
+          }
+
+          try {
+            Registry::set('OrderTotal_' . str_replace('\\', '_', $value), new $class());
+          } catch (\Throwable $e) {
+            trigger_error('ClicShopping: OrderTotal module "' . $value . '" failed to instantiate: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Processes the modules to generate an array of order totals.
+   *
+   * This method iterates through available modules, checks their enabled status,
+   * and processes their output to construct an array containing details such as
+   * the code, title, displayed text, value, and sort order of each order total component.
+   *
+   * @return array Returns an array of order totals, each containing the keys:
+   *               - 'code': The unique code of the module.
+   *               - 'title': The title of the order total component.
+   *               - 'text': The textual representation of the order total value.
+   *               - 'value': The numeric value of the order total component.
+   *               - 'sort_order': The sorting order assigned to the component.
+   */
+  public function process()
+  {
+    $order_total_array = [];
+
+    // Taxable base moved by the modules ranked BEFORE the tax (reductions, shipping and other
+    // charges). Reset at every run: process() is called more than once in a checkout, and an
+    // accumulator that survives compounds. Read by the tax module, written by nobody else.
+    $CLICSHOPPING_Order = Registry::exists('Order') ? Registry::get('Order') : null;
+
+    if ($CLICSHOPPING_Order !== null) {
+      $CLICSHOPPING_Order->info['taxable_base_delta'] = 0.0;
+    }
+
+    if (Registry::exists('Hooks')) {
+      Registry::get('Hooks')->call('OrderTotal', 'PreProcess');
+    }
+
+    if (is_array($this->modules)) {
+      foreach ($this->modules as $value) {
+        if (!str_contains($value, '\\')) {
+          continue;
+        }
+
+        // Skip entries that were not registered in the constructor (orphaned
+        // install entry or a module that failed to instantiate). Reading an
+        // unregistered key would otherwise fall through to the previous
+        // iteration's stale module object.
+        $registryKey = 'OrderTotal_' . str_replace('\\', '_', $value);
+
+        if (!Registry::exists($registryKey)) {
+          continue;
+        }
+
+        $CLICSHOPPING_OTM = Registry::get($registryKey);
+
+        try {
+          if ($CLICSHOPPING_OTM->enabled) {
+            $CLICSHOPPING_OTM->output = [];
+            $CLICSHOPPING_OTM->process();
+
+            $rank = OrderTotalSequence::rank($value);
+            $sign = ($CLICSHOPPING_OTM->total_sign ?? 1) < 0 ? -1 : 1;
+
+            // Accumulated as the chain runs, so the tax module reads the base the modules before it
+            // have actually left — a reduction lowers it, a charge raises it. Nothing to declare in
+            // the modules: their family already says where they compute. Counted on the same rows
+            // that are printed and totalled, never on a row the loop below drops.
+            $moves_base = $CLICSHOPPING_Order !== null && OrderTotalSequence::entersTaxableBase($rank);
+
+            for ($i = 0, $n = count($CLICSHOPPING_OTM->output); $i < $n; $i++) {
+              if (!is_null($CLICSHOPPING_OTM->output[$i]['title']) && !is_null($CLICSHOPPING_OTM->output[$i]['text'])) {
+                if ($moves_base) {
+                  $CLICSHOPPING_Order->info['taxable_base_delta'] += $sign * (float)$CLICSHOPPING_OTM->output[$i]['value'];
+                }
+
+                $order_total_array[] = [
+                  'code' => $CLICSHOPPING_OTM->code,
+                  'title' => $CLICSHOPPING_OTM->output[$i]['title'],
+                  'text' => $CLICSHOPPING_OTM->output[$i]['text'],
+                  'value' => $CLICSHOPPING_OTM->output[$i]['value'],
+                  'sort_order' => $CLICSHOPPING_OTM->sort_order,
+                  // +1 charge, -1 credit/discount — modules that deduct (DC, CD) set total_sign = -1;
+                  // everything else defaults to +1. Used by the admin recalc to recompute the total.
+                  'total_sign' => $CLICSHOPPING_OTM->total_sign ?? 1,
+                  // Fiscal rank this module was computed at, persisted so re-editing the order later
+                  // reproduces ITS sequence rather than the configuration of the day.
+                  'total_rank' => $rank
+                ];
+              }
+            }
+          }
+        } catch (\Throwable $e) {
+          trigger_error('ClicShopping: OrderTotal module "' . $value . '" failed during process(): ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString(), E_USER_WARNING);
+        }
+      }
+    }
+
+    return $order_total_array;
+  }
+
+  /**
+   * Generates and returns an HTML string containing the output of enabled modules.
+   * The output includes title and text values of the modules formatted as table rows.
+   *
+   * @return string The formatted HTML string representing the output of the enabled modules.
+   */
+  public function output()
+  {
+    $output_string = '';
+    if (is_array($this->modules)) {
+      foreach ($this->modules as $value) {
+        if (!str_contains($value, '\\')) {
+          continue;
+        }
+
+        $registryKey = 'OrderTotal_' . str_replace('\\', '_', $value);
+
+        if (!Registry::exists($registryKey)) {
+          continue;
+        }
+
+        $CLICSHOPPING_OTM = Registry::get($registryKey);
+
+        if ($CLICSHOPPING_OTM->enabled) {
+          $size = count($CLICSHOPPING_OTM->output);
+          for ($i = 0; $i < $size; $i++) {
+            $output_string .= '              <tr>' . "\n" .
+              '                <td class="OrderTotalTitle">' . $CLICSHOPPING_OTM->output[$i]['title'] . '</td>' . "\n" .
+              '                <td class="OrderTotalText">' . $CLICSHOPPING_OTM->output[$i]['text'] . '</td>' . "\n" .
+              '              </tr>';
+          }
+        }
+      }
+    }
+
+    return $output_string;
+  }
+}

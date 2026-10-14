@@ -1,0 +1,22 @@
+id int(11) not_null auto_increment
+evaluation_id varchar(255) not_null
+static_weights longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`static_weights`)) comment(Static reputation-based weights)
+adaptive_weights longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`adaptive_weights`)) comment(LLM-determined adaptive weights)
+weight_differences longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin not_null CHECK (json_valid(`weight_differences`)) comment(Absolute differences per critic)
+avg_weight_difference decimal(10,8) not_null comment(Average weight difference across critics)
+static_consensus decimal(10,8) not_null comment(Consensus using static weights)
+dynamic_consensus decimal(10,8) not_null comment(Consensus using adaptive weights)
+consensus_difference decimal(10,8) not_null comment(Absolute difference between consensus values)
+evaluation_context longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(`evaluation_context`)) comment(Evaluation context for analysis)
+created_at timestamp NULL default(current_timestamp)
+
+--
+primary id
+idx_evaluation evaluation_id
+idx_created created_at
+idx_consensus_diff consensus_difference
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

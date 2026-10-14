@@ -1,0 +1,7 @@
+cfg_antispam_reviews_write_title = Reviews Write
+cfg_antispam_reviews_write_description = Set True to enable or not the module
+<br /><strong>option: You must install the module or Apps to use it and the modules activated</strong>
+
+cfg_antispam_reviews_write_true = True
+cfg_antispam_reviews_write_false = False
+

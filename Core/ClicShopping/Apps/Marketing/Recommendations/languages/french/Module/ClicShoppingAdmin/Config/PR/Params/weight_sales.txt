@@ -1,0 +1,4 @@
+cfg_products_recommendations_weight_sales_title = Pondération des ventes
+cfg_products_recommendations_weight_sales_description = Poids appliqué au score issu des ventes. Contrôle l'influence des ventes produit (normalisées par le maximum commandé) dans la stratégie Multiple.
+
+

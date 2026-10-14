@@ -1,0 +1,5 @@
+cfg_ecommerce_cockpit_ai_product_tracking_title = Product tracking
+cfg_ecommerce_cockpit_ai_product_tracking_description = It tracks website visits and assists the AI in its decisions and recommendations
+
+cfg_ecommerce_cockpit_ai_product_tracking_true = True
+cfg_ecommerce_cockpit_ai_product_tracking_false = False

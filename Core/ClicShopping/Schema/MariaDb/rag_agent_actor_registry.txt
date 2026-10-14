@@ -1,0 +1,15 @@
+registry_id int(11) auto_increment not_null
+actor_id varchar(100) not_null
+action_type varchar(50) not_null
+confidence decimal(32) not_null
+domain varchar(50) default null
+registered_at timestamp NULL default(current_timestamp)
+updated_at timestamp NULL default(current_timestamp) ON UPDATE current_timestamp()
+--
+primary registry_id
+unique unique_actor_action actor_id action_type
+idx_actor_registry_composite action_type confidence DESC domain
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

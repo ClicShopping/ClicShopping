@@ -1,0 +1,19 @@
+
+modules_sitemap_summary_title = Souhaitez-vous afficher un résumé de la cartographie du site ?
+modules_sitemap_summary_description = Ajouter un résumé de la cartographie du site
+
+sitemap_summary_text_home_page = Accueil
+sitemap_summary_text_newsletter = S'inscrire à la Newsletter
+sitemap_summary_text_contact = Nous contacter
+
+sitemap_summary_text_my_account = Accéder à mon compte
+sitemap_summary_text_create_account = Créer un compte
+sitemap_summary_text_password = Perte mot de passe
+
+sitemap_summary_text_products_specials = Voir les promotions
+sitemap_summary_text_products_favorites = Voir les coups de coeur
+sitemap_summary_text_products_whats_new = Voir les nouveautés
+sitemap_summary_text_products_featured = Voir les produits sélectionnés
+
+sitemap_summary_text_search_advanced_search = Rechercher un produit
+sitemap_summary_text_blog = Voir le blog

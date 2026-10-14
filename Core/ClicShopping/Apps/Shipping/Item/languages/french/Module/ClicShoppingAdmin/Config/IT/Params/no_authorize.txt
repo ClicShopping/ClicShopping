@@ -1,0 +1,4 @@
+cfg_item_no_authorize_title = Souhaitez-vous afficher ce module pour les clients B2C ?
+cfg_item_no_authorize_desc = Afficher ce module pour les clients B2C ?
+cfg_item_no_authorize_true = True
+cfg_item_no_authorize_false = False

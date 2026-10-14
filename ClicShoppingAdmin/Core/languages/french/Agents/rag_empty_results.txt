@@ -1,0 +1,9 @@
+text_empty_result_message = Aucun résultat trouvé pour votre requête. Cela peut être dû à l'absence de données dans la base de données ou à des critères de recherche trop spécifiques.
+
+text_empty_result_reasons_prompt = Analyze why this SQL query returned no results and provide possible reasons.\n\nUser Question: :QUESTION\n\nSQL Query:\n:SQL\n\nProvide 3-5 possible reasons why no data was returned. Consider:\n- Time period constraints (data might not exist for the specified period)\n- Filter conditions (criteria might be too specific)\n- Data availability (the requested data might not be tracked)\n- Spelling or terminology differences\n\nFormat your response as a numbered list:\n1. First reason\n2. Second reason\n3. Third reason
+
+text_empty_result_suggestions_prompt = Based on this query that returned no results, suggest alternative queries the user could try.\n\nUser Question: :QUESTION\n\nSQL Query:\n:SQL\n\nProvide 3-5 alternative query suggestions. Consider:\n- Broader time periods\n- Less restrictive filters\n- Related data that might be available\n- Different ways to phrase the question\n\nFormat your response as a numbered list:\n1. First suggestion\n2. Second suggestion\n3. Third suggestion
+
+text_empty_result_reasons_header = Raisons possibles
+text_empty_result_suggestions_header = Suggestions alternatives
+text_empty_result_sql_header = Requête exécutée

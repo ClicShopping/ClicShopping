@@ -1,0 +1,16 @@
+timeout_cold_cache_error = Your query is taking longer than expected. This is normal for the first execution.
+timeout_cold_cache_explanation = The system is building the cache for this query. The next execution will be much faster.
+timeout_cold_cache_guidance = Please retry, your next query will be faster.
+
+timeout_general_error = Processing your query is taking longer than expected.
+timeout_general_explanation = The system is processing a complex query. Please retry in a few moments.
+timeout_general_guidance = Please retry your query.
+
+timeout_progress_processing = Processing...
+timeout_progress_with_percent = Processing... %s%% complete
+timeout_progress_taking_longer = Processing... Your query requires more time than expected.
+
+timeout_completion_message = Query completed in %ss
+timeout_completion_from_cache = Query completed in %ss (from cache)
+
+timeout_retry_guidance = Please retry, your next query will be faster.

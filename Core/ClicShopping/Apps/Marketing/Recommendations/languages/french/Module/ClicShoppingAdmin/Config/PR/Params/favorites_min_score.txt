@@ -1,0 +1,2 @@
+cfg_products_recommendations_favorites_min_score_title = Score minimum accepté pour créer automatiquement un coup de coeur
+cfg_products_recommendations_favorites_min_score_description = Permet de créer automatiquement un coup de coeur si le score est plus important que le score moyen du produit

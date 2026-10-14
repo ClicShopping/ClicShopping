@@ -1,0 +1,43 @@
+modules_header_multi_template_title = Souhaitez-vous afficher ce système de multi-template dans le haut de page ?
+modules_header_multi_template_description = Ajouter le système de multi-template dans le haut de page de la boutique
+
+
+modules_header_multi_template_template_categories = Catégories
+modules_header_multi_template_template_toggle_nav = Catégories
+
+modules_header_multi_template_site_settings = Options
+modules_header_multi_template_account_logged_in = Connexion
+modules_header_multi_template_cart_no_contents = Aucun produits
+
+modules_header_multi_template_account_logoff = Se déconnecter
+modules_header_multi_template_account_login = Se connecter / Créer
+modules_header_multi_template_account_register = S'enregistrer
+
+modules_header_multi_template_create_account = Créer un compte
+modules_header_multi_template_my_account = Mon compte
+modules_header_multi_template_account_history = Mon historique de commande
+modules_header_multi_template_account_address_book = Mon carnet d'adresses
+
+modules_header_multi_template_account_password = Mot de passe
+modules_header_multi_template_title_advanced_search = Recherche Avançée
+
+modules_header_multi_template_header_search = Rechercher
+modules_header_multi_template_currency = Devise
+modules_header_multi_template_title_contact_us = Nous contacter
+modules_header_multi_template_header_email_address = Email
+modules_header_multi_template_password_forgotten = Mot de passe perdu
+
+modules_header_multi_template_shopping_cart_view_cart = Votre panier
+modules_header_multi_template_shopping_cart_no_content = Aucun produit
+modules_header_multi_template_shopping_cart_product = produit(s)
+modules_header_multi_template_shopping_cart_view_cart = Panier
+modules_header_multi_template_shopping_cart_checkout = Commander
+modules_header_multi_template_shopping_cart_total_content = Total
+
+table_heading_quantity = Quantité
+table_heading_total_cart = Total
+table_heading_products = Produit
+
+template_does_not_exist = Aucun template
+
+pull_down_default_manufacturer = Nos marques

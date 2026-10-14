@@ -1,0 +1,11 @@
+/.idea
+/.module-cache
+/node_modules
+/vendor
+/package-lock.json
+/build/*
+!/build/template.phps
+!/build/build.php
+!/build/_frontend
+!/build/_languages
+/*.js

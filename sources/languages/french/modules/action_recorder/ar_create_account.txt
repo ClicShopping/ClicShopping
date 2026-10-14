@@ -1,0 +1,2 @@
+module_action_recorder_create_account_title = Création de compte - Catalog
+module_action_recorder_create_account_description = Enregistrement des créations de comptes à partir du catalog.

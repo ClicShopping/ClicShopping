@@ -1,0 +1,2 @@
+module_header_tags_manufacturers_title = Do you want to use manufacturers meta tag ?
+module_header_tags_manufacturers_description = Add the meta tag balise in the manufacturers page

@@ -1,0 +1,5 @@
+module_moneyorder_title = Payment by check
+module_moneyorder_short_title = Payment by check
+module_moneyorder_public_title = Payment by check
+
+module_moneyorder_text = Make Payable To:&nbsp; {{pay_to}} <br /><br />Send To:<br />{{store_name_addres}}<br /><br />Your order will not ship until we receive payment

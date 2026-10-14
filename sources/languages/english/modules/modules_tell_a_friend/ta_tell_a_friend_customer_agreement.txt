@@ -1,0 +1,2 @@
+ modules_tell_a_friend_customer_agreement_title = Do you want to display customer agreement to send an information
+ modules_tell_a_friend_customer_aggreement_description = Display the customer agreement to send an information

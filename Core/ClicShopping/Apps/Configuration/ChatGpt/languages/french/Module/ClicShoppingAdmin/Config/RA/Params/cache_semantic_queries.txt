@@ -1,0 +1,4 @@
+cfg_chatgpt_cache_semantic_queries_title = Activer le cache RAG pour les requêtes sémantiques
+cfg_chatgpt_cache_semantic_queries_description = Active la mise en cache des requêtes sémantiques pour améliorer la vitesse de réponse et réduire les coûts. Les résultats mis en cache sont réutilisés pour les requêtes identiques, réduisant considérablement le temps de traitement et les appels API. Lorsqu'activé, le système stocke les embeddings des requêtes et leurs résultats, permettant une récupération instantanée pour des questions similaires. Recommandé : True pour les environnements de production afin d'optimiser les performances et minimiser l'utilisation de l'API LLM.
+cfg_chatgpt_cache_semantic_queries_status_true = True
+cfg_chatgpt_cache_semantic_queries_status_false = False

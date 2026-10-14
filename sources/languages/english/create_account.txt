@@ -1,0 +1,24 @@
+
+navbar_title = Create an Account
+
+heading_title_create_account = Create an account
+
+email_subject = Welcome to {{store_name}}
+email_greet_mr = Dear Mr. {{lastname}},
+email_greet_ms = Dear Ms. {{lastname}},
+
+admin_email_subject = New Customer registrer on {{store_name}}
+admin_email_welcome = Hi <br /><br />
+
+admin_email_text = New client (B2C mode) is registered, below user details:<br />
+name : {{customer_name}} <br />
+surname :{{customer_firstname}}<br />
+company : {{customer_company}}<br />
+e-mail : {{customer_mail}}<br />
+
+
+email_network = Follow us in real time on  :<br />
+email_twitter = http://www.twitter.com/
+email_facebook = http://www.facebook.com/
+
+error_action_recorder = Error: An enquiry has already been sent. Please try again in {{module_action_recorder_create_account_email_minutes}} minutes.

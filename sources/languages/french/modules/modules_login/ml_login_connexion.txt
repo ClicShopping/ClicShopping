@@ -1,0 +1,12 @@
+module_login_connexion = Souhaitez-vous afficher le formulaire de connexion au compte client ?
+module_login_connexion_description = Affiche le formulaire de connexion au compte client.
+module_login_connexion_heading_new_customer = Vous êtes Nouveau Client
+
+module_login_connexion_heading_returning_customer = Vous êtes client
+module_login_connexion_text_returning_customer = J'ai déjà commandé
+module_login_connexion_entry_email_address = Votre email :
+module_login_connexion_entry_password = Mot de Passe :
+module_login_connexion_text_password_forgotten = Vous avez oublié votre mot de passe ? Cliquez ici.
+
+ button_login = Connexion
+ module_login_connexion_entry_password_text = Mot de passe oublié

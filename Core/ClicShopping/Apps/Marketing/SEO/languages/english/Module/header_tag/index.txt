@@ -1,0 +1,4 @@
+module_header_tags_index_title = Do  you want use Index Title ?
+module_header_tags_index_description = Add the title of the index catalog to the page title
+
+

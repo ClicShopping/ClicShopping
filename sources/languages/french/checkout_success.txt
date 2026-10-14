@@ -1,0 +1,5 @@
+
+navbar_title_1 = Confirmation
+navbar_title_2 = Succès
+heading_title = Merci de nous avoir fait confiance.
+button_continue = Continuer

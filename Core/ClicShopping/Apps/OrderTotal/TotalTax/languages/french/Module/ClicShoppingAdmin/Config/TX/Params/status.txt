@@ -1,0 +1,5 @@
+cfg_order_total_tax_status_title = Statut
+cfg_order_total_tax_status_description = Sélectionner True pour afficher le module dans la boutique
+
+cfg_order_total_tax_status_true = True
+cfg_order_total_tax_status_false = False

@@ -1,0 +1,2 @@
+cfg_order_total_free_shipping_over_title = Montant de commande minimale pour appliquer les frais
+cfg_order_total_free_shipping_over_description = Montant de commande minimale pour appliquer les frais

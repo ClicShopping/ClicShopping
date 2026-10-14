@@ -1,0 +1,2 @@
+cfg_ecommerce_acp_delivery_earliest_title = Shipping Earliest Date
+cfg_ecommerce_acp_delivery_earliest_description = Delivery earliest date for sending an order to the customer.

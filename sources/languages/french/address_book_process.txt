@@ -1,0 +1,36 @@
+navbar_title_1 = Mon compte
+navbar_title_2 = Carnet d'adresses
+
+heading_title = Gestion des adresses
+
+navbar_title_add_entry = Nouvelle entrée
+navbar_title_modify_entry = Mise à jour entrée
+navbar_title_delete_entry = Supprimer entrée
+
+heading_title_add_entry = Ajouter une nouvelle adresse
+heading_title_modify_entry = Modification de l'adresse
+heading_title_delete_entry = Supprimer une adresse de votre carnet
+
+delete_address_title = Adresse à supprimer
+delete_address_description = Etes-vous sûr de vouloir supprimer cette adresse ?
+
+new_address_title = Nouvelle adresse
+
+selected_address = Adresse choisie
+set_as_primary = Sélectionner comme adresse principale.
+
+success_address_book_entry_deleted = L'adresse sélectionnée a été supprimée avec succès de votre carnet d'adresses.
+success_address_book_entry_updated = Votre carnet d'adresses a été mis à jour avec succès.
+
+warning_primary_address_deletion = L'adresse principale ne peut pas être suprimée. Veuillez sélectionner une autre adresse comme adresse principale et réessayez.
+
+error_address_book_entry = Une erreur a été détectée, veuillez vérifier vos informations.
+error_nonexisting_address_book_entry = L'entrée du carnet d'adresses n'existe pas.
+error_address_book_full = Votre carnet d'adresses est plein. Veuillez supprimer une adresse inutile pour en enregistrer une nouvelle.
+error_address_book_no_add = Vous n'êtes pas autorisé à ajouter une nouvelle adresse dans votre carnet personnel. N'hésitez pas à nous contacter pour recevoir plus d'informations sur cette impossibilité.
+error_address_book_no_modify_default = Vous n'êtes pas autorisé à modifier l'adresse principale de votre carnet personnel. N'hésitez pas à nous contacter pour recevoir plus d'informations sur cette impossibilité.
+
+button_delete = Supprimer
+button_back = Retour
+button_update = Mettre à jour
+button_continue = Continuer

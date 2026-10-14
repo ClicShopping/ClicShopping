@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_default_delivery_title = Libelle de livraison par defaut
+cfg_ecommerce_ucp_default_delivery_description = Libelle affiche pour le delai de livraison standard

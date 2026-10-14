@@ -1,0 +1,11 @@
+module_account_customers_list_order_title = Do you want to display the customers order ?
+module_account_customers_list_order_description = Display the customers order
+
+module_account_customers_list_order_order = My Orders
+module_account_customers_list_order_order_text = <strong>Note:</strong> For any complaint / withdrawal or request for a completed order, please edit your order and click on the support link
+
+overview_title = Overview
+overview_show_all_orders = (show all orders)
+overview_previous_orders = Previous Orders
+
+button_view = Display

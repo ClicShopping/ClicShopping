@@ -1,0 +1,8 @@
+cfg_chatgpt_max_token_title = Max Token
+cfg_chatgpt_max_token_description = Veuillez insérer un nombre<br />
+Le nombre maximal de jetons à générer dans la complétion.
+Le nombre de jetons de votre prompt plus max_tokens ne peut pas dépasser la longueur de contexte du modèle.<br />
+1000 tokens : autour de 750 mots<br />
+ gpt-3.5-turbo-instruct  : 4000<br />
+Gpt-4 (beta test) : 8,192 tokens <br />
+gpt-4-32k (beta test)  : 32,768 tokens

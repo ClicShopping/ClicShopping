@@ -1,0 +1,4 @@
+module_admin_dashboard_total_revenue_app_title = Do you want to install Total Revenue Chart (last 12 month) All status except cancelled
+module_admin_dashboard_total_revenue_app_description = Show the total revenue chart of the last 12 month
+module_admin_dashboard_total_revenue_app_chart_link = Total Revenue (All status except cancelled - 12 month)
+

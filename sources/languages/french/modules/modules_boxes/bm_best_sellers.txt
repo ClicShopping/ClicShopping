@@ -1,0 +1,4 @@
+
+ module_boxes_best_sellers_title = Souhaitez afficher les meilleures ventes
+ module_boxes_best_sellers_description = Affiche les meilleures ventes
+ module_boxes_best_sellers_box_title = Meilleures ventes

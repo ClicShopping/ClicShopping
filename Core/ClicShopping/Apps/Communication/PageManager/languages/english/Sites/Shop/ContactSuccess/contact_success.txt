@@ -1,0 +1,1 @@
+navbar_title_1 = Success

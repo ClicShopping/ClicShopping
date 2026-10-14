@@ -1,0 +1,7 @@
+cfg_antispam_newsletter_no_account_title = Bulletin d'information anonyme
+cfg_antispam_newsletter_no_account_description = Sélectionnez True pour activer le module
+<br /><strong>Option: Vous devez installer le module ou l'APP correspondante et activer les modules</strong>
+
+cfg_antispam_newsletter_no_account_true = True
+cfg_antispam_newsletter_no_account_false = False
+

@@ -1,0 +1,11 @@
+text_seo_page_title = SEO Page Title
+text_seo_expertise = You are an expert in e-commerce and SEO marketing.
+text_seo_page_title_question = Give me a SEO Title. Give me in less 50 characters. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_tag_question = Give me 7 keywords tag separated. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_keywords_question = Give me 7 keywords tag separated by a comma. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_summary_description_question = Give me in less 50 words a very short description. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_translate_language = Can you translate in
+text_seo_page_translate_language = Could you remove the prompt response, the question and remove everything before the response: I need only the result about the question below. Can you translate in
+
+title_help_seo = Help
+text_help_seo = Please note that if you use AI to generate your content, information may take longer to save due to processing. Please wait.

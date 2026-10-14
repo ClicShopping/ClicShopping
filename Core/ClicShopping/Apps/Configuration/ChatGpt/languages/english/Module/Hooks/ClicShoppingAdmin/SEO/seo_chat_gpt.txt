@@ -1,0 +1,24 @@
+text_seo_page_title = SEO Page Title
+
+text_seo_expertise = You are an expert in e-commerce and SEO marketing.
+text_seo_page_title_question = Give me a SEO Title in less 50 characters about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_tag_question = Give me 7 keywords tag separated by a comma about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_keywords_question = Give me 7 keywords tag separated by a comma about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_summary_description_question = Give me in less 50 words a very short description about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_translate_language = Can you translate in
+
+text_tag_specials = Special products
+text_tag_favorite = Favorites products
+text_tag_featured = Featured products
+text_tag_products_new = New products
+text_tag_review = Products review
+text_tag_recommendations = Products Recommendations
+text_seo_action = Action Gpt
+
+text_seo_page_recommendations_title_question = Give me a SEO Title in less 50 characters for products reccommendation about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_recommendations_description_question = Give me in less 50 words a short description for products recommendations about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+text_seo_page_recommendations_keywords_question = Give me 7 keywords tag, separated by a comma, for product recommendations about this website : {{store_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+
+text_seo_page_recommendations_translate_language = Can you translate the response in
+title_help_seo = Help
+text_help_seo = Please note that if you use AI to generate your content, information may take longer to save due to processing. Please wait.

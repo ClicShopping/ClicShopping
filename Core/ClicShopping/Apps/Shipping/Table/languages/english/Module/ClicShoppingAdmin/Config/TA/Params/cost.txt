@@ -1,0 +1,2 @@
+cfg_table_cost_title = Delivery Cost
+cfg_table_cost_desc = The delivery cost will be multiplied by the number of tables in the order using this method

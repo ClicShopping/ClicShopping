@@ -1,0 +1,25 @@
+heading_configuration = Configuration
+
+section_domain_configuration = Configuration du Domaine
+text_configuration_info_title = Informations de Configuration
+text_configuration_info = Cette page affiche les détails de configuration pour le domaine e-commerce.
+
+subsection_entity_config = Configuration des Entités
+subsection_guardrails = Garde-fous de Sécurité
+subsection_llm_prompts = Invites LLM
+
+text_entity_config_desc = Les entités suivantes sont configurées pour le domaine e-commerce:
+column_entity = Entité
+column_table = Table de Base de Données
+column_id_column = Colonne ID
+
+entity_products = Produits
+entity_orders = Commandes
+entity_customers = Clients
+entity_categories = Catégories
+
+text_guardrails_desc = Les garde-fous de sécurité empêchent l'accès aux données sensibles:
+text_sensitive_tables = Tables Sensibles
+
+text_llm_prompts_desc = Les invites LLM sont stockées dans les fichiers de langue et chargées dynamiquement:
+text_prompts_location = Emplacement des Invites

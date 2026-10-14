@@ -1,0 +1,10 @@
+
+navbar_title = Utilisation de cookie
+heading_title = Utilisation de cookie
+
+text_information = Nous avons détecté que votre navigateur n'accepte pas les cookies, ou la fonction cookies est désactivée.<br /><br />Pour continuer de faire des achats en ligne, nous vous encourageons à autoriser les cookies sur votre navigateur.<br /><br />Pour les navigateurs <strong>Internet Explorer</strong> , veuillez suivre ces instructions:<br /><br />-Cliquer sur la barre de menu Outils, et sélectionner Options Internet.<br /> -Sélectionner l'onglet Sécurité, et remettre le niveau de securité sur moyen. <br /><br />Nous avons pris cette mesure de sécurité pour votre avantage et faisons des excuses ouvertes si n'importe quels inconvénients sont causés.<br /><br />Veuillez entrer en contact avec le propriétaire du magasin si vous avez des questions touchant à cette condition , ou continuez vos achats en ligne.
+
+box_information_heading = Cookies Vie privée et Sécurité
+box_information = On doit autoriser les cookies pour acheter en ligne sur ce magasin pour des questions liées à la vie privée et à la sécurité quant à votre visite sur ce site. En permettant l'utilisation de cookie à votre navigateur, la communication entre vous et ce site est renforcée pour être certain qu'il n'y ai que vous qui faites des transactions pour votre propre défense et empêcher la fuite de vos informations de vie privée.
+
+ button_continue = Continuer

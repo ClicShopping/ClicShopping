@@ -1,0 +1,4 @@
+module_products_featured_title_tilte = Souhaitez-vous afficher le titre des sélections?
+module_products_featured_title_title_description = Afficher le titre
+
+text_heading_title = Nos sélections

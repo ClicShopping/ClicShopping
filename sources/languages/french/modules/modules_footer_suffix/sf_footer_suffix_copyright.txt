@@ -1,0 +1,5 @@
+modules_footer_suffix_copyright_title = Souhaitez-vous afficher le copyright dans le bas de page ?
+modules_footer_suffix_copyright_description = Ajouter le copyright dans le bas de page de la boutique
+modules_footer_suffix_trademark_text =  Registered® et Trademark™ par <a href="https://www.clicshopping.org" target="_blank" rel="noopener">ClicShopping™</a> - Copyright© Juin 2010 -
+
+modules_footer_suffix_copyright_text = <br />Tous droits réservés sur le contenu du site - Copyright©

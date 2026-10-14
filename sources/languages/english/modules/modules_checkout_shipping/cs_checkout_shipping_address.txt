@@ -1,0 +1,6 @@
+
+ module_checkout_shipping_address_title = Do you want to display the shipping address  ?
+ module_checkout_shipping_address_description = Display the shipping address
+ module_checkout_shipping_address_title_shipping_address = Shipping address :
+ module_checkout_shipping_address_text_choose_shipping_destination = Please choose the shipping address than you want.
+ module_checkout_shipping_address_button_change_address = Change your adddress

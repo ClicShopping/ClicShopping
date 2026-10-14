@@ -1,0 +1,42 @@
+email_text_subject = Order Process {{store_name}}
+email_text_order_intro = Hello,
+Please find the elements concerning your order into {{store_name}}
+We thank you for your confidence and we make our possible as well as possible to treat the sending of your order.
+Order Number :
+email_text_invoice_url = Detailed Invoice:
+email_text_date_ordered = Date Ordered:
+email_text_products = Products
+email_text_subtotal = Sub-Total:
+email_text_tax = Tax:
+email_text_shipping = Shipping:
+email_text_total = Total:
+email_text_delivery_address = Delivery Address
+email_text_billing_address = Billing Address
+email_text_payment_method = Payment Method
+entry_text_order_number = Order number :
+
+email_separator = ------------------------------
+text_email_via = via
+
+email_text_footer = Your order is being prepared and you will be sent soon. Please print this email certifying that you have to take order well on {{store_name}} or for any later correspondence.<br /><br /> Receive, dear customer, our sincere greetings.<br />
+regards, <br /><strong>{{store_name}} Team</strong><br />
+<p>{{store_name_address}}<br />
+
+
+email_text_subject_stock = Stock Alert on product on {{store_name}}
+
+email_reorder_level_text_stock = Hello,' . "\n\n" . 'You recieved an warning email concernng your warning stock (general configuration) for this product. This warning stock is the alrt stock where on or several procducs is reached. '. "\n" . 'There the differents caracteristics on the product : '. "\n" . '
+email_text_stock = Hello, '. "\n\n" . ' You receive an  warning about the sold_out stock on one of your products. Your product is no available on your store. However, you can reactivate it without modifying your stock. The Add button will be replaced by the following sold_out button. '. "\n" . '  There characteristics of the products out of stock :'. "\n" . '
+
+email_text_subject_alert_stock = Stock alert on specific product on {{store_name}}
+email_reorder_level_text_alert_stock = Hello,' . "\n\n" . 'You receive an  warning about the alert stock (defined in the product) concerning a product.  Your product is available on your store. '. "\n" . 'There characteristics of the products out of stock : '. "\n" . '
+email_text_product_alert_stock = Stock on this product :
+
+
+email_text_id_product = Product id :
+email_text_model = Model :
+email_text_products_name = Product name :
+email_text_product_url = Product URL :
+email_text_product_stock = New product stock :
+email_text_date_alert = Alert date
+

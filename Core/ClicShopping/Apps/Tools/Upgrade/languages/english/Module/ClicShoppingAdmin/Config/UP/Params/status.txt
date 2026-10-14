@@ -1,0 +1,6 @@
+cfg_upgrade_status_title = Status
+cfg_upgrade_status_description = Set True to enable or not the module
+
+cfg_upgrade_status_true = True
+cfg_upgrade_status_false = False
+

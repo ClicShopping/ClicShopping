@@ -1,0 +1,6 @@
+cfg_suppliers_status_title = Status
+cfg_suppliers_status_description = Set True to enable or not the module
+
+cfg_suppliers_status_true = True
+cfg_suppliers_status_false = False
+

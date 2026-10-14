@@ -1,0 +1,38 @@
+heading_title = Envoyer un courrier électronique aux clients
+
+tab_general = general
+
+text_select_customer = -- Sélectionner --
+text_all_customer = tous les clients
+text_newsletter_customer = Tous les abonnés
+
+text_email = E-mail
+text_customer = Client :
+text_subject = Sujet :
+text_from = De :
+text_message = Message :
+text_select_customer = Sélectionnez le client
+text_all_customers = Tous les clients
+text_newsletter_customers = Tous les abonnés
+text_help_wysiwyg = wysiwyg
+
+email_text_from = Email from
+subject = Subject
+
+notice_email_sent_to = Courrier électronique envoyé  : {{mail_sent_to}}
+error_no_customer_selected = Erreur : Aucun client n'a été sélectionné.
+error_email_sent = Erreur Email
+success_email_sent =  Email envoyé avec succès
+
+title_help_image = Note sur l'utilisation des images
+title_help_description = Note sur l'utilisation du wysiwyg
+help_description = <li>Si vous avez inséré des plugin dans Firefox, il peut y avoir des incompatibilités (ex : adblock plus)</li>
+
+text_message_customer = Bonjour Mr, Mme .....<br />
+.....<br />
+.....<br />
+.....<br />
+Cordialement,<br />
+La direction<br />
+
+text_please_wait = Envoi en cours, veuillez patienter...

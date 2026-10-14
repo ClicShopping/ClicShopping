@@ -1,0 +1,2 @@
+module_action_recorder_create_account_title = Create Account catalog
+module_action_recorder_create_account_description = Record usage of account creation for catalog

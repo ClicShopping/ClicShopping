@@ -1,0 +1,30 @@
+mcp_id int(11) not_null auto_increment comment(Primary key - unique identifier for each MCP server configuration)
+username varchar(64) not_null comment(MCP username for authentication)
+mcp_key text not_null comment(MCP authentication key - should be securely stored)
+status tinyint(1) not_null comment(MCP server status - 0: disabled, 1: enabled)
+date_added datetime not_null comment(Timestamp when MCP configuration was created)
+date_modified datetime default null comment(Timestamp of last modification)
+select_data tinyint(1) not_null comment(Permission to read data - 0: denied, 1: allowed)
+update_data tinyint(1) not_null comment(Permission to update data - 0: denied, 1: allowed)
+create_data tinyint(1) not_null comment(Permission to create data - 0: denied, 1: allowed)
+delete_data tinyint(1) not_null comment(Permission to delete data - 0: denied, 1: allowed)
+create_db tinyint(1) not_null comment(Permission to create databases - 0: denied, 1: allowed)
+server_host varchar(255) not_null default('localhost') comment(MCP server hostname or IP address)
+server_port int(6) not_null default 3000 comment(MCP server port number - default 3000)
+ssl_enabled tinyint(1) not_null default(0) comment(SSL/TLS encryption - 0: disabled, 1: enabled)
+alert_threshold int(6) default(20) comment(Number of errors before triggering alert)
+latency_threshold int(6) default(1000) comment(Maximum acceptable latency in milliseconds)
+downtime_threshold int(6) default(300) comment(Maximum acceptable downtime in seconds)
+data_retention int(3) default(7) comment(Data retention period in days)
+alert_notification tinyint(1) not_null default(0) comment(Alert notifications - 0: disabled, 1: enabled)
+
+--
+primary mcp_id
+idx_mcp_id mcp_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Model Context Protocol server configurations for AI agent communication
+ai_schema = exclude

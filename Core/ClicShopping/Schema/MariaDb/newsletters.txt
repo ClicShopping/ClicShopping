@@ -1,0 +1,19 @@
+newsletters_id int not_null auto_increment comment(Primary key - unique identifier for each newsletter)
+title varchar(255) not_null comment(Newsletter title or subject line)
+content text not_null comment(Newsletter content - HTML or plain text)
+module varchar(255) not_null comment(Newsletter module used for sending - email, mailchimp, etc)
+date_added datetime not_null comment(Timestamp when newsletter was created)
+date_sent datetime comment(Timestamp when newsletter was sent - null if not yet sent)
+status int(1) comment(Newsletter status - 0: draft, 1: sent, 2: scheduled)
+locked int(1) default(0) comment(Edit lock - 0: unlocked, 1: locked to prevent changes)
+languages_id int default(0) not_null comment(FK to languages table - newsletter language, 0: all languages)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - target customer group, 0: all groups)
+newsletters_accept_file int(1) default(0) not_null comment(File attachment - 0: no attachment, 1: includes file attachment)
+newsletters_twitter tinyint(1) default(0) not_null comment(Social media post - 0: email only, 1: also post to Twitter/social)
+newsletters_customer_no_account tinyint(1) default(0) not_null comment(Include non-customers - 0: customers only, 1: include newsletter subscribers without accounts)
+--
+primary newsletters_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

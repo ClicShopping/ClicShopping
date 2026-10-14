@@ -1,0 +1,3 @@
+cfg_stripe_public_key_test_title = Key test
+cfg_stripe_public_key_test_desc = Public_key test of the account you want to use <br />
+More information : https://stripeup.com/

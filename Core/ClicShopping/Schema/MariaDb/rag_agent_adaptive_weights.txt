@@ -1,0 +1,20 @@
+id int(11) auto_increment not_null
+evaluation_id varchar(255) not_null
+critic_id varchar(255) not_null
+raw_weight decimal(10,8) not_null
+normalized_weight decimal(10,8) not_null
+llm_explanation text not_null
+factor_analysis longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(factor_analysis))
+created_at timestamp NULL default(current_timestamp)
+
+--
+primary id
+idx_evaluation evaluation_id
+idx_critic critic_id
+idx_created created_at
+idx_eval_critic evaluation_id critic_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

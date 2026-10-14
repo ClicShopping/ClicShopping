@@ -1,0 +1,3 @@
+module_security_check_extended_admin_backup_file_title = ClicShopping/Work/backups/ File Access
+module_security_check_extended_admin_backup_file_http_200 = Je suis capable d'accéder au répertoire backup : {{backups_path}} - veuiller éviter que le l\accès public soit activé.
+

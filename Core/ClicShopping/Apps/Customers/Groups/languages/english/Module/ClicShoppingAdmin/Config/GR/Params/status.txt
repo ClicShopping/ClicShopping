@@ -1,0 +1,6 @@
+cfg_groups_status_title = Status
+cfg_groups_status_description = Set True to enable or not the module
+
+cfg_groups_status_true = True
+cfg_groups_status_false = False
+

@@ -1,0 +1,15 @@
+id int(11) not_null comment(Primary key - unique identifier for each rate limit entry)
+identifier varchar(255) not_null comment(Identifier for rate limiting - typically API key or IP address)
+timestamp int(11) not_null comment(Unix timestamp of the request for rate limit tracking)
+ip varchar(45) default null comment(IP address of the requester - IPv4 or IPv6 format)
+
+--
+primary id
+idx_identifier_timestamp identifier timestamp
+idx_timestamp timestamp
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

@@ -1,0 +1,40 @@
+error_database_user_message = Désolé, je n'ai pas pu accéder aux données. Une erreur de connexion s'est produite.
+error_database_details = Erreur de connexion à la base de données
+error_database_suggestion_1 = Veuillez réessayer dans quelques instants
+error_database_suggestion_2 = Si le problème persiste, contactez le support technique
+
+error_timeout_user_message = La requête a pris trop de temps à s'exécuter.
+error_timeout_details = Temps d'exécution dépassé
+error_timeout_suggestion_1 = Essayez de simplifier votre requête
+error_timeout_suggestion_2 = Réduisez la période demandée
+error_timeout_suggestion_3 = Soyez plus précis dans votre requête
+
+error_sql_user_message = Je n'ai pas pu comprendre votre demande de données.
+error_sql_details = Erreur de génération de requête
+error_sql_suggestion_1 = Reformulez votre question plus simplement
+error_sql_suggestion_3 = Évitez les termes trop techniques
+
+error_no_data_user_message = Aucune donnée n'a été trouvée pour votre demande.
+error_no_data_details = Aucun résultat correspondant
+error_no_data_suggestion_1 = Vérifiez que les données existent dans le système
+error_no_data_suggestion_2 = Essayez d'élargir votre recherche
+error_no_data_suggestion_3 = Ajustez la période demandée
+
+error_permission_user_message = Vous n'avez pas les permissions nécessaires pour accéder à ces données.
+error_permission_details = Accès refusé
+error_permission_suggestion_1 = Contactez votre administrateur pour obtenir les permissions
+error_permission_suggestion_2 = Essayez de consulter des données publiques
+
+error_ai_service_user_message = Le service IA est temporairement indisponible.
+error_ai_service_details = Erreur du service IA
+error_ai_service_suggestion_1 = Réessayez dans quelques instants
+error_ai_service_suggestion_2 = Le service devrait être rétabli sous peu
+
+error_generic_user_message = Une erreur inattendue s'est produite lors du traitement de votre demande.
+error_generic_suggestion_1 = Réessayez votre demande
+error_generic_suggestion_2 = Reformulez votre question différemment
+error_generic_suggestion_3 = Si le problème persiste, contactez le support
+
+response_not_available = Réponse non disponible
+analysis_not_available = Analyse non disponible
+response_extraction_fallback = Impossible d'extraire la réponse du résultat. Veuillez reformuler votre question.

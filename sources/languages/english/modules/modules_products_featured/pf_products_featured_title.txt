@@ -1,0 +1,4 @@
+module_products_featured_title_tilte = Do you want to display the featured title ?
+module_products_featured_title_title_description = Display the featured title
+
+text_heading_title = Featured products

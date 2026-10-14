@@ -1,0 +1,3 @@
+ module_header_tags_advanced_search_result_title = Do you want to use the  keywords like meta data in advanced search ?
+ module_header_tags_advanced_search_result_description = Add the keywords to the page title in the advanced research
+

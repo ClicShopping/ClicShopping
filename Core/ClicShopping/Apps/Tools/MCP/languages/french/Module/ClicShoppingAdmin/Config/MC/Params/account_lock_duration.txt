@@ -1,0 +1,2 @@
+cfg_products_api_account_lock_duration_title = Durée de verrouillage du compte
+cfg_products_api_account_lock_duration_description = Durée pendant laquelle un compte reste verrouillé après dépassement des limites autorisées.

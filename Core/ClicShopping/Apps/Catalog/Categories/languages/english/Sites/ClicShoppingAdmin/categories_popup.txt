@@ -1,0 +1,4 @@
+heading_title = New categorie
+
+text_edit_categories_name = Categories name
+text_categories_name = Categories

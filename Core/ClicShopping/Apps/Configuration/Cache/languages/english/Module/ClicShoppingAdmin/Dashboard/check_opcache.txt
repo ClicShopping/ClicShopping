@@ -1,0 +1,4 @@
+module_admin_dashboard_check_opcache_app_title = Do you want install the OpeCache alert Info ?
+module_admin_dashboard_total_check_opcache_app_description = Check if the OpCache is configured or not
+module_admin_dashboard_check_opcache_app_link = OpCache Configuration
+module_admin_dashboard_check_opcache_app_alert = Please you can set the OpCache to use in production more information : {{opcache_link}}<br />

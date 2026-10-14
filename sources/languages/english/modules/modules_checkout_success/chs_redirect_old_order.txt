@@ -1,0 +1,3 @@
+
+ module_checkout_success_redirect_old_order_title = Do you want to redirect the customer to index page after a delay ?
+ module_checkout_success_redirect_old_order_description = Redirect the customer to index page after a delay

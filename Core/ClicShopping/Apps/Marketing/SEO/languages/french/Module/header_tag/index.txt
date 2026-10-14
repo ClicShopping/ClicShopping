@@ -1,0 +1,4 @@
+module_header_tags_index_title = Souhaitez-vous utiliser les balises métas dans la page d'index ?
+module_header_tags_index_description = Ajouter les balises métas dans la page d'index du site;
+
+

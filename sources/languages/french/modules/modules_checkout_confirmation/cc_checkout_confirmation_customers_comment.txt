@@ -1,0 +1,6 @@
+module_checkout_confirmation_customers_comment_title = Souhaitez-vous afficher les commentaires du client concernant la commande?
+module_checkout_confirmation_customers_comment_description = Affiche les commentaires du client concernant la commande
+
+module_checkout_confirmation_customers_comment_text_edit = Editer
+module_checkout_confirmation_customers_comment_heading_order_comments = Votre commentaire
+module_checkout_confirmation_customers_comment_heading_order_title = Commentaires

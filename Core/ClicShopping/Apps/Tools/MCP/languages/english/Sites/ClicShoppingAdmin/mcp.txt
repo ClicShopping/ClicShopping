@@ -1,0 +1,18 @@
+heading_title = MCP
+button_configure = Configur
+text_mcp_data = MCP
+button_health_monitor = Health monitor
+button_performance_monitor = Perofmance monitor
+button_mcp_alert = Alert monitor
+
+table_heading_mcp_id = ID
+table_heading_mcp_username = Username
+table_heading_mcp_server = Server
+table_heading_mcp_key_text = API Key
+table_heading_mcp_status = Status
+table_heading_mcp_date_added = Date Added
+table_heading_mcp_date_modified = Date Modified
+table_heading_action = Action
+icon_edit = Edit
+icon_delete = Delete
+text_display_number_of_link = Displaying <b>{{listing_from}}</b> to <b>{{listing_to}}</b> (of <b>{{listing_total}}</b> entries)

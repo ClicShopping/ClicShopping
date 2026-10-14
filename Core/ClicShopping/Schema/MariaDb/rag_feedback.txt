@@ -1,0 +1,22 @@
+id INT(11) not_null auto_increment
+interaction_id VARCHAR(255) not_null comment(unique ID of interaction)
+feedback_type ENUM('positive','negative','correction') not_null comment(feedback type)
+feedback_data JSON comment(Additional feedback data (correction, comment, rating))
+user_id VARCHAR(100) not_null comment(user ID)
+timestamp INT(11) not_null comment(Timestamp Unix)
+language_id INT(11) not_null comment(language ID)
+date_added DATETIME default(CURRENT_TIMESTAMP) comment(Date creation)
+
+--
+primary id
+idx_interaction interaction_id
+idx_feedback_type feedback_type
+idx_timestamp timestamp
+idx_user_id user_id
+idx_user_type_date user_id feedback_type date_added
+idx_interaction_type interaction_id feedback_type
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

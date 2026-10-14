@@ -1,0 +1,2 @@
+text_products_specials = Do you want insert this product as specials ?
+text_products_specials_percentage = Discount Amount

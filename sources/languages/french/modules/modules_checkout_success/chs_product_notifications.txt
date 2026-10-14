@@ -1,0 +1,5 @@
+module_checkout_success_product_notifications_title = Souhaitez-vous permettre au client de pouvoir rester informer sur un produit ?
+module_checkout_success_product_notifications_description = Affiche des choix afin que le client puisse recevoir des informations
+module_checkout_success_product_notifications_text_notify_products = Veuillez me prévenir quand les articles sélectionnés ci-dessous sont mis à jour
+button_update = Mettre à jour
+

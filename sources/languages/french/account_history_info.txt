@@ -1,0 +1,6 @@
+
+navbar_title_1 = Mon compte
+navbar_title_2 = Historique
+navbar_title_3 = Commande #{{order_id}}
+
+heading_title_history_information = Information commande

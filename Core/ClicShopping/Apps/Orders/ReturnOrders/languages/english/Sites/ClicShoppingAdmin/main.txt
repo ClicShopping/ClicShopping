@@ -1,0 +1,102 @@
+heading_title = ReturnOrders products
+module_ro_title = ReturnOrders products
+module_ro_short_title = ReturnOrders products
+
+text_products_return_orders =  ReturnOrders products
+text_configure = Configure App Module
+
+text_intro = This app allow you to include an return_orders pages. <br /><br />
+- Activate this module and activate the module products return_orders located in the products menu
+
+module_ro_introduction = The install process create the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_return_orders = ReturnOrders
+button_cancel = Cancel
+button_new = New
+button_unpack = Unpack
+button_reset = Reset
+button_update = Update
+button_archive = Archive
+button_insert = Insert
+button_return_action_status = Actions status
+button_return_status = Back status
+button_return_reason_status = Reasons Status
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+icon_unpack = Unpack
+icon_archive_to = Archive
+
+heading_title = Product return_orders management
+heading_title_search = Search
+tab_general = General
+tab_history = History
+text_user_name = Administrator name
+text_ref = Product return informations
+
+table_heading_model_return_orders = Model
+table_heading_return_orders_ref = Return ref Id 
+table_heading_return_orders_order_id = Order ref id
+table_heading_return_orders_model = Product ref
+table_heading_date_return_orders = Return order Date
+table_heading_products_return_orders = Orders
+table_heading_return_orders_status = Status
+table_heading_return_orders_date_added = Date added
+table_heading_return_orders_date_modified = Date modified
+table_heading_return_orders_archive = Archive
+table_heading_return_orders_action = Actions
+table_heading_return_orders_date_opened = Ticket status
+
+table_heading_orders_status = Status
+text_info_edit_intro = Thank you to change if necessary
+text_info_orders_status_name = status name
+
+text_ref_return_orders_id = Order Id
+text_ref_return_orders_date = Order date
+text_ref_return_orders_customer_firstname = First name
+text_ref_return_orders_customer_lastname = Last name
+text_ref_return_orders_customer_email = Email
+
+text_description_customer = Customer informations
+text_description_order_return = Product information and return reason
+
+text_ref_return_orders_product_name = Product name
+text_ref_return_orders_product_model = product model
+table_heading_return_orders_customer = Customers
+table_heading_return_orders_products_name = Product
+text_ref_return_orders_return_reason = Return reason
+text_ref_return_orders_opened = Return order status
+text_ref_return_orders_return_action = Actions return
+text_ref_return_orders_customer_phone = Phone
+
+text_ref_return_orders_add_history = add an history
+text_ref_return_orders_notify = Notify the customer
+text_ref_return_orders_comment = Comment on order return
+
+text_opened = Open
+text_unopened = Closed
+
+table_heading_date_added = Date added
+table_heading_comment = Comments
+table_heading_status = Status
+table_heading_notified = Email notification
+table_heading_admin = treated by
+
+warning_order_not_updated = Error on update
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

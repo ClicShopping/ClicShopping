@@ -1,0 +1,31 @@
+{
+  "title": "CompliancePolicyRules App",
+  "app": "CompliancePolicyRules",
+  "vendor": "Configuration",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "ClicShoppingAdmin/Orders": {
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\Update",
+        "PageContentTab3": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\PageContentTab3",
+        "InvoicePdf": "Module\\Hooks\\ClicShoppingAdmin\\Orders\\InvoicePdf"
+      },
+      "Shop/Orders": {
+        "InvoicePdf": "Module\\Hooks\\Shop\\Orders\\InvoicePdf"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

@@ -1,0 +1,8 @@
+module_account_customers_info_history_address_title = History Info : Do you want allow to display billing address and delevery address ?
+module_account_customers_history_info_address_description = Display billing address and delevery address
+
+module_account_customers_history_info_address_heading_delivery_address = Delivery Address
+module_account_customers_history_info_address_heading_shipping_method = Shipping Method
+module_account_customers_history_info_address_heading_billing_information = Billing Information
+module_account_customers_history_info_address_heading_billing_address = Billing Address
+module_account_customers_history_info_address_heading_payment_method = Payment Method

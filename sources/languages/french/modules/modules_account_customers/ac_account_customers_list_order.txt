@@ -1,0 +1,11 @@
+module_account_customers_list_order_title = Souhaitez-vous afficher les commandes réalisées par le client ?
+module_account_customers_list_order_description = Affiche  les commandes réalisées par le client
+
+module_account_customers_list_order_order = Mes commandes
+module_account_customers_list_order_order_text = <strong>Note:</strong> Pour toute réclamation / rétractation ou demande concernant une commande effectuée, veuillez editer votre commande et cliquez sur le lien de support
+
+overview_title = Commandes
+overview_show_all_orders = Voir toutes les commandes
+overview_previous_orders = Voir la commande précédentes
+
+button_view = Afficher

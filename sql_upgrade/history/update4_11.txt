@@ -1,0 +1,11 @@
+ALTER TABLE `clic_categories_embedding` ADD `metadata` JSON NULL AFTER `language_id`;
+ALTER TABLE `clic_manufacturers_embedding` ADD `metadata` JSON NULL AFTER `language_id`;
+ALTER TABLE `clic_orders_embedding` ADD `metadata` JSON NULL AFTER `entity_id`;
+
+ALTER TABLE `clic_pages_manager_embedding` ADD `metadata` JSON NULL AFTER `language_id`;
+ALTER TABLE `clic_products_embedding` ADD `metadata` JSON NULL AFTER `language_id`;
+ALTER TABLE `clic_return_orders_embedding` ADD `metadata` JSON NULL AFTER `entity_id`;
+
+ALTER TABLE `clic_reviews_embedding` ADD `metadata` JSON NULL AFTER `language_id`;
+ALTER TABLE `clic_reviews_sentiment_embedding` ADD `metadata` JSON NULL AFTER `language_id`;
+ALTER TABLE `clic_suppliers_embedding` ADD `metadata` JSON NULL AFTER `entity_id`;

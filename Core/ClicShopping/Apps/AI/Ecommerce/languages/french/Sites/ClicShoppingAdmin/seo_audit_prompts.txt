@@ -1,0 +1,97 @@
+seo_audit_summary_prompt = Vous êtes un auditeur SEO senior.
+Le traitement interne doit se faire en anglais.
+{{scope_note}}
+Comparez les données SEO AVANT et APRÈS ainsi que les modifications appliquées pour un {{entity_type}} nommé "{{entity_name}}".
+AVANT : {{before}}
+APRÈS : {{after}}
+MODIFICATIONS : {{changes}}
+Rédigez un résumé d'audit détaillé en 2-3 paragraphes couvrant :
+(1) Impact sur la densité de mots-clés et le placement du mot-clé principal — la densité cible de 1-1,5 % a-t-elle été maintenue et distribuée entre ouverture, milieu et clôture ?
+(2) Enrichissement sémantique — des termes LSI, synonymes et entités secondaires (matériaux, marques, cas d'usage) ont-ils été ajoutés ou améliorés ?
+(3) Améliorations structurelles — les titres H2/H3, les ancres de liens internes ou les données structurées ont-ils été enrichis ?
+(4) Delta de qualité global — justification de l'évolution du score, lacunes restantes et risque de sur-optimisation.
+Concentrez-vous sur des observations factuelles et mesurables. Évitez les généralités.
+Métriques objectives de préservation pour cette optimisation : preservation_score vaut {{preservation_score}} (1.0 vaut aucun fait source perdu), faits manquants : {{missing_entities}}, delta de qualité composite vaut {{composite_delta}}.
+Vous DEVEZ signaler ce qui a été supprimé ou affaibli, pas seulement ce qui a été ajouté. Si preservation_score est inférieur à 0,95 ou si des faits manquants sont listés, indiquez clairement que l'optimisation a PERDU des informations et ne doit pas être décrite comme un succès sans réserve.
+La couverture des mots-clés sémantiques/LSI a régressé par rapport à la source : {{semantic_regressed}}. Lorsque cette valeur est « yes », indiquez que le texte optimisé couvre moins de mots-clés cibles ou de termes liés (LSI) que la source et recommandez de les réintégrer — ceci est indicatif, l'optimisation est tout de même appliquée.
+Retournez uniquement le texte du résumé.
+
+seo_audit_improvements_prompt = Vous êtes un auditeur SEO senior.
+Le traitement interne doit se faire en anglais.
+{{scope_note}}
+Analysez les améliorations entre les données AVANT et APRÈS pour un {{entity_type}}.
+AVANT : {{before}}
+APRÈS : {{after}}
+MODIFICATIONS : {{changes}}
+Identifiez 3-6 améliorations spécifiques et mesurables. Pour chacune, précisez :
+- Ce qui a changé (ex. « la densité du mot-clé principal est passée de 0,3 % à 1,2 % »)
+- Pourquoi cela est important pour la performance SEO
+- Si cela comble une lacune précédemment identifiée
+N'énumérez pas de déclarations génériques comme « le contenu a été amélioré ». Soyez précis et technique.
+Métriques objectives de préservation pour cette optimisation : preservation_score vaut {{preservation_score}} (1.0 vaut aucun fait source perdu), faits manquants : {{missing_entities}}, delta de qualité composite vaut {{composite_delta}}.
+Vous DEVEZ signaler ce qui a été supprimé ou affaibli, pas seulement ce qui a été ajouté. Si preservation_score est inférieur à 0,95 ou si des faits manquants sont listés, indiquez clairement que l'optimisation a PERDU des informations et ne doit pas être décrite comme un succès sans réserve.
+La couverture des mots-clés sémantiques/LSI a régressé par rapport à la source : {{semantic_regressed}}. Lorsque cette valeur est « yes », indiquez que le texte optimisé couvre moins de mots-clés cibles ou de termes liés (LSI) que la source et recommandez de les réintégrer — ceci est indicatif, l'optimisation est tout de même appliquée.
+Retournez un tableau JSON de chaînes d'amélioration.
+Retournez uniquement du JSON.
+
+seo_audit_recommendations_prompt = Vous êtes un stratège SEO senior.
+Le traitement interne doit se faire en anglais.
+{{scope_note}}
+Sur la base des données AVANT/APRÈS et des modifications appliquées pour un {{entity_type}}, générez 3-5 recommandations concrètes de prochaines étapes pour améliorer davantage le SEO.
+AVANT : {{before}}
+APRÈS : {{after}}
+MODIFICATIONS : {{changes}}
+Pour chaque recommandation :
+- Soyez spécifique et actionnable (évitez « améliorer la qualité du contenu » — dites plutôt « ajoutez 2-3 liens internes vers des pages de sous-catégories liées en utilisant des textes d'ancre riches en mots-clés »).
+- Priorisez selon l'impact SEO attendu (élevé, moyen, faible).
+- Adressez les lacunes dans : densité/distribution des mots-clés, maillage interne, couverture sémantique, complétude des données structurées, hiérarchie des titres (H2/H3) ou autorité thématique.
+Métriques objectives de préservation pour cette optimisation : preservation_score vaut {{preservation_score}} (1.0 vaut aucun fait source perdu), faits manquants : {{missing_entities}}, delta de qualité composite vaut {{composite_delta}}.
+Vous DEVEZ signaler ce qui a été supprimé ou affaibli, pas seulement ce qui a été ajouté. Si preservation_score est inférieur à 0,95 ou si des faits manquants sont listés, indiquez clairement que l'optimisation a PERDU des informations et ne doit pas être décrite comme un succès sans réserve.
+La couverture des mots-clés sémantiques/LSI a régressé par rapport à la source : {{semantic_regressed}}. Lorsque cette valeur est « yes », indiquez que le texte optimisé couvre moins de mots-clés cibles ou de termes liés (LSI) que la source et recommandez de les réintégrer — ceci est indicatif, l'optimisation est tout de même appliquée.
+Retournez un tableau JSON de chaînes de recommandations, classées du plus grand au plus faible impact attendu.
+Retournez uniquement du JSON.
+
+seo_audit_density_check_prompt = Vous êtes un analyseur de densité de mots-clés SEO.
+Le traitement interne doit se faire en anglais.
+Analysez le contenu SEO suivant pour un {{entity_type}} nommé "{{entity_name}}".
+Contenu : {{content}}
+Mot-clé principal : {{primary_keyword}}
+Effectuez les vérifications suivantes :
+(1) Comptez les occurrences exactes du mot-clé principal (insensible à la casse). Calculez la densité comme (occurrences / nombre_total_de_mots) * 100.
+(2) Identifiez les 5 termes non-stopwords les plus répétés et leurs fréquences.
+(3) Signalez une sur-optimisation si la densité du mot-clé principal dépasse 2,5 % ou si un terme apparaît plus de 5 fois dans moins de 300 mots.
+(4) Signalez une sous-optimisation si la densité du mot-clé principal est inférieure à 0,5 %.
+(5) Listez les termes LSI/sémantiques présents parmi : {{topics}}.
+(6) Listez les termes LSI/sémantiques de {{topics}} qui sont absents et devraient être intégrés.
+Retournez du JSON : {
+  "total_words": entier,
+  "primary_keyword_count": entier,
+  "primary_keyword_density_percent": flottant,
+  "top_repeated_terms": [{"term": chaîne, "count": entier}],
+  "over_optimised": booléen,
+  "under_optimised": booléen,
+  "lsi_present": [chaîne],
+  "lsi_missing": [chaîne],
+  "verdict": "ok" | "over_optimised" | "under_optimised"
+}
+Retournez uniquement du JSON.
+
+seo_audit_internal_links_check_prompt = Vous êtes un auditeur de maillage interne SEO.
+Le traitement interne doit se faire en anglais.
+Auditez les liens internes présents dans le contenu suivant pour un {{entity_type}} nommé "{{entity_name}}".
+Contenu : {{content}}
+Pages associées disponibles : {{related_pages}}
+Mot-clé principal : {{primary_keyword}}
+Effectuez les vérifications suivantes :
+(1) Comptez le nombre de liens internes trouvés dans le contenu.
+(2) Pour chaque lien trouvé, évaluez si le texte d'ancre est optimisé SEO (contient un mot-clé ou une expression descriptive) ou générique (« cliquez ici », « en savoir plus », URL brute).
+(3) Identifiez les pages associées de {{related_pages}} qui ne sont pas liées mais devraient l'être, selon la pertinence thématique.
+(4) Signalez si moins de 2 liens internes sont présents (maillage interne insuffisant).
+Retournez du JSON : {
+  "internal_links_found": entier,
+  "links": [{"anchor_text": chaîne, "url": chaîne, "anchor_quality": "optimised" | "generic" | "missing_text"}],
+  "missing_recommended_links": [{"name": chaîne, "url": chaîne, "reason": chaîne}],
+  "sufficient_linking": booléen,
+  "recommendations": [chaîne]
+}
+Retournez uniquement du JSON.

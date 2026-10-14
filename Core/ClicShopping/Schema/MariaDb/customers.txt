@@ -1,0 +1,43 @@
+customers_id int not_null auto_increment comment(Primary key - unique identifier for each customer)
+customers_company varchar(255) comment(Company name for B2B customers)
+customers_siret varchar(14) comment(French SIRET business registration number)
+customers_ape varchar(255) comment(French APE business activity code)
+customers_tva_intracom varchar(14) comment(Intra-community VAT number for EU businesses)
+customers_tva_intracom_code_iso char(2) comment(ISO country code for VAT number)
+customers_gender char(1) comment(Customer gender - m: male, f: female, o: other)
+customers_firstname varchar(255) not_null comment(Customer first name)
+customers_lastname varchar(255) not_null comment(Customer last name)
+customers_dob datetime comment(Customer date of birth)
+customers_email_address varchar(255) not_null comment(Customer email address - used for login and communication)
+customers_default_address_id int comment(FK to address_book table - default shipping/billing address)
+customers_telephone varchar(255) comment(Customer primary phone number)
+customers_password varchar(255) not_null comment(Hashed customer password)
+customers_newsletter char(1) default(0) comment(Newsletter subscription - 0: unsubscribed, 1: subscribed)
+languages_id int default(1)  not_null comment(FK to languages table - preferred language)
+customers_group_id int default(0) not_null comment(FK to customers_groups table - customer group for pricing and access)
+member_level int(1) default(0) not_null comment(Membership level - 0: standard, higher numbers for premium tiers)
+customers_options_order_taxe tinyint(1) default(0) not_null comment(Tax display preference - 0: exclude tax, 1: include tax in prices)
+customers_modify_company tinyint(1) default(1)  not_null comment(Permission to modify company info - 0: locked, 1: editable)
+customers_modify_address_default tinyint(1) default(1) not_null comment(Permission to modify default address - 0: locked, 1: editable)
+customers_add_address tinyint(1) default(1) not_null comment(Permission to add new addresses - 0: disabled, 1: enabled)
+customers_cellular_phone varchar(255) null comment(Customer mobile phone number)
+customers_email_validation int(1) default(0) not_null comment(Email validation status - 0: not validated, 1: validated)
+customer_discount decimal(4,2) default(0.00) not_null comment(Individual customer discount percentage - 0.00 to 99.99)
+client_computer_ip varchar(45) null comment(Last known IP address - supports IPv4 and IPv6)
+provider_name_client varchar(64)  null comment(Internet service provider name)
+customer_website_company varchar(64) null comment(Customer company website URL)
+customer_guest_account tinyint(1) default(0) not_null comment(Guest account flag - 0: registered, 1: guest checkout)
+gdpr tinyint(1) default(0) not_null comment(GDPR consent status - 0: not consented, 1: consented)
+email_verification tinyint(1) default(1) not_null comment(Email verification requirement - 0: not required, 1: required)
+email_verification_code varchar(32) NULL comment(Temporary code for email verification)
+email_verification_expiry datetime NULL comment(Expiration timestamp for verification code)
+customer_company_information text null default null comment(Company information, verification about the customer from Pappers)
+
+--
+primary customers_id
+idx_customers_email_address customers_email_address
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Customer accounts with personal information, preferences, and access control

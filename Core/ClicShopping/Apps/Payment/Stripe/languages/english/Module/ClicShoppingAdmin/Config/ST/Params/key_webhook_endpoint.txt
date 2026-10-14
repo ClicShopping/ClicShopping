@@ -1,0 +1,3 @@
+cfg_stripe_key_webhook_endpoint_title = endpoint Webhook key
+cfg_stripe_key_webhook_endpoint_desc = Please, insert endpoint Webhook key<br />
+More information on Help button

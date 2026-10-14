@@ -1,0 +1,20 @@
+heading_title = Customers reviews vote
+
+text_statistics = Statistics
+text_count_vote_yes = Vote Yes :
+text_count_vote_no = Vote no :
+
+table_heading_products = Products
+table_heading_products_name = Products name
+table_heading_vote_yes = Votes Yes
+table_heading_vote_no = Votes No
+table_heading_percentage_yes = Percentage Yes
+table_heading_percentage_no = Percentage No
+
+table_heading_ai_vote_yes = Ai vote yes
+table_heading_ai_vote_no = Ai vote no
+table_heading_percentage_ai_yes = Ai Percentage Yes
+table_heading_percentage_ai_no = Ai Percentage No
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)

@@ -1,0 +1,5 @@
+cfg_chatgpt_adaptive_weighting_status_title = Activer la pondération adaptative
+cfg_chatgpt_status_adaptive_weighting_description = Ajuste dynamiquement les poids de l'évaluation actor-critic selon les performances passées de chaque critique. Déclenche un appel LLM supplémentaire, mais celui-ci est désormais DIFFÉRÉ : il s'exécute APRÈS l'envoi de la réponse à l'utilisateur (post-réponse), il n'ajoute donc plus de latence à la réponse. Il auto-calibre les critiques, alimente les tableaux de bord internes, et les poids adaptatifs appris sont réutilisés par les évaluations de critiques suivantes. Activation sûre maintenant qu'il est hors du chemin de réponse — il consomme toutefois un appel LLM par réponse analytique (facturé par votre fournisseur) et occupe brièvement le worker PHP après le flush.
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

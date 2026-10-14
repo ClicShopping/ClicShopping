@@ -1,0 +1,27 @@
+module_footer_multi_template_title = Souhaitez-vous afficher ce syst&egrave;me de multi-template dans le bas de page ?
+module_footer_multi_template_description = Ajouter le syst&egrave;me de multi-template dans le bas de page de la boutique
+
+module_footer_multi_template_account_heading_title = Mon compte
+module_footer_multi_template_contact_us_heading_title = Nous contacter
+module_footer_multi_template_text_heading_title = Sécurité / confidentialité
+module_footer_multi_template_text_text = Nos partenaires ont été sélectionnés pour leur sérieux et leur compétence en sécurité transactionelle et nous ne vendons pas les courriels de nos clients
+module_footer_multi_template_information_heading_title = Nous suivre
+
+module_footer_multi_template_contact_us_email_link = Nous contacter
+
+module_footer_multi_template_information_shipping = Facebook
+module_footer_multi_template_information_privacy = twitter
+module_footer_multi_template_information_contact = Pinterest
+
+module_footer_multi_template_account_box_account = Mon compte
+module_footer_multi_template_account_box_address_book = Mon carnet d'adresse
+module_footer_multi_template_account_box_order_history = Mon historique
+module_footer_multi_template_account_box_logoff = Se déconnecter
+module_footer_multi_template_account_box_create_account = Créer un compte
+module_footer_multi_template_account_box_login = Se connecter / Créer
+
+module_footer_multi_template_mailchimp_text = Abonnement Newsletter
+module_footer_multi_template_mailchimp_submit = Souscrire
+
+module_footer_multi_template_mailchimp_valid_email_address = Veuillez entrer un email valide
+module_footer_multi_template_mailchimp_enter_email_address = Veuillez insérer votre email

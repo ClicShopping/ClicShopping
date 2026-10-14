@@ -1,0 +1,7 @@
+modules_products_reviews_listing_content_title = Listing Commentaire : Souhaitez vous permettre au client de lire les commentaires ?
+modules_products_reviews_listing_content_description = Permettre au client lire les commentaires
+
+modules_products_reviews_listing_content_comment = Commentaires clients
+modules_products_reviews_listing_content_text_result_page = résultat
+modules_products_reviews_listing_content_text_of_5_stars =  étoile(s)
+modules_products_reviews_listing_content_text_sentiment = Sentiments du client :

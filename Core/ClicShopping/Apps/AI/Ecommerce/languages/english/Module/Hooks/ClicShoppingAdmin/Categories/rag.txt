@@ -1,0 +1,32 @@
+text_category_embedded = [category]
+text_category_id = [category ID]
+text_category_name = [category name]
+text_category_description = [category description: {{category_name}}]
+text_category_seo_title = [category SEO title: {{category_name}}]
+text_category_seo_description = [category SEO description: {{category_name}}]
+text_category_seo_keywords = [category SEO keywords: {{category_name}}]
+text_category_taxonomy = [Category Taxonomy]
+
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
+The text corresponds to an e-commerce category (not a product, not a supplier).
+The output must strictly follow the format below.
+Every relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer information not explicitly present in the text.
+
+Expected format:
+
+[domain]: General domain of the category (e.g. Home, Fashion, Electronics)
+[subdomain]: Segment or specialization within the domain (e.g. Tableware, Computing, Furniture)
+[category_type]: Type of commercial category (e.g. Universe, Subcategory, Collection)
+[theme]: Conceptual or functional theme associated with the category (e.g. Conviviality, Performance, Decoration)
+[usage_type]: General type of usage (e.g. Domestic, Professional, Outdoor)
+[usage_context]: Specific context of use (e.g. Dining room, Office, Garden)
+[style]: Aesthetic or design identity (e.g. Minimalist, Vintage, Contemporary)
+[criteria]: Representative qualities or attributes (e.g. Quality, Elegance, Innovation)
+[symbolic_dimension]: Associated values or representations (e.g. Luxury, Sharing, Tradition)
+[sensory_dimension]: Sensory aspects if mentioned (e.g. Texture, Color, Finish)
+[composition]: Constituent elements or subsets of the category (e.g. Tableware, Glassware, Cutlery)
+[objective]: Purpose or goal of the category (e.g. Enhance dining experience, Create ambiance)
+[tags]: Free list of relevant keywords derived from the text, separated by commas
+
+Text: {{document_text}}

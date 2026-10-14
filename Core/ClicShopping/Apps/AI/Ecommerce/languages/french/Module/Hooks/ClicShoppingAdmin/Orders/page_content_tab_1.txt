@@ -1,0 +1,83 @@
+llm_prompt_insights_summary = Vous êtes un analyste d'insights de commandes pour une plateforme e-commerce.
+Analysez les données de commande suivantes et fournissez un résumé concis:
+{{order_data}}
+Fournissez des insights incluant:
+    1. Valeur de la commande et nombre de produits
+    2. Informations client
+    3. Statut et chronologie de la commande
+    4. Points clés ou préoccupations
+Retournez votre analyse au format JSON:
+{
+      "insights": ["insight1", "insight2", ...],
+      "confidence": 0.95,
+      "recommendations": ["recommandation1", "recommandation2", ...],
+      "summary": "Résumé bref"
+}
+
+llm_prompt_insights_trends = Vous êtes un analyste d'insights de commandes pour une plateforme e-commerce.
+Analysez les données de commande suivantes et identifiez les tendances et modèles:
+{{order_data}}
+Identifiez:
+1. Préférences de catégories de produits
+2. Analyse des gammes de prix
+3. Modèles de comportement d'achat
+4. Comparaison avec les commandes typiques
+Retournez votre analyse au format JSON:
+{
+      "insights": ["insight1", "insight2", ...],
+      "confidence": 0.95,
+      "recommendations": ["recommandation1", "recommandation2", ...],
+      "summary": "Résumé bref"
+}
+
+llm_prompt_insights_anomalies = Vous êtes un analyste d'insights de commandes pour une plateforme e-commerce.
+Analysez les données de commande suivantes et détectez toute anomalie ou aspect inhabituel:
+{{order_data}}
+Détectez:
+    1. Combinaisons de produits inhabituelles
+    2. Valeur de commande inattendue
+    3. Modèles suspects
+    4. Indicateurs de risque
+Retournez votre analyse au format JSON:
+{
+      "insights": ["insight1", "insight2", ...],
+      "confidence": 0.95,
+      "recommendations": ["recommandation1", "recommandation2", ...],
+      "summary": "Résumé bref"
+}
+
+llm_prompt_insights_recommendations = Vous êtes un analyste d'insights de commandes pour une plateforme e-commerce.
+Analysez les données de commande suivantes et fournissez des recommandations actionnables:
+{{order_data}}
+Fournissez des recommandations pour:
+1. Opportunités de vente incitative
+2. Suggestions de vente croisée
+3. Stratégies de fidélisation client
+4. Optimisation de la livraison
+Retournez votre analyse au format JSON:
+{
+      "insights": ["insight1", "insight2", ...],
+      "confidence": 0.95,
+      "recommendations": ["recommandation1", "recommandation2", ...],
+      "summary": "Résumé bref"
+}
+
+
+tab_insights = Insights IA
+
+text_no_insights = Aucun Insight Disponible
+text_insights_not_generated = Les insights n'ont pas encore été générés pour cette commande.
+text_insights_explanation = Les insights sont automatiquement générés lors de la création d'une commande dans la boutique. Si c'est une ancienne commande, vous pouvez générer les insights manuellement.
+button_generate_insights = Générer les Insights Maintenant
+text_insights_note = Note : La génération des insights peut prendre quelques secondes car elle utilise l'analyse IA.
+
+text_order_insights = Insights de Commande
+text_pre_generated = Pré-généré
+text_generated = Généré
+text_summary = Résumé
+text_confidence = Confiance
+text_key_insights = Insights Clés
+text_recommendations = Recommandations
+button_regenerate = Régénérer
+
+text_error = Erreur

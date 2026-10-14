@@ -1,0 +1,2 @@
+module_header_tags_sitemap_title = Do you want to install the meta tags for the sitemap ?
+module_header_tags_sitemap_description = Add the meta tags for the sitemap

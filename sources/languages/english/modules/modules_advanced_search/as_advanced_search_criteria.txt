@@ -1,0 +1,4 @@
+
+ module_advanced_search_criteria_title = Do  you want to display a search field ?
+ module_advanced_search_criteria_description = Display a search field allowing to customer to insert criterias
+ module_advanced_search_criteria_text = Search criteria

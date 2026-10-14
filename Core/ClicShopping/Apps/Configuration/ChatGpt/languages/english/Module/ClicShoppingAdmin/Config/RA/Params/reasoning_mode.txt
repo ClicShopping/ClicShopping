@@ -1,0 +1,6 @@
+cfg_chatgpt_reasoning_mode_title = Default Reasoning Mode
+cfg_chatgpt_reasoning_mode_description = Select the reasoning mode for AI processing. Different modes offer varying levels of analysis depth and response complexity. <br />
+<strong>Standard:</strong> Fast responses with basic reasoning for simple queries. <br />
+<strong>Advanced:</strong> Deep analysis with multi-step reasoning for complex questions. <br />
+<strong>Chain-of-Thought:</strong> Explicit step-by-step reasoning visible in responses. <br />
+Note: Each mode has different parameter requirements and processing times. Choose based on your use case complexity and performance needs.

@@ -1,0 +1,4 @@
+module_admin_dashboard_total_month_app_title = Do you want to install Evolution of cumulative sales / month on  1 year
+module_admin_dashboard_total_month_app_description = Chart to see the evolution of sales per month based on the basis of subtotal
+module_admin_dashboard_total_month_app_chart_link = Evolution of cumulative sales on 1 year (delivery)
+

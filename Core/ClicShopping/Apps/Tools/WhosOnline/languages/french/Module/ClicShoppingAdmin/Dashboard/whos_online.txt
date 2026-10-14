@@ -1,0 +1,10 @@
+module_admin_dashboard_whos_online_app_title = Souhaitez-vous installer l'indicateur des clients en ligne ?
+module_admin_dashboard_whos_online_app_description = Affiche les clients qui sont en ligne
+
+module_admin_dashboard_whos_online_app_table_heading_online = En ligne
+module_admin_dashboard_whos_online_app_table_heading_full_name = Nom
+module_admin_dashboard_whos_online_app_table_heading_ip_address = Addresse IP
+module_admin_dashboard_whos_online_app_table_heading_user_agent = Agent
+
+module_admin_dashboard_whos_online_app_customers_online = Actuellement le nombre de clients en ligne est :
+

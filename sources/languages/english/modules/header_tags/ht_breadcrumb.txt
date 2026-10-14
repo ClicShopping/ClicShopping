@@ -1,0 +1,2 @@
+module_header_tags_breadcrumb_title = Do you want to display the Breadcrumb meta data ?
+module_header_tags_breadcrump_description = Display the Breadcrumb meta data

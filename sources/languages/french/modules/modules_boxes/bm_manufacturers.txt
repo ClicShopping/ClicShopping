@@ -1,0 +1,6 @@
+module_boxes_manufacturers_title = Souhaitez vous afficher les marques de produits dans la boutique ?
+module_boxes_manufacturers_description = Affiche la liste des marques dans la page information produits
+
+module_boxes_manufacturers_title = Nos marques
+module_boxes_manufacturers_description = Afficher les marques dans la page information produits
+pull_down_default = Veuillez sélectionner

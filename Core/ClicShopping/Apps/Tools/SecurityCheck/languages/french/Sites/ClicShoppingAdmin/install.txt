@@ -1,0 +1,2 @@
+title_menu = Vérification Sécurité
+title_menu_ip_restriction = Restrictions IP

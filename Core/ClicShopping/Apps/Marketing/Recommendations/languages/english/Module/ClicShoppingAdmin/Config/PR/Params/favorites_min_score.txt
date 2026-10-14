@@ -1,0 +1,2 @@
+cfg_products_recommendations_favorites_min_score_title = Score minimum accepted to create a favorites
+cfg_products_recommendations_favorites_min_score_description = Allow to create automatically a favorites if the score is more important as average product score

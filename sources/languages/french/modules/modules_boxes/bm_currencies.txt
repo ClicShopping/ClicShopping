@@ -1,0 +1,3 @@
+module_boxes_currencies_title = Souhaitez-vous afficher la boxe des devises ?
+module_boxes_currencies_description = Affiche les devises disponibles dans la boutique
+module_boxes_currencies_box_title = Devises

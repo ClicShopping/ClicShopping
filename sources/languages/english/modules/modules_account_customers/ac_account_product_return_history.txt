@@ -1,0 +1,11 @@
+module_account_product_return_history_title = Do you want to install the customer's return summary?
+module_account_product_return_history_description = installs the customer's return summary?
+
+module_account_product_return_history_heading_title = Historical Return Product
+module_account_product_return_history_ref = reference:
+module_account_product_return_history_info = detail of the tracking
+module_account_product_return_history_product_name = product name:
+module_account_product_return_history_product_product_model = product reference:
+module_account_product_return_closed = closed
+module_account_product_return_history_product_order = Reference Command:
+module_account_product_return_history_product_quantity = amount returned:

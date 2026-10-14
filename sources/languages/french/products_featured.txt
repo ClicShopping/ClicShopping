@@ -1,0 +1,9 @@
+navbar_title = Produits Sélectionnés
+heading_title = Produits Sélectionnés
+
+text_featured_seo_title = Produits sélectionnés
+text_date_added = Date d'ajout
+text_manufacturer = Modèle
+text_price = Prix
+text_product_options = Options
+text_no_products = Aucune sélection en ce moment

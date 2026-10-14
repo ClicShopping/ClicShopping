@@ -1,0 +1,10 @@
+
+ module_checkout_confirmation_products_listing_title = Do you to display the listing of the order products summary ?
+ module_checkout_confirmation_products_listing_description = Display the listing of the order products summary
+
+ module_checkout_confirmation_products_listing_text_edit = Edit
+ module_checkout_confirmation_products_listing_heading_products = Products
+ module_checkout_confirmation_products_listing_heading_tax = Taxes
+ module_checkout_confirmation_products_listing_heading_total = Total
+ module_checkout_confirmation_products_listing_information = Your order
+

@@ -1,0 +1,28 @@
+heading_title = Table
+module_table_title = Expédition via Table
+
+text_table =  Expédition via Table
+text_configure =  Configurer cette App
+
+text_intro = Cette app vous permet d'inclure un module de frais d'expédition
+
+module_table_introduction = Le processus d'installation vous permettra de créer la base de données et le menu pour y accéder
+
+button_sort_order = Ordre de tri
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désintaller
+button_uninstall =  Désintaller
+button_cancel = Annuler
+button_delete = Supprimer
+button_back = Retour
+
+dialog_uninstall_title = Désintaller
+dialog_uninstall_body = Souhaitez vous intaller cette app ?
+dialog_uninstall_title = Souhaitez vous désinstaller cette app ?
+dialog_uninstall_body =  Etes vous sur de désinstaller ce module ?
+
+alert_module_install_success = Le module a été installé avec succès.
+alert_module_uninstall_success = Le module a été désinstallé avec succès.
+alert_cfg_saved_success = les paramètres ont été sauvegardé

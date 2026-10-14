@@ -1,0 +1,5 @@
+
+module_shopping_cart_show_total_title = Souhaitez-vous afficher le sous total du panier de commande au client ?
+module_shopping_cart_show_total_description = Affiche le sous total du panier de commande au client
+module_shopping_cart_show_total_sub_total = Sous Total
+

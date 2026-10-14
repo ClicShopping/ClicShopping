@@ -1,0 +1,133 @@
+# Fichier de langue français pour RAG BI Monitoring
+# ClicShopping MCP RAG BI Monitoring - Interface d'Administration
+
+# Titres principaux
+mc_rag_bi_monitoring_title = Monitoring RAG BI
+mc_rag_bi_monitoring_short_title = RAG BI
+mc_rag_bi_monitoring_subtitle = Surveillance en temps réel des requêtes IA
+mc_rag_bi_monitoring_introduction = Surveillance et analyse des requêtes RAG BI en temps réel
+
+# Configuration
+cfg_mc_rag_bi_monitoring_status_title = Activer le monitoring RAG BI
+cfg_mc_rag_bi_monitoring_status_description = Voulez-vous activer le monitoring des requêtes RAG BI ?
+cfg_mc_rag_bi_monitoring_sort_order_title = Ordre d'affichage
+cfg_mc_rag_bi_monitoring_sort_order_description = Ordre d'affichage du module (plus petit = affiché en premier)
+cfg_mc_rag_bi_monitoring_auto_refresh_title = Actualisation automatique (secondes)
+cfg_mc_rag_bi_monitoring_auto_refresh_description = Intervalle d'actualisation automatique des métriques en secondes
+cfg_mc_rag_bi_monitoring_alert_threshold_title = Seuil d'alerte (%)
+cfg_mc_rag_bi_monitoring_alert_threshold_description = Seuil de taux d'erreur pour déclencher une alerte
+
+# Dashboard
+mc_rag_bi_monitoring_view_details = Voir les détails
+mc_rag_bi_monitoring_total_requests = Requêtes totales
+mc_rag_bi_monitoring_avg_time = Temps moyen
+mc_rag_bi_monitoring_success_rate = Taux de succès
+mc_rag_bi_monitoring_unique_sources = Sources uniques
+mc_rag_bi_monitoring_rag_types = Types RAG
+mc_rag_bi_monitoring_recent_activity = Activité récente
+mc_rag_bi_monitoring_semantic_query = Requête sémantique traitée
+mc_rag_bi_monitoring_analytics_query = Requête analytique traitée
+mc_rag_bi_monitoring_hybrid_query = Requête hybride traitée
+mc_rag_bi_monitoring_security_alert = Alerte de sécurité
+mc_rag_bi_monitoring_suspicious_activities = activités suspectes détectées
+mc_rag_bi_monitoring_no_recent_activity = Aucune activité récente
+mc_rag_bi_monitoring_system_healthy = Système opérationnel
+mc_rag_bi_monitoring_last_update = Dernière mise à jour
+
+# Interface de monitoring
+rag_bi_monitoring_dashboard_title = Tableau de bord RAG BI
+rag_bi_monitoring_filters = Filtres
+rag_bi_monitoring_timeframe = Période
+rag_bi_monitoring_rag_type = Type RAG
+rag_bi_monitoring_status = Statut
+rag_bi_monitoring_refresh = Actualiser
+rag_bi_monitoring_export_excel = Exporter Excel
+rag_bi_monitoring_export_csv = Exporter CSV
+
+# Métriques
+rag_bi_monitoring_requests_count = Nombre de requêtes
+rag_bi_monitoring_processing_time = Temps de traitement
+rag_bi_monitoring_confidence_score = Score de confiance
+rag_bi_monitoring_ai_model = Modèle IA utilisé
+rag_bi_monitoring_tokens_consumed = Tokens consommés
+rag_bi_monitoring_vector_search_time = Temps recherche vectorielle
+rag_bi_monitoring_sql_generation_time = Temps génération SQL
+
+# Types de requêtes
+rag_bi_monitoring_semantic = Sémantique
+rag_bi_monitoring_analytics = Analytique
+rag_bi_monitoring_hybrid = Hybride
+rag_bi_monitoring_unknown = Inconnu
+
+# Statuts
+rag_bi_monitoring_success = Succès
+rag_bi_monitoring_error = Erreur
+rag_bi_monitoring_pending = En cours
+
+# Actions
+rag_bi_monitoring_view_request = Voir la requête
+rag_bi_monitoring_replay_request = Rejouer la requête
+rag_bi_monitoring_export_report = Exporter le rapport
+rag_bi_monitoring_configure = Configurer
+rag_bi_monitoring_save_config = Sauvegarder la configuration
+
+# Alertes et sécurité
+rag_bi_monitoring_high_frequency_alert = Alerte haute fréquence
+rag_bi_monitoring_sql_injection_alert = Tentative d'injection SQL détectée
+rag_bi_monitoring_error_rate_alert = Taux d'erreur élevé
+rag_bi_monitoring_performance_alert = Alerte de performance
+
+# Configuration avancée
+rag_bi_monitoring_config_monitoring = Configuration du monitoring
+rag_bi_monitoring_config_alerts = Configuration des alertes
+rag_bi_monitoring_config_thresholds = Seuils d'alerte
+rag_bi_monitoring_config_notifications = Notifications
+rag_bi_monitoring_config_retention = Rétention des données
+rag_bi_monitoring_config_log_level = Niveau de log
+
+# Messages
+rag_bi_monitoring_config_saved = Configuration sauvegardée avec succès
+rag_bi_monitoring_export_success = Rapport exporté avec succès
+rag_bi_monitoring_request_replayed = Requête rejouée avec succès
+rag_bi_monitoring_no_data = Aucune donnée disponible pour la période sélectionnée
+rag_bi_monitoring_loading = Chargement des données...
+
+# Aide et descriptions
+rag_bi_monitoring_help_semantic = Les requêtes sémantiques utilisent la recherche vectorielle pour trouver des informations pertinentes
+rag_bi_monitoring_help_analytics = Les requêtes analytiques génèrent du SQL pour analyser les données business
+rag_bi_monitoring_help_hybrid = Les requêtes hybrides combinent les approches sémantique et analytique
+rag_bi_monitoring_help_confidence = Le score de confiance indique la fiabilité de la réponse générée
+rag_bi_monitoring_help_tokens = Les tokens représentent la consommation des modèles IA
+
+# Graphiques et rapports
+rag_bi_monitoring_chart_requests_over_time = Requêtes dans le temps
+rag_bi_monitoring_chart_response_times = Temps de réponse
+rag_bi_monitoring_chart_error_rates = Taux d'erreur
+rag_bi_monitoring_chart_rag_distribution = Répartition des types RAG
+rag_bi_monitoring_chart_peak_hours = Heures de pointe
+rag_bi_monitoring_chart_ai_models = Usage des modèles IA
+
+# Tableaux
+rag_bi_monitoring_table_timestamp = Horodatage
+rag_bi_monitoring_table_query = Requête
+rag_bi_monitoring_table_type = Type
+rag_bi_monitoring_table_source = Source
+rag_bi_monitoring_table_duration = Durée
+rag_bi_monitoring_table_confidence = Confiance
+rag_bi_monitoring_table_status = Statut
+rag_bi_monitoring_table_actions = Actions
+
+# Pagination
+rag_bi_monitoring_page_first = Premier
+rag_bi_monitoring_page_previous = Précédent
+rag_bi_monitoring_page_next = Suivant
+rag_bi_monitoring_page_last = Dernier
+rag_bi_monitoring_showing_entries = Affichage de %d à %d sur %d entrées
+
+# Erreurs
+rag_bi_monitoring_error_no_data = Aucune donnée trouvée
+rag_bi_monitoring_error_invalid_timeframe = Période invalide
+rag_bi_monitoring_error_export_failed = Échec de l'export
+rag_bi_monitoring_error_config_save_failed = Échec de la sauvegarde de la configuration
+rag_bi_monitoring_error_request_not_found = Requête non trouvée
+rag_bi_monitoring_error_replay_failed = Échec du replay de la requête

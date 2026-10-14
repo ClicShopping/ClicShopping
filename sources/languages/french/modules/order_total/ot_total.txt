@@ -1,0 +1,3 @@
+
+module_order_total_total_title = Total
+module_order_total_total_description = Total Commande<br /><br /><font color="#FF0000"><strong>Attention!</strong> La désactivation de ce module rétablira les valeurs par défaut</font>

@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+
+    - name: Suppress composer error message
+      run: composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+    # Docs: https://getcomposer.org/doc/articles/scripts.md
+
+    - name: Run test suite
+      run: composer run-script test
+
+#    - name: Run PHP Code Sniffer
+#      run: composer run-script phpcs
+#
+#    - name: Run PHP Mess Detecter
+#      run: composer run-script phpmd
+#
+#    - name: Run PHP Insights
+#      run: composer run-script insights

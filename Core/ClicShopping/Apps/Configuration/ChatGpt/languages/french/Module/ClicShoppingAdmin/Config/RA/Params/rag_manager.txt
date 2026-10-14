@@ -1,0 +1,5 @@
+cfg_chatgpt_rag_manager_title = Activer RAG (Retrieval-Augmented Generation)
+cfg_chatgpt_rag_manager_description = Active le RAG pour permettre à l'IA de rechercher et récupérer des informations depuis votre base de données ClicShopping. Lorsqu'activé, le chatbot peut répondre aux questions sur les produits, commandes, clients et autres données en interrogeant la base de données. Nécessite l'activation des embeddings pour les capacités de recherche sémantique. Recommandé : True pour activer l'intelligence d'affaires alimentée par l'IA.
+
+cfg_chatgpt_rag_manager_status_true = True
+cfg_chatgpt_rag_manager_status_false = False

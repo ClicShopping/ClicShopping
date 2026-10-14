@@ -1,0 +1,24 @@
+id bigint(20) unsigned not_null auto_increment comment(Primary key)
+output_id varchar(100) not_null comment(Identifier of the output being re-evaluated)
+output_type varchar(50) not_null comment(Type of output (sql_query, reasoning_chain, etc.))
+failed_evaluator_id varchar(100) not_null comment(Agent that failed the evaluation)
+retry_evaluator_id varchar(100) comment(Agent assigned for retry evaluation)
+attempt_number int(11) not_null default(1) comment(Current retry attempt number)
+status enum('attempting','success','failed') not_null default('attempting') comment(Current retry status)
+failure_reason text comment(Reason for failure when all retries exhausted)
+created_at datetime not_null default(current_timestamp) comment(When the retry was initiated)
+resolved_at datetime comment(When the retry was resolved)
+
+--
+primary id
+idx_output_id output_id
+idx_failed_evaluator failed_evaluator_id
+idx_retry_evaluator retry_evaluator_id
+idx_status status
+idx_created_at created_at
+idx_output_status output_id status
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

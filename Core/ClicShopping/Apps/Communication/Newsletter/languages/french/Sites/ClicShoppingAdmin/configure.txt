@@ -1,0 +1,4 @@
+heading_title = Newsletter
+module_nl_short_title = Newsletter
+
+title_menu = Newsletter

@@ -1,0 +1,2 @@
+cfg_stripe_buffer_ttl_days_title = Rétention du tampon de paiement (jours)
+cfg_stripe_buffer_ttl_days_description = Nombre de jours de conservation d'une ligne tampon de paiement en attente avant purge automatique. Doit rester supérieur à la fenêtre de relance des webhooks Stripe (minimum 3 jours ; défaut 30).

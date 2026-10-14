@@ -1,0 +1,32 @@
+text_group = Customer group B2B
+text_customer_group = Customer group
+visitor_name = Normal customer
+
+text_customer_group_b2b = Customer Group B2B
+text_discount_coupons_warning_b2b = Becarefull !  You have already define a coupon for the customers who has created an account. If you select the checkobox, this coupons will be the new value
+
+tax_excluded = tax excluded
+tax_included = tax included
+text_products_model_group = Model
+text_products_quantity_fixed_group = Qty min fixed /
+text_products_min_order_quantity_group = Qty min type
+
+text_cust_groups = Group Prices
+text_override_on = Price + %group;
+text_override_on1 = Price - %group
+text_override_off = Manual group price
+
+text_all_groups = All groups
+
+tab_price_group_view = CREDIT:  Post the price of the group - NOT CREDIT:  Post the public price
+tab_products_group_view = To post the product for the customers of the group
+tab_orders_group_view = To authorize the ordering of the product for the customers of the group
+
+title_help_price = Note on the use of the options of posting on the products
+help_price_group_view = <strong>Activated:</strong> Post the price of the group - <strong>Not Activated:</strong> Post the public price
+help_products_view = <strong>Activated:</strong> Authorize the posting of the product to the customers.
+help_orders_view = <strong>Activated:</strong> Authorize with the customers to order the product.
+help_others_group = Becarefull Qty min fixed / purchase type is not in relation with the order qty. ex : For 1 order qty we have 3 products by lot<br><br>
+If you modify the price, and you have a special, do not forget to change the price manually
+
+help_price_group_view_note = Include promotions.

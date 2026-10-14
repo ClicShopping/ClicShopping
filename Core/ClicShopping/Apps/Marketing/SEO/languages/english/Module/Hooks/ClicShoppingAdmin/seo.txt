@@ -1,0 +1,2 @@
+text_seo_thin_content_critical = Critical thin content: only {{wordCount}} words detected. The text is far too short for SEO optimization to produce any meaningful result, and the SEO score is capped accordingly. Aim for at least 300 words.
+text_seo_thin_content_warning = Thin content: only {{wordCount}} words detected. The text is too short for a reliable SEO analysis, and the SEO score is capped accordingly. Aim for at least 300 words.

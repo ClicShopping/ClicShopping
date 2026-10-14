@@ -1,0 +1,4 @@
+modules_tell_a_friend_antispam_numeric_antispam_title = Souhaitez-vous activer le système antispam (numérique) ?
+modules_tell_a_friend_antispam_numeric_antispam_description = activer le système antispam (numérique)
+
+entry_antispam = Combien font :

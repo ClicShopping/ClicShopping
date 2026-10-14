@@ -1,0 +1,8 @@
+ modules_tell_a_friend_send_friend_title = Do you want to display the form customer friend
+ modules_tell_a_friend_send_friend_description = display the form customer friend
+
+ modules_tell_a_friend_title_friend_details = Details of your friend
+ modules_tell_a_friend_field_friend_name = Friend name
+ modules_tell_a_friend_field_friend_email = Friend email
+ modules_tell_a_friend_field_entry_email_address_text = *
+ modules_tell_a_friend_field_entry_first_name_text = *

@@ -1,0 +1,6 @@
+cfg_customers_status_title = Status
+cfg_customers_status_description = Set True to enable or not the module
+
+cfg_customers_status_true = True
+cfg_customers_status_false = False
+

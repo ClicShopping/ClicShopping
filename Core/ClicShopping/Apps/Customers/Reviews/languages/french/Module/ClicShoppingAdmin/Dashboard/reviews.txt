@@ -1,0 +1,12 @@
+module_admin_dashboard_reviews_app_title =Souhaitez vous afficher les commentaires des clients ?
+module_admin_dashboard_reviews_app_description = Affiche les commentaires des clients
+
+table_heading_products = Produits
+table_heading_date_added = Date ajout
+table_heading_review_author = Auteur
+table_heading_rating = Evalutations
+table_heading_approved = Approuvé ?
+table_heading_action = Actions
+
+
+icon_edit = Editer

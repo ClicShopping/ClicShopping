@@ -1,0 +1,17 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each menu item)
+link varchar(255) default null comment(URL or route for the menu item)
+parent_id int default(0) not_null comment(FK to administrator_menu.id - parent menu item for hierarchical structure, 0 for top-level)
+sort_order int(3) comment(Display order of menu items within same parent level)
+access tinyint(1) not_null default (0) comment(Access control flag - 0: no special access required, 1: restricted access)
+image varchar(255) default null comment(Icon or image path for menu item display)
+b2b_menu tinyint(1) default(0) not_null comment(B2B visibility flag - 0: all users, 1: B2B users only)
+app_code varchar(255) default null comment(Application module code this menu item belongs to)
+status tinyint(1) default(1) comment(Menu item status - 0: disabled, 1: enabled)
+--
+primary id
+idx_categories_parent_id parent_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

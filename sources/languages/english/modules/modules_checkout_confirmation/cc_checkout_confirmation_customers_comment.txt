@@ -1,0 +1,7 @@
+
+ module_checkout_confirmation_customers_comment_title = Do you want to display the customer comments about the order ?
+ module_checkout_confirmation_customers_comment_description =  display the customer comments about the order
+
+ module_checkout_confirmation_customers_comment_text_edit = Edit
+ module_checkout_confirmation_customers_comment_heading_order_comments = Your comment
+ module_checkout_confirmation_customers_comment_heading_order_title = Comments

@@ -1,0 +1,15 @@
+heading_title = Historique des alertes
+button_back = Retour
+text_alert_history = Historique des alertes
+text_date_time = date / Temps
+text_server = Serveur
+text_type = types
+text_message = Messages
+text_loading_alert = Téléchargement des alertes...
+text_clear_alert = Supprimer les alertes
+text_no_alert = Aucune alerte trouvé
+text_all_alert = Toutes les alertes
+text_errors_critical_only = Alertes critiques
+text_errors_only = Alertes erreurs
+text_only_warning = Alertes importantes
+text_info_only = Alertes informations

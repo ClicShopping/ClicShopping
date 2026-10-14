@@ -1,0 +1,3 @@
+module_security_check_extended_ext_directory_listing_title = ext/ Directory Listing
+module_security_check_extended_ext_directory_listing_http_200 = Je suis capable d'accéder au répertoire boutique/ext/ directory -  veuillez éviter que la liste des répertoires s'affiche.
+

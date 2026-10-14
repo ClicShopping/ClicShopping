@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+
+.passwordLogin a {
+  color: #c0007a;
+}
+
+.passwordLogin a:hover {
+  color: #c0007a;
+  text-decoration: none;
+}
+
+h3.loginText {
+  font-weight: bold;
+}
+
+.loginSeparator {
+  width: 45%;
+  float: left;
+  border-left: 1px dashed #ccc;
+  padding-left: 3%;
+  margin-left: 3%;
+}
+
+.passwordForgotten {
+}

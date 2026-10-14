@@ -1,0 +1,11 @@
+products_length_class_from_id int not_null comment(FK to products_length_classes table - source length class for conversion)
+products_length_class_to_id int not_null comment(FK to products_length_classes table - target length class for conversion)
+products_length_class_rule decimal(15,5) not_null comment(Conversion multiplier - e.g. 1 cm = 0.39370 in, so rule would be 0.39370)
+--
+primary products_length_class_from_id products_length_class_to_id
+idx_products_length_class_from_id products_length_class_from_id
+idx_products_length_class_to_id products_length_class_to_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

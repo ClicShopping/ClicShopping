@@ -1,0 +1,38 @@
+ module_products_info_recommendation_title = Do you want to display the products recommendation (embedding) ?
+ module_products_info_recommendation_description = Display the products recommendation
+ module_products_info_recommendation_name = Customers recommend you also these products
+
+text_stock = Stock
+text_flash_discount = Flash discount
+text_customer_quantity = qty
+text_products_quantity_type = Quantité type
+text_products_free = Free
+text_manufacturer = brands
+text_products_price_kilo = Px/Kg
+text_date_available = Date available
+text_only_shop = Only Shop
+text_only_web = Only web
+text_products_info_packaging_text = Product
+text_products_packaging_new = new
+text_products_packaging_repackaged = Repackaged
+text_products_packaging_used = Used
+text_display_shipping_delay = Shipping delay
+text_display_shipping_delay_out_of_stock = Shipping delay out of Stock
+text_products_volume = Volume
+text_display_products_weight = Kg
+
+text_out_of_stock = Out of stock
+text_out_of_stock_pre_order = Only pre-order
+text_out_of_stock_allow_checkout = Order out of stock accepted
+
+text_alert_stock = Alert stock
+text_in_stock = In stock
+
+min_qty_product = min qty
+
+text_ticker_featured = Selected
+
+button_details = Details
+button_buy_now = Buy
+button_sold_out =  Sold Out
+

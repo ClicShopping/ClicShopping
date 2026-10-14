@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_shop_capital_title = Capital de l'entreprise
+cfg_configuration_compliance_policy_rules_shop_capital_description = Veuillez indiquer le capital de votre entreprise.

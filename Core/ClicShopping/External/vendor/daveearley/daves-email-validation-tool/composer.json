@@ -1,0 +1,41 @@
+{
+  "name": "daveearley/daves-email-validation-tool",
+  "description": "An easy to use, accurate-ish & extensible email validation library for PHP 7+",
+  "type": "library",
+  "keywords": [
+    "email validation",
+    "email",
+    "validate email",
+    "email verification",
+    "disposable email check"
+  ],
+  "require": {
+    "php": ">=7.4",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "mockery/mockery": "^1.3",
+    "phpunit/phpunit": "^9.3"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "EmailValidation\\": "src/",
+      "EmailValidation\\Tests\\": "tests"
+    }
+  },
+  "authors": [
+    {
+      "name": "Dave Earley",
+      "email": "dave@earley.email"
+    }
+  ],
+  "scripts": {
+    "update-data-files":  [
+      "(cd scripts && ./update-disposable-email-providers.php)",
+      "(cd scripts && ./update-top-level-domains.php)"
+    ],
+    "post-install-cmd": "@update-data-files",
+    "post-update-cmd": "@update-data-files"
+  }
+}

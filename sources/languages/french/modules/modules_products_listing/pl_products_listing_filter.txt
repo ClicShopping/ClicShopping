@@ -1,0 +1,6 @@
+module_products_listing_filter_title = Souhaitez-vous afficher le filtre catégorie ou marque dans le listing ?
+module_products_listing_filter_description = Affiche le filtre catégorie ou marque dans le listing
+
+text_all_categories = Toutes les catégories
+text_all_filter = Toutes les marques
+text_show = Afficher

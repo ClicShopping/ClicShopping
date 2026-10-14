@@ -1,0 +1,13 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each product image)
+products_id int not_null comment(FK to products table - product this image belongs to)
+image varchar(255) comment(Path to image file)
+htmlcontent text comment(HTML content or caption for the image)
+sort_order int not_null comment(Display order for product image gallery)
+--
+primary id
+products_images_prodid products_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Additional images of a product beyond the main one, with their display order. The main image is products_image in products.

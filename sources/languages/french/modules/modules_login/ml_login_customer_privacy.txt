@@ -1,0 +1,9 @@
+module_login_customer_privacy = Souhaitez-vous afficher une information confidentielles ?
+module_login_customer_privacy_description = Affiche une information une information confidenitelles pour les clients
+
+text_customer_privacy = <strong>Sécurisation des données</strong><br /><br />{{store_name}} s'engage à sécuriser l'ensemble de vos données personnelles et à les garder strictement confidentiels. Nous ne vendons pas les adresses emails à des des sociétés de e-marketing.
+Les informations que vous communiquez, à l’exception de votre mot de passe qui est crypté et ne peut pas être lu, sont destinées au personnel habilité de {{store_name}} qui est le responsable de traitement.
+Vos données sont utilisées afin de gérer vos accès à votre compte client {{store_name}}, et aussi pour le traitement et le suivi de vos commandes, le SAV des produits commandés sur notre Site,
+la gestion marketing et la relation client, le recouvrement et la lutte contre la fraude.
+Vos données, à l’exception de votre mot de passe, pourront être transmises à des prestataires de {{store_name}} aux fins de traitement des commandes, de gestion de la relation client et de SAV.
+En application de la loi du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés modifiée, vous disposez des droits, d'accès et de rectification de vos données personnelles ainsi que du droit d'opposition à leur traitement pour des motifs légitimes. Vous disposez également du droit de formuler des directives spécifiques ou générales concernant la conservation, l’effacement et la communication de vos données post-mortem. Vous pouvez exercer l’ensemble de ces droits en nous contactant via le formulaire de contact du site.<br />Vous pouvez également gérer vos données personnelles et vos préférences à tout moment dans votre compte.

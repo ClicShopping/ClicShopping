@@ -1,0 +1,114 @@
+heading_title = Customers
+module_cs_title = Customers
+module_cs_short_title = Customers
+
+text_customers =  Customers
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a customers page<br />
+- Activate this module and activate the module customers located in the Customers menu
+
+module_cs_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_customers = Customers
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+button_create_account = Create account
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+text_field_required = required
+
+category_personal = Personal
+category_address = Address
+category_address_default = Adress principal
+category_contact = Contact
+category_company = Detail on the company
+category_options = Options
+category_newsletter = Inscription with the newsletters
+
+tab_general = General
+tab_orders = Invoicing
+tab_societe = Companies
+tab_adresse_book = book
+tab_shipping = Shipping
+
+
+entry_gender = Gender:
+entry_gender_error = &nbsp;<span class="errorText">required</span>
+entry_first_name = First Name
+entry_first_name_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+entry_last_name = Last Name
+entry_last_name_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+entry_date_of_birth = Date of Birth
+entry_date_of_birth_error = &nbsp;<span class="errorText">(eg. 05/21/1970)</span>
+entry_email_address = E-Mail Address:
+entry_email_address_error = &nbsp;<span class="errorText">The email address is not correct</span>
+entry_email_address_check_error = &nbsp;<span class="errorText">The email address doesn't appear to be valid!</span>
+entry_email_address_error_exists = &nbsp;<span class="errorText">This email address already exists!</span>
+entry_company = Company name
+entry_company_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+entry_street_address = Street Address:
+entry_street_address_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+entry_suburb = Suburb
+entry_suburb_error =
+entry_post_code = Post Code
+entry_post_code_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+entry_city = City
+entry_city_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+entry_state = State
+entry_state_error = &nbsp;<span class="errorText">required</span>
+entry_country = Country
+entry_country_error =
+entry_telephone_number = Telephone Number
+entry_telephone_number_error = &nbsp;<span class="errorText">min {{min_length}} chars</span>
+
+entry_cellular_phone_number = Cellular phone Number
+entry_cellular_phone_number_error =
+entry_telephone = Phone Number
+
+entry_newsletter = Newsletter:
+entry_newsletter_yes = Subscribed
+entry_newsletter_no = Unsubscribed
+entry_newsletter_error =
+entry_newsletter_language = Language:
+
+entry_address_number = Address No
+entry_adress_default = (Address principal)
+entry_siret = Registration Code :
+entry_siret_exemple = (ex : SIRET Code for the French company)
+entry_ape = Nomenclatur Number :
+entry_ape_exemple = (ex : APE Code for the French company)
+entry_tva = No VAT Intracom :
+entry_tva_iso_error = &nbsp;<span class="errorText">The code country of two letters does not seem to be correct.</span>
+
+entry_customers_group_name = Customer Group:
+entry_groups_name = Name:
+
+entry_customers_email =  Do  you want send at your customer an email for this account creation ?
+
+entry_customers_modify_company = To authorize the customer to modify this information
+entry_customers_modify_address_default = To authorize the customer to modify the address by default
+entry_customers_add_address = To authorize the customer to add other addresses
+
+tva_intracom_verify = Verify VAT
+title_help_customers_tva = Note on VAT Intracom
+title_help_tva_customers = Please, valid the document before to verify the society VAT

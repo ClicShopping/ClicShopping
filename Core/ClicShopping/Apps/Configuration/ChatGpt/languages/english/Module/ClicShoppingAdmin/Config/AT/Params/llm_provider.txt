@@ -1,0 +1,2 @@
+cfg_chatgpt_llm_provider_title = LLM Provider
+cfg_chatgpt_llm_provider_description = Select the LLM provider for agent operations. OpenAI (GPT-4), Ollama (local models), or Anthropic (Claude).

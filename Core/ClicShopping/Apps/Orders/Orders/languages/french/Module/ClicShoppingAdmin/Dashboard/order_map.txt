@@ -1,0 +1,7 @@
+module_admin_dashboard_order_map_app_title = Cartographie mondiales des ventes effectuées
+module_admin_dashboard_order_map_app_description = Affiche une cartographie par pays de ventes effectuées
+
+text_sale_total_ht = Total without taxes :
+text_order_number = Orders number :
+text_orders_status = Order status :
+text_order_delivery = Delivery

@@ -1,0 +1,5 @@
+
+ module_checkout_confirmation_order_total_title = Do you want to display the order total details ?
+ module_checkout_confirmation_order_total_description = Display the order total details
+
+ module_checkout_confirmation_order_total_heading_details = Details

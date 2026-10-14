@@ -1,0 +1,2 @@
+cfg_chatgpt_security_alert_title = Send an email alert
+cfg_chatgpt_security_alert_description = Send an email alert to the administrator

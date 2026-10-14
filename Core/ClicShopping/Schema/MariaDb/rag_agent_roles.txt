@@ -1,0 +1,20 @@
+ role_id int(11) auto_increment  not_null
+ agent_id varchar(100)  not_null
+ role varchar(50)  not_null
+ status enum('active','suspended','disabled')  default (active)
+ suspension_reason text  default null
+ suspended_at timestamp NULL  default null
+ created_at timestamp NULL  default(current_timestamp)
+ updated_at timestamp NULL  default(current_timestamp) ON UPDATE current_timestamp()
+
+--
+primary role_id
+unique agent_id agent_id
+idx_agent_id agent_id 
+idx_role role 
+idx_status status
+  
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

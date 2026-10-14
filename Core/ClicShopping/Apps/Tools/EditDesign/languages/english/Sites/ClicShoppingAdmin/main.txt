@@ -1,0 +1,69 @@
+heading_title = Design studio
+module_de_title = Design studio
+module_de_short_title = Design studio
+
+text_data_base_tables = Design studio
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a Design Editor form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_de_introduction = The install process create the studio design settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_design_studio = Design studio
+button_reset = Reset
+button_analyse = Analyse
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+text_default_template = Default template selected: {{template}}
+text_warning_template = We do not recommend working with the Default template. Please work with another template
+text_module_content =  Module content editor
+text_product_listing = Template listing editor
+text_css = CSS editor
+text_gabari = Gabari editor
+text_description = Edit and modify the code
+
+icon_edit = Edit
+
+text_select_files = -- Select --
+ title_help_edit_html_image = Help on HTML Editor
+ title_help_edit_html = Help on HTML Editor
+ text_help_edit_html = For security reasons, permissions are not allowed in the original html editor. It is important to understand to change file permissions, can cause security problem in your application. <br />
+it is better to download yours files via FTP and to change them on your computer. <br />
+in case you want to make modification via HTML Editor, you must follow this procedure. <br />
+- Rights directories: chmod 755 <br />
+- Rights Files: chmod 644 <br />
+after the modifications, change your rights files in : chmod 444 <br />
+- Please note,  the configuration of your server will impact on yours authorisations to modify the files or not. We encourage you to visit <a href="http://clicshopping.org/marketplace/index.php&Blog&Categories" target="_blank" rel="noopener"> our guide </a>
+for further explanation.
+
+text_help_design = You must have writing in the file to be able to modify the files. Please note that errors will have a direct repercussions on the display of the result.
+Errors can be seen in the error log file
+If you add a word / syntax, please also use the language management tool to add your new code and its translation.
+
+
+success_file_saved_sucessfully =  Successfull update
+error_file_does_not_exist = Fichier does not exist
+
+error_file_not_writeable = The files is not writeable
+error_insert_php_code = Forbidden PHP code detected in the content. Modification blocked.
+error_insert_css_code = Forbidden CSS code detected in the content. Modification blocked.

@@ -1,0 +1,4 @@
+ module_products_info_options = Do you want to display the product options ?
+ module_products_info_options_description = Display the product options
+
+ text_product_options = Available Options :

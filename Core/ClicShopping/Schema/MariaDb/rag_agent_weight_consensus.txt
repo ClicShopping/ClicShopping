@@ -1,0 +1,17 @@
+id int(11) not_null auto_increment
+evaluation_id varchar(255) not_null
+dynamic_consensus decimal(10,8) not_null
+static_consensus decimal(10,8) not_null
+difference decimal(10,8) not_null
+created_at timestamp NULL default(current_timestamp)
+  
+--
+primary id
+unique evaluation_id evaluation_id
+idx_evaluation evaluation_id 
+idx_created created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,6 @@
+module_checkout_payment_address_title = Souhaitez-vous afficher l'adresse de paiement ?
+module_checkout_payment_address_description = Afficher l'adresse de paiemnt
+module_checkout_payment_address_title_payment_address = Adresse de paiement :
+module_checkout_payment_address_text_choose_payment_destination = Veuillez choisir l'adresse de paiement de votre commande.
+module_checkout_payment_address_button_change_address = Changez votre adresse
+button_modify = Modifier

@@ -1,0 +1,1102 @@
+<?php
+/**
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+namespace ClicShopping\AI\CoreAI\Memory;
+
+
+use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
+use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
+use LLPhant\Embeddings\DocumentSplitter\DocumentSplitter;
+use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
+use LLPhant\Chat\Message; // Use the specific LLPhant class for type hinting
+
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ShortTermMemoryManager;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\LongTermMemoryManager;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ContextResolver;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\EntityTracker;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ChunkReconstructor;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryQualityTracker;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryInteractionFormatter;
+use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVectorEmbeddingAdapter;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\MemoryContextSwitchDetector;
+use ClicShopping\AI\Infrastructure\Metrics\MemoryStatistics;
+use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\FeedbackManager;
+use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
+use ClicShopping\AI\Config\SystemConfig;
+
+/**
+ * ConversationMemory Class
+ *
+ * Manages the multi-agent system's conversational memory using LLPhant components.
+ * This class has been refactored to use SubConversationMemory components for better
+ * separation of concerns and maintainability.
+ *
+ * Responsibilities include:
+ * - Storing user-system interactions in both short-term (History) and long-term (Vector Store) memory.
+ * - Maintaining a coherent conversational context.
+ * - Retrieving relevant historical interactions via vector embeddings.
+ * - Resolving contextual references ("it," "the last one," etc.) within user queries.
+ * - Learning from successful interaction patterns.
+ * - Tracking entities mentioned in conversations for contextual follow-up queries.
+ *
+ * Architecture:
+ * This class delegates specialized responsibilities to SubConversationMemory components:
+ * - ShortTermMemoryManager: Manages conversation history and message retention
+ * - LongTermMemoryManager: Manages vector store and semantic search
+ * - ContextResolver: Resolves contextual references in queries
+ * - EntityTracker: Tracks last mentioned entities for implicit context
+ * - MemoryStatistics: Records operation statistics and performance metrics
+ * - FeedbackManager: Manages user feedback and learning from corrections
+ *
+ * Configuration:
+ * Configuration should be done through the SubConversationMemory components directly,
+ * not through setter methods on this class. For example:
+ * 
+ * ```php
+ * // Configure through constructor
+ * $memory = new ConversationMemory(
+ *   userId: 'user123',
+ *   languageId: 1,
+ *   tableName: 'rag_conversation_memory_embedding',
+ *   entityId: 0
+ * );
+ * 
+ * // Or configure SubComponents directly if needed
+ * $memory->shortTermManager->setMaxHistorySize(20);
+ * $memory->longTermManager->setSimilarityThreshold(0.8);
+ * ```
+ *
+ * Migration Notes:
+ * The following methods have been removed as part of the SubConversationMemory refactoring:
+ * - setMaxHistorySize() - Use $memory->shortTermManager->setMaxHistorySize() instead
+ * - setSimilarityThreshold() - Use $memory->longTermManager->setSimilarityThreshold() instead
+ * - cleanOrphanedChunks() - Use $memory->longTermManager->cleanDuplicates() instead
+ *
+ * These methods are no longer needed because configuration is now handled through
+ * the SubConversationMemory components, which provide better encapsulation and
+ * more flexible configuration options.
+ *
+ * @see ShortTermMemoryManager For short-term memory configuration
+ * @see LongTermMemoryManager For long-term memory and vector store configuration
+ * @see ContextResolver For contextual reference resolution
+ * @see EntityTracker For entity tracking and implicit context
+ */
+
+class ConversationMemory
+{
+  private SecurityLogger $securityLogger;
+  private MariaDBVectorStore $vectorStore;
+  private EmbeddingGeneratorInterface $embeddingGenerator;
+  private ConversationHistory $conversationHistory;
+  private bool $debug;
+  private string $userId;
+  private int $languageId;
+
+  private int $entityId;
+  private ?string $lastQueryType = null;
+  private bool $lastQueryReferencedEntity = false;
+  private ?array $referencedEntity = null;
+
+  // Database prefix
+  private string $prefix;
+
+  // Configuration
+  private int $maxHistorySize = 10; // Max number of messages in short-term memory
+  private int $maxContextWindow = 5; // Context window size for reference resolution
+  private float $similarityThreshold = 0.7; // Threshold for semantic search
+
+  // Statistics
+  private array $stats = [];
+
+  private mixed $db;
+
+  // 🆕 Refactored components
+  private ShortTermMemoryManager $shortTermManager;
+  private LongTermMemoryManager $longTermManager;
+  private ContextResolver $contextResolver;
+  private EntityTracker $entityTracker;
+  private MemoryStatistics $memoryStats;
+  private FeedbackManager $feedbackManager;
+  private ChunkReconstructor $chunkReconstructor;
+  private MemoryQualityTracker $qualityTracker;
+  private MemoryInteractionFormatter $interactionFormatter;
+  private MemoryContextSwitchDetector $contextSwitchDetector;
+  private ConversationTurnReader $turnReader;
+
+  /**
+   * Constructor
+   *
+   * @param string $userId User identifier (default: 'system')
+   * @param int|null $languageId Language ID
+   * @param string $tableName Table for long-term memory (default: 'rag_conversation_memory_embedding')
+   * @param int $entityId Entity ID (default: 0)
+   * @throws \RuntimeException If the database or embedding generator cannot be initialized.
+   */
+  public function __construct( string $userId = 'system', ?int $languageId = null, string $tableName = 'rag_conversation_memory_embedding', int $entityId = 0) {
+    $this->db = Registry::get('Db');
+    $this->userId = $userId;
+    $this->securityLogger = new SecurityLogger();
+
+    $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+
+    // Use null coalescing for language ID registry check
+    $this->languageId = $languageId ?? Registry::get('Language')->getId();
+    $this->entityId = $entityId;
+
+    // Apply system configuration (defaults <- base <- Custom/Conf override).
+    $memoryConfig = SystemConfig::getSection('ConversationMemory', [
+      'max_history_size' => $this->maxHistorySize,
+      'max_context_window' => $this->maxContextWindow,
+      'similarity_threshold' => $this->similarityThreshold,
+    ]);
+    
+    $this->maxHistorySize = (int) $memoryConfig['max_history_size'];
+    $this->maxContextWindow = (int) $memoryConfig['max_context_window'];
+    $this->similarityThreshold = (float) $memoryConfig['similarity_threshold'];
+
+    // Initialize the LLPhant-compatible embedding generator
+    $this->embeddingGenerator = new NewVectorEmbeddingAdapter();
+
+    $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
+
+    // Initialize the vector store for long-term memory
+    $this->vectorStore = new MariaDBVectorStore($this->embeddingGenerator,  $tableName);
+
+    // 🆕 Initialize refactored components FIRST
+    $this->shortTermManager = new ShortTermMemoryManager($this->maxHistorySize, $this->debug);
+    $this->longTermManager = new LongTermMemoryManager($this->vectorStore, $this->embeddingGenerator, $this->similarityThreshold, $this->debug, $this->languageId);
+    
+    $this->entityTracker = new EntityTracker($this->debug, $this->userId, $this->languageId);
+    
+    $this->contextResolver = new ContextResolver($this->languageId, $this->debug, $this->entityTracker);
+    
+    $this->memoryStats = new MemoryStatistics($this->debug);
+    $this->feedbackManager = new FeedbackManager($this->debug);
+    $this->chunkReconstructor = new ChunkReconstructor();
+    $this->qualityTracker = new MemoryQualityTracker();
+    $this->interactionFormatter = new MemoryInteractionFormatter();
+    $this->contextSwitchDetector = new MemoryContextSwitchDetector($this->securityLogger, $this->debug);
+    $this->turnReader = new ConversationTurnReader(
+      $this->userId,
+      $this->languageId,
+      $this->debug,
+      $this->interactionFormatter
+    );
+
+    // Get ConversationHistory from ShortTermMemoryManager for compatibility
+    $this->conversationHistory = $this->shortTermManager->getConversationHistory();
+
+    // Load recent history (optional feature, kept for completeness)
+    $this->loadRecentHistory();
+
+    // 🗑️ REMOVED: initializeStats() - Now handled by MemoryStatistics component
+
+    if ($this->debug) {
+      $this->securityLogger->logSecurityEvent( "ConversationMemory initialized with SubConversationMemory components for user: {$this->userId}", 'info');
+    }
+  }
+
+
+  /**
+   * Adds an interaction (user question + assistant answer) to the memory.
+   * 🆕 REFACTORED: Délègue à ShortTermMemoryManager et LongTermMemoryManager
+   *
+   * @param string $userMessage User's message
+   * @param string $systemResponse System's response
+   * @param array $metadata Additional metadata (should include query_type, confidence, entities)
+   * @return bool Success of the operation
+   */
+  public function addInteraction( string $userMessage, string $systemResponse, array $metadata = []): bool
+  {
+    $startTime = microtime(true);
+    
+    try {
+      
+      $metadata = $this->normalizeInteractionMetadata($metadata);
+
+      $this->applyContextSwitch($metadata);
+
+      // 1. Add to short-term memory via ShortTermMemoryManager
+      $shortTermStart = microtime(true);
+      $this->shortTermManager->addMessage(new Message('user', $userMessage));
+      $this->shortTermManager->addMessage(new Message('assistant', $systemResponse));
+
+      // Update local reference for compatibility
+      $this->conversationHistory = $this->shortTermManager->getConversationHistory();
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory: short-term store took %.3fs",
+          microtime(true) - $shortTermStart));
+      }
+
+      // 2. Store in long-term memory via LongTermMemoryManager (includes embedding)
+      $longTermStart = microtime(true);
+      $fullContent = $this->interactionFormatter->formatInteractionForStorage($userMessage, $systemResponse);
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory: long-term store START — content: %d chars",
+          strlen($fullContent)));
+      }
+      $success = $this->longTermManager->storeInteraction($fullContent, $metadata);
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory: long-term store END — took %.3fs (success: %s)",
+          microtime(true) - $longTermStart,
+          $success ? 'YES' : 'NO'));
+      }
+
+      // Periodically clean duplicates (every 20 interactions)
+      $this->maybeCleanDuplicates();
+
+      // 3. Record statistics
+      $this->memoryStats->recordOperation('interactions_stored', $success, microtime(true) - $startTime);
+
+      // 4. Learn from successful interactions
+      if ($success && ($metadata['success'] ?? true)) {
+        $learnStart = microtime(true);
+        $this->qualityTracker->learnFromSuccessfulInteraction($userMessage, $systemResponse, $metadata, $this->stats);
+        if ($this->debug) {
+          error_log(sprintf("[PERF] ConversationMemory: learnFromSuccessfulInteraction took %.3fs",
+            microtime(true) - $learnStart));
+        }
+      }
+
+      if ($this->debug) {
+        error_log(sprintf("[PERF] ConversationMemory::addInteraction TOTAL %.3fs",
+          microtime(true) - $startTime));
+      }
+
+      return $success;
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error in addInteraction: " . $e->getMessage(),
+        'error'
+      );
+      
+      $this->memoryStats->recordOperation('interactions_stored', false, microtime(true) - $startTime);
+
+      return false;
+    }
+  }
+
+  /**
+   * Fills in the default interaction metadata keys (query_type, classification
+   * confidence, detected entities) and logs the resolved metadata.
+   *
+   * @param array $metadata Raw interaction metadata
+   * @return array Metadata with defaults applied
+   */
+  private function normalizeInteractionMetadata(array $metadata): array
+  {
+    if (!isset($metadata['query_type'])) {
+      $metadata['query_type'] = 'unknown';
+
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "[WARNING] query_type not provided in metadata, defaulting to 'unknown'",
+          'warning'
+        );
+      }
+    }
+
+    if (!isset($metadata['classification_confidence'])) {
+      $metadata['classification_confidence'] = 0.0;
+    }
+
+    if (!isset($metadata['detected_entities'])) {
+      $metadata['detected_entities'] = [];
+    }
+
+    if ($this->debug) {
+      $this->securityLogger->logSecurityEvent(
+        "[INFO] Storing interaction with metadata - query_type: {$metadata['query_type']}, " .
+        "confidence: {$metadata['classification_confidence']}, " .
+        "entities: " . json_encode($metadata['detected_entities']),
+        'info'
+      );
+    }
+
+    return $metadata;
+  }
+
+  /**
+   * Detects a query-type context switch and, when one occurs, clears the last
+   * tracked entity. Records the current query type for the next comparison.
+   *
+   * @param array $metadata Interaction metadata (reads query_type)
+   */
+  private function applyContextSwitch(array $metadata): void
+  {
+    if (isset($metadata['query_type'])) {
+      $contextSwitch = $this->contextSwitchDetector->detectContextSwitch($metadata['query_type'], $this->lastQueryType, $this->userId, $this->languageId);
+
+      if ($contextSwitch) {
+        $this->clearLastEntity();
+
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "TASK 6.3: Context switch detected - clearing last entity",
+            'info'
+          );
+        }
+      }
+
+      $this->lastQueryType = $metadata['query_type'];
+    }
+  }
+
+  /**
+   * Periodically cleans duplicate long-term entries (every 20 interactions).
+   * Cleanup failures are swallowed so they never break the interaction store.
+   */
+  private function maybeCleanDuplicates(): void
+  {
+    static $cleanupCounter = 0;
+    if (++$cleanupCounter % 20 === 0) {
+      $cleanupStart = microtime(true);
+      try {
+        $cleanupStats = $this->longTermManager->cleanDuplicates();
+        if ($this->debug) {
+          error_log(sprintf("[PERF] ConversationMemory: cleanDuplicates took %.3fs (cleaned: %d)",
+            microtime(true) - $cleanupStart,
+            $cleanupStats['total_cleaned'] ?? 0));
+        }
+        if ($this->debug && $cleanupStats['total_cleaned'] > 0) {
+          $this->securityLogger->logSecurityEvent(
+            "Cleaned {$cleanupStats['total_cleaned']} duplicate entries (by interaction_id: {$cleanupStats['by_interaction_id']}, by content_hash: {$cleanupStats['by_content_hash']})",
+            'info'
+          );
+        }
+      } catch (\Exception $e) {
+        // Don't fail on cleanup errors
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error during duplicate cleanup: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Retrieves the relevant conversational context for the current query.
+   * 🆕 REFACTORED: Délègue à ShortTermMemoryManager et LongTermMemoryManager
+   *
+   * Note: Type-aware filtering is not currently implemented because LLPhant Message objects
+   * don't natively support metadata. Query type tracking is done separately for context
+   * switch detection. Future enhancement could store metadata alongside messages.
+   *
+   * @param string $currentQuery Current user query
+   * @param int $limit Max number of long-term memory results
+   * @param string|null $currentQueryType Optional query type (for future use and context switch detection)
+   * @return array Context containing short-term and long-term memories
+   */
+  public function getRelevantContext(string $currentQuery, int $limit = 3, ?string $currentQueryType = null): array
+  {
+    $startTime = microtime(true);
+    
+    try {
+      // 1. Get short-term history from ShortTermMemoryManager
+      $recentMessages = $this->shortTermManager->getRecentMessages($this->maxContextWindow);
+      
+      // Note: Type-aware filtering would require storing metadata with messages
+      // Currently, we track query types separately for context switch detection only
+      
+      // Format for compatibility
+      $shortTerm = [];
+      foreach ($recentMessages as $message) {
+        // Check if role is initialized (LLPhant Message may not have role set)
+        $role = 'user'; // Default role
+        if (isset($message->role)) {
+          $role = $message->role;
+        } elseif (property_exists($message, 'role')) {
+          try {
+            $role = $message->role;
+          } catch (\Error $e) {
+            // Role not initialized, use default
+            $role = 'user';
+          }
+        }
+        
+        $shortTerm[] = [
+          'role' => $role,
+          'content' => $message->content ?? '',
+        ];
+      }
+
+      // 2. Search long-term memory via LongTermMemoryManager
+      // 🔧 FIX: Pass user_id and language_id to filter results properly
+      $longTerm = $this->longTermManager->searchSimilar($currentQuery, $limit, $this->userId, $this->languageId);
+
+      // 3. Get feedback context for learning
+      $feedbackContext = $this->getFeedbackContext($currentQuery, 3);
+
+      
+      $contextSwitch = false;
+      if ($currentQueryType !== null) {
+        $contextSwitch = $this->contextSwitchDetector->detectContextSwitch($currentQueryType, $this->lastQueryType, $this->userId, $this->languageId);
+        
+        if ($contextSwitch && $this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "TASK 6.5: Context switch detected in getRelevantContext() for query type '{$currentQueryType}'",
+            'info'
+          );
+        }
+      }
+
+      // 4. Combine and structure the context
+      $context = [
+        'short_term_context' => $shortTerm,
+        'long_term_context' => $longTerm,
+        'feedback_context' => $feedbackContext,
+        'has_context' => !empty($shortTerm) || !empty($longTerm),
+        'context_switch' => $contextSwitch, 
+      ];
+
+      $this->memoryStats->recordOperation('context_retrieved', true, microtime(true) - $startTime);
+
+      return $context;
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error retrieving context: " . $e->getMessage(),
+        'error'
+      );
+
+      $this->memoryStats->recordOperation('context_retrieved', false, microtime(true) - $startTime);
+
+      return [
+        'short_term_context' => [],
+        'long_term_context' => [],
+        'feedback_context' => [],
+        'has_context' => false,
+        'context_switch' => false, 
+      ];
+    }
+  }
+
+  /**
+   * Resolves contextual references ("it", "the previous one", etc.) in a query.
+   *
+   * @param string $query Query with potential references
+   * @return array Resolved query and context used
+   */
+  public function resolveContextualReferences(string $query): array
+  {
+    $startTime = microtime(true);
+
+    // Reset per-call: only the reference-resolution branch below may flip this to true.
+    $this->lastQueryReferencedEntity = false;
+    $this->referencedEntity = null;
+
+    if ($this->debug) {
+      error_log("[ConversationMemory] resolveContextualReferences called for query: " . substr($query, 0, 50));
+    }
+    
+    try {
+      $lastEntity = $this->entityTracker->getLastEntity();
+      
+      // CRITICAL: Always log last entity retrieval
+      if ($this->debug) {
+        error_log("[ConversationMemory] Last entity retrieved: " . json_encode($lastEntity));
+      }  
+      // If we have a last entity, perform REAL agentic resolution by delegating to the
+      // shared ReferenceResolver (single source of truth, also used by the compound-query
+      // SemanticExecutor). It rewrites the query into a self-contained one ONLY when the
+      // query actually references the entity (pronoun / implicit follow-up); 
+      
+      if ($lastEntity !== null) {
+        $history = $this->turnReader->getRecentTurns($this->maxContextWindow);
+
+        $resolution = (new ReferenceResolver($this->debug))->resolve($query, $lastEntity, $history);
+        $referencesEntity = (bool)($resolution['references_entity'] ?? false);
+        $resolvedQuery = (string)($resolution['resolved_query'] ?? $query);
+        $this->lastQueryReferencedEntity = $referencesEntity;
+        $this->referencedEntity = $referencesEntity ? $lastEntity : null;
+
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "ReferenceResolver for {$lastEntity['type']} (ID: {$lastEntity['id']}): "
+            . ($referencesEntity ? "rewrote '{$query}' -> '{$resolvedQuery}'" : "left query untouched"),
+            'info'
+          );
+          error_log("[ConversationMemory] ReferenceResolver references=" . ($referencesEntity ? 'true' : 'false') . ", resolved='{$resolvedQuery}'");
+        }
+
+        $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
+
+        return [
+          'resolved_query' => $resolvedQuery,
+          'original_query' => $query,
+          // Honest now: true only when the query actually referenced the entity and was rewritten.
+          'has_references' => $referencesEntity,
+          'is_implicit_context' => false,
+          'context_used' => null,
+          'last_entity' => $lastEntity,
+        ];
+      }
+      
+      // No last entity available - query has no context
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "No last entity available for context resolution",
+          'info'
+        );
+      }
+      
+      if ($this->debug) {  
+        error_log("[ConversationMemory] No last entity available - returning without context");
+      }
+      
+      $this->memoryStats->recordOperation('references_resolved', true, microtime(true) - $startTime);
+      
+      return [
+        'resolved_query' => $query,
+        'has_references' => false,
+        'context_used' => null,
+        'last_entity' => null,
+      ];
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error resolving references: " . $e->getMessage(),
+        'error'
+      );
+
+      if ($this->debug) {        
+        error_log("[ConversationMemory] ERROR in resolveContextualReferences: " . $e->getMessage());
+      }
+      
+      $this->memoryStats->recordOperation('references_resolved', false, microtime(true) - $startTime);
+
+      return [
+        'resolved_query' => $query,
+        'has_references' => false,
+        'error' => $e->getMessage(),
+        'last_entity' => null,
+      ];
+    }
+  }
+
+
+
+  /**
+   * Loads recent history from the long-term memory to seed the short-term history.
+   * This is a speculative feature and relies on high-quality timestamps/metadata.
+   */
+  private function loadRecentHistory(): void
+  {
+    try {
+      // Filter for interactions in the last hour from the current user
+      $oneHourAgo = time() - 3600;
+
+      $filter = function($metadata) use ($oneHourAgo) {
+        $isRecent = ($metadata['timestamp'] ?? 0) > $oneHourAgo;
+        $isCurrentUser = ($metadata['user_id'] ?? '') === $this->userId;
+        $isCurrentEntity = ($metadata['entity_id'] ?? 0) === $this->entityId;
+        return $isRecent && $isCurrentUser && $isCurrentEntity;
+      };
+
+      // Search for documents (chunks) that match the filter
+      $results = $this->vectorStore->similaritySearch("recent interactions for user {$this->userId}", $this->maxHistorySize * 5, 0.5, $filter );
+
+      // Reconstruct and sort the interactions to rebuild the conversation history
+      $groupedResults = $this->chunkReconstructor->groupChunksByInteraction($results);
+      $recentInteractions = $this->chunkReconstructor->reconstructInteractions($groupedResults, $this->maxHistorySize);
+
+      // Sort by timestamp
+      usort($recentInteractions, function($a, $b) {
+        return ($a['timestamp'] ?? 0) <=> ($b['timestamp'] ?? 0);
+      });
+
+      // Rebuild the LLPhant ConversationHistory
+      foreach ($recentInteractions as $interaction) {
+        $this->conversationHistory->addUserMessage($interaction['user_message']);
+        $this->conversationHistory->addAssistantMessage($interaction['system_response']);
+      }
+
+      if ($this->debug && !empty($recentInteractions)) {
+        $this->securityLogger->logSecurityEvent(
+          "Loaded " . count($recentInteractions) . " recent interactions for user {$this->userId}",
+          'info'
+        );
+      }
+
+    } catch (\Exception $e) {
+      if ($this->debug) {
+        $this->securityLogger->logSecurityEvent(
+          "Error loading recent history: " . $e->getMessage(),
+          'error'
+        );
+      }
+    }
+  }
+
+  /**
+   * Returns the stored statistics.
+   * 🆕 REFACTORED: Délègue à MemoryStatistics
+   *
+   * @return array
+   */
+  public function getStats(): array
+  {
+    return $this->memoryStats->getStats();
+  }
+
+  /**
+   * Set the last entity mentioned in conversation
+   * 🆕 NEW METHOD: Délègue à EntityTracker
+   *
+   * @param int $entityId Entity ID
+   * @param string $entityType Entity type, any producer's form — EntityTracker normalizes it
+   * @param string|null $entityName Entity name (optional, for context enrichment)
+   * @return void
+   */
+  public function setLastEntity(int $entityId, string $entityType, ?string $entityName = null): void
+  {
+    $this->entityTracker->setLastEntity($entityId, $entityType, $entityName);
+  }
+
+  /**
+   * Get the last entity mentioned in conversation
+   * 🆕 NEW METHOD: Délègue à EntityTracker
+   *
+   * @return array|null Array with 'id' and 'type', or null if no entity
+   */
+  public function getLastEntity(): ?array
+  {
+    return $this->entityTracker->getLastEntity();
+  }
+
+  /**
+   * Whether the most recent resolveContextualReferences() call found that the query actually
+   * referenced the last entity (pronoun/possessive follow-up such as "its price", "son sku").
+   *
+   * Consumers use this to decide whether injecting the last entity into a prompt is safe: a
+   * false verdict means the current query is self-contained, so a stale entity id (e.g. a
+   * product) must NOT leak into an unrelated query (e.g. as a customers_id filter).
+   *
+   * @return bool True when the last query referenced the last entity, false otherwise
+   *              (and false until resolveContextualReferences() has run for the current query).
+   */
+  public function didLastQueryReferenceEntity(): bool
+  {
+    return $this->lastQueryReferencedEntity;
+  }
+
+  /**
+   * The entity the current verdict was made about, or null when the query referenced none.
+   *
+   * Consumers must inject THIS entity rather than re-reading getLastEntity(): a turn decomposed
+   * into sub-queries stores each sub-result, so the live last entity drifts away from the one
+   * the resolver judged (observed 2026-07-23: product #8 at the verdict, #3 two sub-queries later).
+   *
+   * @return array|null Array with 'id', 'type' and 'name', or null
+   */
+  public function getReferencedEntity(): ?array
+  {
+    return $this->lastQueryReferencedEntity ? $this->referencedEntity : null;
+  }
+
+  /**
+   * Clear the last entity from memory
+   *
+   * @return void
+   */
+  public function clearLastEntity(): void
+  {
+    // Get entity info before clearing for logging
+    $previousEntity = $this->entityTracker->getLastEntity();
+    
+    $this->entityTracker->clearLastEntity();
+    
+    if ($this->debug) {
+      $this->securityLogger->logStructured(
+        'info',
+        'ConversationMemory',
+        'entity_cleared',
+        [
+          'previous_entity_id' => $previousEntity['id'] ?? null,
+          'previous_entity_type' => $previousEntity['type'] ?? null,
+          'user_id' => $this->userId,
+          'language_id' => $this->languageId,
+          'timestamp' => date('Y-m-d H:i:s'),
+          'reason' => 'context_switch',
+          'note' => 'Last entity cleared from memory due to context switch'
+        ]
+      );
+    }
+  }
+
+
+  /**
+   * **DEPRECATED**: Use addInteraction() instead.
+   * This method is kept for backward compatibility but now delegates to addInteraction().
+   * 🆕 REFACTORED: Délègue à addInteraction()
+   *
+   * @param string $userMessage User's message
+   * @param string $systemResponse System's response
+   * @param array $metadata Additional metadata
+   * @return bool Success of the operation
+   */
+  public function addInteractionWithSplitting(string $userMessage, string $systemResponse, array $metadata = [] ): bool
+  {
+    // Delegate to the refactored addInteraction() method
+    return $this->addInteraction($userMessage, $systemResponse, $metadata);
+  }
+
+  /**
+   * Clears the short-term conversational memory.
+   * 🆕 REFACTORED: Délègue à ShortTermMemoryManager
+   */
+  public function clearShortTermMemory(): void
+  {
+    $this->shortTermManager->clearHistory();
+
+    // Update local reference for compatibility
+    $this->conversationHistory = $this->shortTermManager->getConversationHistory();
+  }
+
+  /**
+   * Clears the entire conversation context (short-term memory and entity tracking).
+   * This creates a fresh context for a new conversation.
+   * 
+   * Note: Long-term memory (vector store) is NOT cleared as it contains historical data
+   * that may be useful for future conversations.
+   * 
+   * @return void
+   */
+  public function clearContext(): void
+  {
+    // Clear short-term memory (conversation history)
+    $this->clearShortTermMemory();
+    
+    // Clear entity tracking
+    $this->clearLastEntity();
+    
+    // Reset statistics
+    $this->stats = [];
+    
+    if ($this->debug) {
+      $this->securityLogger->logSecurityEvent(
+        "ConversationMemory: Context cleared for user {$this->userId}",
+        'info'
+      );
+    }
+  }
+
+  /**
+   * Gets statistics related to interaction chunking.
+   *
+   * NOTE: This method is conceptual. To get accurate stats, it requires specific database queries
+   * against the vector store table, which must be implemented based on the actual table structure.
+   *
+   * @return array Chunking statistics.
+   */
+  public function getChunkingStats(): array
+  {
+    $stats = [
+      'total_interactions' => $this->stats['interactions_stored'] ?? 0,
+      'chunked_interactions_count' => 0, // Number of unique interaction_ids that were chunked
+      'single_interactions_count' => 0, // Number of unique interaction_ids that were not chunked
+      'total_chunks_stored' => 0, // Total number of documents with 'is_chunked' = true
+      'avg_chunks_per_interaction' => 0.0,
+      // 'db_queries_required' => 'Yes, requires database querying based on metadata fields',
+    ];
+
+    // Using the simplified statistics available internally
+    $stats['total_interactions'] = $this->stats['interactions_stored'] ?? 0;
+
+    return $stats;
+  }
+
+  /**
+   * Records user feedback for a specific interaction
+   * 
+   * @param string $interactionId Unique identifier of the interaction
+   * @param string $feedbackType Type of feedback: 'positive', 'negative', or 'correction'
+   * @param array $feedbackData Additional feedback data (e.g., corrected text, rating, comment)
+   * @return bool Success of the operation
+   */
+  public function recordFeedback(string $interactionId, string $feedbackType, array $feedbackData = []): bool
+  {
+    try {
+      error_log("ConversationMemory::recordFeedback - START");
+      error_log("ConversationMemory::recordFeedback - Interaction ID: {$interactionId}");
+      error_log("ConversationMemory::recordFeedback - Feedback Type: {$feedbackType}");
+      
+      // Validate feedback type
+      $validTypes = ['positive', 'negative', 'correction'];
+      if (!in_array($feedbackType, $validTypes, true)) {
+        error_log("ConversationMemory::recordFeedback - INVALID TYPE: {$feedbackType}");
+        $this->securityLogger->logSecurityEvent(
+          "Invalid feedback type: {$feedbackType}. Must be one of: " . implode(', ', $validTypes),
+          'warning'
+        );
+        return false;
+      }
+
+      // Prepare feedback metadata
+      // some are anor used : to check
+      $feedbackMetadata = [
+        'interaction_id' => $interactionId,
+        'feedback_type' => $feedbackType,
+        'feedback_data' => $feedbackData,
+        'user_id' => $this->userId,
+        'timestamp' => time(),
+        'language_id' => $this->languageId,
+      ];
+
+      error_log("ConversationMemory::recordFeedback - Metadata prepared");
+
+      // Store feedback in database using ClicShopping's save method
+      $feedbackRecord = [
+        'interaction_id' => $interactionId,
+        'feedback_type' => $feedbackType,
+        'feedback_data' => json_encode($feedbackData),
+        'user_id' => $this->userId,
+        'timestamp' => $feedbackMetadata['timestamp'],
+        'language_id' => $this->languageId,
+        'date_added' => date('Y-m-d H:i:s')
+      ];
+
+      error_log("ConversationMemory::recordFeedback - Record prepared: " . json_encode($feedbackRecord));
+      error_log("ConversationMemory::recordFeedback - Calling db->save()");
+
+      $success = DoctrineOrm::insert('rag_feedback', $feedbackRecord);
+      
+      error_log("ConversationMemory::recordFeedback - Save result: " . ($success ? 'TRUE' : 'FALSE'));
+
+      if ($success) {
+        // Update quality metrics based on feedback
+        $this->qualityTracker->updateQualityMetrics($feedbackType, $this->stats);
+
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Feedback recorded: {$feedbackType} for interaction {$interactionId}",
+            'info'
+          );
+        }
+      }
+
+      return $success;
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error recording feedback: " . $e->getMessage(),
+        'error'
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Get feedback context for a query
+   * Retrieves relevant corrections and positive feedback to improve responses
+   *
+   * @param string $query Query text
+   * @param int $maxResults Maximum number of feedback items to retrieve
+   * @return array Feedback context data
+   */
+  public function getFeedbackContext(string $query, int $maxResults = 3): array
+  {
+    try {
+      // Use FeedbackManager to get relevant feedback
+      // Convert userId to int (it's stored as string but FeedbackManager expects int)
+      $userIdInt = is_numeric($this->userId) ? (int)$this->userId : 0;
+      
+      return $this->feedbackManager->getRelevantFeedbackForLearning(
+        $userIdInt,
+        $this->languageId,
+        $maxResults
+      );
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error retrieving feedback context: " . $e->getMessage(),
+        'error'
+      );
+      return [];
+    }
+  }
+
+
+
+  //**********
+  // Not used - to check
+  //**********
+
+  /**
+   * Gets recent interactions from conversation history
+   * 
+   * @param int $limit Maximum number of interactions to return
+   * @return array Array of recent interactions with user_message and system_response
+   */
+  public function getRecentInteractions(int $limit = 5): array
+  {
+    try {
+      // Get recent messages from ShortTermMemoryManager
+      $recentMessages = $this->shortTermManager->getRecentMessages($limit * 2); // Get double to account for user+assistant pairs
+      
+      $interactions = [];
+      $userMessage = null;
+      
+      // Pair user messages with assistant responses
+      foreach ($recentMessages as $message) {
+        $role = 'user'; // Default role
+        if (isset($message->role)) {
+          $role = $message->role;
+        } elseif (property_exists($message, 'role')) {
+          try {
+            $role = $message->role;
+          } catch (\Error $e) {
+            // Role not initialized, use default
+            $role = 'user';
+          }
+        }
+        
+        if ($role === 'user') {
+          $userMessage = $message->content ?? '';
+        } elseif ($role === 'assistant' && $userMessage !== null) {
+          $interactions[] = [
+            'user_message' => $userMessage,
+            'system_response' => $message->content ?? '',
+            'timestamp' => time(), // Approximate timestamp
+          ];
+          $userMessage = null;
+          
+          // Stop if we have enough interactions
+          if (count($interactions) >= $limit) {
+            break;
+          }
+        }
+      }
+      
+      return array_reverse($interactions); // Return in chronological order
+      
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error getting recent interactions: " . $e->getMessage(),
+        'error'
+      );
+      return [];
+    }
+  }
+
+
+
+
+
+
+
+
+  /**
+   * Gets the complete LLPhant ConversationHistory object.
+   *
+   * This method provides backward compatibility by exposing the underlying
+   * ConversationHistory object managed by ShortTermMemoryManager. It allows
+   * code that expects direct access to the ConversationHistory to continue
+   * working after the SubConversationMemory refactoring.
+   *
+   * Purpose:
+   * - Provides access to the LLPhant ConversationHistory for backward compatibility
+   * - Used internally to maintain consistency after delegating to ShortTermMemoryManager
+   * - Allows external code to access conversation history without breaking changes
+   *
+   * Note: This method is kept for backward compatibility. New code should prefer
+   * using the higher-level methods like getRelevantContext() or getRecentInteractions()
+   * which provide more structured access to conversation data.
+   *
+   * @return ConversationHistory The LLPhant ConversationHistory object
+   */
+
+  public function getConversationHistory(): ConversationHistory
+  {
+    return $this->conversationHistory;
+  }
+
+  /**
+   * Retrieves the last successfully executed SQL query from conversation history.
+   *
+   * This method is critical for the "modify last query" functionality in AnalyticsAgent,
+   * allowing users to request modifications to their previous SQL queries without
+   * having to repeat the entire query.
+   *
+   * Purpose:
+   * - Enables SQL query modification requests (e.g., "add column X to the last query")
+   * - Used by AnalyticsAgent to detect and handle modification requests
+   * - Searches conversation history for the most recent SQL query response
+   * - Extracts SQL from markdown-formatted responses (```sql ... ```)
+   *
+   * Usage Example:
+   * User: "Show me all products"
+   * System: [Returns SQL query in response]
+   * User: "Add the price column to that query"
+   * System: [Uses getLastSQLQuery() to retrieve and modify the previous query]
+   *
+   * Implementation Details:
+   * - Searches rag_interactions table for recent SQL responses
+   * - Filters by user_id and language_id for context isolation
+   * - Extracts SQL from markdown code blocks (```sql ... ```)
+   * - Returns null if no SQL query found in recent history
+   *
+   * @return string|null The last SQL query or null if none found
+   */
+  public function getLastSQLQuery(): ?string
+  {
+    try {
+      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+      
+      $sql = "
+        SELECT response
+        FROM {$prefix}rag_interactions
+        WHERE user_id = :user_id
+        AND language_id = :language_id
+        AND response LIKE '%SELECT%'
+        AND response LIKE '%```sql%'
+        ORDER BY date_added DESC
+        LIMIT 1
+      ";
+
+      $result = DoctrineOrm::selectOne($sql, [
+        'user_id' => (int)$this->userId,
+        'language_id' => (int)$this->languageId
+      ]);
+
+      if ($result) {
+        $response = $result['response'];
+        
+        // Extraire la requête SQL de la réponse (format markdown)
+        if (preg_match('/```sql\s*(.*?)\s*```/s', $response, $matches)) {
+          $sqlQuery = trim($matches[1]);
+          
+          if ($this->debug) {
+            $this->securityLogger->logSecurityEvent(
+              "Retrieved last SQL query: " . substr($sqlQuery, 0, 100) . "...",
+              'info'
+            );
+          }
+          
+          return $sqlQuery;
+        }
+      }
+      
+      return null;
+
+    } catch (\Exception $e) {
+      $this->securityLogger->logSecurityEvent(
+        "Error getting last SQL query: " . $e->getMessage(),
+        'error'
+      );
+      return null;
+    }
+  }
+}

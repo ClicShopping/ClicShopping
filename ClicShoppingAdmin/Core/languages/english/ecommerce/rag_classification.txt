@@ -1,0 +1,104 @@
+text_classification_analytics_definition_bullets = * Numbers, calculations (revenue, total, average)
+* Lists (list of products, categories, customers)
+* Field values (price, stock, reference, SKU)
+* Statuses (pending orders, out-of-stock products)
+
+text_classification_classification_context_examples = - Example 1: "article 6 des CGV" (semantic) → "article 4 des CGV" (must be semantic, NOT influenced by previous query type)
+- Example 2: "nombre de produits" (analytics) → "article 4 des CGV" (must be semantic, NOT analytics)
+- Example 3: "article 6 des CGV" (semantic) → "nombre de produits par catégorie" (must be analytics, NOT semantic)
+
+text_classification_classification_independence_examples = - Query 1: "article 6 des CGV" → semantic (requests document content)
+- Query 2: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 1)
+- Query 3: "nombre de produits" → analytics (requests database count, NOT influenced by Query 1 or 2)
+- Query 4: "article 4 des CGV" → semantic (requests document content, NOT influenced by Query 3)
+
+text_classification_domain_action_selection = - If the user is asking for stock forecast / replenishment probability / stockout risk / safety stock forecast,
+set: "action":"inventory_forecast"
+- Provide best-effort parameters in action_params:
+{"entity_id":123,"horizon_days":30,"lead_time_days":7,"history_days":90,"service_level":0.95}
+- If entity_id is not explicit, omit it and keep other defaults.
+- If horizon is described (e.g., "next month"), set horizon_days accordingly.
+
+text_classification_entity_context_example = - "SKU de l'iPhone 17 Pro" → "description du produit"
+- Entity 'iPhone 17 Pro' is preserved, but classify 'description' as semantic independently
+
+text_classification_fallback_analytics_examples = trend, growth, total, average, ratio, sales, revenue, profit, stock, price range
+
+text_classification_hybrid_examples = - "price" (analytics) + "and" + "trends" (web_search) → HYBRID
+- "stock" (analytics) + "and" + "policy" (semantic) → HYBRID
+- "policy" (semantic) + "and" + "news" (web_search) → HYBRID
+- "pending orders" (analytics) + "and" + "monthly revenue" (analytics) → HYBRID (two separate analytics queries)
+- "stock levels" (analytics) + "and" + "sales figures" (analytics) → HYBRID (two separate analytics queries)
+
+text_classification_hybrid_examples_2 = - Example: "What is the price AND what are the latest trends or evolution" → hybrid (analytics + web_search)
+- Example: "pending orders AND monthly revenue" → hybrid (analytics + analytics) - TWO SEPARATE QUESTIONS
+
+text_classification_multientity_examples = - "article 5 and article 6 of terms" → HYBRID (two distinct articles, need separate retrieval)
+- "product A and product B" → HYBRID (two distinct products, need separate queries)
+- "order 123 and order 456" → HYBRID (two distinct orders, need separate queries)
+
+text_classification_output_examples = HYBRID (different types): {"type":"hybrid","confidence":0.90,"reasoning":"Contains price AND T&C article","sub_types":["analytics","semantic"]}
+HYBRID (multi-entity same type): {"type":"hybrid","confidence":0.90,"reasoning":"Requests articles 5 and 6 - two distinct entities requiring separate retrieval","sub_types":["semantic","semantic"]}
+ANALYTICS: {"type":"analytics","confidence":0.95,"reasoning":"Requests field value price","sub_types":[]}
+ANALYTICS (underspecified time unit): {"type":"analytics","confidence":0.8,"reasoning":"Orders over 70 but time unit missing - 12 of days/months/years?","sub_types":[]}
+SEMANTIC: {"type":"semantic","confidence":0.95,"reasoning":"Requests content of T&C article","sub_types":[]}
+WEB_SEARCH: {"type":"web_search","confidence":0.95,"reasoning":"Requests external trends","sub_types":[]}
+
+text_classification_rule_document_articles_examples = "article 4 of the T&C" → semantic
+"article 5 and article 6 of terms" → semantic
+"return policy" → semantic
+
+text_classification_rule_entity_lists_examples = "list of products" → analytics
+"list of categories" → analytics
+
+text_classification_rule_explanations_examples = "what is" → semantic
+"how it works" → semantic
+
+text_classification_rule_field_values_examples = "price of the iPhone" → analytics
+"product stock" → analytics
+"stock forecast" → analytics
+"inventory forecast" → analytics
+"reorder probability" → analytics
+
+text_classification_rule_statuses_example = "pending orders" → analytics
+
+text_classification_semantic_definition_bullets = * Explanations (what is, how, why)
+* Policies (terms and conditions, return policy, privacy)
+* Document articles (article 4 of the T&C, article 5)
+* Descriptions, guides
+
+text_classification_single_entity_examples = - "product price and stock" → ANALYTICS (not hybrid) - single product, multiple attributes
+- "category name and description" → ANALYTICS (not hybrid) - single category, multiple attributes
+- "price of the Samsung S25 then its SKU and EAN" → ANALYTICS (not hybrid, not semantic) - ONE product, multiple STRUCTURED attributes
+
+text_classification_step_price_comparison = STEP 2: PRICE COMPARISON WITH TARGET SITE?
+🚨 CRITICAL RULE - TARGET SITE DETECTION:
+If the query contains a price request WITH a target site indicator, classify as HYBRID (analytics + web_search):
+- Patterns: "price on [site]", "prix sur [site]", "price at [site]", "prix chez [site]"
+- Target sites: amazon, cdiscount, fnac, darty, ebay, alibaba, walmart, bestbuy, etc.
+- Examples:
+* "samsung galaxy 26 price on amazon" → HYBRID (analytics + web_search)
+* "nokia phone price at walmart" → HYBRID (analytics + web_search)
+* "laptop price on ebay" → HYBRID (analytics + web_search)
+- Detection keywords: "on", "at", "from", "sur", "chez", "à"
+- If detected → {"type":"hybrid","sub_types":["analytics","web_search"],"reasoning":"Price comparison with target site"}
+* YES → {"type":"hybrid","sub_types":["analytics","web_search"]}
+* NO → Step 3
+
+text_classification_structured_attributes = price, SKU, EAN, model/reference, stock/quantity, weight, status, dates
+
+
+text_classification_web_search_price_rule = * 🚨 CRITICAL RULE - PRICE EVOLUTION / TREND / HISTORY:
+Queries asking for price evolution, price trend, price history, price over time
+or price trajectory request EXTERNAL TIME-SERIES data (Google Trends), NOT an
+internal SQL COUNT/AVG. ALWAYS classify these as web_search even when the word
+"price" is present.
+Examples (translated to English):
+- "give me the price evolution of the Samsung S25" → web_search
+- "iPhone 15 price trends" → web_search
+- "historical price of the Galaxy" → web_search
+- "Samsung price over time" → web_search
+- "evolution of Samsung S25 price" → web_search
+Contrast (these stay analytics):
+- "give me the price of the Samsung S25" → analytics (current internal price)
+- "list products under 500 EUR" → analytics

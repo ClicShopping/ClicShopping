@@ -1,0 +1,164 @@
+heading_title = SEO
+module_se_title = SEO
+module_se_short_title = SEO
+
+text_seo =  SEO
+text_configure =  configure App Module
+
+text_intro = This app allow you to install a SEO manager in your administratopn. <br /><br />
+- Activate this module and activate the module SEO fields located in the Customers menu
+
+module_se_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_insert = Insert
+button_statistics =  Statistics
+button_seo = SEO
+button_update = Update
+button_send =  Send
+
+button_global = Global
+button_select = Select
+button_unselect = Unselect
+button_submit = Submit
+
+text_products = Products
+text_selected_products = Products selected
+text_count_customers = Number of customers
+text_unsubscribe = Unsebscribe
+
+email_from = Email from
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+heading_title = Meta data management
+
+tab_seo_default = Default Meta Data
+tab_seo_categories = Categories
+tab_seo_products_info = Products description
+tab_seo_products_new = News
+tab_seo_specials = Specials
+tab_seo_reviews = Reviews
+tab_seo_favorites = Favorites
+tab_seo_featured = Featured
+tab_seo_sitemap = Sitemap
+tab_seo_recommendations = Recommendations
+
+keywords_google_trend =  Google trend
+
+success_page_updated = Success
+
+title_help_image = Notes
+text_pages_seo_information_default = Meta data management
+display_title_default = Display default Title
+display_default = Display default
+display_description_default = Display default description
+
+text_seo_default_language_title = Title
+text_seo_default_language_keywords = Keywords
+text_seo_default_language_description = Description
+text_seo_default_language_footer = Footer
+text_seo_defaut_language_title_h1 = Index Page Title H1
+
+text_pages_seo_information_categories = Meta data management by categories of site
+display_title_categories = Display title defaut categories
+display_categories = Display default  categories
+display_description_categories = Display default description categories
+
+text_seo_language_categories_title = Title
+text_seo_language_categories_keywords = Keywords
+text_seo_language_categories_description = Description
+
+text_pages_seo_information_products_info = Meta data management by products description of site
+display_title_product_info = Display default description products
+display_product_info = Display default products description
+display_description_product_info = Display default products description
+
+text_seo_language_products_info_title = Title
+text_seo_language_products_info_keywords = Keywords
+text_seo_language_products_info_description = Description
+
+text_pages_seo_information_products_new = Meta date management products new of site
+display_title_products_new = Display default products new title
+display_products_new = Display  products new
+display_description_products_new = Display default products new description
+
+text_seo_language_products_new_title = Title
+text_seo_language_products_new_keywords = Keywords
+text_seo_language_products_new_description = Description
+
+text_pages_seo_information_specials = Meta data management specials of site
+display_title_special = Display default specials title
+display_special = Display default specials
+display_description_special = Display default specials description
+
+text_seo_language_specials_title = Title
+text_seo_language_specials_keywords = Keywords
+text_seo_language_specials_description = Description
+
+text_pages_seo_information_reviews = Meta data management reviews of site
+display_title_reviews = Title
+display_reviews = Display default reviews
+display_description_reviews = Displays default reviews description
+
+text_seo_language_reviews_title = Title
+text_seo_language_reviews_keywords = Keywords
+text_seo_language_reviews_description = Description
+
+text_pages_seo_information_favorites = Meta data management favorites of site
+display_title_favorites = Title
+display_favorites = Display default favorites
+display_description_favorites = Displays default favorites description
+
+text_seo_language_products_favorites_title = Title
+text_seo_language_favorites_keywords = Keywords
+text_seo_language_favorites_description = Description
+
+text_pages_seo_information_featured = Meta data management featured of site
+display_title_featured = Title
+display_featured = Display default featured
+display_description_featured = Displays default featured description
+
+text_seo_language_products_featured_title = Title
+text_seo_language_featured_keywords = Keywords
+text_seo_language_featured_description = Description
+
+text_products_page_seo = SEO
+
+text_pages_seo_recommendations = Recommendations
+text_seo_recommendations_language_title = Title
+text_seo_recommendations_language_description = Description
+text_seo_recommendations_language_keywords = Keywords
+
+title_help_seo = Note on the search engine optimization management
+help_seo = <li>The system automatically manages the search engine optimization.<br />
+<blockquote>it automatically included elements in the following order if the fields are not filled:<br />
+title : the name of your product (ex leather jacket)<br />
+description: The product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+keywords: the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+category: Category Product<br />
+</blockquote></li>
+<li>if you fill in the fields, the tags appear in the following way:<br />
+<blockquote>
+title: The title of fields, the name of your product (ex leather jacket)<br />
+description: The field description, the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+keywords: the fields keywords, the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+</blockquote></li>
+<li><strong>please do not insert  too many keywords (maximum 10)</strong> and establish consistency between each field to find the words the most important first</li>
+

@@ -1,0 +1,5 @@
+module_item_text_title = Shipping by Item
+module_item_short_title = Shipping by to Item
+module_item_public_title = Shipping by oo Item
+module_item_title = Shipping by Item
+module_item_text_way = Best Way

@@ -1,0 +1,15 @@
+
+navbar_title_1 = Checkout
+navbar_title_2 = Success
+heading_title = Your Order Has Been Processed!
+button_continue = Continue
+
+module_checkout_success_guest_account_create_account_subject =  {{store_name}} - Information about you new accont and password
+module_checkout_success_guest_account_create_account_hello = Hello, <br /><br />
+Please, you will found below all informations about your request.<br/><br />
+module_checkout_success_guest_account_create_account_body = <br /><br />Please, you will found bellow you new password allowing youto connect on {{store_name}} <br />
+Username : {{username}} <br />
+Password : {{password}} <br /><br />
+Regards, <br /><br />
+<strong>{{store_name}} Team</strong><br /><br />
+<p>{{store_name_address}} <br /><br />

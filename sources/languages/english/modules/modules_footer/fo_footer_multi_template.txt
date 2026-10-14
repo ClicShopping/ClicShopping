@@ -1,0 +1,28 @@
+
+ module_footer_multi_template_title = Do you want to display the multi-template system in the footer ?
+ module_footer_multi_template_description = Add a mult-template system
+
+ module_footer_multi_template_account_heading_title = My account
+ module_footer_multi_template_contact_us_heading_title = Contact Us
+ module_footer_multi_template_text_heading_title = Security / confidentiality
+ module_footer_multi_template_text_text = Ours partners have been selected for their serious and their skill in transactional security and we do not sell the emails to our customers
+ module_footer_multi_template_information_heading_title = Follow Us
+
+ module_footer_multi_template_contact_us_email_link = Contact Us
+
+ module_footer_multi_template_information_shipping = Facebook
+ module_footer_multi_template_information_privacy = twitter
+ module_footer_multi_template_information_contact = Pinterest
+
+ module_footer_multi_template_account_box_account = My account
+ module_footer_multi_template_account_box_address_book = My address book
+ module_footer_multi_template_account_box_order_history = My history
+ module_footer_multi_template_account_box_logoff = Log off
+ module_footer_multi_template_account_box_create_account = Create account
+ module_footer_multi_template_account_box_login = Sign In
+
+ module_footer_multi_template_mailchimp_text = Newsletter Subscription
+ module_footer_multi_template_mailchimp_submit = Subscribe
+
+ module_footer_multi_template_mailchimp_valid_email_address =  please, enter a valid email address
+ module_footer_multi_template_mailchimp_enter_email_address = Please enter your email address

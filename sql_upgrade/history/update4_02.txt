@@ -1,0 +1,8 @@
+
+
+-- french
+INSERT INTO `clic_configuration` VALUES(null, 'Debug / Log', 'CLICSHOPPING_APP_CHATGPT_CH_DEBUG', 'False', 'Son activation vous permettra d\'avoir des informations complétes sur les erreurs et les problèmes rencontrés par l\'application ChatGPT.<br>\nIl est recommandé de l\'activer uniquement en cas de besoin pour le débogage.', 6, 0, NULL, '2025-06-30 11:46:10', NULL, NULL);
+
+
+--english
+INSERT INTO `clic_configuration` VALUES(1887, 'Debug / Log', 'CLICSHOPPING_APP_CHATGPT_CH_DEBUG', 'False', 'Enabling this will provide you with complete information about errors and issues encountered by the ChatGPT application.<br>\nIt is recommended to enable it only when needed for debugging.', 6, 0, NULL, '2025-06-30 11:46:10', NULL, NULL);

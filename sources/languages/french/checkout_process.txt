@@ -1,0 +1,42 @@
+
+email_text_subject = Traitement de votre commande sur {{store_name}}
+email_text_order_intro = Bonjour, <br /><br />Veuillez trouver ci joint les éléments concernant la commande passée chez  {{store_name}} .<br /><br />Nous vous remercions de votre confiance et nous faisons notre possible pour traiter au mieux l'envoi de vos produits commandés rapidement. <br /><br />Numero de votre commande :
+email_text_invoice_url = <br />Vous pouvez suivre l'évolution de votre commande via cette adresse :
+email_text_date_ordered = <br />Date de votre commande :
+email_text_products = Articles
+email_text_subtotal = Sous-Total :
+email_text_tax = TVA :
+email_text_shipping = Expédition :
+email_text_total = Total :
+email_text_delivery_address = Adresse de livraison
+email_text_billing_address = Adresse de facturation
+email_text_payment_method = Méthode de paiement
+entry_text_order_number = N° de commande :
+
+email_separator = --------------------------
+
+text_email_via = par l'intermédiaire de
+email_text_footer = Nous venons de prendre en compte votre commande.
+<br /><br />Celle-ci sera validée dès réception de votre réglement. Veuillez imprimer ce mail certifiant que vous avez bien passé commande sur {{store_name}} ou pour toute correspondance ultérieure. <br /><br /> Recevez, cher client, nos sincères salutations. <br /><br />
+Très cordialement,<br /><br /><strong>L'équipe {{store_name}}</strong>
+
+email_text_subject_stock = Alerte Stock sur {{store_name}}
+
+email_reorder_level_text_stock = Bonjour,<br /><br />Vous recevez une alerte email sur le stock d'alerte (paramétrage générique)  d'un de vos produits. Ce stock vient d'être atteint. <br />Voici les caractéristiques des produits : <br />
+email_text_stock = Bonjour,<br /><br />
+Vous recevez une alerte email concernant l'épuisement du stock d'un de vos produits. Votre produit n'est plus visble sur la boutique. Vous pouvez néanmoins le réactiver sans modifier votre stock. Dans ce cas, le bouton ajouté sera remplacé par le bouton épuisé.  <br /><br />
+Voici les caractéristiques de produit épuisé : <br /><br />
+
+email_text_subject_alert_stock = Alerte Stock fiche produit sur {{store_name}}
+email_reorder_level_text_alert_stock = Bonjour, <br /><br />V
+ous recevez une alerte email concernant le stock d'alerte (défini dans la fiche produit) d'un de vos produits. Ce stock vient d'être atteint. <br />Voici les caractéristiques des produits :<br />
+email_text_product_alert_stock = Stock restant du produit :
+
+
+email_text_id_product = Id produit :
+email_text_model = Ref :
+email_text_products_name = Nom produit :
+email_text_product_url = Url du produit :
+email_text_product_stock = Nouveau stock du produit :
+email_text_date_alert = Date Alerte
+

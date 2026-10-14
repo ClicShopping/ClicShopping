@@ -1,0 +1,6 @@
+cfg_moneyorder_status_title = Statut d'affichage du module
+cfg_moneyorder_status_description = Sélectionner True pour afficher le module
+
+cfg_moneyorder_status_true = True
+cfg_moneyorder_status_false = False
+

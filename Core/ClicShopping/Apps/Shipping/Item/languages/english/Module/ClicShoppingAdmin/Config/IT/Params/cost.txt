@@ -1,0 +1,2 @@
+cfg_item_cost_title = Delivery Cost
+cfg_item_cost_desc = The delivery cost will be multiplied by the number of items in the order using this method

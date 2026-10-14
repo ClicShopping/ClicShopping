@@ -1,0 +1,5 @@
+cfg_chatgpt_security_alert_enabled_title = Activer les alertes de sécurité
+cfg_chatgpt_security_alert_enabled_description = Active les alertes de sécurité en temps réel pour les activités suspectes et les menaces potentielles. Lorsqu'activé, le système surveille les interactions IA et envoie des notifications lors de la détection de patterns inhabituels, de tentatives d'accès non autorisées, de risques d'exfiltration de données ou de violations de politique. Les alertes sont enregistrées et peuvent déclencher des réponses automatisées ou des notifications administrateur. Aide à maintenir la conformité de sécurité et permet une réponse rapide aux incidents. Recommandé : True pour les environnements de production afin d'assurer une surveillance proactive de la sécurité et une sensibilisation aux menaces.
+
+cfg_chatgpt_security_alert_enabled_status_true = True
+cfg_chatgpt_security_alert_enabled_status_false = False

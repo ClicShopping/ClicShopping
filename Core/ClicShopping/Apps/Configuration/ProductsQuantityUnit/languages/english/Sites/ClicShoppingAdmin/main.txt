@@ -1,0 +1,63 @@
+heading_title = Unit quantity of products
+module_pq_title = Unit quantity of products
+module_pq_short_title = SUnit quantity of products
+
+text_products_quantity_unit =  Unit quantity of products
+text_configure = Configure App Module
+
+text_intro = This app allow you to include an unit quantity of products pages and a shortcut in products page. <br /><br />
+- Activate this module located in the Configuration menu
+
+module_pq_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_products_quantity_unit = Quantity of products
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+text_set_default = Default
+text_info_heading_products_quantity_unit = Status of the type of quantity of products
+table_heading_action = Action
+
+text_info_edit_intro = Edit status
+text_info_products_unit_quantity_name = Status :
+
+text_info_heading_products_unit_quantity_delete = Delete this status
+text_info_delete_intro = Do you want to delete this quantity type ?
+text_info_delete_intro = Remove this status
+
+table_heading_products_unit_quantity_status =  Status
+text_info_heading_products_unit_quantity_status = new status
+text_info_products_quantity_unit_intro =  Thank you for making the necessary changes
+text_default = Default
+
+icon_edit = Edit
+icon_delete = delete
+
+error_remove_default_products_unit_quantity_status = Error: The default status can not be deleted. Thank you for choosing another default status and try again
+error_status_used_in_products_unit_quantity = Error : this status is used.
+
+
+

@@ -1,0 +1,12 @@
+
+ALTER TABLE `clic_gpt` ADD `audit_data` JSON NULL DEFAULT NULL AFTER `user_admin`;
+
+
+-- french
+INSERT INTO `clic_configuration` VALUES(null, 'Effort de raisonnement', 'CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT', 'minimal', 'Selectionnez votre option. Fonctionne uniquement avec chatgpt-5.', 6, 0, NULL, '2025-08-08 10:00:54', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Verbosity', 'CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY', 'medium', 'niveau de détail ou de développement de la réponse. Fonctionne uniquement avec chatgpt-5.', 6, 0, NULL, '2025-08-08 10:08:28', NULL, NULL);
+
+
+--english
+INSERT INTO `clic_configuration` VALUES(null, 'Reasoning Effort', 'CLICSHOPPING_APP_CHATGPT_CH_REASONING_EFFORT', 'minimal', 'Select your option. Works only with chatgpt-5.', 6, 0, NULL, '2025-08-08 10:00:54', NULL, NULL);
+INSERT INTO `clic_configuration` VALUES(null, 'Verbosity', 'CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY', 'medium', 'Level of detail or elaboration in the response. Works only with chatgpt-5.', 6, 0, NULL, '2025-08-08 10:08:28', NULL, NULL);

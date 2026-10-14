@@ -1,0 +1,41 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier for each statistics record)
+interaction_id int(11) default null comment(FK to rag_interactions table - links to the interaction (managed by code))
+response_time_ms int(11) default null comment(Response time in milliseconds)
+cache_hit tinyint(1) default 0 comment(Cache hit flag - TRUE: result from cache, FALSE: fresh computation)
+api_provider varchar(50) default null comment(API provider - openai, anthropic, ollama, etc.)
+model_used varchar(100) default null comment(Model name used - gpt-4, claude-3, llama2, etc.)
+tokens_prompt int(11) default null comment(Number of tokens in the prompt/input)
+tokens_completion int(11) default null comment(Number of tokens in the completion/output)
+tokens_total int(11) default null comment(Total tokens used (prompt + completion))
+api_cost_usd decimal(10,6) default null comment(API cost in USD for this interaction)
+agent_type varchar(50) default null comment(Agent type that processed the request - orchestrator, analytics_agent, semantic_agent, etc.)
+classification_type varchar(50) default null comment(Classification type - analytics, semantic, hybrid, web_search)
+confidence_score decimal(5,2) default null comment(Confidence score of the classification (0.00-100.00))
+security_score decimal(5,2) default null comment(Security score (0.00-100.00) - higher is safer)
+response_quality decimal(5,2) default null comment(Response quality score (0.00-100.00))
+guardrails_triggered tinyint(1) default 0 comment(Guardrails triggered flag - TRUE: safety measures activated, FALSE: normal processing)
+error_occurred tinyint(1) default 0 comment(Error flag - TRUE: error occurred, FALSE: successful)
+error_type varchar(100) default null comment(Type of error - timeout, api_error, validation_error, etc.)
+error_message text default null comment(Detailed error message)
+user_id int(11) default null comment(User identifier)
+session_id varchar(255) default null comment(Session identifier)
+language_id int(11) default 1 comment(Language identifier)
+date_added datetime not_null default(current_timestamp) comment(When the statistics record was created)
+metadata longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default null CHECK (json_valid(`metadata`))
+
+--
+primary id
+idx_interaction_id interaction_id 
+idx_date_added date_added
+idx_agent_type agent_type
+idx_classification_type classification_type
+idx_user_id user_id
+idx_session_id session_id
+idx_response_time response_time_ms
+idx_error error_occurred
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+

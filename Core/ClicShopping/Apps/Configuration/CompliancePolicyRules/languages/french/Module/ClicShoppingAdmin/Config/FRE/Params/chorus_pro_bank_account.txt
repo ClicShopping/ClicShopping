@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_banck_account_title = Code des coordonnées bancaires Chorus Pro
+cfg_configuration_compliance_policy_rules_chorus_pro_banck_account_description = Code numérique des coordonnées bancaires enregistrées dans Chorus Pro (Code des coordonnées bancaires du fournisseur).

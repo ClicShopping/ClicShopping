@@ -1,0 +1,8 @@
+module_admin_dashboard_admin_logins_app_title = Souhaitez-vous installer les dernières connexion dans l'administration
+module_admin_dashboard_admin_logins_app_description = Affiche les dernières connexions dans l'administration
+
+module_admin_dashboard_admin_heading_title = Dernières connexions Administration
+module_admin_dashboard_admin_logins_app_date = Date
+module_admin_dashboard_admin_logins_action = Action
+module_admin_dashboard_admin_logins_icon_edit = editer
+

@@ -1,0 +1,16 @@
+cron_id int not_null auto_increment comment(Primary key - unique identifier for each scheduled task)
+code varchar(128) not_null comment(Unique code identifier for the cron job - e.g. cache_cleanup, email_queue, backup)
+description text default null comment(Human-readable description of what this cron job does)
+cycle varchar(128) not_null comment(Execution schedule - cron expression or interval like daily, hourly, weekly)
+action text not_null comment(Action to execute - PHP class/method or command to run)
+status tinyint(1) not_null comment(Cron job status - 0: disabled, 1: enabled and will execute)
+date_added datetime not_null comment(Timestamp when cron job was created)
+date_modified datetime default null comment(Timestamp of last modification to cron job)
+
+--
+primary cron_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

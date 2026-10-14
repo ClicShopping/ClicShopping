@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_sort_order_title = Sort order
+cfg_ecommerce_ucp_sort_order_description = Sort order of display. Lowest is displayed first.

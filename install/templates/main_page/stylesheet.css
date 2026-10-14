@@ -1,0 +1,24 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+#headerShortcuts {
+  margin-top: 20px;
+}
+
+.alert h2 {
+  margin-top: 0px;
+}
+
+h1 {
+  margin-top: 0px;
+}
+
+.mBox {
+  margin-bottom: 10px;
+  display: none;
+}

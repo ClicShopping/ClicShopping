@@ -1,0 +1,6 @@
+
+module_boxes_manufacturer_info_title = Souhaitez-vous afficher les marques des produits (avec image) ?
+module_boxes_manufacturer_info_description = Affiche la marque du produit dans pas de description de la boutique
+module_boxes_manufacturer_info_box_title = Nos marques
+module_boxes_manufacturer_info_box_other_products = Produits de la même marque
+module_boxes_manufacturer_info_box_homepage = Voir le site internet

@@ -1,0 +1,5 @@
+cfg_mcp_alert_notification_status_title = Notifications d'alerte par e-mail
+cfg_mcp_alert_notification_status_description = Mettre True pour prévenir l'administrateur par e-mail lorsqu'un compte MCP est refusé sur son quota, ou lorsque l'agent de surveillance lève un avertissement. Le compte doit aussi porter sa propre case Notification d'alerte. Recommandé : True en production, False sur une installation de test.
+
+cfg_mcp_alert_notification_status_true = True
+cfg_mcp_alert_notification_status_false = False

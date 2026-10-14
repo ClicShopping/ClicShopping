@@ -1,0 +1,5 @@
+cfg_chatgpt_security_alert_enabled_title = Enable Security Alerts
+cfg_chatgpt_security_alert_enabled_description = Enable real-time security alerts for suspicious activities and potential threats. When activated, the system monitors AI interactions and sends notifications when detecting unusual patterns, unauthorized access attempts, data exfiltration risks, or policy violations. Alerts are logged and can trigger automated responses or admin notifications. Helps maintain security compliance and enables rapid incident response. Recommended: True for production environments to ensure proactive security monitoring and threat awareness.
+
+cfg_chatgpt_security_alert_enabled_status_true = True
+cfg_chatgpt_security_alert_enabled_status_false = False

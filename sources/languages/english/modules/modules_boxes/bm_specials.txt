@@ -1,0 +1,8 @@
+ module_boxes_specials_title = Specials
+ module_boxes_specials_description = Show products on special
+ module_boxes_specials_box_title = Specials
+ module_boxes_specials_all_specials = All specials
+
+ text_flash_discount = Flash Discount
+
+ button_detail = Details

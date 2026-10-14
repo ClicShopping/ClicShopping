@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_default_delivery_title = Default delivery label
+cfg_ecommerce_ucp_default_delivery_description = Label displayed for standard delivery timing

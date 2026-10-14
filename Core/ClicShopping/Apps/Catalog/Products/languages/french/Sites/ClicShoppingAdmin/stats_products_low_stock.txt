@@ -1,0 +1,16 @@
+heading_title = Produits Hors stocks
+
+table_heading_products = Nom du produit
+table_heading_model = Référence
+table_heading_qty_left = Quantités restantes
+table_heading_action = Action
+table_heading_warehouse_time_replenishment = Délais de réaprovisionnement
+table_heading_warehouse = Nom de l'entrepot
+table_heading_warehouse_row = Rangée de l'entrepot
+table_heading_warehouse_level = Niveau de localisation
+
+icon_preview = Prévisualiser
+icon_edit = Editer
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_fournisseur_id_title = ID fournisseur Chorus Pro
+cfg_configuration_compliance_policy_rules_chorus_pro_fournisseur_id_description = Identifiant numérique interne de votre structure de fournisseur dans Chorus Pro (idFournisseur).

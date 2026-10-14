@@ -1,0 +1,43 @@
+heading_title = Security Directory Permissions
+module_sp_title = Security Directory Permissions
+module_sp_short_title = Security Directory Permissions
+
+text_sec_dir_permissions = Security Directory Permissions
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a security Directory Permissions informations. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_sp_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_sec_dir_permissions = Security Directory Permissions
+button_reset = Reset
+button_analyse = Analyse
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+
+table_heading_directories = Directories
+table_heading_writable = Writable
+table_heading_recommended = Recommended
+
+text_directory = Directory:
+
+

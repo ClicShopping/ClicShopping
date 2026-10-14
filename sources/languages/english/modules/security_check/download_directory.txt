@@ -1,0 +1,2 @@
+warning_download_directory_non_existent = The private downloadable products directory does not exist: {{download_path}} Downloadable products will not work until this directory is valid.
+download_directory = Download Directory

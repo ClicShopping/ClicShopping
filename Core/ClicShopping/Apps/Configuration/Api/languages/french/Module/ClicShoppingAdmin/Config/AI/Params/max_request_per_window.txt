@@ -1,0 +1,2 @@
+cfg_products_api_max_request_per_window_title = Nombre maximal de requêtes par fenêtre
+cfg_products_api_max_request_per_window_description = Limite le nombre de requêtes à 20 sur une période de 15 minutes.

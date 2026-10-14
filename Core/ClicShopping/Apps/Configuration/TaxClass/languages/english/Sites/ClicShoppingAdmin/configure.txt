@@ -1,0 +1,1 @@
+module_tc_short_title = Tax Classes

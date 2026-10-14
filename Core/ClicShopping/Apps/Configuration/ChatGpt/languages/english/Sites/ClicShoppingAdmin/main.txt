@@ -1,0 +1,115 @@
+heading_title = Gpt
+module_ch_title = Gpt
+module_ch_short_title = Gpt
+
+text_chatgpt = Gpt
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a Gpt page and a shortcut in products page. <br /><br />
+- Activate this module located in the Configuration menu
+- Configure you API Key OpenAI
+- Ask request as you want to help you
+
+module_ch_introduction = The install process create the database settings for this module and the access menu
+
+module_ra_title = RAG BI
+module_ra_short_title = RAG BI
+module_ra_introduction = RAG BI (Business Intelligence) with Agent is a technique that combines the power of large language models (LLMs) with external knowledge sources to improve the accuracy and relevance of generated responses. By integrating RAG into your chatbot, you can provide more accurate and contextually relevant answers to user queries, enhancing the overall user experience.<br>
+Touse this functionality, you need to check if your database is compatible. It requires <strong>MariaDB version 11.7<\strong> or higher. It's a beta functional release.<br>
+MySQL server is not compatible with this feature.<br>Please, active the other module for a best analyse.
+
+module_web_title = Web Search
+module_web_short_title = Web Search
+module_web_introduction = This APP allow you to use Google SERPAPI to create analysis, search (market, trends), price comparison. It's work with Agnostic AI.
+SERPAPI is available with GPT Apps.
+
+module_ac_agent_critics_short_title = Agent Critics
+module_ac_agent_critics_title = Agent Critics
+module_ac_agent_critics_introduction = This module evaluates, compares, and critiques agent behaviors, outputs, and decision processes to identify strengths, weaknesses, and failure modes under defined criteria.
+
+module_aa_agent_actors_title = Agent Actors
+module_aa_agent_actors_short_title = Agent Actors
+module_aa_agent_actors_introduction = This module defines, orchestrates, and executes agent roles responsible for action generation, task execution, and environment interaction based on assigned objectives and constraints.
+
+module_asy_agent_system_title = Agent System
+module_asy_agent_system_short_title = Agent System
+module_asy_agent_system_introduction = This module specifies the structural, operational, and governance framework coordinating agents, defining system-level rules, interfaces, lifecycles, and interaction protocols.
+
+module_at_agent_technical_short_title = Agent Technical
+module_at_agent_technical_short_title = Agent Technical
+module_at_agent_technical_introduction = This module provides the technical foundations for agent operation, including architectures, runtimes, tooling, integrations, performance constraints, and reliability mechanisms.
+
+module_ad_agent_domains_title = Agent Domain
+module_ad_agent_domains_short_title = Agent Domain
+module_ad_agent_domains_introduction = This module defines and structures the knowledge domains (Ecommerce, HR, Finance), scopes, and contextual boundaries within which agents operate, including domain-specific rules, data models, constraints, and evaluation criteria.
+
+
+module_at_agent_technical_title = Agent Technical
+module_at_agent_technical_short_title = Agent Technical
+module_at_agent_technical_introduction = This module provides the technical foundations for agent operation,
+
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_chatgpt = Gpt
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update Status
+button_edit = Edit
+button_rag_dashboard = Dashboard
+button_rag_websearch = Competitors
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+table_heading_chatgpt_id = Id
+table_heading_chatgpt_question = Question
+table_heading_chatgpt_response = Response
+table_heading_chatgpt_date_added = Date Added
+table_heading_action = Actions
+table_heading_chatgpt_user_admin = User admin
+
+tab_general = General
+text_description = Description
+
+stat_total_tokens = Total tokens used on 1 month
+stat_completion_tokens = Total tokens completions used on 1 month
+stat_prompt_tokens = Prompt token used on 1 month
+stat_total_no_response = Error Gpt No response
+text_rate_error_gpt = Errors rate
+
+text_error_context_sql_number_request = Too much information are sent to the LLM. The context is limited. Please refine your request or adjust the settings.<br />
+Max Row : {{maxRows}}<br />
+Result count : {{count}}<br />
+
+
+text_error_composer = Composer is not installed, please make this command on your server in your terminal : apt-get install composer
+text_error_exec = exec function is not enabled. You can not update or install any composer library, please this setting in your php.ini or contact your hoster
+
+button_reset_cache = 🗑️ Reset Cache
+button_reset_all_stats = Reset Stats
+
+text_query_too_ambiguous = Your query is too ambiguous. Please be more specific about what you want to know.
+
+text_alert_dashboard = To benefit from all the results provided by the indicators, please activate RAG-BI.
+
+title_help_llm = Help choosing an LLM
+text_help_options = Not all LLMs perform equally when it comes to analysis; performance depends on various factors—such as configurable settings—but above all on the LLM's ability to interpret and process the question.<br>
+We do not recommend using LLMs with a limited context window. Ideally, choose an LLM capable of handling a context of at least 128,000 tokens.

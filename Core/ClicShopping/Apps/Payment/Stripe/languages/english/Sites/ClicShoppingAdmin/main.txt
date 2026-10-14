@@ -1,0 +1,37 @@
+heading_title = Stripe payment
+module_stripe_title = Configuration
+
+text_stripe = Money Order
+text_configure =  Configure App Module
+
+text_intro = This app allow you to include a new payment on your shop. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Configruation / Payment<br />
+
+module_stripe_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_sort_order = Sort order
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_cancel = Cancel
+button_delete = Delete
+button_help = Help
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_error_composer = Please check if composer is installed
+text_error_exec = Error Exec Please check
+text_warning = Do not forget to activate the Stripe  module in Header tag section  SEO / Meta
+
+text_warning_group = Please update our customers group to see this module inside the catalog

@@ -1,0 +1,12 @@
+Options -Indexes
+
+# Recherche puis autorise les fichiers finissant par ".js" ou ".css" ou ".jpg" ou ".png"
+<FilesMatch "\.(css|php)$">
+	<IfModule !mod_authz_core.c>
+		Allow from all
+	</IfModule>
+
+	<IfModule mod_authz_core.c>
+		Require all granted
+</IfModule>
+</FilesMatch>

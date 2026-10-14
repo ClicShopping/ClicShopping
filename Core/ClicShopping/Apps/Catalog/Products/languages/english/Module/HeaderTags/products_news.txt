@@ -1,0 +1,3 @@
+module_header_tags_products_news_title = Do  you want use Products news meta tag ?
+module_header_tags_products_news_description = Add the meta tag balise in the Products news page
+module_header_tags_products_news_seo_title = Products News

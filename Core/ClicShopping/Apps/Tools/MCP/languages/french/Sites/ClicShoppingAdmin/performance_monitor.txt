@@ -1,0 +1,30 @@
+heading_title = Moniteur de performance
+text_all_servers = Tous les serveurs
+text_last_hour = Dernière heure
+text_last_24 = Dernières 24 heures
+text_last_week = Dernière semaine
+text_last_month = Dernier mois
+
+text_error_rate = Seuil de taux d’erreur (%)
+text_error_latency = Seuil de latence (ms)
+text_error_downtime = Seuil d’indisponibilité (s)
+text_apply = Appliquer
+text_loading = Chargement...
+text_current_performance = Performance actuelle
+text_request_rate = Taux de requêtes :
+text_average_latency = Latence moyenne :
+text_error_rate = Taux d’erreur :
+text_uptime = Disponibilité :
+
+text_request_rate_trend = Tendances de performance
+text_error_rate_trend = Tendance de latence
+text_latency_trend = Tendance du taux d’erreur
+text_performance_trends = Tendance du taux de requêtes
+text_performance_statistics = Statistiques de performance
+text_avg_latency = Latence moyenne
+text_max_latency = Latence maximale
+text_total_requests = Requêtes totales
+text_data_points = Points de données
+text_export_data = Exporter les données
+text_performance_recommendations = Recommandations de performance
+text_loading_recommendations = Chargement des recommandations...

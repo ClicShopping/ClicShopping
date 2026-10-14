@@ -1,0 +1,14 @@
+id int(11) not_null auto_increment
+reason text not_null comment(Reason for rollback)
+rollback_at timestamp NULL default(current_timestamp)
+rollout_percentage_at_rollback int(11) not_null comment(Rollout percentage when rollback occurred)
+rollback_by varchar(255) default null comment(User or system that initiated rollback)
+
+--
+primary id
+idx_rollback_at rollback_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

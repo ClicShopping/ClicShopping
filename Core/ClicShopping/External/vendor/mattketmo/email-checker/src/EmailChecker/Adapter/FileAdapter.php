@@ -1,0 +1,35 @@
+<?php
+
+/*
+ * This file is part of the EmailChecker package.
+ *
+ * (c) Matthieu Moquet <matthieu@moquet.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace EmailChecker\Adapter;
+
+use EmailChecker\Utilities;
+
+/**
+ * Throwaway email adapter build with file.
+ *
+ * @author Matthieu Moquet <matthieu@moquet.net>
+ */
+final class FileAdapter extends ArrayAdapter
+{
+    /**
+     * @param string $filename Filename containing all domains
+     */
+    public function __construct(string $filename)
+    {
+        $content = file_get_contents($filename);
+        if (false === $content) {
+            throw new \InvalidArgumentException(sprintf('File "%s" not found', $filename));
+        }
+
+        parent::__construct(Utilities::parseLines($content));
+    }
+}

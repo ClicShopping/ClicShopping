@@ -1,0 +1,75 @@
+heading_title = Editeur de langues
+module_cr_title = Editeur de langues
+module_cr_short_title = Editeur de langues
+
+text_define_language = Pays
+text_configure =  Editeur de langues App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des devises <br /><br />
+- Activer ce module qui est situé dans le menu Tools
+
+module_cr_introduction = Le processus d'installation installe la base de données et le menu
+module_cr_short_title = Products quantities units
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_define_language = Editeur de langues
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+heading_title_2 = Define Language
+table_heading_definition_key = key
+table_heading_definition_value = value
+table_heading_content_group_title = Group
+table_heading_content_group_action = Action
+table_heading_files = Fichiers
+table_heading_writable = Ecriture
+table_heading_last_modified = Dernière modification
+
+text_edit_note = <strong>Editer Definitions</strong><br /><br />Chaque définition de langue est définie à l'aide d'une fonction PHP <a href="https://www.php.net/define" target="_blank" rel="noreferrer">define()</a> de la manière suivante:<br /><br /><nobr>define('TEXT_MAIN = '<span style="background-color: #FFFF99;">Ce texte peut être modifié. C'est vraiment facile à faire!</span>\ </nobr><br /><br />Le texte mis en surbrillance peut être modifié. Comme cette définition utilise des guillemets uniques pour contenir le texte, toute citation unique dans la définition du texte doit être échappée avec une barre oblique inverse (par exemple, c'est).
+text_file_does_not_exist = Le fichier n'existe pas.
+
+error_file_not_writeable = Erreur : Impossible d'écrire dans le fichier. Merci de vérifier les droits d'accès sur : {{error}}
+ms_error_create = <strong>Erreur:</strong> {{dpathname}} Impossible d'écrire dans le fichier. Merci de vérifier les droits d'accès
+ms_error_db_save = <strong>Erreur:</strong> {{definition_key}} a déjà été ajoutée. Veuillez éditer la valeur de cette {{definition_key}} ou en ajouter une autre.
+
+button_reset_all_languages = Effacer toutes les langues
+section_heading_translations = Editer la traduction
+
+text_language_definition_delete_title = Suppression de variable langue
+text_language_definition_confirm_delete = Confirmer la suppression de cette variable
+Edit_translation = Editer
+
+icon_add_new = Ajouter une nouvelle définition
+icon_delete = Delete
+
+image_filtered_edit = Trier
+placeholder_new_definition_value = Ajouter une nouvelle définition
+text_pattern = Seulement des caractères en miniscule sans accents, numéros et underscore sont permis.
+
+text_search = Rechercher
+
+image_edit = Editer
+image_filter = Filtrer
+
+error_language_directory_not_writeable = Le répertoire de langue n'est pas en mode écriture
+
+alert_info_language = Si vous ne voyez pas tous les langages, veuillez cliquez sur les differents langages dans le catalogue afin de créer le cache
+error_file_not_writeable = Impossible d'écrire à l'intérieur du fichier mais votre modification est sauvée dans la base de données

@@ -1,0 +1,6 @@
+modules_products_reviews_write_image_title = Ecriture Commentaire : Souhaitez vous afficher l'image du produit ?
+modules_products_reviews_write_image_description = Afficher l'image du produit
+
+  text_price =
+
+

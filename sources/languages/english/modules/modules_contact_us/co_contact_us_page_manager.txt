@@ -1,0 +1,4 @@
+
+ modules_contact_us_page_manager_title = Do you want to enable a description information in contact _us form ?
+ modules_contact_us_page_manager_description = Add the information page in the contact us form
+

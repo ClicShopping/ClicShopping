@@ -1,0 +1,2 @@
+ module_header_tags_product_condition_title = Souhaitez vous activer le module Json LD? dans la page de description
+ module_header_tags_product_condition_description = Active le module Json LD dans la page de des

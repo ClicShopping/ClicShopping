@@ -1,0 +1,4 @@
+module_account_customers_history_info_invoice_pdf_title = Historique Info : Souhaitez-vous permettre au client de téléchargement sa facture au format pdf ?
+module_account_customers_history_info_invoice_pdf_description = Permettre au client de téléchargement sa facture au format pdf
+
+module_account_customers_history_info_invoice_pdf_text = Facture

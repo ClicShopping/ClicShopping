@@ -1,0 +1,2 @@
+cfg_products_return_orders_withdrawal_title = Délai de rétractation du client
+cfg_products_return_orders_withdrawal_description = Veuillez indiquer le délai de rétractation que le client pourra utiliser pour retourner le produit acheté

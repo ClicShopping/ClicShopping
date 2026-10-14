@@ -1,0 +1,7 @@
+module_create_account_introduction_title = Do you want to display an introduction for the account creation ?
+module_create_account_introduction_description = Display an introduction for the account creation
+
+module_create_account_introduction_text_origin_login = Create an account is very simple! <br /> <br /> All information you provide will remain strictly private and obviously reserved. At no time will your information not be disclosed to other parties or for any actions or statements other than commercial {{store_name}} and you have authorized. All this information is used to {{store_name}} that follow you and to better serve you ... <br /> <br /> You can see at any time, update or delete information you have given. You only need to identify yourself on our website and click on the link "My Account". You at any time and keep full control over the information you have provided us ... </ font> <br /> <br /> {{store_name}} respects the existing charters Information and Freedom.
+module_create_account_introduction_text_b2b = <span style="text-decoration: underline;">Note</span> : To open a Professional client account, please, click on the button
+
+button_continue = Continue

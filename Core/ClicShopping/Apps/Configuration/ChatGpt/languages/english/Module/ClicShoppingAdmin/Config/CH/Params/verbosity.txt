@@ -1,0 +1,9 @@
+cfg_chatgpt_verbosity_title = Verbosity
+cfg_chatgpt_verbosity_description = Level of detail or elaboration in the response. Dropped for models that do not support it.
+
+cfg_chatgpt_response_verbosity_select = --Select your option--
+cfg_chatgpt_response_verbosity_low = Short, concise response
+cfg_chatgpt_response_verbosity_medium = Balanced response
+cfg_chatgpt_response_verbosity_high = Long, detailed response
+
+

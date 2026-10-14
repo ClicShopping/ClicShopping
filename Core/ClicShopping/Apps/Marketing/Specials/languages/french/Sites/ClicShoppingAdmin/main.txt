@@ -1,0 +1,104 @@
+heading_title = Promotions
+module_sp_title = Promotions
+module_sp_short_title = Promotions
+
+text_products_specials =  Promotions
+text_configure =  Configurer App Module
+
+text_intro = This app allow you to include a specials pages and a short cut in products page. <br /><br />
+- this modules come from with the module product specials for the shop.<br />
+- Activate this module and activate the module products specials located in the design menu
+- Go to Marketing specials to access at the specials page
+
+text_intro_sp =  Veuillez créer ce lien dans votre boutique pour accéder aux Promotions
+return_url = Lien Url : {{return_url_sp}}<br />
+
+module_sp_introduction = Le processus d'installation installe la base de données et le menu
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_specials = Promotions
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_all_groups = Tous les groupes
+visitor_name = Client Normaux
+icon_edit = Editer
+icon_preview =  Prévisualiser
+tab_general = General
+
+
+table_heading_products = Produits
+table_heading_products_price = Prix du Produits
+table_heading_status = Statut
+table_heading_action = Action
+table_heading_products_group = Groupe client
+table_heading_start_date = Date Début
+table_heading_expires_date = Date expiration
+table_heading_archive = Produits archivés
+table_heading_model = Réf
+table_heading_scheduled_date = Date début
+table_heading_percentage = Pourcentage
+table_heading_flash_discount = Flash
+table_heading_percentage = Percentage
+
+
+text_specials_product = Produit :
+text_specials_price = Prix promotionnel hors taxes :
+text_specials_expires_date = Date d'expiration :
+text_specials_group = Groupe Client :
+text_specials_flash_discount = S'agit-il d'une promotion flash ?
+
+text_info_date_added = Date d'ajout :
+text_info_last_modified = dernière modification :
+text_info_new_price = Nouveau Prix :
+text_info_original_price = Prix original :
+text_info_percentage = Pourcentage :
+text_info_start_date = Commence le :
+text_info_expires_date = Expire le :
+text_info_status_change = Changement de statut :
+
+text_new_specials_twitter = ATTENTION : Nouvelle promotion sur {{store_name}} !
+text_flash_discount_twitter = ATTENTION : Vente Flash maintenant et pas après ! sur {{store_name}} !
+
+text_specials_twitter = Souhaitez vous publier cette promotion  ou cette remise flash sur Twitter ?
+text_yes = Oui
+text_no = non
+text_status = Statut du produit
+text_info_heading_delete_specials = Supprimer promotion
+text_info_delete_intro = Etes vous s&ucirc;r de vouloir supprimer cette promotion ?
+text_specials_start_date = Date de début
+
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+title_specials_general = Informations sur le produit
+title_specials_groupe = Prix et Groupe client
+title_specials_date = Date d'affichage
+title_help_products_specials_price = Note sur les promotions
+
+text_help_specials_price = <ul><li>Vous pouvez entrer un pourcentage dans le champ prix remisé, par exemple : <strong>20%</strong></li>
+<li>si vous entrez un prix, le séparateur décimal doit être un '.' (point décimal), exemple: <strong>49.99</strong></li>
+<li>laissez la date d'expiration vide pour aucune expiration.</li>
+<li>la date de début a des droits supérieurs sur la date d'expiration.</li>
+<li>si vous souhaitez réinitialiser les dates, veuillez changer de statut dans la page générale.</li>
+<li>la publication d'une information sur Twitter ne fonctionne qu'à la création du produit (avec un statut sur on et avec un groupe client normal). Si le nom de votre boutique + URL de votre produit fait plus de 140 caractères, la promotion ne sera pas publiée (contrainte forte)</li>
+<li>les promotions sont automatiquement mises à jour (la partie catalogue de la boutique gère cet élément), il est inutile de changer le statut de la promotion après son enregistrement.</li>
+<li>les promotions flash sont liées à la date d'expiration du produit et sa date de mise en ligne.</li>
+</ul>

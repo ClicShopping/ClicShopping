@@ -1,0 +1,79 @@
+tab_title = Analyse CockpitAI
+tab_cockpit_ai = Cockpit IA
+
+button_analyze = Analyser le Produit
+button_analyzing = Analyse en cours...
+button_refresh = Actualiser l'Analyse
+
+label_score_x = Score Qualité Produit
+label_score_y = Score Performance Commerciale
+label_quadrant = Quadrant Stratégique
+label_actions = Actions Recommandées
+label_history = Historique des Analyses
+label_analysis = Analyse Stratégique
+label_factors = Facteurs de Scoring
+label_evolution = Évolution
+
+text_no_analysis = Aucune analyse disponible. Cliquez sur "Analyser le Produit" pour générer une analyse stratégique.
+text_analysis_in_progress = Analyse en cours... Cela peut prendre jusqu'à 15 secondes.
+text_analysis_error = Une erreur s'est produite pendant l'analyse. Veuillez réessayer.
+text_analysis_success = Analyse terminée avec succès.
+
+quadrant_q1_label = Q1 : Scaling
+quadrant_q1_description = Produit de haute qualité avec forte performance commerciale. Maintenir et amplifier.
+quadrant_q2_label = Q2 : Acquisition
+quadrant_q2_description = Produit de haute qualité avec problèmes de visibilité ou commerciaux. Améliorer la portée.
+quadrant_q3_label = Q3 : Refonte/Suppression
+quadrant_q3_description = Produit de faible qualité avec mauvaise performance commerciale. Refonte majeure ou envisager la suppression.
+quadrant_q4_label = Q4 : Optimisation
+quadrant_q4_description = La qualité de la fiche produit limite un produit commercialement performant. Améliorer le contenu.
+quadrant_intermediate_label = Q_intermediate : Surveillance
+quadrant_intermediate_description = Produit en zone de transition. Surveiller et maintenir.
+
+action_priority_critical = Critique
+action_priority_high = Haute
+action_priority_medium = Moyenne
+action_priority_low = Basse
+
+factor_status_valid = Valide
+factor_status_missing = Manquant
+factor_status_not_analyzed = Non Analysé
+
+text_help_CockpitAI = CockpitAI fournit une analyse stratégique de vos fiches produits en combinant des métriques de qualité intrinsèque (Score X) avec des données de performance commerciale réelle (Score Y). L'analyse génère des recommandations actionnables basées sur la position de votre produit dans la matrice de quadrants stratégiques.
+
+text_help_score_x = Le Score X mesure la qualité intrinsèque de votre fiche produit : qualité de la description, images, mots-clés, SEO, attributs et date de création. Des scores plus élevés indiquent une meilleure qualité de contenu.
+
+text_help_score_y = Le Score Y mesure la performance commerciale réelle : vues, commandes, taux de conversion, retours, promotions, statut vedette, avis et recommandations. Des scores plus élevés indiquent une meilleure performance sur le marché.
+
+text_help_quadrants = Les produits sont classés dans des quadrants stratégiques en fonction de leurs scores. Chaque quadrant a des recommandations spécifiques pour optimiser votre stratégie produit.
+
+text_help_actions = Les actions recommandées sont priorisées (Critique > Haute > Moyenne > Basse) et générées par un moteur de règles. Les actions exclusives (comme "Envisager la Suppression") annulent toutes les autres recommandations.
+
+text_help_history = Les analyses historiques montrent l'évolution des scores de votre produit au fil du temps. Suivez les améliorations et identifiez les tendances.
+
+text_config_title = Configuration CockpitAI
+text_config_thresholds = Seuils de Quadrants
+text_config_strategies = Préférences de Stratégie
+text_config_t_high = Seuil Haut (T_high)
+text_config_t_low = Seuil Bas (T_low)
+text_config_strategy_x = Stratégie X (Qualité Produit)
+text_config_strategy_y = Stratégie Y (Performance Commerciale)
+
+text_error_invalid_product = ID de produit invalide.
+text_error_module_disabled = Le module CockpitAI n'est pas activé.
+text_error_permission_denied = Vous n'avez pas la permission d'utiliser CockpitAI.
+text_error_concurrent_limit = Limite d'analyses concurrentes atteinte. Veuillez patienter et réessayer.
+
+button_print_report = Imprimer le Rapport
+text_metrics = Métriques
+text_views = Vues
+text_orders = Commandes
+text_conversion = Conversion
+text_returns = Retours
+text_date = Date
+text_evolution_trend = Tendance d'Évolution
+text_actions_count = Nombre d'Actions
+text_no_history = Aucune donnée historique disponible pour le moment.
+
+text_analysis = Analysis
+text_analysis_hiytory = Analyse de l'historique

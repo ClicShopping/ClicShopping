@@ -1,0 +1,2 @@
+title_menu = Security check
+title_menu_ip_restriction = Ip Restrictions

@@ -1,0 +1,20 @@
+
+navbar_title_1 = Commande
+navbar_title_2 = Changer l'adresse de facturation
+
+heading_title = Information paiement
+
+table_heading_payment_address = Adresse de facturation
+text_selected_payment_destination = Ceci est l'adresse séléctionnée, o&ugrave; la facture de cette commande sera expédiée.
+title_payment_address = Adresse de facturation :
+
+table_heading_address_book_entries = Carnet d'adresses
+text_select_other_payment_destination = Veuillez choisir l'adresse de facturation  si la facture de cette commande doit être envoyée ailleurs.
+title_please_select = Veuillez choisir
+
+table_heading_new_payment_address = Nouvelle adresse de facturation
+text_create_new_payment_address = Veuillez utiliser ce formulaire pour créer une nouvelle adresse de facturation pour cette commande.
+
+title_continue_checkout_procedure = Continuer la procédure de commande
+text_continue_checkout_procedure = pour choisir la méthode préférée de paiement.
+error_address_book_no_modify_default = Vous n'êtes pas autorisé à modifier l'adresse de facturation. N'hésitez pas à nous contacter pour toutes informations complémentaires.

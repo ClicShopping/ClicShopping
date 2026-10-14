@@ -1,0 +1,11 @@
+navbar_title = Customers recommendations
+
+heading_title = Customers recommendations
+
+text_products_news_seo_title = Customers recommendations
+
+text_date_added = Date Added:
+text_manufacturer = Brands:
+text_price = Price:
+text_product_options = Options suggested:
+text_no_products = No customers recommendations in this moment

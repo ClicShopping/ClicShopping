@@ -1,0 +1,6 @@
+module_shopping_cart_order_button_process_title = Do you want to display the order button to allow the customer to continue this order ?
+module_shopping_cart_show_total_description = Display the order button to allow the customer to continue this order
+
+button_save_shopping_cart = Save your cart
+button_continue = Continue
+button_order = Order

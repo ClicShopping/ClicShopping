@@ -1,0 +1,5 @@
+cfg_chatgpt_use_llm_primary_security_title = Enable LLM-Based Primary Security
+cfg_chatgpt_use_llm_primary_security_description = Enable LLM-powered security analysis for query validation and threat detection. When activated, the AI analyzes incoming queries for potential security risks, SQL injection attempts, malicious patterns, and unauthorized data access before processing. Uses natural language understanding to detect sophisticated attack vectors that pattern-based filters might miss. Provides an additional security layer beyond traditional validation. Recommended: True for production environments to enhance security posture and protect sensitive data.
+
+cfg_chatgpt_use_llm_primary_security_status_true = True
+cfg_chatgpt_use_llm_primary_security_status_false = False

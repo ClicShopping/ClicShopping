@@ -1,0 +1,4 @@
+
+ navbar_title_1 = Create an Account
+ navbar_title_2 = Success
+ heading_title = Your Account Has Been Created!

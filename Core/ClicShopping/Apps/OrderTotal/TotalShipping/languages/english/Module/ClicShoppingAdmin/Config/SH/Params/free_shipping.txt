@@ -1,0 +1,5 @@
+cfg_order_total_free_shipping_title = Do you want to allow free shipping ?
+cfg_order_total_free_shipping_description = Allow Free Shipping
+
+cfg_order_total_free_shipping_true = True
+cfg_order_total_free_shipping_false = False

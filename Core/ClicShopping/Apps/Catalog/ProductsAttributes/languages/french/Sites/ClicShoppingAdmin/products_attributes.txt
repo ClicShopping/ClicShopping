@@ -1,0 +1,70 @@
+heading_title = Options produits
+
+heading_title_opt = Etape 1 : Nom de l'option du produit
+heading_title_val = Etape 2 : Caractéristique des options pour le produit
+heading_title_attributes = Etape 3 : Définition des attributs des produits
+
+table_heading_id = ID
+table_heading_type = Type
+table_heading_ref_attributes = Ref. Attribut
+table_heading_product = Nom du produit
+table_heading_opt_name = Nom de l'option
+table_heading_opt_value = Caractéristique de l'option
+table_heading_opt_price = Prix
+table_heading_opt_price_prefix = Préfixe
+table_heading_opt_order = Ordre affichage catalogue
+table_heading_opt_b2b = B2B / B2C
+table_heading_image = Image
+table_heading_opt_tatus = Statut
+table_heading_action = Action
+table_heading_download = Produits téléchargeable :
+table_heading_opt_status = Statut
+
+table_text_filename = Nom du fichier :
+table_text_max_days = Expire le :
+table_text_max_count = Compte de téléchargement maximal :
+
+heading_title_clone_products_attributes = Etape 4 :Cloner / Copier des attributs
+clone_products_from = de
+clone_products_to = vers
+
+title_help_attributs = Note sur les attributs
+
+text_help_attributs = <ul><strong><u>les préfixes d'attribut</u></strong> : <br /><br /><li> - La synthaxe "+" permet de multiplier l'attribut par la quantité et de l'additionner au prix</li><li>- La synthaxe "-" permet de mullitplier l'attribut par la quantité et de le soustraire au prix</li><br /><li> - N'oubliez pas aussi de paramétrer le statut de commande concernant l'autorisation de téléchargement.</li><li> - Le téléchargement de fichiers ne peut excéder : {{upload_max_filesize}} </li>
+title_help_clone = Note sur les attributs
+text_filename = Nom du fichier
+
+title_help_clone = Note sur le clonage
+text_help_clone = <ul><strong><u>La Copie / Clonage d'attribut</u></strong> :
+<br /><br />
+<li>Vous pouvez copier un ou plusieurs attributs d'un produit (étape 3) sur un ou plusieurs autres produits</li><
+li>Pour supprimer en masse un attribut vous devez choisir un produit, puis un ou plusieurs autres produits.<br />
+Cliquez ensuite sur supprimer et l'ensemble des attributs seront effacés</li></ul>
+
+
+text_warning_of_delete = Certains produits utilisent cette option - il n'est pas recommandé de la supprimer.
+text_ok_to_delete = Cette option n'est utilisée par aucun produit - Il est possible de la supprimer.
+text_option_id = Option ID
+text_option_name = Nom de l'option
+
+text_all_groups = All groups
+visitor_name = Normal customer
+text_select = Liste déroulante
+text_radio = Boutons radio
+text_checkbox = Cases à cocher
+text_text = Texte court
+text_textarea = Texte long
+text_color_picker = Sélecteur de couleur
+
+tab_step1 = Step 1 Attribut de l'option produit
+tab_step2 = Step 2 Valeur des attributs
+tab_step3 = Step 3 Valeur des options
+tab_step4 = Options
+
+button_edit = Editer
+button_copy = Copier
+
+error_catalog_download_directory_not_writeable = Le répertoire de téléchargement n'est pas en mode écriture : Download/Private
+error_file_not_supported = Format fichier image non supporté
+
+text_clone_download_not_cloned = Les attributs ont été clonés avec succès. À noter : les fichiers de téléchargement n'ont pas été copiés — pensez à les reconfigurer manuellement sur les produits clonés.

@@ -1,0 +1,2 @@
+warning_install_directory_exists = Installation directory exists at: {{install_path}}. Please remove this directory for security reasons.
+install_directory = Install directory

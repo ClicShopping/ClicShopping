@@ -1,0 +1,4 @@
+cfg_item_no_authorize_title = Do you want to display the shipping module for B2C customer ?
+cfg_item_no_authorize_desc = Display the shipping for B2C customer ?
+cfg_item_no_authorize_true = True
+cfg_item_no_authorize_false = False

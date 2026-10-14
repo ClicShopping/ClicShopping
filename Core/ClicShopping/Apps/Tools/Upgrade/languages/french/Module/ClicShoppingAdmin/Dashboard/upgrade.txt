@@ -1,0 +1,8 @@
+heading_title = Vérifier la version de ClicShopping
+
+module_admin_dashboard_clicshopping_update_app_title = Souhaitez-vous installer le système de vérification de mise à jour de ClicShopping
+module_admin_dashboard_clicshopping_update_app_description = Affiche la mise à jour de ClicShopping si nécessaire
+module_admin_dashboard_clicshopping_update_app_text_warning_upgrade = Attention, votre version n'est pas à jour
+
+module_admin_dashboard_clicshopping_update_app_button = Mettre à jour
+module_admin_dashboard_clicshopping_version_check_never = Never

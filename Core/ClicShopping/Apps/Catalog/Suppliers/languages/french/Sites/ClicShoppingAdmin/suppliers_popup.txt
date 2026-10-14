@@ -1,0 +1,32 @@
+heading_title = Gestion des fournisseurs
+
+title_suppliers_general = Informations généralres
+title_suppliers_image = Image du fournisseur
+tab_visuel = Image
+tab_suppliers_note = Notes
+tab_suppliers_address = Adresse
+title_suppliers_address = Adresse
+
+text_suppliers = Fournisseurs :
+text_image_nonexistent = L'IMAGE N'EXISTE PAS
+
+text_suppliers_general = Autres informations
+text_suppliers_name = Nom du fournisseur :
+text_suppliers_new_image = Nouvelle image du fournisseur :
+text_suppliers_image = Image actuel du fournisseur :
+text_suppliers_delete_image = Ne plus afficher d'image fournisseur
+text_suppliers_url = URL du fournisseur :
+text_suppliers_address = Adresse :
+text_suppliers_suburb =  Addresse complémentaire :
+text_suppliers_postcode = Code Postale :
+text_suppliers_city = Ville :
+text_suppliers_states = Etat / Département :
+text_suppliers_country = Pays :
+text_suppliers_notes = Notes complémentaires
+text_products_image_vignette = Image
+text_delete_image = Suppprimer l'image du fournisseur ?
+
+title_suppliers_manager = Nom responsable :
+title_suppliers_phone = Télephone :
+title_suppliers_fax = Fax :
+title_suppliers_email_address = Adresse email :

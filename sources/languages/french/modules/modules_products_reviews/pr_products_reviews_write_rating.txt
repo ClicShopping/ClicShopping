@@ -1,0 +1,6 @@
+modules_products_reviews_write_rating_title = Ecriture Commentaire : Souhaitez-vous permettre au client d'évaluer le produit ?
+modules_products_reviews_write_rating_description = Permettre au client d'évaluer le produit
+
+modules_products_reviews_write_rating_text_bad = Mauvaise opinion
+modules_products_reviews_write_rating_text_good = Très bonne opinion
+modules_products_reviews_write_rating_text_sub_title_rating = Evaluation de votre opinion

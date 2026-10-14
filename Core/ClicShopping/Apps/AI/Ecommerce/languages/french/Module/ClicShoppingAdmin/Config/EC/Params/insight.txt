@@ -1,0 +1,6 @@
+cfg_ecommerce_insight_title = Insight
+cfg_ecommerce_insight_description = Cet agent est lié au processus de commande et fournit des informations d'analyse.
+ module de base qui peut évoluer pour crééer plus de valeur ajoutée. Sélectionnez True pour activer ce module.
+
+cfg_ecommerce_insight_true = True
+cfg_ecommerce_insight_false = False

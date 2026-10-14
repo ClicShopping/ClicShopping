@@ -1,0 +1,4 @@
+cfg_mcp_display_browser_json_title = Display JSON in Browser
+cfg_mcp_display_browser_json_description = In test mode, select False; in production mode, select True.<br>This setting allows displaying the API request result in JSON format in the browser.
+cfg_chatgpt_display_browser_json_status_true = True
+cfg_chatgpt_display_browser_json_status_false = False

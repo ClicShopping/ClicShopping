@@ -1,0 +1,2 @@
+cfg_ecommerce_ucp_sort_order_title = Classement
+cfg_ecommerce_ucp_sort_order_description = Ordre d'affichage. Le plus petit est affiche en premier.

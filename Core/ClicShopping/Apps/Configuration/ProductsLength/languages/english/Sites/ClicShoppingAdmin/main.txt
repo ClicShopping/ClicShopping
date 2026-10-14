@@ -1,0 +1,65 @@
+heading_title = Products lenght
+module_we_title = Products lenght
+module_we_short_title = Products lenght
+
+text_products_length = Products lenght
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a product lenght in products page. <br /><br />
+- Activate this module located in the Configuration menu
+
+module_we_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_products_length = Product lenght
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+button_insert_products_length = Product lenght insert
+button_insert_class = Product lenght conversion
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+icon_edit = Edit
+icon_delete = delete
+
+table_heading_products_length_class_id = Id
+table_heading_products_length_class_symbol = Symbol
+table_heading_products_length_class_type = Product lenght name
+table_heading_products_length_class_to_id = Conversion Product lenght
+table_heading_products_length_class_rule = Convertion value
+table_heading_action = Action
+
+text_info_class_conversaion_value = Convertion value
+text_info_heading_edit_products_length = Edit
+text_info_heading_delete_products_length = Delete
+text_info_heading_insert_products_length = Insert
+text_info_class_title_to_id = Convert to
+
+text_products_length_class_title = Product lenght name
+text_products_length_class_key = Product lenght symbol
+text_products_length_rules = Product lenght value
+text_info_class_title = Product lenght name
+
+text_info_edit_intro = Please make any necessary changes
+text_info_delete_info = Delete this products_length
+
+icon_edit_class_title = Product lenght edit

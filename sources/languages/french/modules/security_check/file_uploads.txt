@@ -1,0 +1,3 @@
+warning_file_uploads_disabled = Attention: File uploads n'est pas activé dans le  .ini.
+file_uploads = Téléchargement de fichiers
+

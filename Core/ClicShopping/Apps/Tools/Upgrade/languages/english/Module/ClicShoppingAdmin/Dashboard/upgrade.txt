@@ -1,0 +1,8 @@
+ heading_title = Check version of ClicShopping
+
+ module_admin_dashboard_clicshopping_update_app_title = Do you want to install the update check version of ClicShopping
+ module_admin_dashboard_clicshopping_update_app_description = Display an information if a new version exist
+ module_admin_dashboard_clicshopping_update_app_text_warning_upgrade = Becarefull, your version is not up to date
+
+ module_admin_dashboard_clicshopping_update_app_button = Update
+ module_admin_dashboard_clicshopping_version_check_never = Never

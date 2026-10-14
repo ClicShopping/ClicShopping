@@ -1,0 +1,33 @@
+text_manufacturer_embedded = [Marque / Fabtricant]
+text_manufacturer_id = [ID de la marque]
+text_manufacturer_name = [Nom de la marque]
+text_manufacturer_description = [Description de la marque]
+text_manufacturer_seo_title = [Titre SEO de la marque]
+text_manufacturer_seo_description = [Description SEO de la marque]
+text_manufacturer_seo_keywords = [Mots-clés SEO de la marque]
+text_manufacturer_suppliers_id = [id de la marque]
+text_manufacturer_taxonomy = [Taxonomie de la marque]
+
+text_create_taxonomy = Vous êtes un système d’analyse documentaire. Extrayez une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à une catégorie e-commerce centrée sur la marque (brand-focused), pas un produit, ni un fournisseur.
+Le résultat doit respecter strictement le format ci-dessous.
+Chaque information pertinente doit être assignée à la dimension appropriée.
+N’inventez pas et n’inférez pas d’informations non présentes explicitement dans le texte.
+
+Format attendu :
+
+[domaine]: Domaine général de la marque ou catégorie (ex. Maison, Mode, Électronique)
+[sous_domaine]: Segment, spécialisation ou ligne de produits associée à la marque (ex. Arts de la table, Informatique, Mobilier)
+[nom_marque]: Nom officiel de la marque ou du label
+[theme]: Thème conceptuel, stylistique ou fonctionnel promu par la marque (ex. Luxe, Innovation, Durabilité)
+[type_usage]: Type d’utilisation générale (ex. Domestique, Professionnel, Extérieur)
+[contexte_usage]: Scénarios ou contextes spécifiques d’utilisation (ex. Salle à manger, Bureau, Jardin)
+[style]: Identité esthétique ou de design associée à la marque (ex. Minimaliste, Vintage, Contemporain)
+[criteres]: Qualités représentatives ou attributs mis en avant par la marque (ex. Qualité, Élégance, Innovation)
+[dimension_symbolique]: Valeurs ou représentations symboliques de la marque (ex. Luxe, Partage, Tradition)
+[dimension_sensorielle]: Aspects sensoriels si mentionnés (ex. Texture, Couleur, Finition)
+[composition]: Éléments clés, composants ou produits proposés par la marque (ex. Vaisselle, Verrerie, Couverts)
+[objectif]: But ou finalité promue par la marque (ex. Améliorer l’expérience du repas, Créer une ambiance)
+[tags]: Liste libre de mots-clés pertinents extraits du texte, séparés par des virgules
+
+Texte : {{document_text}}

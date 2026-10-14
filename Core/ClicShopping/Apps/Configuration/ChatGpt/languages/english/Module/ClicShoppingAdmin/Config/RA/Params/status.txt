@@ -1,0 +1,5 @@
+cfg_chatgpt_status_title = Module Status
+cfg_chatgpt_status_description = Enable or disable the RAG Analytics module. When disabled, all RAG features including database queries, semantic search, and AI-powered analytics will be unavailable. Recommended: True to enable AI-powered business intelligence features.
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

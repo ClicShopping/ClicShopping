@@ -1,0 +1,15 @@
+return_history_id int not_null auto_increment comment(Primary key - unique identifier for each return status change)
+return_id int not_null comment(FK to return_orders table - return order identifier)
+return_status_id int not_null comment(FK to return_orders_status table - new status applied)
+notify tinyint(1) not_null comment(Customer notification flag - 0: no email sent, 1: email sent to customer)
+comment text default null comment(Administrator comment about this status change)
+date_added datetime not_null comment(Timestamp when status change occurred)
+admin_user_name varchar(255) default null comment(Administrator username who made the status change)
+--
+primary return_history_id
+idx_return_id return_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment TIMELINE of a return (RMA): one row per status change, with the comment and who made it. The return itself is in return_orders.

@@ -1,0 +1,5 @@
+cfg_chatgpt_reputation_system_status_title = Enable Reputation System
+cfg_chatgpt_reputation_system_description = Activate the reputation system that tracks and scores actor and critic performance over time. Higher reputation agents have more influence in decision-making
+
+cfg_chatgpt_status_true = True
+cfg_chatgpt_status_false = False

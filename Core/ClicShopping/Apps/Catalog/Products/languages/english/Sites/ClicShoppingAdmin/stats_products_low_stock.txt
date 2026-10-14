@@ -1,0 +1,16 @@
+heading_title = Stats low stock
+
+table_heading_products = Product name
+table_heading_model = Model
+table_heading_qty_left = Quantity left
+table_heading_action = Action
+table_heading_warehouse_time_replenishment = time replenishment
+table_heading_warehouse = Warehouse name
+table_heading_warehouse_row = Warehouse row
+table_heading_warehouse_level = Warehouse level
+
+icon_preview = Preview
+icon_edit = Edit
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

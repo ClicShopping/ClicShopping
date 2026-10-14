@@ -1,0 +1,3 @@
+module_security_check_extended_admin_http_authentication_title = Admin HTTP Authentication
+module_security_check_extended_admin_http_authentication_error = L'authentication HTTP n'a pas été configurée dans l'administration - veuillez configuer votre serveur pour éviter l'accès à l'administration.
+

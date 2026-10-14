@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_cron_email_title = Cron Courriel
+cfg_ecommerce_cockpit_ai_cron_email_description =  Recevoir pr email le resulat du traitement par le cron

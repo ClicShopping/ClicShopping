@@ -1,0 +1,4 @@
+ modules_products_reviews_info_image_title = Lecture Commentaire : Do you want to display the product image ?
+ modules_products_reviews_info_image_description = Display the product image
+
+ text_price =

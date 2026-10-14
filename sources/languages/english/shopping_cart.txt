@@ -1,0 +1,6 @@
+
+ navbar_title = Cart Contents
+ heading_title = Cart Contents
+ text_cart_empty = Your Shopping Cart is empty!
+
+ button_continue = Continue

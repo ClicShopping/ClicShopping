@@ -1,0 +1,2 @@
+cfg_chatgpt_max_rows_for_llm_interpretation_title = Maximum rows for LLM interpretation
+cfg_chatgpt_max_rows_for_llm_interpretation_description = The maximum number of rows that will be receive by the LLM for AI interpretation. If query results exceed this limit, the data will still be displayed but AI interpretation will not be available.

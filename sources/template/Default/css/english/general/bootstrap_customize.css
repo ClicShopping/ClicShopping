@@ -1,0 +1,408 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+h1 {
+  margin-bottom: 1.25rem;
+  margin-top: 0rem;
+  text-transform: uppercase;
+  line-height: 1.5rem;
+}
+
+h2 {
+  margin-bottom: 0.9375rem;
+  text-transform: uppercase;
+  line-height: 1.5rem;
+  padding-right: 4.0625rem;
+}
+
+h2.nopadding {
+  padding: 0;
+}
+
+h3 {
+  text-transform: uppercase;
+  line-height: 1.25rem;
+  font-weight: normal;
+}
+
+h4 {
+  margin-bottom: 0.9375rem;
+  text-transform: uppercase;
+
+  line-height: 1.25rem
+}
+
+h5 {
+  font: normal 1.5rem/1.625rem Arial, Helvetica, ms-sans-serif;
+  font-style: italic;
+  margin: 0;
+  padding: 0;
+}
+
+
+.contentContainer {
+  padding-bottom: 0.625rem;
+}
+
+.contentContainer h2 {
+  margin-bottom: 0;
+  padding-bottom: 0.3125rem;
+}
+
+.contentContainer a {
+  text-decoration: underline
+}
+
+.contentContainer a:hover {
+  text-decoration: none
+}
+
+.contentText, .contentText table {
+}
+
+[class*="span"] {
+  float: left;
+  margin-left: 5px;
+  min-height: 0.0625rem;
+  margin-right: 0.3125rem;
+}
+
+.container {
+  padding-left: 0rem;
+  padding-right: 0rem;
+}
+
+.container-fluid {
+}
+
+.btn {
+}
+
+.btn-info {
+}
+
+a.btn-info, a.btn-info:hover {
+  color: #fff !important;
+  text-decoration: none;
+}
+
+
+.btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active, .btn-info.disabled, .btn-info[disabled] {
+}
+
+
+.btn-primary {
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled] {
+}
+
+a.btn-primary, a.btn-primary:hover {
+  text-decoration: none;
+}
+
+
+.btn-success {
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .btn-success.disabled, .btn-success[disabled] {
+}
+
+a.btn-success, a.btn-success:hover {
+  text-decoration: none;
+}
+
+.btn-danger {
+}
+
+a.btn-danger, a.btn-danger:hover {
+  text-decoration: none;
+}
+
+
+.btn-new {
+  background-color: red;
+  color: #fff;
+}
+
+.btn-new:hover, .btn-new:focus, .btn-new:active, .btn-new.active, .btn-new.disabled, .btn-new[disabled] {
+}
+
+a.btn-new, a.btn-new:hover {
+  text-decoration: none;
+}
+
+.btn-secondary {
+}
+
+.btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active, .btn-secondary.active, .btn-secondary.disabled, .btn-secondary[disabled] {
+}
+
+a.btn-secondary, a.btn-secondary:hover {
+  text-decoration: none;
+}
+
+.blockquote {
+  border-left: 0.25rem solid #fff;
+  page-break-inside: avoid;
+}
+
+/* buttons */
+.buttonSet {
+  clear: both;
+  padding-top: 0.625rem;
+  overflow: hidden;
+}
+
+.buttonAction {
+  float: right;
+}
+
+blockquote {
+}
+
+.text-info {
+}
+
+.card-height {
+  height: 100%;
+}
+
+.card card-height {
+  height: 100%;
+}
+
+.card-block {
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+}
+
+.card-primary {
+  border-color: #eae8e7;
+}
+
+.card-primary > .card-header {
+  color: #fff;
+  background-color: #eee;
+  border-color: #eee;
+  color: #000;
+}
+
+.dropdown-menu > li > a {
+  text-decoration: none !important;
+  min-width: 140px;
+}
+
+.dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+  background-color: #fff;
+  color: #0b0b0b;
+}
+
+
+.form-control {
+  margin-bottom: 0.3125rem;
+  display: inline;
+  padding: 0.15rem 0.75rem;
+}
+
+/* Responsive Images  ------------------------------------------------------- */
+/* the inbuilt bootstrap responsive images class breaks the text-center class */
+
+#bodyContent .img-fluid, #columnLeft .img-fluid, #columnRight .img-fluid, footer .img-fluid {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.img-fluid {
+  display: inline-block;
+}
+
+/* Pagination  ------------------------------------------------------- */
+.pagenav {
+  position: relative;
+  top: -25px;
+  left: 3px;
+  height: 2.5rem !important;
+}
+
+.pagenumber {
+  margin-bottom: 7px;
+}
+
+.page-item > .active > a, .page-item > .active > span, .page-item > .active > a:hover, .page-item > .active > span:hover, .page-item > .active > a:focus, .page-item > .active > span:focus {
+  background-color: #eee;
+  border-color: #ddd;
+  color: #000;
+}
+
+.page-item > li > a, .page-item > li > span {
+  color: #000;
+}
+
+.page-title {
+}
+
+.page-header {
+}
+
+.page-footer {
+}
+
+.thumbnail:hover {
+  background-color: #eee;
+}
+
+.ul {
+  list-style-type: none;
+}
+
+.hr {
+  color: #eee;
+  background-color: #eee;
+  height: 0.0625rem;
+}
+
+.h-divider {
+  height: 1px;
+  margin: 9px 0;
+  overflow: hidden;
+  background-color: #e5e5e5;
+}
+
+.form-group-center {
+  text-align: center;
+}
+
+.breadcrumb {
+  padding-top: 0.5rem;
+  padding-top: 0.5rem;
+  padding-left: 0.5rem;
+  background-color: #F5F5F5;
+  border-radius: 0.2rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  padding-right: 0rem;
+  content: "";
+}
+
+/***********************************************/
+/* Input confirmation - Checkbox to Switch */
+/**********************************************/
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  float: right;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  display: none;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input.default:checked + .slider {
+  background-color: #444;
+}
+
+input.primary:checked + .slider {
+  background-color: #2196F3;
+}
+
+input.success:checked + .slider {
+  background-color: #8bc34a;
+}
+
+input.info:checked + .slider {
+  background-color: #3de0f5;
+}
+
+input.warning:checked + .slider {
+  background-color: #FFC107;
+}
+
+input.danger:checked + .slider {
+  background-color: #f44336;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.list-group-item-slider {
+  position: relative;
+  display: block;
+  padding: .75rem 1.25rem;
+  margin-bottom: -1px;
+  border: none;
+}
+
+.list-group-slider {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: unset;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.text-slider {
+  padding-top: 0.5rem
+}
+
+/***********************************************/
+/* Media Quey  */
+/**********************************************/
+@media only screen and (max-width: 768px) {
+  .list-group {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,2 @@
+cfg_products_recommendations_featured_min_score_title = Score minimum accepted to create a featured product
+cfg_products_recommendations_featured_min_score_description = Allow to create automatically a featured if the score is more important as average product score

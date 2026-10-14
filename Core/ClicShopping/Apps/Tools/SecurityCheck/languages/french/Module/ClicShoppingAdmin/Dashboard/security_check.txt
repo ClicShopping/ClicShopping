@@ -1,0 +1,7 @@
+module_admin_dashboard_security_checks_app_title = Souhaitez-vous activer la vérification de la sécurité de l'installation de la boutique ?
+module_admin_dashboard_security_checks_app_description = Vérification de la sécurité de la boutique
+module_admin_dashboard_security_checks_app_success = L'installation de clicshopping est correctement configurée
+
+module_security_check_extended_last_run_old = Cela fait plus de 30 jours depuis la dernière vérification a été faite. Veuillez effectuer une vérification de votre système (Outils / Informations sécurité / Information ClicShopping).
+warning_config_file_writeable =  Fichiers de configuration /shop/Core/configure.php. en mode écriture, veuillez les passer en chmod 444 pour des raisons de sécurité
+warning_install_directory_exists = Répertoire install existant, veuillez le supprimer pour des raisons de sécurté

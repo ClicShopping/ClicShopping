@@ -1,0 +1,4 @@
+module_products_recommendations_title_tilte = Do you want to display the customers recommendations title ?
+module_products_recommendations_title_title_description = Display the customers recommendations title
+
+text_heading_title = Customers Recommendations

@@ -1,0 +1,7 @@
+
+ module_boxes_manufacturer_info_title =  Do you want to enable the Brand Info
+ module_boxes_manufacturer_info_description = Show brand information on the product information page
+ 
+ module_boxes_manufacturer_info_box_title = Our brands
+ module_boxes_manufacturer_info_box_other_products = Products of the same brand
+ module_boxes_manufacturer_info_box_homepage = See the web site

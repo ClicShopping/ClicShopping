@@ -1,0 +1,2 @@
+cfg_products_api_max_login_attempts_title = Nombre maximal de tentatives de connexion
+cfg_products_api_max_login_attempts_description = Spécifie le nombre maximal de tentatives de connexion autorisées avant restriction.

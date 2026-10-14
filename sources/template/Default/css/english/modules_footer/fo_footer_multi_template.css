@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.footerTemplate {
+  background-color: #eee;
+  border-top: 2px solid #ddd;
+}
+
+.footerTemplate .footerTemplateBox {
+  padding: 10px 10px 0px 10px;
+}
+
+.footerTemplate-extra {
+  background-color: #111;
+  color: silver;
+  line-height: 3;
+}
+
+.footerTemplate-extra A {
+  color: silver;
+}
+
+.footerTemplate h2, .footerTemplate h4 {
+  padding: 0;
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: rgb(142, 11, 0);
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.625rem;
+  margin-bottom: 0.625rem;
+  text-transform: uppercase;
+}
+
+.footerTemplateContact {
+  border-left: 1px solid #ddd;
+  padding-left: 0.625rem;
+}
+
+.footerTemplateInformation {
+}
+
+.footerTemplateAccount {
+}
+
+.footerTemplateSocial li {
+  background: none repeat scroll 0 0 #000;
+  border: 2px solid #B5B5B5;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -o-border-radius: 50%;
+  -ms-border-radius: 50%;
+  border-radius: 50%;
+  float: left;
+  height: 36px;
+  line-height: 36px;
+  margin: 0 8px 0 0;
+  padding: 0;
+  text-align: center;
+  width: 36px;
+  transition: all 0.5s ease 0s;
+  -moz-transition: all 0.5s ease 0s;
+  -webkit-transition: all 0.5s ease 0s;
+  -ms-transition: all 0.5s ease 0s;
+  -o-transition: all 0.5s ease 0s;
+}
+
+.footerTemplateSocial li:hover {
+  transform: scale(1.15) rotate(360deg);
+  -webkit-transform: scale(1.1) rotate(360deg);
+  -moz-transform: scale(1.1) rotate(360deg);
+  -ms-transform: scale(1.1) rotate(360deg);
+  -o-transform: scale(1.1) rotate(360deg);
+}
+
+.footerTemplateSocial li a {
+  color: #EDEFF1;
+}
+
+.footerTemplateSocial li:hover {
+  border: 2px solid #2c3e50;
+  background-color: #2c3e50;
+}
+
+.footerTemplateSocial li a i {
+  margin: 0 0 0 5px;
+  color: #EDEFF1 !important;
+}
+
+ul.footerTemplateSocial {
+  list-style-type: none;
+}

@@ -1,0 +1,3 @@
+cfg_ecommerce_acp_api_key_openai_retail_title = Clef API OpenAI (Agentic Commerce Protocol)
+cfg_ecommerce_acp_api_key_openai_retail_description = Veuillez créer votre clef partagée OpenAI pour le flux ACP (https://chatgpt.com/merchants).<br>
+Nous vous invitons à créer une clef complexe, exemple : c815e617da9880530e9

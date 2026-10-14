@@ -1,0 +1,2 @@
+cfg_ecommerce_web_fuzzy_match_threshold_title = Seuil de correspondance floue pour le suivi des prix (tracking)
+cfg_ecommerce_web_fuzzy_match_threshold_description = Plus la valeur est élevée, plus la correspondance est stricte ; plus la valeur est basse, plus il y a de correspondances. Valeurs possibles : (0,5-0,95)

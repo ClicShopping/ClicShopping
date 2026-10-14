@@ -1,0 +1,12 @@
+template_email_id int not_null comment(FK to template_email table - email template identifier)
+language_id int not_null comment(FK to languages table - language for this translation)
+template_email_name varchar(250) comment(Translated name of the email template)
+template_email_short_description varchar(250) comment(Brief description of template purpose)
+template_email_description longtext comment(Full HTML email template content with placeholders)
+--
+primary template_email_id language_id
+idx_template_email_name template_email_name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_siret_fournisseur_title = SIRET du fournisseur Chorus Pro
+cfg_configuration_compliance_policy_rules_chorus_pro_siret_fournisseur_description = Numéro SIRET de votre entreprise (14 chiffres).

@@ -1,0 +1,260 @@
+heading_title = Commandes
+heading_title_archive = Archives
+module_od_title = Commandes
+module_od_short_title = Commandes
+
+text_products_specials =  Commandes
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une page contenant les commandes et un raccourci commande dans le menu. <br /><br />
+- L'accès à la page se fait via le menu Client<br />
+
+module_sp_introduction = Le processus d'installation installe la base de données et le menu
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_specials = Promotions
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Ré-initialiser
+button_update = Mettre à jour
+button_archive = Voir archives
+button_archive_batch = Archiver sur 30 j.
+button_archive_consult = Consulter
+button_history = Historique
+button_invoice = Facture
+button_packingslip = Bon expédition
+button_archive_batch = Archiver
+
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+visitor_name = Client normal
+
+heading_title_search = No de commande
+heading_title_status = Statut :
+
+tab_general = General
+tab_orders_details =  Détails
+tab_statut = Statut
+
+
+title_orders_address = Adresses
+title_orders_customers = Informations sur le client
+title_orders_paiement = Paiement
+title_orders_history = Historique
+
+table_heading_comments = Commentaires
+table_heading_customers = Clients
+table_heading_order_total = Montant Total
+table_heading_date_purchased = Date d'achat
+table_heading_status = Statut
+table_heading_action = Actions
+table_heading_quantity = Qté.
+table_heading_products_model = Référence
+table_heading_products = Produits
+table_heading_realised_by = Modifié par
+table_heading_tax = Taxe
+table_heading_total = Total
+table_heading_price_excluding_tax = Prix (ht)
+table_heading_price_including_tax = Prix (ttc)
+table_heading_total_excluding_tax = Total (ht)
+table_heading_total_including_tax = Total (ttc)
+table_heading_color_group = B2B
+table_heading_orders = No Commande
+table_heading_erp = ERP
+table_heading_guest = Guest
+table_heading_qty = Quantité
+table_heading_support = Support
+
+table_heading_customer_notified = Client notifié
+table_heading_date_added = Date d'ajout
+entry_customer = Client :
+entry_sold_to = VENDU A :
+entry_delivery_to = Livraison à :
+entry_ship_to = Envoyé à; :
+entry_shipping_address = Adresse d'expédition :
+entry_billing_address = Adresse de facturation :
+entry_payment_method = Méthode de paiement :
+entry_credit_card_type = Type de carte de crédit :
+entry_credit_card_owner = Propriétaire de la carte de crédit :
+entry_credit_card_number = Numéro de la carte de crédit :
+entry_credit_card_expires = Date d'expiration de la carte de crédit :
+entry_sub_total = Sous-Total :
+entry_tax = Taxe :
+entry_shipping = Expédition :
+entry_total = Total :
+entry_date_purchased = Date d'achat :
+entry_status = Statut :
+entry_atos_board_informations = Informations transaction
+entry_status_orders_tracking_name = Nom de société d'expédition :
+entry_status_orders_tracking_number = Numéro de tracking  :
+entry_status_orders_support_name = Support Client
+entry_status_evidence = Preuve Client :
+entry_credit_card_express = Credit card express
+
+entry_status_invoice = Edition PDF à générer :
+entry_status_comment_invoice = Edition PDF générée :
+entry_status_invoice_realised = Traité par :
+entry_status_invoice_note = <u>Informations complémentaires</u> :<br />
+
+entry_client_computer_ip = Adresse IP du client :
+entry_provider_name_client = Provider du client :
+
+text_condition_general_of_sales = Contrat général de vente concernant cette commande
+
+entry_date_last_updated = Dernière date de mise à jour :
+entry_notify_customer = Informer client :
+entry_notify_comments = Ajouter un commentaire :
+entry_printable = Imprimer la facture
+
+entry_telephone_number = Téléphone
+entry_cellular_phone_number = Cellulaire
+entry_email_address = Adresse email
+
+customers_company = Société
+entry_first_name = Prénom
+entry_last_name = Nom
+entry_address = adresse
+entry_suburb = Addresse complémentaire
+entry_postcode = Code postal
+entry_city = Ville
+entry_country_id = Pays
+entry_zone_id = Zone
+
+text_info_heading_delete_order = Supprimer la commande
+text_info_delete_intro = Etes vous s&ucirc;r de vouloir supprimer cette commande ?
+text_info_restock_product_quantity = Restaurer la valeur de stock
+text_date_order_created = Date de création :
+text_date_order_last_modified = Dernière modification :
+text_info_payment_method = Méthode de paiement :
+entry_customer_location = Localiser
+text_all_orders = Toutes les commandes
+text_no_order_history = Aucun historique de commande disponible
+
+text_info_heading_archive = Archiver une commande
+text_info_archive_intro = Souhaitez-vous archiver cette commande ?
+text_preview = Preview
+
+text_archive_batch_heading = Archiver des commandes
+
+label_button = Etiquettes
+label_button_archive = Archives
+label_title = Etiquettes
+label_text_date_order = Date :
+label_text_order_number = No de commande :
+label_text_print_type = Type d'impression :
+label_text_note_label = <br /><u>Note:</u> Sélectionner les critères d'impression des adresses d'expédtion<br /><br />
+label_text_start = N° de départ :
+label_text_end = N° de fin :
+label_text_select = Sélectionner
+label_button_print = Imprimer
+label_text_24hr = dernière 24hr
+label_text_48hr = dernière 48hr
+label_text_72hr = dernière 72hr
+label_text_week = Semaine
+
+text_info_heading_delete_order =  Suppression commande
+text_info_delete_info = Supprimer
+
+text_orders_status = Statut
+text_orders_pending = En attente
+text_orders_processing = En cours
+text_orders_support = Support
+text_orders_support_request = Requête
+text_orders_support_threatment = Traitement
+text_orders_customers = Clients
+text_orders = Commandes
+text_orders_b2c = B2C
+text_orders_b2b = B2B
+
+text_errors_archive = Veuillez sélection un numéro de commande de départ et de fin
+text_errors_order = Erreur archive
+
+suppliers_title = Rapport commandes fournisseur
+suppliers_button =  Rapport Fournisseur
+entry_supliers_name = Fournisseur* :
+text_note_supplier = <br /><u>Note:</u> <br> - Vous pouvez combiner ou non les critères<br />- Pour mettre à jour vos statuts de commande, le statut final doit être différent du statut initale<br />- Un email de mise à jour est automatiquement envoyé au client
+
+text_order_update_status = Actualiser tous les statuts de commande ? veuillez choisir :
+
+email_separator = ------------------------------------------------------
+
+email_text_subject = Actualisation de votre commande sur {{store_name}}
+email_intro_command = Bonjour, Une actualisation de votre commande a été effectuée.
+Veuillez trouver ci-dessous l'ensemble des informations.{{store_name}}
+{{store_name_address}}
+
+email_text_order_number = No de commande :
+email_text_invoice_url = Votre bon de commande ou facture sont disponibles dans votre espace d'administration de la :
+email_text_date_ordered = <br /><br /> Date de commande :
+
+email_text_new_order_status = Nouveau statut : {{status}}
+
+email_text_comments_update = Les commentaires de votre commande sont :
+  {{comment}}
+
+error_order_does_not_exist = Erreur : La commande n'existe pas. : N° {{order_id}}
+success_order_updated = Succès : La commande est mise à jour avec succès.
+
+entry_order_siret = N° d'immatriculation <i>(ex : No RCS) :
+entry_tva_intracom = N° de TVA intracom :
+entry_order_code_ape = N° de nomenclature <i>(ex : Code APE) :
+
+icon_edit = Editer
+icon_edit_customer = Editer la fiche client
+icon_edit_order = Editer la commande
+icon_invoice = Editer la fature
+icon_packingslip = Editer le bon de commande
+icon_delete = Supprimer
+icon_archive_to = Archiver / Désarchiver
+
+packingslip_batch_heading = Impression bons de livraison
+button_packingslip_batch = Impression en lot bons de livraison
+orders_batch_heading = Impression commandes
+button_orders_batch = Impression en lot des commandes
+
+text_info_new_quantity = Mise à jour quantité de la commande : la nouvelle quantité mis à jour est {{new_quantity}} concernant le nom du produit : {{products_name}}
+
+alert_invoice_locked_title = Commande verrouillée – facture validée
+alert_invoice_locked_body = Conformément à l'art. L441-9 C.com., une facture validée est intangible. Repassez le statut facture à « En attente » pour pouvoir modifier la commande.
+alert_invoice_locked_tab2 = Les lignes de commande sont en lecture seule car la facture a été validée.
+table_heading_qty_edit = Qté
+table_heading_price_edit = Prix HT
+title_add_product = Ajouter une ligne produit
+entry_add_product_id = ID produit (catalogue)
+placeholder_product_id = ex. 42
+button_add_product = Ajouter
+confirm_delete_product = Supprimer cette ligne de la commande ?
+error_order_invoice_locked = Modification impossible : la facture de cette commande est validée.
+success_product_updated = Ligne mise à jour avec succès.
+success_product_added = Produit ajouté à la commande.
+success_product_deleted = Ligne supprimée de la commande.
+error_product_update_failed = Échec de la mise à jour (quantité ou prix invalide).
+error_product_add_failed = Échec de l'ajout (produit introuvable ou données invalides).
+error_product_delete_failed = Échec de la suppression.
+
+text_info_product_updated = Qté ou Prix mise à jour
+warning_order_stock_not_updated = Stock non mis é jour
+error_order_invoice_locked = Facture bloquée
+warning_order_not_updated = Commande non mis à jour
+text_info_product_added = Produit mis à jour
+text_info_product_deleted = Produit supprimé
+text_info_new_quantity = Quantité mise à jour : La nouvelle quantité est {{new_quantity}} concernant ce produit : {{products_name}}
+
+
+text_result_page = Page {{listing_from}} à {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

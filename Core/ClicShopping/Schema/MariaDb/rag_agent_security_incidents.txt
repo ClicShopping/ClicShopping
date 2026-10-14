@@ -1,0 +1,22 @@
+incident_id varchar(50) not_null
+agent_id varchar(100) not_null
+action_type varchar(100) not_null
+denial_reason text not_null
+context longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin default(NULL) CHECK (json_valid(`context`))
+severity enum('low','medium','high','critical') not_null
+status enum('open','investigating','resolved','dismissed') default('open')
+resolution text default(NULL)
+created_at timestamp NULL default(current_timestamp)
+resolved_at timestamp NULL default(NULL)
+
+--
+primary incident_id
+idx_agent_id agent_id
+idx_severity severity
+idx_status status
+idx_created_at created_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

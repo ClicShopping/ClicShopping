@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_t_high_title = High Threshold (T_high score)
+cfg_ecommerce_cockpit_ai_t_high_description = Threshold for high scores in quadrant classification (0-100)

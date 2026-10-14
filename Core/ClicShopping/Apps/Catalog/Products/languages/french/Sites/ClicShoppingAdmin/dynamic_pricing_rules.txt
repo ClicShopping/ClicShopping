@@ -1,0 +1,34 @@
+
+heading_title = Règles de tarification dynamique
+text_info_heading_rules = Règles de tarification dynamique
+button_delete = Supprimer
+
+table_heading_rules_name = Nom de la règle
+table_heading_rules_condition = Condition de la règle
+table_heading_rules_action = Action de la règle
+table_heading_date_added = Date d'ajout
+table_heading_last_modified = Dernière modification
+table_heading_rules_type = Type de règle
+table_heading_rules_value = Valeur de la règle
+table_heading_rules_status = Statut de la règle
+table_heading_rules_priority = Priorité de la règle
+table_help_rules_condition = (ex : stock <= 10)
+table_heading_rules_customer_group = Groupe de clients
+table_heading_rules_special = Promotion
+
+text_rules_type_percentage_decrease = Pourcentage de réduction
+text_rules_type_percentage_increase = Pourcentage d'augmentation
+text_rules_type_fixed_price = Montant fixe
+
+text_rules_status_special = Statut appliqué aux prix sur les promotions
+text_rules_status_promotion = Permettre de créer / supprimer une promotion
+
+text_info = <li>Nom de la règle : Un nom descriptif pour la règle (par exemple, "Prix Fin de Stock").</li>
+<li> Veuillez noter que la régle s'applique à tous les produits qui remplissent la condition (note : cela va évoluer ultérieurement).</li>
+<li>Condition de la règle : La logique qui détermine quand la règle s'applique. Cette conditions'applique sur le niveau de stock et vente (sales).</li>
+  - Actuellement vous ne pouvez qu'utiliser une seule condition par règle (stock < 10, stock >= 10 AND stock <= 50, sales <= 100 ou combinaison stock > 50 AND sales == 0, stock between 10 AND  20) .<br />
+  - Des conditions plus complexes peuvent être envisagées pour de futures versions.<br />
+<li>Type de règle : Le type de modification de prix à appliquer. Il s'agit du type d'ajustement du prix (par exemple, un pourcentage de réduction, un prix fixe, etc.).<br />
+<li>Valeur de la règle : La valeur numérique de la modification du prix. Par exemple, si le type de règle est percentage_decrease, la valeur sera un pourcentage.<br />
+<li>Priorité de la règle : Un numéro pour déterminer l'ordre dans lequel les règles doivent être appliquées. Une priorité plus élevée (par exemple, un nombre plus grand) signifie que la règle sera traitée avant les autres. C'est essentiel pour gérer les conflits si plusieurs règles s'appliquent au même produit en même temps.<li>
+<li>Statut appliqué aux promotions : Indique si la règle doit être appliquée aux produits en promotion. Si activé, la règle affectera également les produits déjà en promotion.</li>

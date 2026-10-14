@@ -1,0 +1,56 @@
+heading_title = Classes fiscales
+module_tc_title = Classes fiscales
+module_tc_short_title = Classes fiscales
+
+text_tax_class = Classes fiscales
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'inclure une gestion des classes fiscales <br /><br />
+- Activer ce module qui est situé dans le menu Configuration
+
+module_tc_introduction = Le processus d'installation installe la base de données et le menu
+module_tc_short_title = Classes fiscales
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_tax_class = Classes fiscales
+button_cancel = Annuler
+button_new = Nouveau
+button_insert =  Insérer
+button_back = Retour
+button_reset = Réinitialiser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+
+table_heading_tax_classes = Classes fiscales
+table_heading_action = Action
+table_heading_tax_description = Description
+
+
+text_info_edit_intro = Merci de faire les changements nécessaires
+text_info_class_title = Titre de la classe fiscale :
+text_info_class_description = Description :
+text_info_date_added = Date d'ajout :
+text_info_last_modified = Dernière modification :
+text_info_insert_intro = Merci d'entrer la nouvelle classe fiscale avec ses données liées
+text_info_delete_intro = Etes vous sur de vouloir supprimer cette classe fiscale ?
+text_info_delete_info = Supprimer cette classe de taxe
+text_info_heading_new_tax_class = Nouvelle classe fiscale
+text_info_heading_edit_tax_class = Editer classe fiscale
+text_info_heading_delete_tax_class = Supprimer classe fiscale

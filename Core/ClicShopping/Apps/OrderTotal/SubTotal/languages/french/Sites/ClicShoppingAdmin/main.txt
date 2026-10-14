@@ -1,0 +1,28 @@
+heading_title = Sous Total
+module_st_title = Configuration
+
+text_subtotal =  Sous Total
+text_configure =  Configure App Sous total de la commande
+
+text_intro = Cette app vous permet d'nstaller le calcul du sous-total de la commande
+module_st_introduction = Cette app vous permet d'nstaller le calcul du sous-total de la commande
+
+button_sort_order = Ordre de tri
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_cancel = Annuler
+button_delete = Supprimer
+button_back = Retour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez vous installer cette app ?
+dialog_uninstall_title = Désinstaller ce module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé avec succès
+alert_module_uninstall_success = Le module a été désinstallé avec succès
+alert_cfg_saved_success = Les paramètres de configuration ont été sauvés
+alert_module_install_refused_role = Le module n'a pas été installé : il ne déclare pas où il doit être calculé dans la séquence des totaux. Un module non placé s'exécute après le grand total, sa ligne s'affiche donc et le total ne la contient pas. Demandez à l'auteur du module de déclarer son rôle fiscal.

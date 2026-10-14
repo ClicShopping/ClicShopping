@@ -1,0 +1,72 @@
+{
+    "name": "openai-php/client",
+    "description": "OpenAI PHP is a supercharged PHP API client that allows you to interact with the Open AI API",
+    "keywords": ["php", "openai", "sdk", "codex", "GPT-3", "DALL-E", "api", "client", "natural", "language", "processing"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nuno Maduro",
+            "email": "enunomaduro@gmail.com"
+        },
+        {
+            "name": "Sandro Gehri"
+        }
+    ],
+    "require": {
+        "php": "^8.2.0",
+        "php-http/discovery": "^1.20.0",
+        "php-http/multipart-stream-builder": "^1.4.2",
+        "psr/http-client": "^1.0.3",
+        "psr/http-client-implementation": "^1.0.1",
+        "psr/http-factory-implementation": "*",
+        "psr/http-message": "^1.1.0|^2.0.0"
+    },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^7.10.0",
+        "guzzlehttp/psr7": "^2.8.0",
+        "laravel/pint": "^1.25.1",
+        "mockery/mockery": "^1.6.12",
+        "nunomaduro/collision": "^8.8.3",
+        "pestphp/pest": "^3.8.2|^4.1.4",
+        "pestphp/pest-plugin-arch": "^3.1.1|^4.0.0",
+        "pestphp/pest-plugin-type-coverage": "^3.5.1|^4.0.0",
+        "phpstan/phpstan": "^1.12.32",
+        "symfony/var-dumper": "^7.3.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenAI\\": "src/"
+        },
+        "files": [
+            "src/OpenAI.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": false
+        }
+    },
+    "scripts": {
+        "lint": "pint -v --parallel",
+        "test:lint": "pint --test -v --parallel",
+        "test:types": "phpstan analyse --ansi",
+        "test:type-coverage": "pest --type-coverage --min=100",
+        "test:unit": "pest --colors=always",
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:type-coverage",
+            "@test:unit"
+        ]
+    }
+}

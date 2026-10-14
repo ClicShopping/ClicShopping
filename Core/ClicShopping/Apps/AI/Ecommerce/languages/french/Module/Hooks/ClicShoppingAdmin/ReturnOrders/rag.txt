@@ -1,0 +1,46 @@
+text_orders_products_return = [Retour produit de la commande]
+text_orders_products_return_ref = [Référence du produit retourné]
+text_orders_products_return_model = [Référence du modèle du produit retourné]
+text_orders_products_return_name = [Nom du produit retourné]
+text_orders_products_return_qty = [Quantité du produit retourné]
+text_orders_products_reason = [Raison du retour]
+text_orders_products_reason_id = [ID de la raison du retour]
+text_orders_products_status_id = [Id du statut de la raison du retour]
+text_orders_products_comment = [Commentaire du retour du produit]
+text_orders_products_date_added = [Date ajout du retour]
+text_orders_products_date_ordered = [Date de la commande du retour]
+text_orders_products_return_order_id = [ID de la commande du retour]
+text_orders_products_return_product_id = [ID du produit retourné]
+text_orders_products_return_id = [ID de référence du retour]
+text_orders_products_return_history = [Historique du retour produit de la commande]
+text_orders_products_return_history_comment = [Commentaire de l'historique du retour]
+text_orders_products_return_history_date_added = [Date ajout de l'historique du retour]
+text_return_order_taxonomy = Taxonomie :
+
+text_create_taxonomy = Tu es un système d’analyse documentaire. Extrait une taxonomie conceptuelle structurée du texte suivant.
+Le texte correspond à une politique e-commerce de commande ou de retour (ni un produit, ni un fournisseur, ni une catégorie générale).
+Le résultat doit suivre strictement le format ci-dessous.
+Chaque information pertinente doit être rangée dans la dimension appropriée.
+Aucune information inventée ne doit être ajoutée.
+
+Format attendu :
+
+[domaine] : Domaine général du document (ex. E-commerce, Service client, Juridique)
+[sous_domaine] : Spécialisation au sein du domaine (ex. Commandes, Retours, Remboursements, Échanges)
+[type_politique] : Type de document (ex. Politique de retour, Politique de commande, Conditions de remboursement)
+[portée] : Portée géographique ou juridique (ex. France, UE, International)
+[processus] : Description du déroulement opérationnel (ex. Procédure de retour, Validation de commande, Étapes de remboursement)
+[conditions_éligibilité] : Conditions ou critères d’éligibilité (ex. État du produit, Délai, Preuve d’achat)
+[délai] : Périodes ou délais spécifiés (ex. 14 jours, 30 jours)
+[coûts] : Mentions relatives aux coûts ou responsabilités (ex. Frais de retour, À la charge du client)
+[responsabilité] : Acteur responsable de chaque action (ex. Client, Vendeur, Transporteur)
+[méthode_remboursement] : Modalité et délai de remboursement (ex. Virement bancaire, Sous 14 jours)
+[exceptions] : Exceptions ou exclusions mentionnées (ex. Produits personnalisés, Biens périssables)
+[référence_légale] : Cadres ou textes juridiques cités (ex. Directive UE 2011/83/UE, RGPD)
+[objectif] : Finalité du document (ex. Assurer la conformité, Protéger le consommateur, Clarifier les procédures)
+[critères] : Normes de qualité ou de procédure (ex. Transparence, Traçabilité)
+[dimension_symbolique] : Valeurs sous-jacentes (ex. Confiance, Équité, Fiabilité)
+[source] : Source ou origine du document (ex. Politique interne, Exigence légale)
+[mots_cles] : Liste libre de mots-clés pertinents extraits du texte, séparés par des virgules
+
+Texte : {{document_text}}

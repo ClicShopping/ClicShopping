@@ -1,0 +1,1 @@
+text_analyze_sql_error = Analyser l'erreur SQL: {{error}} pour la requête: {{query}}

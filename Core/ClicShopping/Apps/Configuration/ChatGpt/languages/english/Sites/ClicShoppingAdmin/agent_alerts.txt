@@ -1,0 +1,67 @@
+heading_title_agent_alerts = Agent Alerts
+button_refresh = Refresh
+button_back_dashboard = Back to Dashboard
+
+text_overdue_objectives = Overdue Objectives
+text_systematic_issues = Systematic Issues
+text_failed_consensus = Failed Consensus
+text_failed_objectives = Failed Objectives
+
+text_alert_summary = Alert Summary
+text_overdue = Overdue
+text_systematic = Systematic
+text_consensus_failed = Consensus Failed
+text_objectives_failed = Objectives Failed
+
+text_id = ID
+text_agent = Agent
+text_goal = Goal
+text_priority = Priority
+text_deadline = Deadline
+text_days_overdue = Days Overdue
+text_actions = Actions
+text_view = View
+text_status = Status
+text_issue = Issue
+text_occurrences = Occurrences
+text_last_seen = Last Seen
+text_session_id = Session ID
+text_participants = Participants
+text_final_score = Final Score
+text_created = Created
+text_failure_reason = Failure Reason
+text_objective_id = Objective ID
+text_estimated_time = Est. Time
+text_overdue_by = Overdue By
+text_evaluations = Evaluations
+text_avg_score = Avg Score
+text_min_score = Min Score
+text_max_score = Max Score
+text_severity = Severity
+text_output_id = Output ID
+text_initial_scores = Initial Scores
+text_failed_at = Failed At
+text_systematic_note = <strong>Note:</strong> Agents listed here have received consistently low evaluation scores (avg &lt; 0.6) over the past 7 days with at least 5 evaluations.
+text_agent_details = Agent Details
+text_consensus_details = Consensus Details
+text_objective_details = Objective Details
+button_close = Close
+
+text_no_overdue = No overdue objectives
+text_no_systematic = No systematic issues detected
+text_no_failed_consensus = No failed consensus sessions
+text_no_failed_objectives = No failed objectives
+text_escalate = Escalate
+text_escalating = Escalating...
+text_escalation_sent = Escalation sent
+text_escalated = Objective escalated to critical priority
+text_details = Details
+text_na = N/A
+text_not_overdue = Not overdue
+
+help_title = Help - Understanding Agent Alerts
+help_description = This page centralizes all alerts and anomalies detected in the AI agents operation.
+help_overdue = <strong>Overdue Objectives:</strong> Objectives whose estimated deadline has passed. Require intervention (restart, reassignment, or cancellation).
+help_systematic = <strong>Systematic Issues:</strong> Recurring errors detected on the same agent or query type. Indicate a structural malfunction to fix.
+help_consensus = <strong>Failed Consensus:</strong> Sessions where critics could not agree on a score. May indicate ambiguity in evaluation criteria.
+help_failed = <strong>Failed Objectives:</strong> Objectives that could not be achieved. Check failure reasons to adjust parameters or thresholds.

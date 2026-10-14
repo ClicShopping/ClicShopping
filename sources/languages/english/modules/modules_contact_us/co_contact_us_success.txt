@@ -1,0 +1,4 @@
+ modules_contact_us_success_title = Do you want to display contact us success ?
+ modules_contact_us_success_description = Display contact us success
+
+ modules_contact_us_success_text_success = Thank you, we will read carefully your request and we will come back soon

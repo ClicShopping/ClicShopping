@@ -1,0 +1,3 @@
+module_boxes_languages_title = Souhaitez-vous afficher la boxe des langues ?
+module_boxes_languages_description = Affiche les langues disponibles dans la boutique
+module_boxes_languages_box_title = Langues

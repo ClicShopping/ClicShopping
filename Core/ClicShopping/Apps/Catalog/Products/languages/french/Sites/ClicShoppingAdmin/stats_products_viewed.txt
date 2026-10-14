@@ -1,0 +1,12 @@
+heading_title = Produits Vus
+
+image_delete = Supprimer
+icon_preview = Prévisualiser
+
+table_heading_number = No.
+table_heading_products = Produits
+table_heading_viewed = Vu
+table_heading_clear = Effacer
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

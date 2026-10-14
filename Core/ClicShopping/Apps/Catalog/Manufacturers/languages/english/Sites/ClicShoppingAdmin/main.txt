@@ -1,0 +1,119 @@
+heading_title = Brands
+module_cm_title = Brands
+module_cm_short_title = Brands
+
+text_manufacturers =  Brands
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a brands form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Catalog / Brands<br />
+
+module_cm_introduction = The install process create the database settings for this module and the access menu
+
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_manufacturers = Brands
+button_cancel = Cancel
+button_new = New Brand
+button_update = Update
+button_insert = Insert
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+icon_edit = Edit
+
+table_heading_manufacturers = brands
+table_heading_action = Action
+
+table_heading_new_manufacturer = New brand
+table_heading_edit_manufacturer = Edit brand
+table_heading_delete_manufacturer = Delete brand
+table_heading_status = Status
+table_heading_suppliers = Supplier affiliated
+table_heading_products = Products Affiliated Number
+
+table_heading_products_model = Model
+table_heading_products_name = Products name
+table_heading_products_quantity = Products Quantity
+table_heading_products_suppliers_cost = Products Cost
+table_heading_total_cost = Total Cost
+
+title_manufacturer_general = General informations
+text_manufacturers_description = Description
+title_manufacturer_image = Image
+text_suppliers_suppliers_name = Suppliers
+text_manufacturers = brands
+text_date_added = Date Added
+text_last_modified = Last Modified
+text_products = Products
+text_manufacturers_suppliers_name = Brand supplier
+
+text_image_nonexistent = Image does not exist
+text_products_image_vignette = Image
+text_products_image_visuel = Image preview
+
+tab_description = Description
+tab_visuel = Image
+tab_seo = Metadatas
+tab_general = general
+
+text_new_intro = Please fill out the following information for the new brand
+text_edit_intro = Please make any necessary changes
+
+text_manufacturers_name = Brands name:
+text_manufacturers_new_image = New brands Image:
+text_manufacturers_image = Brands Image:
+text_manufacturers_delete_image = Not display image brand
+help_image_manufacturers = * Please not insert more than one image in the section New image.<br /><br />* Note : For the Firefox navigator users, you must click twice on the button source to use the wisiwyg correctly.<br />If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock +)
+
+text_manufacturers_image_delete = Delete image
+text_manufacturers_url = Brands URL:
+
+text_delete_intro = Are you sure you want to delete this brand?
+text_delete_image = Delete brand image?
+text_delete_products = Delete products from this brand? (including product reviews, products on special, upcoming products)
+
+title_help_image = Note on the use of the images
+help_image_manufacturers = <li>Please not insert more than one image in the section Categorie image label.</li><li>If you use the Firefox navigator, you must click twice on the button source to use the wisiwyg correctly.</li><li>If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock +)</li>
+
+title_help_description = Note on the use of the wysiwyg
+help_description = <li>To activate wysiwyg, you must click twice on Source button for Firefox users.</li><li>If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock more)</li>
+
+title_manufacturer_seo = Metadatas for the brand
+text_manufacturer_seo_title = Title
+title_manufacturer_seo_description = Description
+title_manufacturer_seo_keywords = keywords
+
+title_help_seo = Note on the search engine optimization management
+help_seo = <li>The system automatically manages the search engine optimization.<br />
+<blockquote>it automatically included elements in the following order if the fields are not filled:<br />
+title : the name of your product (ex leather jacket)<br />
+description: The product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+keywords: the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+category: Category Product<br />
+</blockquote></li>
+<li>if you fill in the fields, the tags appear in the following way:<br />
+<blockquote>
+title: The title of fields, the name of your product (ex leather jacket)<br />
+description: The field description, the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+keywords: the fields keywords, the product name (leather jacket), the product name cut (jacket, leather), the category name<br />
+</blockquote></li>
+<li><strong>please do not insert  too many keywords (maximum 10)</strong> and establish consistency between each field to find the words the most important first</li>
+
+text_help_clone = Note on the use of the wysiwyg
+text_help_wysiwyg = <li>To activate wysiwyg, you must click twice on Source button for Firefox users.</li><li>If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock more)</li>

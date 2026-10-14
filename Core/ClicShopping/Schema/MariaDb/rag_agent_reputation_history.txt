@@ -1,0 +1,22 @@
+history_id bigint(20) not_null auto_increment comment(Auto-incrementing history ID)
+critic_id varchar(100) not_null comment(Identifier of the critic agent)
+evaluation_id varchar(36) not_null comment(Evaluation that triggered reputation change)
+consensus_score decimal(3,2) not_null comment(Final consensus score for the evaluation)
+critic_score decimal(3,2) not_null comment(Score given by this critic)
+alignment_delta decimal(3,2) not_null comment(Absolute difference between critic and consensus scores)
+reputation_impact decimal(3,2) not_null comment(Change in reputation from this evaluation)
+old_reputation decimal(3,2) not_null comment(Reputation before this evaluation)
+new_reputation decimal(3,2) not_null comment(Reputation after this evaluation)
+recorded_at timestamp NULL default(current_timestamp) comment(When this history record was created)
+
+--
+primary history_id
+idx_critic_id critic_id
+idx_evaluation_id evaluation_id
+idx_recorded_at recorded_at
+idx_critic_recorded critic_id recorded_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

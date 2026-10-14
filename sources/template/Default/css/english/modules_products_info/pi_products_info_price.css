@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+div.ModulesProductsInfoBackground {
+  background-color: #f5f5f5;
+  margin-top: 0.9375rem;
+  margin-left: 0.625rem;
+  padding: 10px 10px 0 10px;
+}
+
+div.ModulesProductsInfoPrice, span.ModulesProductsInfoPrice h2 {
+  color: #edac27;
+  text-align: right;
+  float: none;
+  padding-bottom: 0.9375rem;
+}
+
+#btn_submitproduct {
+  font-weight: normal !important;
+  text-transform: uppercase !important;
+}
+
+
+div.modulesProductsInfoModulesProductsInfosubmitButton, span.modulesProductsInfoModulesProductsInfosubmitButton {
+  float: right;
+  padding-bottom: 0.625rem;
+}
+
+
+div.ModulesProductsInfoQuantityOrder, span.ModulesProductsInfoQuantityOrder h3 {
+  color: #A39993;
+  font-weight: bold;
+  padding-left: 0.3125rem;
+  height: 0rem;
+}
+
+div.ModulesProductsInfokiloPrice, span.ModulesProductsInfokiloPrice h3 {
+  color: #A39993;
+  height: 0rem;
+}
+
+div.ModulesProductsInfoMinOrderQuandityProductsDisplay, span.ModulesProductsInfoMinOrderQuandityProductsDisplay {
+  height: auto;
+  font-size: 0.80rem;
+  color: #A39993;
+  padding-bottom: 0.625rem;
+}
+
+
+div.ModulesProductsInfoQuantityMinOrder {
+
+  float: left;
+  padding-bottom: 0.625rem;
+}
+
+div.ModulesProductsInfoProductsQuantityUnit, span.ModulesProductsInfoProductsQuantityUnit h3 {
+
+  color: #A39993;
+}

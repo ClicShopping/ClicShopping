@@ -1,0 +1,9 @@
+navbar_title = Contrôle de la sécurité
+heading_title = Contrôle de la sécurité
+
+ext_information = Nous avons détecté que votre navigateur a produit une session SSL différente de l'ID employé partout dans nos pages sécurisées.<br /><br />Pour des raisons de sécurité, vous dever vous connecter à votre compte pour continuer vos achats.<br /><br />Beaucoup de vieux navigateurs n\ont pas la capcité de générer une pass sécurisée SSL avec un ID de Session ID qua nous requerons. Si vous utilisez un tel navigateur, nous vous reocmmandons de d\en installer un autre tel que <a href="https://www.microsoft.com/download/internet-explorer.aspx" target="_blank">Microsoft Internet Explorer</a>, <a href="https://www.google.com/chrome/browser/desktop/" target="_blank" rel="noopener">Google Chrome</a>, or <a href="https://www.mozilla.org/firefox/new/" target="_blank">Mozilla Firefox</a> pour contiuer votre expérience d'achat.<br /><br />Nous avons pris ces mesures de sécutié pour votre bien, et nous sommes désolé de cet inconvénient.<br /><br />Veuillez <a href="'index;php?Info&Contact'">Nous contacter</a> si vous avez des questions concernant ce point, ou bien de continuer à acheter votre produit hors ligne.
+
+box_information_heading = Vie privée et sécurité
+box_information = Nous validons la session SSL automatiquement produit par votre navigateur à chaque demande de page sécurisée faite sur le serveur.<br /><br />Cette validation assure qu'il n'y est que vous qui naviguez sur ce site avec votre compte et pas quelqu'un d'autre.
+
+ button_continue = Continuer

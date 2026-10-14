@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_technical_login_title = Chorus Pro technical login
+cfg_configuration_compliance_policy_rules_chorus_pro_technical_login_description = Chorus Pro technical account identifier.

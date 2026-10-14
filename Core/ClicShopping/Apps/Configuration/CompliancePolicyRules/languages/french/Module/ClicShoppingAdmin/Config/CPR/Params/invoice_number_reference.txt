@@ -1,0 +1,2 @@
+cfg_configuration_compliance_policy_rules_invoice_number_reference_title = Référence du numéro de facture
+cfg_configuration_compliance_policy_rules_invoice_number_reference_description = Caractères placés entre la date et le numéro de commande, par exemple le S de 09/02/2026S12. Laisser vide pour aucun séparateur.

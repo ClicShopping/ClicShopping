@@ -1,0 +1,30 @@
+heading_title = Performance monitor
+text_all_servers = All Servers
+text_last_hour = Last Hour
+text_last_24 = Last 24 Hours
+text_last_week = Last Week
+text_last_month = Last Month
+
+text_error_rate = Error rate threshold (%)
+text_error_latency = Latency threshold (ms)
+text_error_downtime = Downtime threshold (s)
+text_apply = text_appy
+text_loading = Loading...
+text_current_performance = Current Performance
+text_request_rate = Request Rate:
+text_average_latency = Average Latency:
+text_error_rate = Error Rate:
+text_uptime = Uptime:
+
+text_request_rate_trend = Performance Trends
+text_error_rate_trend = Latency Trend
+text_latency_trend = Error Rate Trend
+text_performance_trends = Request Rate Trend
+text_performance_statistics = Performance Statistics
+text_avg_latency = Avg Latency
+text_max_latency = Max Latency
+text_total_requests = Total requests
+text_data_points = Data Points
+text_export_data = Export Data
+text_performance_recommendations = Performance Recommendations
+text_loading_recommendations = Loading recommendations...

@@ -1,0 +1,1 @@
+text_products_featured = Do you want insert this product as featured ?

@@ -1,0 +1,10 @@
+navbar_title = New Products
+heading_title = New Products
+
+text_products_news_seo_title = Products new
+
+text_date_added = Date Added:
+text_manufacturer = Brands:
+text_price = Price:
+text_product_options = Options suggested:
+text_no_products = No news in this moment

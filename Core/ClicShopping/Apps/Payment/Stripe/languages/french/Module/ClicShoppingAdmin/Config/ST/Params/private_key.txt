@@ -1,0 +1,3 @@
+cfg_stripe_private_key_title = Clef privée de Production
+cfg_stripe_private_key_desc = Clef privée de Production du compte que vous utilisez <br />
+More information : https://stripeup.com/

@@ -1,0 +1,5 @@
+cfg_stripe_transaction_method_title = Transaction method
+cfg_stripe_transaction_method_description = the processing method to use for each transaction
+
+cfg_stripe_transaction_method_authorization = Automatic
+cfg_stripe_transaction_method_manual = Manual

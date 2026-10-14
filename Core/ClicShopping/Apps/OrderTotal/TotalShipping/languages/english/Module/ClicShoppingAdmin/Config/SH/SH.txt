@@ -1,0 +1,3 @@
+module_sh_title = Total Shipping
+module_sh_short_title = Total Shipping
+module_sh_public_title = Total Shipping

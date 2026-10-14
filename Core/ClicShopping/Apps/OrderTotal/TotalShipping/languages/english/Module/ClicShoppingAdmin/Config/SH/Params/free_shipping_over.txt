@@ -1,0 +1,2 @@
+cfg_order_total_free_shipping_over_title = Provide free shipping for orders over the set amount
+cfg_order_total_free_shipping_over_description = Free Shipping For Orders Over

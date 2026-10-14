@@ -1,0 +1,6 @@
+ module_advanced_search_manufacturers_title = Do  you want to display a manufacturer search field ?
+ module_advanced_search_manufacturers_description = Display a search field allowing to customer to insert criterias
+
+ modules_advanced_search_manufacturers_entry_manufacturers = Manufacturers:
+ modules_advanced_search_manufacturers_text_all_manufacturers = All Manufacturers
+ text_all_manufacturers = All Manufacturers

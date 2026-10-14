@@ -1,0 +1,3 @@
+module_admin_dashboard_total_gpt_token_app_title = Visualiser la consommation de l'API GPT
+module_admin_dashboard_total_gpt_token_app_description = Consommation de l'API GPT
+module_admin_dashboard_total_gpt_token_app_chart_link = Consommation de l'API GPT

@@ -1,0 +1,14 @@
+id INT(11) not_null auto_increment comment(Primary key - unique identifier for each product-category recommendation link)
+products_id INT(11) not_null comment(FK to products table - recommended product)
+categories_id INT(11) not_null comment(FK to categories table - category where product is recommended)
+
+--
+primary id
+idx_products_id products_id
+idx_categories_id categories_id
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Mapping of a recommended product to the categories where the recommendation is shown. The recommendation itself is in products_recommendations.

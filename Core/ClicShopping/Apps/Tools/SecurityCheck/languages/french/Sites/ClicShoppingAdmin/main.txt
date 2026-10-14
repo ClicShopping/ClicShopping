@@ -1,0 +1,55 @@
+heading_title = Vérification Sécurité
+module_sc_title =  Vérification Sécurité
+module_sc_short_title =  Vérification Sécurité
+
+text_security_check = Vérification Sécurité
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'accéder à un fomulaire de vérification de sécurité<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+- Cette app est dans le menu Outils<br />
+
+module_sc_introduction = Le processus d'installation crée la base de données et le menu pour ce module
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Delete
+button_cancel = Cancel
+button_security_check = Vérification sécurité
+button_reset = Reset
+button_update = Mettre à jour
+button_reload = Ré-iniatiliser
+button_new = Nouvelle Adresse IP
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+table_heading_title = Titre
+table_heading_info = Info
+table_heading_module = Modules
+
+table_heading_ip = Ip restrictions
+table_heading_comment = Commentaires
+table_heading_status = Statuts
+table_heading_status_shop = Statut catalogue
+table_heading_status_admin = Statut admin
+table_heading_action = Action
+table_heading_count = Tentative
+
+title_iprestricton_general = Restriction Ip
+text_ip_restriction = Restriction Ip
+text_ip_comment = Comment
+
+tab_general = General
+
+text_result_page = Page {{listing_from}}  sur{{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

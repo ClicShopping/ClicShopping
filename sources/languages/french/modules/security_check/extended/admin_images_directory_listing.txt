@@ -1,0 +1,3 @@
+module_security_check_extended_admin_images_directory_listing_title = ClicShoppingAdmin/images/ répertoires Listing
+module_security_check_extended_admin_images_directory_listing_http_200 = Le répertoire ClicShoppingAdmin/images est accessibles et/ou navigable - veuzillez insérer rectifier dans votre serveur web cet éléments
+includes_directory_listing = ClicShoppingAdmin/images

@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_chorus_pro_enabled_title = Chorus Pro Activation
+cfg_configuration_compliance_policy_rules_chorus_pro_enabled_description = Enables or disables integration with Chorus Pro (True | False).
+
+cfg_configuration_compliance_policy_rules_chorus_pro_enabled_true = True
+cfg_configuration_compliance_policy_rules_chorus_pro_enabled_false = False

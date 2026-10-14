@@ -1,0 +1,64 @@
+heading_title_actor_critic = Tableau de Bord de Surveillance Acteur-Critique
+button_refresh = Actualiser
+button_back_dashboard = Retour au Tableau de Bord
+button_export_csv = Exporter CSV
+button_export_json = Exporter JSON
+
+text_registry_overview = Vue d'Ensemble du Registre
+text_total_actors = Total Acteurs
+text_total_critics = Total Critiques
+text_separation_ratio = Ratio de Séparation
+text_total_agents = Total Agents
+
+text_actor_metrics = Métriques de Performance des Acteurs
+text_total_executions = Total Exécutions
+text_avg_execution_time = Temps d'Exécution Moyen
+text_success_rate = Taux de Réussite
+text_avg_quality_score = Score de Qualité Moyen
+
+text_actor_id = ID Acteur
+text_executions = Exécutions
+text_avg_time = Temps Moyen
+text_quality = Qualité
+text_success_rate = Taux de Réussite
+
+text_critic_metrics = Métriques de Performance des Critiques
+text_total_evaluations = Total Évaluations
+text_avg_evaluation_time = Temps d'Évaluation Moyen
+text_avg_overall_score = Score Global Moyen
+
+text_critic_id = ID Critique
+text_evaluations = Évaluations
+text_avg_score = Score Moyen
+text_accuracy = Précision
+text_completeness = Complétude
+
+text_coordination_metrics = Métriques de Coordination
+text_total_coordinations = Total Coordinations
+text_avg_coordination_time = Temps de Coordination Moyen
+text_avg_consensus_score = Score de Consensus Moyen
+text_avg_critics_per_coordination = Critiques Moyens par Coordination
+
+text_utilization_metrics = Métriques d'Utilisation
+text_actor_utilization = Utilisation des Acteurs
+text_critic_utilization = Utilisation des Critiques
+
+text_recent_coordinations = Chronologie des Coordinations Récentes
+text_critics = critiques
+text_no_coordinations = Aucune coordination récente trouvée
+
+text_export_metrics = Exporter les Métriques
+
+text_reputation_metrics = Métriques de Réputation
+text_avg_reputation = Réputation Moyenne
+text_established_critics = Critiques Établis
+text_active_alerts = Alertes Actives
+text_top_critics = Meilleurs Critiques par Réputation
+text_reputation = Réputation
+text_status = Statut
+text_reputation_alerts = Alertes de Réputation
+text_alert_type = Type d'Alerte
+text_severity = Sévérité
+text_message = Message
+text_created_at = Créé le
+text_no_data = Aucune donnée disponible

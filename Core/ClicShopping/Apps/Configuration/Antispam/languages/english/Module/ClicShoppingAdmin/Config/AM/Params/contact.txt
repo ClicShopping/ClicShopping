@@ -1,0 +1,7 @@
+cfg_antispam_contact_title = Contact us
+cfg_antispam_contact_description = Set True to enable or not the module
+<br /><strong>option: You must install the module or Apps to use it and the modules activated</strong>
+
+cfg_antispam_contact_true = True
+cfg_antispam_contact_false = False
+

@@ -1,0 +1,114 @@
+heading_title = Customers
+heading_title_edit = Customer No
+heading_title_search = Search
+
+table_heading_customers_id = Customers No
+table_heading_firstname = First Name
+table_heading_lastname = Last Name
+table_heading_account_created = Account Created
+table_heading_action = Actions
+table_heading_country = From
+table_heading_number_of_reviews = Comments Number
+table_heading_entry_email_validation = Email valide
+table_heading_entry_company = Company
+table_entry_groups_name = Customers Group
+
+table_heading_entry_company_b2b = Company(B2B)
+text_date_account_created = Account Created:
+text_date_account_last_modified = Last Modified:
+text_info_date_last_logon = Last Logon:
+text_info_number_of_logons = Number of Logons:
+text_info_country = Country:
+text_info_number_of_reviews = Number of Customers:
+text_delete_intro = Are you sure you want to delete this customer?
+text_info_heading_delete_customer = Delete Customer
+text_help_wysiwyg = wysiwyg
+
+text_customers = Customers
+text_male = Men
+text_female = Women
+text_average_age = Average Age
+text_average_newsletter = Newsletter
+text_b2b = B2B
+text_b2c = B2C
+text_customer_no_registred_completly = Partial account created - You can not see the information about this customer until he is registred
+text_customer_partial_registred = Partial account created
+
+category_shipping_customer = Shipping allowed
+
+type_below = Type below
+text_selected = Select One
+
+text_allow_customer_add_address = Allow to customer add an address
+
+text_info_number_of_orders = orders:
+
+text_customer_info = Customer Information
+text_newsletter = Newsletter
+text_customer_ip = Customer address IP
+text_customer_provider = Customer Provider
+
+table_entry_validate = Approved
+approved_client = Customer B2B not approved
+
+icon_email = E-mail
+image_customer = New customer
+image_email_approved = Customer email valide
+image_email_not_approved =  Customer email not valide
+
+email_pass = Your Password :
+email_network = Follow us in real time on  :<br />
+email_twitter = http://www.twitter.com/
+email_facebook = http://www.facebook.com/
+
+customers_note = Specifics notes concerning the customer
+customers_note_summary = Notes
+tab_notes = Customer Notes
+
+entry_contact_customer = Would you inform the client by email for this account creation ?
+entry_coupon_customer = Would you offer a discount coupon to the customer ?
+entry_customers_yes = Yes
+entry_customers_no = No
+text_contact_email = Contact client
+
+entry_address_default = (Main address)
+entry_customers_modify_company = To authorize the customer to modify this information
+entry_customers_modify_address_default = To authorize the customer to modify the address by default
+entry_customers_add_address = To authorize the customer to add other addresses
+entry_customer_location = Location
+
+error_in_form = error has been idenfied, please verified your data.
+error_entry_customers_modify_yes = Authorized
+error_entry_customers_modify_no = Refused
+
+tva_intracom_verify = Verify
+title_help_customers_tva = Note on VAT Intracom
+title_help_tva_customers = Please, valid the document before to verify the society VAT
+
+title_help_customers_image = Help
+title_help_customers_default_address = Note on the authorizations of modifications of the customers
+text_help_customers_default_address = <u>To authorize the customer to add others addresses</u> :<ul><li>Not activated it prohibits the customer to add new addresses in its notebook.</li><li>Active option in the zone <i><strong>My Account</strong></i> of the customer and  during <i><strong>the order process</strong></i>.</li></ul><br /><u>To authorize the customer to modify the address by default</u> :<ul><li>Not activated it prohibits the customer to modify or remove the address by defect in its notebook.</li><li>Not activated it also prohibits <i><strong>the possibility of choosing another bill-to-address</i></strong> during the process order.</li></ul>
+
+text_edit_group_customer = Modify the group
+icon_edit_customer = Edit customer
+icon_edit_orders = Search client Orders
+icon_edit_customers_group = Edit customer group
+icon_edit_new_password = To send a new password
+
+visitor_name = Normal customer
+
+entry_pappers_lookup = Company verification (Pappers)
+entry_pappers_fill = Fill in fields
+entry_pappers_view = View on Pappers
+entry_pappers_manager = Manager
+entry_pappers_company_closed = Company closed
+entry_pappers_not_found = Company not found on Pappers
+
+category_shipping_customer_group = Group B2B Expédition
+button_export_customer_info = CSV Export
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+title_help_company_warning = No information at this moment
+text_help_compaby_warning = Please, see the B2B configuration settings to display information

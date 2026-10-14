@@ -1,0 +1,49 @@
+text_product_name = [Product name]
+text_product_id = [Product ID]
+text_product_model = [Product model]
+text_categories_name = [Product category name]
+text_product_brand_name = [Product Brand name]
+text_product_ean = [Product EAN]
+text_product_sku = [Product SKU]
+text_product_date_added = [Product date added]
+text_product_enable = [Product enable]
+text_product_disable = [Product disable]
+text_product_status = [Product status]
+text_product_ordered = [Product ordered]
+text_product_stock_reorder = [Product stock reorder level for all products (fix)]
+text_product_stock = [Product current stock]
+text_product_stock_alert = [Product stock alert (fix)]
+text_product_stock_dynamic_alert = [Product stock dynamic alert based on order request]
+text_product_description = [Product description]
+text_product_description_summary = [Product description summary]
+text_product_seo_title = [Product SEO title]
+text_product_seo_description = [Product SEO description]
+text_product_seo_keywords = [Product SEO keywords]
+text_product_seo_tag = [Product SEO tag]
+text_product_taxonomy = [Product Taxonomy]
+
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
+The text corresponds to an e-commerce product.
+The output must strictly follow the format below.
+Every relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer any information not explicitly present in the text.
+
+Expected format:
+
+[domain]: General domain of the product (e.g. Home, Fashion, Electronics)
+[subdomain]: Segment or specialization within the domain (e.g. Tableware, Computing, Furniture)
+[product_type]: Type of element or product (e.g. Component, Dinnerware, Shoe)
+[subject_product]: Specific product or reference (e.g. Porcelain plate, Motherboard X, Sneaker Model Y)
+[theme]: Conceptual or functional theme associated (e.g. Conviviality, Performance, Decoration)
+[usage_type]: Intended type of usage (e.g. Domestic, Professional, Outdoor)
+[subject_usage]: Specific usage context (e.g. Dining room, Office, Garden)
+[style]: Style, trend, or aesthetic identity (e.g. Minimalist, Vintage, Contemporary)
+[criteria]: Technical or qualitative criteria/attributes (e.g. Quality, Elegance, Frequency, Size, Version)
+[symbolic_dimension]: Associated values or representations (e.g. Luxury, Sharing, Tradition)
+[sensory_dimension]: Sensory aspects if mentioned (e.g. Texture, Color, Finish)
+[composition]: Constituent components or elements of the product (e.g. Porcelain, Crystal, Metal, Plastic)
+[objective]: Purpose or expected benefit of the product (e.g. Enhance dining experience, Ensure comfort, Optimize performance)
+[source]: Source or supplier if mentioned
+[tags]: Free list of relevant keywords derived from the text, separated by commas
+
+Text: {{document_text}}

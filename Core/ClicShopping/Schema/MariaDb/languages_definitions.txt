@@ -1,0 +1,14 @@
+id int unsigned not_null auto_increment comment(Primary key - unique identifier for each language definition)
+languages_id int unsigned not_null comment(FK to languages table - language identifier)
+content_group varchar(255) not_null comment(Grouping category for related definitions - e.g. admin, shop, errors)
+definition_key varchar(255) not_null comment(Unique key for the translation string)
+definition_value text not_null comment(Translated text value for this key in this language)
+--
+primary id
+idx_languages_definitions_languages_id languages_id
+idx_languages_definitions_groups content_group
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

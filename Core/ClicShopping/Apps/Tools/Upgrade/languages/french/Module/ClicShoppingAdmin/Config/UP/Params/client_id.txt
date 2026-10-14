@@ -1,0 +1,2 @@
+cfg_upgrade_client_id_title = id Client
+cfg_upgrade_client_id_description = Vous devez envoyer une demande à un administrateur du forum pour obtenir votre id client pour utiliser la marketplace

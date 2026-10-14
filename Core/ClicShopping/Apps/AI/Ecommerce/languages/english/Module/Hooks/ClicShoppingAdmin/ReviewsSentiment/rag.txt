@@ -1,0 +1,40 @@
+text_review_sentiment_semantic_semantic_title = Sentiment analysis for the product {{products_name}}
+text_sentiment_semantic_review_sentiment_id = Sentiment ID for {{review_sentiment_id}}
+text_review_sentiment_semantic_description = Review content for {{products_name}}
+text_review_sentiment_semantic_status = Sentiment status for {{products_name}}
+text_review_sentiment_semantic_approved = Sentiment approval for {{products_name}}
+text_review_sentiment_semantic_date_added = Review date added for {{products_name}}
+text_review_sentiment_semantic_vote = Rating given to {{products_name}}
+text_review_sentiment_semantic_customer_id = Customer ID who rated {{products_name}}
+text_review_sentiment_semantic_vote_sentiment = Nature of the vote for {{products_name}}
+text_review_sentiment_taxonomy = [taxonomy]
+
+text_create_taxonomy = TASK : You are a document analysis system. Extract a structured conceptual taxonomy and sentiment profile from the following text.
+The text corresponds to a customer review or feedback on a product or e-commerce category.
+The output must strictly follow the format below.
+Every relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer information not explicitly present in the text.
+
+Expected format:
+
+[domain] : General domain of the product or service being reviewed (e.g. Home, Fashion, Electronics)
+[subdomain] : Segment or specialization within the domain (e.g. Tableware, Computing, Furniture)
+[product_type] : Type of product or category reviewed (e.g. Component, Dinnerware, Shoes)
+[product_subject] : Specific product or item mentioned in the review (e.g. Porcelain Plate, Motherboard X)
+[review_type] : Type of review (e.g. Customer review, Expert review, Test)
+[rating] : Numerical rating if provided (e.g. 4/5)
+[overall_sentiment] : Overall sentiment of the review (e.g. Positive, Negative, Neutral)
+[pros] : Positive points highlighted in the review
+[cons] : Negative points or criticisms mentioned
+[theme] : Conceptual or functional theme related to the review (e.g. Performance, Comfort, Usability)
+[usage_type] : Type of usage discussed (e.g. Domestic, Professional, Outdoor)
+[usage_subject] : Specific usage context (e.g. Dining room, Office, Garden)
+[style] : Style, trend, or aesthetic identity if mentioned (e.g. Minimalist, Vintage, Contemporary)
+[criteria] : Specific criteria or attributes mentioned (e.g. Quality, Durability, Design)
+[symbolic_dimension] : Associated values or representations if mentioned (e.g. Luxury, Sharing, Prestige)
+[sensory_dimension] : Sensory aspects mentioned (e.g. Texture, Color, Finish, Smell)
+[objective] : Benefit, purpose, or outcome emphasized in the review
+[source] : Type of reviewer or platform if mentioned (e.g. Customer, Expert, Website)
+[keywords] : Free list of relevant keywords extracted from the review text
+
+Text: {{document_text}}

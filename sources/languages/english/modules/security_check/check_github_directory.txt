@@ -1,0 +1,2 @@
+check_github_directory_title = Github directory check
+warning_github_directory_exists = The Github direcotry has been identified, please remove it.

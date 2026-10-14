@@ -1,0 +1,5 @@
+module_create_account_pro_privacy_condition_title = Souhaitez vous afficher une une case à cocher de respect des conditions générales ?
+module_create_account_pro_privacy_condition_description = Affiche une une case à cocher de respect des conditions générales
+
+text_privacy_conditions_description = Notre politique de confidentialité est consultable à tout moment sur {{store_name}}  en cliquant <a target="_blank" href="{{privacy_url}}" rel="noreferrer"><u>ici</u></a>.
+text_privacy_conditions_agree = Veuillez cocher cette case afin de donner votre consentement concernant notre politique de confidentialité

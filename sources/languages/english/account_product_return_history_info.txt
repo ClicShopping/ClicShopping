@@ -1,0 +1,3 @@
+navbar_title_1 = Account
+navbar_title_2 = Product return history details
+

@@ -1,0 +1,55 @@
+
+CREATE TABLE IF NOT EXISTS clic_dynamic_pricing_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  rules_id INT NOT NULL,
+  products_id INT NOT NULL,
+  base_price DECIMAL(10,2) NOT NULL,
+  dynamic_price DECIMAL(10,2) NOT NULL,
+  rule_applied VARCHAR(255) NOT NULL,
+  date_added DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  source VARCHAR(50) NOT NULL,
+  INDEX idx_products_id (products_id),
+  INDEX idx_date_added (date_added)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE `clic_dynamic_pricing_rules` (
+  `rules_id` int(11) NOT NULL AUTO_INCREMENT,
+  `rules_name` varchar(255) NOT NULL,
+  `rules_condition` text NOT NULL,
+  `rules_type` enum('percentage_decrease','percentage_increase','fixed_price') NOT NULL DEFAULT 'percentage_decrease',
+  `rules_value` decimal(15,4) NOT NULL,
+  `rules_priority` int(11) NOT NULL DEFAULT '0',
+  `rules_status` tinyint(1) NOT NULL DEFAULT '0',
+  `date_added` datetime NOT NULL,
+  `date_modified` datetime DEFAULT NULL,
+  `rules_status_special` tinyint(1) NOT NULL DEFAULT '0',
+  `customers_group` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`rules_id`),
+  KEY `idx_rules_priority` (`rules_priority`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+#update the number (814 ..).. of the menu
+INSERT INTO `clic_administrator_menu` VALUES(814, 'index.php?A&Catalog\\Products&DynamicPricingRules', 5, 3, 0, '', 1, 'app_catalog_products', 1);
+INSERT INTO `clic_administrator_menu` VALUES(815, 'index.php?A&Catalog\\Products&StatsDynamicPricing', 98, 5, 0, '', 0, NULL, 1);
+
+
+INSERT INTO `clic_administrator_menu_description` VALUES(814, 'Dynamic Pricing', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(814, 'Tarification dynamique', 2);
+INSERT INTO `clic_administrator_menu_description` VALUES(815, 'Dynamic Pricing', 1);
+INSERT INTO `clic_administrator_menu_description` VALUES(815, 'Tarification dynamique', 2);
+
+
+#french
+INSERT INTO clic_configuration VALUES(null, 'Durée du TTL de Memcached', 'MEMCACHED_CACHE_LIFETIME', '3600', 'Durée de la session de memcached', 11, 3, NULL, '2025-05-19 17:16:52', NULL, null);
+INSERT INTO clic_configuration VALUES(null, 'Utiliser Redis', 'USE_REDIS', 'False', 'Activer la mise en cache Redis. Pour du debug, veuillez laisser sur false', 11,4, NULL, '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Pondération des ventes', 'CLICSHOPPING_APP_RECOMMENDATIONS_PR_WEIGHT_SALES', '0.4', 'Poids appliqué au score issu des ventes. Contrôle l\'influence des ventes produit (normalisées par le maximum commandé) dans la stratégie Multiple.', 6, 0, NULL, '2025-09-15 17:07:51', NULL, NULL);
+INSERT INTO clic_configuration` VALUES(null, 'Pondération des sources externes', 'CLICSHOPPING_APP_RECOMMENDATIONS_PR_WEIGHT_EXTERNAL', '0.3', 'Poids appliqué au score issu des recommandations externes (moyenne des scores de recommandations normalisée entre min et max). Utilisé dans la stratégie Multiple.', 6, 0, NULL, '2025-09-15 17:07:51', NULL, NULL);
+
+#english
+INSERT INTO clic_configuration VALUES(null, 'Memcached TTL duration', 'MEMCACHED_CACHE_LIFETIME', '3600', 'Memcached session duration', 11, 3, NULL, '2025-05-19 17:16:52', NULL, null);
+INSERT INTO clic_configuration VALUES(null, 'Use Redis', 'USE_REDIS', 'False', 'Enable Redis caching. For debugging, please leave as false', 11,4, NULL, '2025-05-19 17:16:52', NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))');
+INSERT INTO clic_configuration VALUES(null, 'Sales Weighting', 'CLICSHOPPING_APP_RECOMMENDATIONS_PR_WEIGHT_SALES', '0.4', 'Weight applied to the score derived from sales. Controls the influence of product sales (normalized by the maximum ordered) in the Multiple strategy.', 6, 0, NULL, '2025-09-15 17:07:51', NULL, NULL);
+INSERT INTO clic_configuration VALUES(null, 'External Sources Weighting', 'CLICSHOPPING_APP_RECOMMENDATIONS_PR_WEIGHT_EXTERNAL', '0.3', 'Weight applied to the score derived from external recommendations (average of recommendation scores normalized between min and max). Used in the Multiple strategy.', 6, 0, NULL, '2025-09-15 17:07:51', NULL, NULL);
+

@@ -1,0 +1,14 @@
+config_id int(10) auto_increment unsigned not_null comment((Primary key - unique identifier for each config_id)
+config_key varchar(100) not_null comment(Configuration key e.g., global, agent_specific)
+config_value text not_null comment(JSON configuration data)
+updated_at datetime not_null comment(Last update timestamp)
+created_at datetime not_null default(current_timestamp) comment(Creation timestamp)
+--
+primary config_id
+unique idx_config_key config_key
+idx_updated_at updated_at
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

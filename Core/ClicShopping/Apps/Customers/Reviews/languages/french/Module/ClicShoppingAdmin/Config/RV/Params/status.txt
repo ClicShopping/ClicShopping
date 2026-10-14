@@ -1,0 +1,5 @@
+cfg_reviews_status_title = Statut
+cfg_reviews_status_description = Souhaitez vous activer ce module à votre boutique ?
+
+cfg_reviews_status_true = True
+cfg_reviews_status_false = False

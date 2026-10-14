@@ -1,0 +1,8 @@
+
+modules_tell_a_friend_message_title = Souhaitez-vous afficher le formulaire l'écriture du message
+modules_tell_a_friend_message_description = Afficher le formulaire pour l'écriture du message
+
+modules_tell_a_friend_message_title_friend_message = Votre message
+modules_tell_a_friend_message_entry_antispam = Combien font :
+modules_tell_a_friend_message_title_friend_message = Insérer votre message
+modules_tell_a_friend_message_entry_spam_text = *

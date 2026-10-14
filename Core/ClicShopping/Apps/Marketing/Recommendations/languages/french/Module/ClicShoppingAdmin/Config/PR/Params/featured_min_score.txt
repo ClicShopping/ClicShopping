@@ -1,0 +1,2 @@
+cfg_products_recommendations_featured_min_score_title = Score minimum accepté pour créer automatiquement un produit sélectionnés
+cfg_products_recommendations_featured_min_score_description = Permet de créer automatiquement un produit sélectionné si le score est plus important que le score moyen du produit

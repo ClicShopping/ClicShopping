@@ -1,0 +1,25 @@
+navbar_title = Nous contacter
+
+email_subject = Demande d'un client de ' {{store_name}}
+
+entry_information_admin = Une question relative à une commande d'un client de  {{store_name}} vous a été demandée. '."\n".' Veuillez vous connecter à votre panel d'administration (section commande) pour répondre à cette demande. '."\n".'Veuillez trouver ci-joint l'information concernant le numéro de commande du client :
+entry_additional_information = Pour toute correspondance avec nos services, veuillez passer par le formulaire de contact.
+entry_admin_read_message = Message pour l'administrateur
+text_administrator_department = Aucun département
+entry_customers_id = Votre numéro Client :
+entry_order = Votre numéro de commande :
+entry_date = Date :
+entry_customers_phone = Téléphone :
+entry_customer = Question du client :
+
+entry_name = Nom et Prénom :
+entry_email = Adresse E-mail :
+entry_enquiry = Demande de renseignement :
+entry_enquiry_customer = Votre message :
+entry_enquiry_customer_information = Message du client:
+entry_email_object_customer = Copie de votre demande
+entry_customers_subject = Sujet de votre demande :
+
+error_action_recorder = Erreur : Votre demande a déjà été envoyée. Veuillez réessayer dans {{module_action_recorder_contact_us_email_minutes}} minutes.
+entry_error_contact = Erreur : Veuillez recommencer
+entry_antispam_error = Erreur: La verification anti spam n'est pas correcte. Veuillez vérifier et corriger.

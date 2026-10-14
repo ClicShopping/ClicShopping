@@ -1,0 +1,7 @@
+module_admin_dashboard_security_checks_app_title = Do you want to install Security Checks
+module_admin_dashboard_security_checks_app_description = Run security checks
+module_admin_dashboard_security_checks_app_success = This is a properly configured installation of ClicShopping!
+
+module_security_check_extended_last_run_old = It has been over 30 days since the extended security checks were last performed. Please re-run the extended security checks under Tools -&gt; Security Checks.
+warning_config_file_writeable = I am able to write to the configuration file: /shop/Core/configure.php. This is a potential security risk - please set the right user permissions on this file.
+warning_install_directory_exists = Installation directory exists at: /install. Please remove this directory for security reasons.

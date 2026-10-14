@@ -1,0 +1,60 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+/***************************
+résolution 1050
+****************************/
+@media (max-width: 74rem) {
+  div.InfosHeaderAdmin {
+    display: none;
+    float: left;
+  }
+
+  span.footerHelp {
+    display: none;
+  }
+}
+
+@media (max-width: 85rem) {
+  div.MenuHeaderAdmin {
+    display: none;
+  }
+}
+
+@media (max-width: 40rem) {
+  .logoHeading {
+    display: none;
+  }
+
+  #footer {
+    display: none;
+  }
+}
+
+@media (max-width: 512px) {
+  span.infoHeader {
+    display: none;
+  }
+}
+
+/*
+// Extra small devices (portrait phones, less than ???px)
+// No media query since this is the default in Bootstrap
+
+// Small devices (landscape phones, 34em and up)
+@media (min-width: 34em) { ... }
+
+// Medium devices (tablets, 48em and up)
+@media (min-width: 48em) { ... }
+
+// Large devices (desktops, 62em and up)
+@media (min-width: 62em) { ... }
+
+// Extra large devices (large desktops, 75em and up)
+@media (min-width: 75em) { ... }
+*/

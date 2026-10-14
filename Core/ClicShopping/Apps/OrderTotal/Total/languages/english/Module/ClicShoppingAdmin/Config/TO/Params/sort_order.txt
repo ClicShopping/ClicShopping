@@ -1,0 +1,2 @@
+cfg_order_total_total_sort_order_title = Sort Order
+cfg_order_total_total_sort_order_description = The sort order location of the module shown in the available payment method listing (lowest is displayed first).

@@ -1,0 +1,20 @@
+
+-- Add domain column
+ALTER TABLE clic_languages_definitions
+ADD COLUMN IF NOT EXISTS domain VARCHAR(50) DEFAULT NULL COMMENT 'Domain identifier for domain-specific prompts (e.g., ecommerce, hr, finance)'
+AFTER definition_value;
+
+-- Add index on domain column for efficient domain-specific lookups
+ALTER TABLE clic_languages_definitions
+ADD INDEX IF NOT EXISTS idx_languages_definitions_domain (domain);
+
+-- Create composite index for efficient domain + group + key lookups
+-- This replaces the need for a unique constraint since domain can be NULL
+ALTER TABLE clic_languages_definitions
+ADD INDEX IF NOT EXISTS idx_languages_definitions_domain_group_key (domain, content_group, definition_key);
+
+
+
+ALTER TABLE clic_dynamic_pricing_rules 
+ADD COLUMN IF NOT EXISTS rules_status_promotion tyniint(1) DEFAULT (0) not null COMMENT 'Special pricing flag to create a new specials : 0 - inactive - 1 - active )'
+AFTER customers_group;

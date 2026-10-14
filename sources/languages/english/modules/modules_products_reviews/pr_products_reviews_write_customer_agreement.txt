@@ -1,0 +1,2 @@
+modules_products_reviews_write_customer_agreement_title = Write comment : Do you want to display an agreement message for the customer before the sent ?
+modules_products_reviews_write_customer_agreement_description = Display a message for the customer the customer before the sent

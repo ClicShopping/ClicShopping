@@ -1,0 +1,2 @@
+cfg_products_return_orders_withdrawal_title = Customer withdrawal period
+cfg_products_return_orders_withdrawal_description = Please indicate the withdrawal period that the customer may use to return the product purchased

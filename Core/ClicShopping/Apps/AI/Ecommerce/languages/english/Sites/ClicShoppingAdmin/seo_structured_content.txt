@@ -1,0 +1,4 @@
+seo_faq_section_title = Frequently Asked Questions (FAQ)
+seo_characteristics_section_title = Main Characteristics
+seo_faq_question_prefix = Q:
+seo_faq_answer_prefix = A:

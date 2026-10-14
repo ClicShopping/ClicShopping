@@ -1,0 +1,8 @@
+navbar_title = Reviews
+navbar_title_1 = Success
+
+heading_title_reviews_success = Comments Sent
+
+text_product_reviews_write_success = Your comment has been sent and it will under review. <br />We have a politic about the review and you can consult these elements in our general condition.<br />
+thank you.<br /><br />{{store_owner}}
+

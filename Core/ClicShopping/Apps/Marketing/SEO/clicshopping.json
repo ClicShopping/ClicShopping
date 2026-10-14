@@ -1,0 +1,45 @@
+{
+  "title": "Seo Manager App",
+  "app": "SEO",
+  "vendor": "Marketing",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "AdminDashboard": {
+      "GoogleLinks": "Module\\ClicShoppingAdmin\\Dashboard\\GoogleLinks"
+    },
+    "HeaderTags": {
+      "Index": "Module\\HeaderTags\\Index",
+      "AdvancedSearchResult": "Module\\HeaderTags\\AdvancedSearchResult",
+      "NoRobotIndex": "Module\\HeaderTags\\NoRobotIndex"
+    },
+    "Hooks": {
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm",
+        "Insert": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\Insert"
+      },
+      "ClicShoppingAdmin/Categories": {
+        "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\Categories\\PageTabContent"
+      },
+      "ClicShoppingAdmin/Blog": {
+        "PageTabBlogCategories": "Module\\Hooks\\ClicShoppingAdmin\\Blog\\PageTabBlogCategories",
+        "PageTabBlogContent": "Module\\Hooks\\ClicShoppingAdmin\\Blog\\PageTabBlogContent"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home",
+    "Shop": {
+      "Sitemap": "Sites\\Shop\\Pages\\GoogleSitemap"
+    }
+  }
+}

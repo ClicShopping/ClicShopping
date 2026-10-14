@@ -1,0 +1,7 @@
+module_admin_dashboard_admin_logins_app_title = Do you want to install Last Administrator Logins
+module_admin_dashboard_admin_logins_app_description = Show the last successful and failed administrator logins
+
+module_admin_dashboard_admin_heading_title = Last Administrator Logins
+module_admin_dashboard_admin_logins_app_date = Date
+module_admin_dashboard_admin_logins_action = Action
+module_admin_dashboard_admin_logins_icon_edit = edit

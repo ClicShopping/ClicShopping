@@ -1,0 +1,93 @@
+heading_title = Who's Online
+module_wo_title = Who's Online
+module_wo_short_title = Who's Online
+
+text_whos_online = Who's Online
+text_configure =  configure App Module
+
+text_intro = This app allow you to include an who's online form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Tools<br />
+
+module_wo_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cancel = Cancel
+button_whos_online = Who's Online
+button_reset = Reset
+button_analyse = Analyse
+button_update = Update
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+
+table_heading_online = Online
+table_heading_customer_id = ID
+table_heading_full_name = Full Name
+table_heading_ip_address = IP Address
+table_heading_entry_time = Entry Time
+table_heading_last_click = Last Click
+table_heading_last_page_url = Last URL
+table_heading_user_agent = Agent
+table_heading_http_referer = Referer
+table_heading_action = Action
+table_heading_shopping_cart = Users Shopping Cart
+text_shopping_cart_subtotal = Subtotal
+text_number_of_customers = Visitor(s) online (Considered inactive after 5 minutes. Removed after 15 minutes) : {{number_online}}
+table_heading_http_referer = Referer
+text_http_referer_url = HTTP Referer URL
+text_http_referer_found = Yes
+text_http_referer_not_found = Not Found
+text_status_active_cart = Active with Cart
+text_status_active_nocart = Active with no Cart
+text_status_inactive_cart = Inactive with Cart
+text_status_inactive_nocart = Inactive with no Cart
+text_status_no_session_bot = Inactive Bot with no session?
+text_status_inactive_bot = Inactive Bot with session
+text_status_active_bot = Active Bot with session
+table_heading_country = Country
+table_heading_user_session = Session?
+text_in_session = Yes
+text_no_session = No
+
+text_oscid = clicshopid
+text_profile_display = Profile Display
+text_user_agent = User Agent
+text_error = Error!
+text_admin = Admin
+text_duplicate_ips = IP(s) duplicate(s)
+text_bots = Bots
+text_me = Myself!
+text_all = All
+
+text_active_user =  Customer(s) Active(s)
+text_your_ip_address = Your IP Address
+text_set_refresh_rate = Refresh Rate
+text_none_ = None
+text_customers = Customers
+text_show_bots = Show Bots
+azer_whosonline_whois_url = https://www.dnsstuff.com/tools/whois.ch?ip= ;  //for version 2.9 by azer - whois ip
+text_not_available =    <strong>Note:</strong> N/A = IP non available  //for version 2.9 by azer was missing
+text_last_refresh = Last refresh at  //for version 2.9 by azer was missing
+text_empty = Empty  //for version 2.8 by azer was missing
+text_my_ip_address = My IP adresss   //for version 2.8 by azer was missing
+table_heading_country = Country  // azerc : 25oct05 for contrib whos_online with country and flag
+title_help_whois_date = Legende
+text_real_customers = Customers
+text_active_customers =  Active customers

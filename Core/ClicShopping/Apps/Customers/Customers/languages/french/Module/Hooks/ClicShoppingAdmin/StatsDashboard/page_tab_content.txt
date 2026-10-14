@@ -1,0 +1,8 @@
+box_entry_customers = Nombre de clients
+text_entry_customers_b2c =   - Nb clients B2C
+text_entry_customers_b2b =   - Nb clients B2B
+
+
+text_stats_man = % hommes <br />Age moyen
+text_stats_woman = % femmes <br />Age moyen
+text_year = ans

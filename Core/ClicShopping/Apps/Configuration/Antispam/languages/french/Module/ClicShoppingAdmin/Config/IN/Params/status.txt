@@ -1,0 +1,7 @@
+cfg_antispam_status_title = Statut
+cfg_antispam_status_description = Souhaitez vous activer ce module à votre boutique ?<br />
+Cette configuration vous permet de créer deux champs invisible afin d'attraper les robots de spam
+
+cfg_antispam_status_true = True
+cfg_antispam_status_false = False
+

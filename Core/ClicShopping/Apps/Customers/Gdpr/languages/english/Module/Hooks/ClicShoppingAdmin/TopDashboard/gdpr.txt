@@ -1,0 +1,2 @@
+text_number_gdpr = Customers Gdpr Action
+text_view = - More informations

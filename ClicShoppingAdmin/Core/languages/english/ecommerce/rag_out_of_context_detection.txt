@@ -1,0 +1,75 @@
+text_ooc_allowed_context = E-commerce business context includes (ALLOWED):
+- Products (search, inventory, stock, pricing, descriptions, attributes)
+- Orders (sales, purchases, transactions, order history)
+- Customers (customer data, accounts, profiles, behavior)
+- Revenue (financial metrics, sales figures, profit, margins)
+- Analytics (statistics, reports, metrics, KPIs, trends)
+- Business operations (suppliers, manufacturers, categories, shipping)
+- Documentation (policies, terms, conditions, guides)
+- Marketing (campaigns, promotions, advertising, SEO, social media)
+- Innovation (new products, market trends, competitive analysis)
+- Prospection (lead generation, customer acquisition, market research)
+- Business strategy (growth, expansion, partnerships)
+
+text_ooc_examples = Query: "What is the winner for the next world cup championship"
+Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "sports", "confidence": 0.95, "explanation": "Query about sports championship, not related to e-commerce business", "suggested_action": "reject"}
+Query: "Who won the Oscar?"
+Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "entertainment", "confidence": 0.95, "explanation": "Query about entertainment awards (external knowledge), not about the store's own data", "suggested_action": "reject"}
+Query: "best-selling football jerseys this month"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "About the store's OWN product sales - sports goods can be part of the catalog. Core e-commerce analytics", "suggested_action": "allow"}
+Query: "articles de sport les plus vendus"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "About best-selling sports products in the store's catalog. Core e-commerce analytics", "suggested_action": "allow"}
+Query: "stock des vinyles et CD de musique"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "About the store's own stock of music products. Entertainment items can be part of the catalog", "suggested_action": "allow"}
+Query: "What is the capital of France?"
+Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "general_knowledge", "confidence": 0.95, "explanation": "Query about geography, not related to e-commerce business", "suggested_action": "reject"}
+Query: "Where is Paris?"
+Response: {"is_out_of_context": true, "context_relevance": 0.0, "detected_category": "general_knowledge", "confidence": 0.95, "explanation": "Query about geography, not related to e-commerce business", "suggested_action": "redirect_to_web_search"}
+Query: "total revenue 2025"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query about business revenue, directly relevant to e-commerce analytics", "suggested_action": "allow"}
+Query: "show products"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query about products, core e-commerce functionality", "suggested_action": "allow"}
+Query: "John Smith Premium"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query appears to be a product name search, even though it resembles a person's name. Product searches are core e-commerce functionality", "suggested_action": "allow"}
+Query: "Josef Strauss Prestige"
+Response: {"is_out_of_context": false, "context_relevance": 0.5, "detected_category": "ambiguous_product_name", "confidence": 0.70, "explanation": "Query could be a product name search OR a person name. Ambiguous - should ask for clarification", "suggested_action": "ask_clarification", "clarification_options": ["Search for a product named 'Josef Strauss Prestige'", "Get information about a person", "Something else"]}
+Query: "customers who placed orders over 70 euros in the last 12"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.6, "explanation": "Analytics intent is clear but the time unit is missing - 'last 12' could mean days, months or years", "suggested_action": "ask_clarification", "clarification_options": ["Over the last 12 days", "Over the last 12 months", "Over the last 12 years"]}
+Query: "les clients qui ont commandé plus de 70€ les 12 derniers"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.6, "explanation": "Intent is about customers ordering over 70€ but the unit of '12 derniers' is missing", "suggested_action": "ask_clarification", "clarification_options": ["Sur les 12 derniers jours", "Sur les 12 derniers mois", "Sur les 12 dernières années"]}
+Query: "donne moi le truc la chose des clients machin avec"
+Response: {"is_out_of_context": false, "context_relevance": 0.5, "detected_category": "unintelligible", "confidence": 0.5, "explanation": "Mentions customers but the request is too vague/garbled to map to a single data intent", "suggested_action": "ask_clarification", "clarification_options": ["Liste des clients", "Commandes ou montants dépensés par client", "Autre chose"]}
+Query: "combien vente client 70e"
+Response: {"is_out_of_context": false, "context_relevance": 0.9, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Terse and ungrammatical but the intent is clear: count of sales/customers over 70 euros", "suggested_action": "allow"}
+Query: "quels sont nos meilleurs produits"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.7, "explanation": "'meilleurs' does not name a ranking metric - could mean best-selling, highest revenue, best margin or best rated. No safe default, ask which metric", "suggested_action": "ask_clarification", "clarification_options": ["Ventes (quantité)", "Chiffre d'affaires", "Marge", "Notes et avis clients"]}
+Query: "show me our best products"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "underspecified", "confidence": 0.7, "explanation": "'best' does not specify the ranking metric - units sold, revenue, margin or ratings. No safe default, ask which metric", "suggested_action": "ask_clarification", "clarification_options": ["Sales (quantity)", "Revenue", "Margin", "Customer ratings and reviews"]}
+Query: "les 5 produits les plus vendus"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Ranking metric is explicit ('les plus vendus' = by units sold), so the request is clear. Core e-commerce analytics", "suggested_action": "allow"}
+Query: "Peux-tu me lister les produits recommandés ?"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "'recommandés' names a list the store already maintains, not a ranking metric to arbitrate - the membership is stored, so nothing needs to be asked", "suggested_action": "allow"}
+Query: "Marie Claire Collection wine accessories"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Query is a product search with specific product name and category, core e-commerce functionality", "suggested_action": "allow"}
+Query: "iPhone price on Amazon"
+Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.85, "explanation": "Query about competitor pricing, relevant for business intelligence and market research", "suggested_action": "redirect_to_web_search"}
+Query: "What is the price of samsung galaxy s26 on google shopping"
+Response: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Price of a product on an explicitly named external source (Google Shopping) - external data, route to web search", "suggested_action": "redirect_to_web_search"}
+Query: "What is the price of samsung galaxy s25 on google shopping"
+Response: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Explicit external source (Google Shopping): even if the product exists in the catalog, the requested price is external - redirect_to_web_search, never reject", "suggested_action": "redirect_to_web_search"}
+Query: "price trend of samsung galaxy s26 on google shopping"
+Response: {"is_out_of_context": false, "context_relevance": 0.7, "detected_category": "ecommerce", "confidence": 0.9, "explanation": "Price trend on a named external source - external data, redirect_to_web_search", "suggested_action": "redirect_to_web_search"}
+Query: "ventes de nos chaussures de running ce trimestre"
+Response: {"is_out_of_context": false, "context_relevance": 1.0, "detected_category": "ecommerce", "confidence": 0.95, "explanation": "Internal sales data for our own products - answerable from the database", "suggested_action": "allow"}
+Query: "analyse du marché et de la concurrence pour nos chaussures de running"
+Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.88, "explanation": "Same product but asks for EXTERNAL market/competitor analysis - needs data not in the database", "suggested_action": "redirect_to_web_search"}
+Query: "what are the latest e-commerce trends?"
+Response: {"is_out_of_context": false, "context_relevance": 0.8, "detected_category": "ecommerce", "confidence": 0.90, "explanation": "Query about e-commerce trends, relevant for business strategy and innovation", "suggested_action": "redirect_to_web_search"}
+Query: "how to improve our marketing campaigns?"
+Response: {"is_out_of_context": false, "context_relevance": 0.9, "detected_category": "ecommerce", "confidence": 0.90, "explanation": "Query about marketing strategy, relevant for business operations", "suggested_action": "redirect_to_web_search"}
+Query: "best practices for customer acquisition"
+Response: {"is_out_of_context": false, "context_relevance": 0.9, "detected_category": "ecommerce", "confidence": 0.90, "explanation": "Query about prospection and customer acquisition, relevant for business growth", "suggested_action": "redirect_to_web_search"}
+
+text_ooc_external_competitor_example = - Competitor analysis (prices on Amazon, eBay, other marketplaces)
+
+text_ooc_external_source_rule = - EXPLICIT EXTERNAL SOURCE: any query that NAMES an external source/engine to obtain prices, price trends, availability or comparison. These form one set: Google Shopping, Google Trends, Google / "the web", a marketplace (Amazon, eBay, Cdiscount…), OR a competitor / competitor-price database. This INCLUDES a plain price or trend lookup such as "price of <product> on Google Shopping", "<product> price trend on Google Trends", or "<product> price on Amazon".

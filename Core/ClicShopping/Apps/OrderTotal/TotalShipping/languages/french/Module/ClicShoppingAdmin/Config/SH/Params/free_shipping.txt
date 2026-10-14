@@ -1,0 +1,5 @@
+cfg_order_total_free_shipping_title = Souhaitez appliquer des frais sur l'expédition ?
+cfg_order_total_free_shipping_description = appliquer des frais sur l'expédition
+
+cfg_order_total_free_shipping_true = True
+cfg_order_total_free_shipping_false = False

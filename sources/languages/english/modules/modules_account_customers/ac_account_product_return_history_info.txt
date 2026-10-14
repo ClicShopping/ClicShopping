@@ -1,0 +1,21 @@
+module_account_product_return_history_info_title = Do you want to install the customer's product return historic?
+module_account_product_return_history_info_description = installs the customer's product return history?
+
+
+module_account_product_return_history_info_heading_title_info = details of the status of the return request product product
+module_account_product_return_history_summary = product information
+module_account_product_return_history_write_comment = Write a comment
+
+module_account_product_return_history_status = treatment status
+module_account_product_return_history_status_name = status:
+module_account_product_return_history_date_added = Date:
+module_account_product_return_history_info_comment = Comment:
+module_account_product_return_history_product_name = product name:
+module_account_product_return_history_product_model = product reference:
+module_account_product_return_history_return_ref = reference request:
+module_account_product_return_history_return_qty = amount returned:
+module_account_product_return_history_return_oder_id = Command reference:
+module_account_product_return_history_return_date_added = Date of the request:
+
+module_account_product_return_history_button_back = return
+module_account_product_return_history_button_send = send

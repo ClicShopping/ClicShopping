@@ -1,0 +1,6 @@
+cfg_whos_online_status_title = Statut d'affichage du module
+cfg_whos_online_status_description = Sélectionner True pour afficher le module
+
+cfg_whos_online_status_true = True
+cfg_whos_online_status_false = False
+

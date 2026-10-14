@@ -1,0 +1,71 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.card.boxeContainerBestSellers {
+  margin-top: 0.625rem;
+  border-radius: 0.25rem;
+}
+
+.card-img-top.boxeBannerContentsBestSellers {
+  text-align: center;
+}
+
+.card-header.boxeHeadingBestSellers {
+
+
+  padding-left: 3px;
+  overflow: hidden;
+  text-transform: uppercase;
+
+}
+
+.card-title.boxeTitleBestSellers {
+  overflow: hidden;
+  padding: 3px;
+  text-transform: uppercase;
+
+
+}
+
+.card-text.boxeContentsBestSellers {
+  overflow: hidden;
+
+  text-align: center;
+  padding-bottom: 0.5rem;
+  padding-top: 0.10rem;
+  padding-right: 0.10rem;
+}
+
+.card-footer.boxeBottomBestSellers {
+  border-top: none;
+  padding: 0;
+}
+
+
+.card-block.boxeContentArroundBestSellers {
+  padding: 0.5rem;
+  overflow: hidden;
+  padding-right: 0.1rem;
+  padding-left: 0.1rem;
+}
+
+.card-img-top.boxeBestSellers {
+}
+
+
+.boxePullDownsideBestSellers {
+  width: 90%;
+}
+
+
+ol.olBestSellers {
+}
+
+.BestSellerLi {
+
+}

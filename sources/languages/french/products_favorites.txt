@@ -1,0 +1,9 @@
+navbar_title = Coups de Coeur
+heading_title = Coups de coeur
+
+text_favorites_seo_title = Coups de coeur
+text_date_added = Date d'ajout
+text_manufacturer = Modèle
+text_price = Prix
+text_product_options = Options
+text_no_products = Aucun coup de coeur en ce moment

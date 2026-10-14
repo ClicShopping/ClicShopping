@@ -1,0 +1,8 @@
+module_account_customers_info_history_address_title = Historique Info : Souhaitez-vous permettre au client dans les historiques de commande de voir son adresse d'expédition et paiement?
+module_account_customers_history_info_address_description = Affiche dans l'historiques de commande de voir son adresse d'expédition et paiement
+
+module_account_customers_history_info_address_heading_delivery_address = Adresse de livraison
+module_account_customers_history_info_address_heading_shipping_method = Méthode d'expédition
+module_account_customers_history_info_address_heading_billing_information = Information facturation
+module_account_customers_history_info_address_heading_billing_address = Adresse de facturation
+module_account_customers_history_info_address_heading_payment_method = Méthode de paiement

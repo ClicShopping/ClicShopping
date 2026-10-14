@@ -1,0 +1,1 @@
+module_security_check_extended_admin_includes_directory_listing_title = ClicShoppingAdmin/Core/ Directory Listing

@@ -1,0 +1,9 @@
+navbar_title = Mon compte
+heading_title = Informations sur mon compte
+
+my_support = Contater le support
+my_orders_title = Mes commandes
+my_orders_view = Voir les commandes que j'ai effectuées.
+
+module_account_customers_my_account_information = Afficher ou modifier les informations de mon compte.
+module_account_customers_my_account_address_book = Voir ou changer mon carnet d'adresse.

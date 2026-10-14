@@ -1,0 +1,2 @@
+module_header_tags_rss_title = Do you want to install RSS Flux (meta)?
+module_header_tags_rss_description = Add a RSS Flux balise in the store

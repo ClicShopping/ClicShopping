@@ -1,0 +1,4 @@
+cfg_order_total_shipping_tax_position_title = Où cette ligne est-elle calculée dans la séquence des totaux ?
+cfg_order_total_shipping_tax_position_description = Avant la taxe signifie que le montant entre dans la base taxable, la taxe est donc calculée dessus. Après la taxe signifie qu'il est hors base taxable. La ligne est toujours calculée avant le total général. Modifier ce réglage déplace le module dans la séquence de calcul, et peut changer le seuil de franco atteint par une commande.
+cfg_order_total_shipping_tax_position_before = Avant la taxe (dans la base taxable)
+cfg_order_total_shipping_tax_position_after = Après la taxe (hors base taxable)

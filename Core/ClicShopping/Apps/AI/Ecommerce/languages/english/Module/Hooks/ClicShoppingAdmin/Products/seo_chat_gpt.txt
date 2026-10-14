@@ -1,0 +1,31 @@
+text_seo_page_title = SEO Page Title
+
+text_seo_action = Click to get a GPT response
+
+text_seo_modal_close = Close
+
+text_seo_expertise = You are an expert in e-commerce SEO and search intent optimization.
+text_seo_page_title_question = Generate a conversion-focused SEO title for this product: {{products_name}}. Maximum 70 characters, no emojis, no quotes, no trailing period. Raw output only.
+text_seo_page_tag_question = Generate 8 relevant SEO tags for this product: {{products_name}}. 1 to 3 words per tag, comma-separated, no # symbols. Raw output only.
+text_seo_page_keywords_question = Generate 10 SEO keywords for this product: {{products_name}}. Mix informational and transactional intents, comma-separated. Raw output only.
+text_seo_page_summary_description_question = Generate a persuasive meta description for this product: {{products_name}}. Maximum 160 characters, include one customer benefit and a light CTA. Raw output only.
+
+text_seo_page_tag_question = Give me in less 70 words 5 keywords. Each keywords must have 1 words maximum and must be separated by a comma about this product : {{products_name}}. no emojis, no quotes, no trailing period. Remove the prompt response. Provide only the raw data, no additional text. Raw output only.
+text_seo_page_translate_language = Can you translate in
+
+text_question_description = Write a long description about this product : {{products_name}}.
+text_technical_question = Create a new paragraph organised with Bullets points in HTML concerning the technical characteristics concerning this product : {{products_name}}. Remove the prompt response. Provide only the raw data, no additional text.
+
+tab_gpt_options = Gpt Options
+text_gpt_options = Gpt Options
+text_options_gpt_description = Authorize the AI to generate your content automatically ?
+text_options_gpt_summary_description = Authorize the AI to generate your short description of this product?
+text_options_gpt_seo_title = Authorize the AI to generate the SEO title of this product?
+text_options_gpt_seo_description = Authorize the AI to generate the SEO description of this product?
+text_options_gpt_seo_keywords = Authorize the AI to generate the SEO keywords of this product?
+text_options_gpt_seo_tags = Authorize the AI to generate Tags SEO of this product?
+text_options_gpt_image = Authorize the AI to generate an image of this product ?
+
+title_help_seo = Help
+text_help_seo = - Please note that if you use AI to generate your content, information may take longer to save due to processing. Please wait.<br>
+- The generated content is lightweight, lacks advanced verification, and is susceptible to hallucinations. Please carefully verify the results and the relevance of the generated content.

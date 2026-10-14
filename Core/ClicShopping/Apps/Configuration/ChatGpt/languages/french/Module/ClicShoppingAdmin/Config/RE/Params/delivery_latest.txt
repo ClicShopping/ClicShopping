@@ -1,0 +1,2 @@
+cfg_chatgpt_delivery_latest_title = Délai de livraisons au plus tard
+cfg_chatgpt_delivery_latest_description =  Délai de livraisons au plus tard du produit

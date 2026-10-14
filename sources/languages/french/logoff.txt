@@ -1,0 +1,3 @@
+heading_title = Fermer la connexion
+navbar_title = Fermer la connexion
+text_main = Vous avez fermé votre session. Vous pouvez laisser votre ordinateur allumé sans risque d'utilisation de votre compte.<br /><br />Votre panier en cours a été sauvegardé, ses produits vous seront proposés lors de votre prochaine ouverture de session.

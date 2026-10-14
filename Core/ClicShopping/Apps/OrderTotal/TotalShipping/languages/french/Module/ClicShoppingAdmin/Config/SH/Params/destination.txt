@@ -1,0 +1,6 @@
+cfg_order_total_shipping_destination_title = Appliquer des frais d'expédition en fonction de la destination
+cfg_order_total_shipping_destination_description = Applique des frais d'expédition en fonction de la destination
+
+cfg_order_total_shipping_destination_national = National
+cfg_order_total_shipping_destination_international = International
+cfg_order_total_shipping_destination_both = Both

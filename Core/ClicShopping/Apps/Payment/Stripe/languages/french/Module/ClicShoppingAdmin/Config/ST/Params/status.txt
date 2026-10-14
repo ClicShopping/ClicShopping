@@ -1,0 +1,6 @@
+cfg_stripe_status_title = Statut d'affichage du module
+cfg_stripe_status_description = Sélectionner True pour afficher le module
+
+cfg_stripe_status_true = True
+cfg_stripe_status_false = False
+

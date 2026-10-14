@@ -1,0 +1,11 @@
+id int default(0) not_null comment(FK to administrator_menu table - menu item identifier)
+label varchar(255) not_null comment(Translated menu label text for display)
+language_id int default(1) not_null comment(FK to languages table - language for this translation)
+--
+primary id language_id
+idx_label label
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

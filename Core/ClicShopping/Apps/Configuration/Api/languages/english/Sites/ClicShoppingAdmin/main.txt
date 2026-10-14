@@ -1,0 +1,83 @@
+heading_title = API
+module_ai_title = API
+module_ai_short_title = API
+
+text_api = API
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a api page. <br /><br />
+- Activate this module located in the Configuration menu
+
+module_ai_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_api = API
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+button_update_all = All Update
+button_configure_api = Configurer Api
+button_add = Add
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+icon_edit = Edit
+icon_delete = delete
+
+table_heading_api_id = Id
+table_heading_api_username = Username
+table_heading_api_key_text = Key
+table_heading_api_status = Status
+table_heading_api_date_added = Date added
+table_heading_api_date_modified = Date modified
+table_heading_action = Action
+
+tab_general = General
+tab_ip_address = IP address
+tab_session = Session
+
+text_api_username = Username
+text_api_key = Api Key
+text_add_ip = Add IP
+text_add = Add IP
+text_ip = IP Address
+text_action = Action
+text_token = Token
+text_date_added = Date added
+text_date_modified = Date modified
+text_api_generate_key = Generate a key
+text_comment = Comment
+
+text_heading_product_management = Products
+text_heading_categories_management = Categories
+text_heading_customers_management = Customers
+text_heading_orders_management = Orders
+text_heading_manufacturers_management = Manufacturers
+text_heading_suppliers_management = Suppliers
+text_heading_comment = Comments
+
+text_get_status = Display (GET)
+text_delete_status = Delete (DELETE)
+text_update_status = Update / Insert (PUT / POST)
+text_insert_status = Insert (POST)
+
+text_info_warning = You must save your Api before to add some others elements
+text_info_message = Below you can create a list of IP's allowed to access the API. Your current IP is {{ip_address}}

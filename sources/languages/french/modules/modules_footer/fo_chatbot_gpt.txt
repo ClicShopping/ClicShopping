@@ -1,0 +1,7 @@
+module_footer_chatbot_gpt_title = Souhaitez-vous installer le chatbot utilisant GPT ?
+module_footer_chatbot_gpt_description = Affiche le chatbot dans le catalogue
+module_footer_chatbot_gpt_listen = a votre service
+module_footer_chatbot_gpt_prompt = Demander une question sur un produit (veuillez inclure son nom)
+module_footer_chatbot_gpt_send = Envoyer
+module_footer_chatbot_gpt_close = Fermer
+module_footer_chatbot_gpt_prompt_text = Je suis entrain de traiter votre demande, veuillez patientez...

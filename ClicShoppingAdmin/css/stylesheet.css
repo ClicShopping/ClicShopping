@@ -1,0 +1,864 @@
+/*
+ *
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ *
+ */
+/*
+16px ==> 1rem
+10px => 0.625rem
+*/
+a {
+  color: #000;
+  text-decoration: none;
+}
+
+a:link {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+}
+
+a:active {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+
+a.headerLink:link {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+  padding-top: 0.3125rem;
+}
+
+a.headerLink:visited {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+  padding-top: 0.3125rem;
+}
+
+a.headerLink:active {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+  padding-top: 0.3125rem;
+}
+
+a.headerLink:hover {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: underline;
+  padding-top: 0.3125rem;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+div.contentBody {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+
+}
+
+.wrapper {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+#wrapper {
+}
+
+.contentContainer {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding-bottom: 0.625rem;
+}
+
+.contentContainer h2 {
+  text-decoration: underline;
+  font-weight: normal;
+  margin-bottom: 0;
+  padding-bottom: 0.3125rem;
+}
+
+.contentText {
+  padding: 0 0;
+  line-height: 1.5;
+}
+
+.fieldKey {
+  font-weight: bold;
+  line-height: 1.5;
+  width: 12.5rem;
+}
+
+.fieldValue {
+  line-height: 1.5;
+}
+
+/* page */
+body {
+  margin: 0rem;
+  padding: 0rem;
+}
+
+.content {
+}
+
+#content {
+  height: 100%;
+}
+
+.headerBar {
+  background-color: #D9E2EC;
+}
+
+.headerBarContent {
+  color: #1F2937;
+  font-weight: bold;
+  padding: 0.125rem;
+}
+
+.pageHeading {
+  color: #8b5cf6;
+  padding-top: 0.3125rem;
+}
+
+/* data table */
+.dataTableHeadingRow {
+  background-color: #8b5cf6;
+  color: #ffffff;
+  border: none !important;
+}
+
+.dataTableRow {
+  background-color: #F8FAFC;
+}
+
+.dataTableContent {
+  color: #000000;
+}
+
+
+/* message box */
+
+.messageStackError, .messageStackWarning {
+  background-color: Red;
+  color: White;
+}
+
+.messageStackSuccess {
+  background-color: #10B981;
+  color: White;
+}
+
+table.messageStackError {
+  background-color: #FDFDFD;
+  color: Black;
+  text-align: left;
+  height: 20.3125rem;
+  background-repeat: repeat;
+  border: 0.0625rem solid Red;
+}
+
+table.messageStackSuccess {
+  background-color: #FDFDFD;
+  color: Black;
+  text-align: left;
+  height: 1.5625rem;
+  background-repeat: repeat;
+  border: 0.0625rem solid #10B981;
+}
+
+
+.inputRequirement {
+  color: #ff0000;
+}
+
+/* forms */
+
+FORM {
+  display: inline;
+}
+
+/* account */
+.formAreaTitle {
+  font-weight: bold;
+}
+
+/* miscellaneous */
+.specialPrice {
+  color: #dc3545;
+}
+
+.oldPrice {
+  text-decoration: line-through;
+}
+
+.fieldRequired {
+  color: #ff0000;
+}
+
+.text {
+}
+
+.main {
+}
+
+.errorText {
+  color: #ff0000;
+}
+
+#adminAppMenu {
+  float: left;
+  width: 150px;
+  padding: 0.3125rem;
+}
+
+#adminAppMenu h3 {
+}
+
+#adminAppMenu ul {
+  list-style: none;
+  margin: -0.3125rem 0 -0.3125rem -0.625rem;
+  padding: 0;
+}
+
+#contentText {
+  margin-left: 160px;
+}
+
+
+.p {
+  margin: 0px 0px 0.125rem;
+}
+
+.TextDisplayNumberOfLink {
+  padding-top: 1rem;
+}
+
+
+/***********************/
+/* Custom jQuery UI for gallery box */
+/**********************/
+
+.element.style {
+  display: block;
+  height: auto;
+  width: 300px;
+  top: 400px;
+  left: 580.1875rem;
+}
+
+
+#piList li {
+  margin: 0.3125rem 0;
+  padding: 0.125rem;
+}
+
+
+/* buttons */
+
+.tdbLink a {
+}
+
+.tdbLink button {
+}
+
+/* style facture */
+.mainFacture {
+  background-color: #E5E7EB;
+}
+
+
+/* Styles for dhtml tabbed-pages */
+.mainTitle {
+  padding-top: 0.1875rem;
+  height: 2rem;
+  color: White;
+  font-weight: bold;
+  background-color: #8b5cf6;
+}
+
+.mainTitleTexteSeul {
+  color: White;
+  font-weight: bold;
+}
+
+a.mainTitleTexteSeul {
+  color: White;
+  font-style: italic;
+}
+
+a.mainTitleTexteSeul:Hover {
+
+  color: White;
+  text-decoration: underline;
+  font-style: italic;
+}
+
+.mainTable {
+  border-bottom: 0.0625rem solid #D1D5DB;
+}
+
+
+table.adminform {
+  background-color: #F9FAFB;
+  color: #333333;
+
+  border-bottom: dashed 0.0625rem #D1D5DB;
+  border-top: dashed 0.0625rem #D1D5DB;
+  border-left: dashed 0.0625rem #D1D5DB;
+  border-right: dashed 0.0625rem #D1D5DB;
+  text-align: left;
+  /* height: 20.3125rem;*/
+  background-repeat: repeat;
+}
+
+
+div.adminformAide {
+  background-color: #FFFBEB;
+  color: #333333;
+
+  border-bottom: dashed 0.0625rem #D1D5DB;
+  border-top: dashed 0.0625rem #D1D5DB;
+  border-left: dashed 0.0625rem #D1D5DB;
+  border-right: dashed 0.0625rem #D1D5DB;
+  text-align: left;
+  /* height: 20.3125rem;*/
+  background-repeat: repeat;
+}
+
+table.adminTitle {
+  margin-left: 0px;
+}
+
+
+.adminTitle {
+  background-color: #FDFDFD;
+  color: Black;
+
+  text-align: left;
+  height: 100%;
+  background-repeat: repeat;
+  border: 0.0625rem solid #D1D5DB;
+  height: 50px;
+  padding: 0.3125rem 0.3125rem 0.3125rem 0.3125rem;
+  margin-left: 0.625rem;
+  margin-right: 0.625rem;
+}
+
+
+/***********************************************************************
+* Jscookmenu
+************************************************************************/
+
+span.headerLogo {
+  padding-left: 0.5rem;
+}
+
+span.infoHeader {
+  padding-top: 0.5rem;
+  float: right;
+}
+
+.menuJSCookTexte {
+  color: #fff;
+}
+
+.headerFond {
+  background: #1F2937;
+}
+
+.headerLine {
+  background-color: #9CA3AF;
+  height: 0.02rem;
+}
+
+/*************************************
+// footer
+************************************/
+
+.footerCadre {
+  background-color: #8b5cf6;
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+#footer {
+}
+
+.bg-faded {
+  border-top: 0.0625rem solid #D1D5DB;
+}
+
+/*************************************
+// NavBar
+************************************/
+
+.navbar-inverse {
+  background-color: #F3F4F6;
+  border-top: 0.0625rem solid #D1D5DB;
+}
+
+.navbar {
+  min-height: 0.3125rem;
+  padding-left: 0.625rem;
+  font-size: x-small;
+}
+
+span.pageManager A {
+  font-weight: bold;
+}
+
+/**********************/
+/* Boostrap       */
+/**********************/
+
+.form-control {
+  height: auto;
+}
+
+.modal {
+  z-index: 9999;
+}
+
+.container-fluid {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.btn-default {
+  background: #F9FAFB;
+  color: #374151;
+  text-decoration: none;
+  border-color: #E5E7EB;
+}
+
+a.btn-default {
+  background: #F9FAFB;
+}
+
+.btn-secondary {
+  color: #373a3c;
+  background-color: #F3F4F6;
+}
+
+a.btn-secondary {
+  color: #374151 !important;
+}
+
+.table-hover > tbody > tr:hover > td, .table-hover > tbody > tr:hover > th {
+  background-color: #EFF6FF;
+}
+
+.table > thead > tr > th {
+  border-bottom: 0rem;
+}
+
+.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+  padding: 0.1875rem;
+  padding-top: 0.1875rem;
+  padding-right: 0.1875rem;
+  padding-bottom: 0.1875rem;
+  padding-left: 0.1875rem;
+  border-top: 0px;
+}
+
+.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+  padding: 0.5rem;
+  line-height: 1.42857143;
+  vertical-align: top;
+  border-top: 1px solid #E5E7EB;
+}
+
+td, th {
+  padding-left: 0.3125rem;
+  padding-top: 0.1875rem;
+  padding-bottom: 0.1875rem;
+  padding-right: 0.1875rem;
+}
+
+td, th {
+  padding: 0;
+}
+
+.table-bordered, .table-bordered th, .table-bordered tr, .table-bordered td {
+  border: 0;
+}
+
+.dataTableContent {
+  color: #000000;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.modal-footer {
+  border-top: 0rem;
+}
+
+a.btn {
+  color: #fff;
+}
+
+div.backgroundMenu {
+  bottom: 4px;
+  height: 1.90rem;
+  z-index: 3;
+  background: #374151;
+
+  background: -moz-linear-gradient(top, #374151 0%, #4B5563 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #374151), color-stop(100%, #4B5563));
+  background: -webkit-linear-gradient(top, #374151 0%, #4B5563 100%);
+  background: -o-linear-gradient(top, #374151 0%, #4B5563 100%);
+  background: -ms-linear-gradient(top, #374151 0%, #4B5563 100%);
+  background: linear-gradient(to bottom, #374151 0%, #4B5563 100%);
+}
+
+.imageheaderMenu {
+  float: left;
+  height: 25px;
+}
+
+
+blockquote {
+  border-left: none;
+}
+
+div.tabsClicShopping {
+  border-left: 0.0625rem #E5E7EB solid;
+  border-right: 0.0625rem #E5E7EB solid;
+  border-bottom: 0.0625rem #E5E7EB solid;
+  padding: 0.3125rem 0.3125rem 0.3125rem 0.3125rem;
+
+}
+
+div.adminformAide {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+span.adminformAideContent {
+  padding-left: 0.625rem;
+}
+
+.adminformTitle {
+  background-color: #F9FAFB;
+  color: #333333;
+  border-bottom: dashed 0.0625rem #D1D5DB;
+  border-left: dashed 0.0625rem #D1D5DB;
+  border-right: dashed 0.0625rem #D1D5DB;
+  text-align: left;
+  height: 100%;
+  background-repeat: repeat;
+  padding-bottom: 0.9375rem;
+  padding-top: 0.9375rem;
+  padding-left: 0.625rem;
+}
+
+.adminformAide {
+  /* -> MODIFICATION POUR HARMONISATION : Arrière-plan plus clair/moderne pour l'aide */
+  background-color: #FFFBEB;
+  color: #333333;
+  border-bottom: dashed 0.0625rem #D1D5DB;
+  border-top: dashed 0.0625rem #D1D5DB;
+  border-left: dashed 0.0625rem #D1D5DB;
+  border-right: dashed 0.0625rem #D1D5DB;
+  text-align: left;
+  height: 100%;
+  background-repeat: repeat;
+  padding-bottom: 0.9375rem;
+  padding-top: 0.9375rem;
+  padding-left: 0.625rem;
+}
+
+.backgroundBlank {
+  background-color: #fff;
+}
+
+.dashboard {
+  background-color: #F9FAFB;
+}
+
+.centerInputFields {
+  height: 1.875rem;
+  padding-top: 0.625rem;
+  display: table-cell;
+
+}
+
+div.spaceRow {
+  height: 0.9375rem !important;
+  width: 100%;
+}
+
+div.separator {
+  padding-top: 0.625rem !important;
+  padding-bottom: 0.625rem !important;
+  width: 100%;
+  line-height: 0.0625rem;
+}
+
+/*
+boostrap 4
+*/
+.bg-white {
+  /* -> MODIFICATION POUR HARMONISATION : Fond blanc léger */
+  background-color: #FDFDFD !important;
+}
+
+.card {
+  /* padding: 10px 5px 5px 10px;*/
+  padding: 0px 0px 0px 0px;
+}
+
+
+.cardPrice {
+  padding: 0px 0px 0px 0px;
+}
+
+.cardStatsSuccess {
+  background-color: #10B981;
+  color: #fff
+}
+
+.cardStatsPrimary {
+  background-color: #8b5cf6;
+  color: #fff
+}
+
+.cardStatsInfo {
+  background-color: #3B82F6;
+  color: #fff
+}
+
+.cardStatsWarning {
+  background-color: #FBBF24;
+  color: #fff
+}
+
+.cardStatsDanger {
+  /* -> MODIFICATION POUR HARMONISATION : Couleur de danger moderne */
+  background-color: #EF4444;
+  color: #fff
+}
+
+div.headerCard {
+  /*background-color: #FDFDFD;*/
+  /* background: #8b5cf6;
+   color: white;
+   */
+  padding: 0.3125rem 0.3125rem 0.3125rem 0.3125rem;
+}
+
+.blackline {
+  background-color: #000;
+  height: 1px;
+  border: 0;
+}
+
+
+.linkHandle {
+  cursor: pointer;
+}
+
+.sortHandle {
+  cursor: move;
+}
+
+/******************************
+// Stats box
+********************************/
+.StatsSubtitle {
+  font-size: 0.75rem;
+}
+
+.StatsTitle {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.StatsValue {
+  font-size: 0.75rem;
+}
+
+/***********************************************/
+/* Input confirmation - Checkbox to Switch */
+/**********************************************/
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  display: none;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #D1D5DB;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input.default:checked + .slider {
+  background-color: #4B5563;
+}
+
+input.primary:checked + .slider {
+  background-color: #8b5cf6;
+}
+
+input.success:checked + .slider {
+  background-color: #10B981;
+}
+
+input.info:checked + .slider {
+  background-color: #3B82F6;
+}
+
+input.warning:checked + .slider {
+  background-color: #FBBF24;
+}
+
+input.danger:checked + .slider {
+  background-color: #EF4444;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #8b5cf6;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.list-group-item-slider {
+  position: relative;
+  display: block;
+  padding: .75rem 0.9rem;
+  margin-bottom: -1px;
+  border: none;
+}
+
+.list-group-slider {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: unset;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.text-slider {
+  padding-top: 0.5rem
+}
+
+.progress {
+  background-color: #10B981;
+}
+
+.dashboard {
+  padding-right: 0.5rem !important;
+  padding-top: 0.5rem !important;
+}
+
+/*****************************/
+/* preloader */
+/*****************************/
+
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f7fa;
+  color: #8b5cf6 !important;
+  z-index: 10000;
+}
+
+#preloader_status {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  font-size: 32px;
+}
+
+/*******************************
+/* Modal Chat header            */
+/*******************************/
+
+/* CSS pour la modale sur la droite */
+.modal-right .modal-dialog {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100%;
+  margin: 0;
+  /* Le tiroir suit la largeur d'ecran ; max-width annule le plafond 800px de .modal-lg. */
+  width: min(1400px, 92vw);
+  max-width: none;
+}
+
+.modal-right .modal-content {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.modal-right .modal-body {
+  max-height: calc(100% - 56px); /* Ajustez la hauteur maximale en fonction de la hauteur de l'en-tête et du pied de page */
+  overflow-y: auto;
+}

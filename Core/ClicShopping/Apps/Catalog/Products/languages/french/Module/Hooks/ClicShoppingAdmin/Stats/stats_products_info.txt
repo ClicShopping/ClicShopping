@@ -1,0 +1,3 @@
+text_products_info_title = Produits
+text_products_info_archive = Total en archive
+text_products_info_total = Total produits

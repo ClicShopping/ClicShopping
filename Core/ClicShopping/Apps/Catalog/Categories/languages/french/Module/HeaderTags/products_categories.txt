@@ -1,0 +1,2 @@
+module_header_tags_products_categories_title = Souhaitez vous ajouter les metas tag pour la page des catégories ?
+module_header_tags_products_categories_description = Ajoute la meta tag pour la page des catégories

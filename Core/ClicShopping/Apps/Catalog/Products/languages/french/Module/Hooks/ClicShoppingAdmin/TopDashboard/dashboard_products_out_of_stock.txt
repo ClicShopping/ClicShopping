@@ -1,0 +1,2 @@
+text_number_products_out_of_stock = Produits hors stock
+text_view = - Plus d'informations

@@ -1,0 +1,40 @@
+heading_title = Configuration RAG Recherche Web
+
+button_rag_websearch_dashboard = Tableau de bord
+button_insert_rag_websearch = Ajouter une nouvelle source
+button_back = Retour
+button_save = Enregistrer
+button_delete = Supprimer
+
+table_heading_site_domain = Domaine du site
+table_heading_authority_score = Score d'autorité
+table_heading_status = Statut
+table_heading_description = Description
+table_heading_action = Actions
+
+text_display_number_of_link = Afficher <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+tab_general = Général
+text_description = Description
+
+text_site_domain = Domaine du site
+text_authority_score = Score d'autorité
+text_status = Statut
+text_search_pattern = Modèle de recherche
+text_description = Description
+
+text_ino_authority_score = Entrez le domaine (ex: wikipedia.org)
+text_info_authority_score = Score entre 0 et 0.15 (plus élevé = plus autoritaire)
+text_info_search_pattern = Optionnel: Expression régulière pour filtrer les résultats
+
+text_pattern_usage_title = Informations sur l'utilisation des modèles
+text_pattern_usage_info = Le champ modèle de recherche accepte des expressions régulières pour filtrer les résultats de recherche web. Cela vous permet de:
+text_pattern_usage_example1 = • Filtrer par mots-clés ou phrases spécifiques
+text_pattern_usage_example2 = • Exclure certains types de contenu ou sections
+text_pattern_usage_example3 = • Correspondre à des modèles d'URL ou structures de page spécifiques
+text_pattern_usage_example4 = • Combiner plusieurs conditions en utilisant des opérateurs regex
+text_pattern_usage_note = Laissez vide pour inclure tous les résultats de ce domaine. Utilisez la syntaxe regex standard (ex: /pattern/i pour une correspondance insensible à la casse).
+
+icon_edit = Modifier
+
+id = ID

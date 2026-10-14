@@ -1,0 +1,3 @@
+title_orders_turn_over = Annual turn over
+text_orders_delivered = Delivered
+text_orders_cancelled = Cancelled

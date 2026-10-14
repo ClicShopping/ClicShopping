@@ -1,0 +1,2 @@
+module_header_tags_products_featured_title = Souhaitez vous ajouter les metas tag pour la page des produits sélectionnés ?
+module_header_tags_products_featured_description = Ajoute la meta tag pour la page des produits sélectionnés

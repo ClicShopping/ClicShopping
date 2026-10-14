@@ -1,0 +1,36 @@
+{
+  "title": "Newsletter App",
+  "app": "Newsletter",
+  "vendor": "Communication",
+  "version": "1.0.0",
+  "req_core_version": "4.0",
+  "license": "AGPLv3 / Commercial",
+  "authors": [
+    {
+      "name": "ClicShopping",
+      "company": "ClicShopping",
+      "email": "admin@clicshopping.org",
+      "website": "https://www.clicshopping.org"
+    }
+  ],
+  "modules": {
+    "Hooks": {
+      "ClicShoppingAdmin/StatsDashboard": {
+        "PageTabContent": "Module\\Hooks\\ClicShoppingAdmin\\StatsDashboard\\PageTabContent"
+      },
+      "ClicShoppingAdmin/Stats": {
+        "StatsCustomersNewsletterBySex": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsCustomersNewsletterBySex",
+        "StatsCustomersNewsletterB2bBySex": "Module\\Hooks\\ClicShoppingAdmin\\Stats\\StatsCustomersNewsletterB2bBySex"
+      },
+      "ClicShoppingAdmin/Langues": {
+        "DeleteConfirm": "Module\\Hooks\\ClicShoppingAdmin\\Langues\\DeleteConfirm"
+      },
+      "ClicShoppingAdmin/CustomersGroup": {
+        "Delete": "Module\\Hooks\\ClicShoppingAdmin\\CustomersGroup\\Delete"
+      }
+    }
+  },
+  "routes": {
+    "ClicShoppingAdmin": "Sites\\ClicShoppingAdmin\\Pages\\Home"
+  }
+}

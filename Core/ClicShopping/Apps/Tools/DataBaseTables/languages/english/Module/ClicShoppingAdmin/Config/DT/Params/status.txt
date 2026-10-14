@@ -1,0 +1,6 @@
+cfg_data_base_tables_status_title = Status
+cfg_data_base_tables_status_description = Set True to enable or not the module
+
+cfg_data_base_tables_status_true = True
+cfg_data_base_tables_status_false = False
+

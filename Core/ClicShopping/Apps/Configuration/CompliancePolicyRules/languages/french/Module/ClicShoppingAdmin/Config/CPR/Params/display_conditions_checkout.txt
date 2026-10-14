@@ -1,0 +1,5 @@
+cfg_configuration_compliance_policy_rules_display_display_conditions_checkout_title = Voulez-vous afficher «J’accepte les conditions générales»?
+cfg_configuration_compliance_policy_rules_display_display_conditions_checkout_description = Afficher les conditions générales de vente lors du processus de paiement?
+
+cfg_configuration_compliance_policy_rules_display_display_conditions_checkout_true = True
+cfg_configuration_compliance_policy_rules_display_display_conditions_checkout_false = False

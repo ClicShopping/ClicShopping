@@ -1,0 +1,88 @@
+heading_title = Groups
+heading_title_edit = Edition of the Customers Group
+heading_title_new = New Customers Group
+
+heading_title_search = Search
+
+tab_general = General
+tab_orders = Payment
+tab_shipping = Shipping
+tab_categorie = categories
+
+table_heading_name = Name
+
+heading_title_categorie_b2b = Category Markup
+entry_categories_discount_b2b = Category Markup:
+table_heading_discount_b2b = Default Markup
+
+heading_title_categorie = Category Discount
+entry_categories_discount = Category Discount:
+table_heading_discount = Default Discount
+
+title_default_discount = Markup by default on the products
+title_categorie_discount = Markup by default on the category
+table_heading_categories_discount = Markup on category
+
+table_heading_quantity_default = Order quantity group
+table_heading_color = color Code
+table_heading_action = Action
+entry_group_categories = Categories :
+select_category = 1- Select Categories
+
+text_categories = Categories
+text_categories_no_new = After recording of this new customers group you will have the possibility of personalizing different handing-over on the categories of your choice
+text_products_updated = Price updated
+text_qty_updated = price(s) updated concerning the group
+
+title_default_quantity = Order quantity minimal of this group
+entry_text_quantity_default = Order quantity minimal of this group
+entry_text_quantity_note = &nbsp;<span class="errorText">* See note</span>
+entry_groups_name = Group name
+entry_groups_name_error = Becarefull all fields are required
+entry_groups_name_error_zero = Becarefull % field is required and must be diffenet than zero
+entry_groups_categorie_error = No recording ! because you did not select a category
+
+text_delete_intro = Are you sure to delete this Group?
+text_info_heading_delete_customer = Delete Group
+text_impossible_delete = you cannot delete:
+type_below = Type
+text_selected = Select
+entry_color_bar = Code color:
+text_no_delete_group = Impossibe to delete this group
+
+title_group_tax = View of the products
+entry_group_tax = View the taxe (price) :
+text_group_tax_inc = Inc.
+text_group_tax_ex = Ex.
+entry_group_tax_note = &nbsp;<span class="errorText">* Please read the note below</span>
+
+title_group_name = Name and code color of the customers group
+entry_valeur_discount = Value <i>(%)</i> :
+entry_valeur_discount_note = &nbsp;<span class="errorText">* Please not add the signs according to : + - or %</span>
+
+title_order_customer_default = Mode of invoicing by default
+title_group_paiement_default = Payment to be authorized by default
+title_group_shipping_default = Shipping to be authorized by default
+title_list_categories_discount = List categories
+
+help_title_onglet_general = Note on the management of groups B2B
+help_group_tax = <li>While selecting " <i>Ex. the tax</i> " billing in the tab, select the mode display products prices, this position automatically Excluding taxes registration.</li>
+<li>if the minimum order quantity is equal to 0, it will be the default amount will be generally taken into account. The minimum product does not apply in the B2B mode</li>
+
+help_title_onglet_facturation = Note on the management of groups B2B
+help_order_tax = <li>While selecting " <i>Ex. the tax</i> ",
+mode selection display price products in the General tab this position automatically Excluding taxes registration. </li>
+
+entry_groups_name_success = Success update
+entry_groups_name_error = error, please verify your data
+entry_groups_categorie_error = Error on category
+
+options_order_taxe = With taxes
+options_order_no_taxe = Without no taxes
+text_price_success = Group price updated with success
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Displaying <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (of <strong>{{listing_total}}</strong>)
+
+icon_update = Update
+icon_edit = Edit

@@ -1,0 +1,3 @@
+text_average_newsletter = Newsletter par sexe
+text_male = Hommes
+text_female = Femmes

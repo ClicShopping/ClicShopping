@@ -1,0 +1,2 @@
+module_products_info_gallery_baguettebox_title = Souhaitez-vous afficher une galerie d'images ?
+module_products_info_gallery_baguettebox_description = Affiche une galerie d'images

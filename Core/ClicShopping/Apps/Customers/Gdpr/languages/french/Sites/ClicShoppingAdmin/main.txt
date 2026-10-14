@@ -1,0 +1,49 @@
+heading_title =  GRPD
+module_me_title =  GRPD
+module_me_short_title =  GRPD
+
+text_gdpr = GRPD
+text_configure =  configurer App Module
+
+text_intro = Cette app vous permet de gerer la GRPD en attente de validation. <br /><br />
+- Activer ce module et activer le module GRPD
+
+module_gr_introduction = Le processus d'installation installe la base de données et le menu
+
+button_back = Retour
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+button_insert =  Insérer
+button_reset = Réinitialiser
+button_update = Mettre à jour
+button_activate = Activer
+button_gdpr =  GRPD
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_info = Les demandes de suppression du compte GDPR se traiteront après {{date_info}} jours afin que toute détection de fraude, recharge ou remboursement puisse être traitée
+
+table_heading_lastname = Nom
+table_heading_firstname = Prénom
+table_heading_email = E-mail
+table_heading_account_last_logon = Dernière connexion
+table_heading_action = Action
+heading_title_search = Rechercher
+heading_title = GRPD
+
+icon_delete = Supprimer
+
+text_result_page = Page {{listing_from}} à {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)

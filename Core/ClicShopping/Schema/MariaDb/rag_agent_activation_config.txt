@@ -1,0 +1,18 @@
+agent_id varchar(100) not_null comment(Unique agent identifier)
+enabled tinyint(1) not_null default(1) comment(Agent enabled state (1=enabled, 0=disabled))
+agent_type enum('actor','critic','hybrid') not_null comment(Agent type)
+domain varchar(50) default null comment(Domain specialization ecommerce, hr, finance, trading, etc)
+description text default null comment(Agent description)
+created_at datetime not_null comment(Registration timestamp)
+updated_at datetime not_null comment(Last update timestamp)
+--
+primary agent_id
+idx_enabled enabled
+idx_agent_type agent_type
+idx_domain domain
+idx_enabled_type enabled agent_type
+idx_enabled_domain enabled domain
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

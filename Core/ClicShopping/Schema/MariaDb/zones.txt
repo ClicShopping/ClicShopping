@@ -1,0 +1,13 @@
+zone_id int not_null auto_increment comment(Primary key - unique identifier for each zone/region)
+zone_country_id int not_null comment(FK to countries table - country this zone belongs to)
+zone_code varchar(255) not_null comment(Zone code - e.g. state abbreviation like CA, NY, TX)
+zone_name varchar(255) not_null comment(Full zone name - e.g. California, New York, Texas)
+zone_status tinyint(1) default(0) not_null comment(Zone status - 0: inactive, 1: active)
+--
+primary zone_id
+idx_zones_country_id zone_country_id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Geographic zones and regions within countries - states, provinces, etc.

@@ -1,0 +1,4 @@
+cfg_stripe_prepare_order_status_id_title = Statut la commande
+cfg_stripe_prepare_order_status_id_desc = Veuillez sélectionner le statut adapté en fonction de la nouvelle commande
+
+cfg_stripe_prepare_order_status_id_default = -- Store Default Order Status --

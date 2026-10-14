@@ -1,0 +1,5 @@
+module_advanced_search_price_title = Souhaitez-vous afficher le champs de recherche par prix ?
+module_advanced_search_price_description = Affiche un champ de recherche par prix permettant au client de mettre des critères
+
+modules_advanced_search_price_entry_price_from = Prix à partir de :
+modules_advanced_search_price_entry_price_to = Prix jusqu'à :

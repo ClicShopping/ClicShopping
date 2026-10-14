@@ -1,0 +1,3 @@
+module_security_check_extended_admin_images_directory_listing_title = ClicShopping Admin Core directory
+module_security_check_extended_includes_directory_listing_http_200 = The Core directory is readable and/or browsablee - please, change the right on the directory in 755
+includes_directory_listing = Core

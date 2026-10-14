@@ -1,0 +1,6 @@
+navbar_title_1 = Success
+
+text_success = Your request has sent with success to our customer service {{store_name}}
+modules_contact_us_success_text_success = Thank you, we will carefully consider your request and renvenir you shortly
+
+

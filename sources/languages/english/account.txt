@@ -1,0 +1,9 @@
+navbar_title = My Account
+heading_title = My Account Information
+
+my_support = Contact the customers support services
+my_orders_title = My orders
+my_orders_view = View the orders I have made.
+
+module_account_customers_my_account_information = View or change my account information
+module_account_customers_my_account_address_book = View or change entries in my address book

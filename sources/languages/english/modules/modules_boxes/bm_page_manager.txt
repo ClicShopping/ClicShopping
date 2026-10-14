@@ -1,0 +1,4 @@
+ module_boxes_page_manager_title = Primary information box
+ module_boxes_page_manager_description = information primary display
+
+ module_boxes_page_manager_box_title = Our services

@@ -1,0 +1,12 @@
+module_login_customer_privacy = Do you want to display a privacy information ?
+module_login_customer_privacy_description = Display a text about a privacy privacy information for the customer
+
+text_customer_privacy = <strong>Data secure</strong><br /><br /> {{store_name}} agrees to secure all your personal information and keeping strictly confidential. We do not sell email addresses to companies email marketing.
+The information you provide, except for your password that is encrypted and can not be read, is for authorized {{store_name}} authorized personnel who is the controller.
+Your data is used to manage your access to your {{store_name}} customer account, and also for the processing and the follow-up of your orders, the after-sales service of the products ordered on our Site,
+marketing management and customer relations, collection and fight against fraud.
+Your data, except your password, may be sent to {{store_name}} providers for order processing, customer relationship management and after-sales service.
+In application of the law of 6 January 1978 relating to computers, files and freedoms, you have the rights, access and rectification of your personal data and the right to oppose their treatment for reasons legitimate. You also have the right to formulate specific or general guidelines regarding the storage, deletion and communication of your post-mortem data. You can exercise all these rights by contacting us via the contact form of the site.<br />
+You can also manage your personal data and preferences at any time in your account
+
+heading_title_b2b = Privacy information

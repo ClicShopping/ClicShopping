@@ -1,0 +1,2 @@
+module_header_tags_products_news_title = Souhaitez vous ajouter les metas tag pour la page des nouveautés de produit ?
+module_header_tags_products_news_description = Ajoute la meta tag pour la page des nouveautés de produits

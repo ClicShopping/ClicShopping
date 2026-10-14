@@ -1,0 +1,94 @@
+heading_title = Suppliers
+module_cs_title = Suppliers
+module_cs_short_title = Suppliers
+
+text_suppliers =  Suppliers
+text_configure =  configure App Module
+
+text_intro = This app allow you to include a Suppliers form. <br /><br />
+- Click on Configure to access / install or uninstall the app.<br />
+- The App is located in Catalog / Suppliers<br />
+
+module_cs_introduction = The install process create the database settings for this module and the access menu
+
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_suppliers = Suppliers
+button_cancel = Cancel
+button_new = New supplier
+button_update = Update
+button_insert = Insert
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+icon_edit = Edit
+
+table_heading_suppliers = Supplier name
+table_heading_products_suppliers = Products Num.
+table_heading_manager = Manager name
+table_heading_phone = Telephone
+table_heading_fax = FAX
+table_heading_email_address = Email
+table_heading_action = Action
+table_heading_status = Statut
+
+table_heading_new_supplier = New Supplier
+table_heading_edit_suppliers = Edit supplier
+table_heading_delete_suppliers = Delete supplier
+
+tab_suppliers_note = Notes
+tab_visuel = Image
+tab_general = General
+
+title_suppliers_general = General
+title_help_image = Note on the use of the images
+
+text_suppliers = Suppliers:
+text_date_added = Date Added:
+text_last_modified = Last Modified:
+text_products = Products:
+text_image_nonexistent = IMAGE DOES NOT EXIST
+title_suppliers_image = Supplier image
+text_products_image_vignette = Image
+text_products_image_visuel = Image preview
+
+text_new_intro = Please fill out the following information for the new supplier
+text_edit_intro = Please make any necessary changes
+
+text_suppliers_name = Suppliers Name:
+text_suppliers_new_image = New suppliers Image:
+text_suppliers_image = Suppliers Image:
+text_suppliers_delete_image = Delete image
+help_image_suppliers = * Please do not insert more than one image in the section New image.<br /><br />* Note : For the Firefox navigator users, you must click twice on the button source to use the wisiwyg correctly.<br />If you inserted plugin in Firefox, there can be incompatibilities (ex: adblock +)
+text_suppliers_url = Suppliers URL:
+text_suppliers_manager = Manager name :
+text_suppliers_phone = Telephone :
+text_suppliers_fax = Fax :
+text_suppliers_email_address = Email address :
+text_suppliers_address = Address :
+text_suppliers_suburb = Suburb :
+text_suppliers_postcode = Postcode :
+text_suppliers_city = City :
+text_suppliers_states = States :
+text_suppliers_country = Country :
+text_suppliers_notes = Others informations
+
+text_delete_intro = Are you sure you want to delete this supplier?
+text_delete_image = Delete suppliers image?
+text_delete_products = Delete products from this supplier? (including product reviews, products on special, upcoming products)
+
+text_products_deactivated_supplier_delete = The products linked to the deleted supplier(s) have been deactivated.

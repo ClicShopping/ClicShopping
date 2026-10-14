@@ -1,0 +1,245 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+.main-nav {
+  border-bottom: none;
+}
+
+/* Top menu */
+.sm-mint {
+  border-top: none;
+  border-bottom: none;
+  color: #333;
+}
+
+.sm-mint li {
+  border-top: none;
+  color: #fff;
+}
+
+.sm-mint li a {
+  border-top: none;
+  color: #fff;
+}
+
+.sm-mint li a:hover {
+  border-top: none;
+  color: #fff;
+}
+
+
+.sm-mint li li a {
+  color: #333;
+}
+
+.sm-mint li li a:hover {
+  color: #333;
+  background-color: #FFEEC2;
+}
+
+.ul .ul_1st_level a {
+  color: #333 !important;
+}
+
+
+.sm-mint a {
+  font-size: 13px;
+  background-image: none;
+  line-height: 8px;
+  background-color: transparent;
+  -moz-border-radius: 0px 0px 0 0;
+  -ms-border-radius: 0px 0px 0 0;
+  -o-border-radius: 0px 0px 0 0;
+  border-radius: 0px 0px 0 0;
+  color: #333;
+}
+
+.sm-mint a:hover, .sm-mint a:active, .sm-mint a:focus, .sm-mint a:active a.highlighted {
+  font-size: 13px;
+  background-image: none;
+  line-height: 8px;
+  background-color: transparent;
+  -moz-border-radius: 0px 0px 0 0;
+  -ms-border-radius: 0px 0px 0 0;
+  -o-border-radius: 0px 0px 0 0;
+  border-radius: 0px 0px 0 0;
+  color: #333;
+}
+
+
+/* 1st level*/
+
+.sub_menu_1st_level a {
+  color: #333 !important;
+}
+
+.sm-mint ul {
+  background-color: #eee;
+  color: #333333;
+}
+
+.sm-mint ul a {
+  color: #333333;
+  background-color: #eee;
+}
+
+.sm-mint ul a:active {
+  font-size: 13px;
+  background-color: #eee;
+  color: #333333;
+}
+
+.sm-mint ul a:hover,
+.sm-mint ul a:focus {
+  color: #333333;
+  background-color: #FFEEC2;
+}
+
+.sm-mint ul ul a:focus {
+  font-size: 13px;
+  background-color: #eee;
+  color: #333333;
+}
+
+.ul_1st_level a {
+  color: #333333;
+}
+
+/* 2nd level*/
+.sm-mint ul ul a,
+.sm-mint ul ul a:focus,
+.sm-mint ul ul a:active {
+  color: #333333;
+  background-color: #eee;
+}
+
+.sm-mint ul ul a:hover {
+  color: #333333;
+  background-color: #FFEEC2;
+}
+
+.sm-mint a.highlighted {
+  background: none;
+  color: #333333;
+  -webkit-box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
+  -moz-box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
+}
+
+
+.sm-mint ul ul ul ul ul ul a,
+.sm-mint ul ul ul ul ul ul a:hover,
+.sm-mint ul ul ul ul ul ul a:focus,
+.sm-mint ul ul ul ul ul ul a:active {
+  border-left: 40px solid transparent;
+}
+
+.main-nav:after {
+  clear: both;
+  content: "\00a0";
+  display: block;
+  height: 0;
+  font: 0px/0 serif;
+  overflow: hidden;
+}
+
+#main-menu {
+  clear: both;
+  border-bottom: 0;
+}
+
+/* Mobile menu toggle button */
+
+.main-menu-btn {
+
+  position: relative;
+  display: block;
+  padding: 0.815em 40px;
+  height: 24px;
+  overflow: hidden;
+  line-height: 26px;
+  text-align: center;
+  cursor: pointer;
+  color: #BBB1A3;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* hamburger icon */
+
+.main-menu-btn-icon,
+.main-menu-btn-icon:before,
+.main-menu-btn-icon:after {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  height: 2px;
+  width: 24px;
+  background-color: #fff;
+  -webkit-transition: all 0.10s;
+  transition: all 0.10s;
+}
+
+.main-menu-btn-icon:before {
+  content: '';
+  top: -7px;
+  left: 0;
+}
+
+.main-menu-btn-icon:after {
+  content: '';
+  top: 7px;
+  left: 0;
+}
+
+
+/* x icon */
+
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon {
+  height: 0;
+  background: transparent;
+}
+
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon:before {
+  top: 0;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+#main-menu-state:checked ~ .main-menu-btn .main-menu-btn-icon:after {
+  top: 0;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+
+/* hide menu state checkbox (keep it visible to screen readers) */
+
+#main-menu-state {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  color: #000;
+}
+
+
+/* hide the menu in mobile view */
+
+#main-menu-state:not(:checked) ~ #main-menu {
+  display: none;
+}
+
+#main-menu-state:checked ~ #main-menu {
+  display: block;
+}
+
+
+

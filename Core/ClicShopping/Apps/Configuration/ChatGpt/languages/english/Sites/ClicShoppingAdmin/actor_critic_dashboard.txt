@@ -1,0 +1,64 @@
+heading_title_actor_critic = Actor-Critic Monitoring Dashboard
+button_refresh = Refresh
+button_back_dashboard = Back to Dashboard
+button_export_csv = Export CSV
+button_export_json = Export JSON
+
+text_registry_overview = Registry Overview
+text_total_actors = Total Actors
+text_total_critics = Total Critics
+text_separation_ratio = Separation Ratio
+text_total_agents = Total Agents
+
+text_actor_metrics = Actor Performance Metrics
+text_total_executions = Total Executions
+text_avg_execution_time = Avg Execution Time
+text_success_rate = Success Rate
+text_avg_quality_score = Avg Quality Score
+
+text_actor_id = Actor ID
+text_executions = Executions
+text_avg_time = Avg Time
+text_quality = Quality
+text_success_rate = Success Rate
+
+text_critic_metrics = Critic Performance Metrics
+text_total_evaluations = Total Evaluations
+text_avg_evaluation_time = Avg Evaluation Time
+text_avg_overall_score = Avg Overall Score
+
+text_critic_id = Critic ID
+text_evaluations = Evaluations
+text_avg_score = Avg Score
+text_accuracy = Accuracy
+text_completeness = Completeness
+
+text_coordination_metrics = Coordination Metrics
+text_total_coordinations = Total Coordinations
+text_avg_coordination_time = Avg Coordination Time
+text_avg_consensus_score = Avg Consensus Score
+text_avg_critics_per_coordination = Avg Critics per Coordination
+
+text_utilization_metrics = Utilization Metrics
+text_actor_utilization = Actor Utilization
+text_critic_utilization = Critic Utilization
+
+text_recent_coordinations = Recent Coordinations Timeline
+text_critics = critics
+text_no_coordinations = No recent coordinations found
+
+text_export_metrics = Export Metrics
+
+text_reputation_metrics = Reputation Metrics
+text_avg_reputation = Average Reputation
+text_established_critics = Established Critics
+text_active_alerts = Active Alerts
+text_top_critics = Top Critics by Reputation
+text_reputation = Reputation
+text_status = Status
+text_reputation_alerts = Reputation Alerts
+text_alert_type = Alert Type
+text_severity = Severity
+text_message = Message
+text_created_at = Created At
+text_no_data = No data available

@@ -1,0 +1,6 @@
+
+module_order_total_shipping_title = Expédition
+module_order_total_shipping_description = Co&ugrave;t d'Expédition<br /><br /><font color="#FF0000"><strong>Attention!</strong> La désactivation de ce module rétablira les valeurs par défaut</font>
+
+free_shipping_title = Expedition gratuite
+free_shipping_description = Expédition gratuite pour les commandes supérieures à %s

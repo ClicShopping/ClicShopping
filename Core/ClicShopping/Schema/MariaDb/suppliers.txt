@@ -1,0 +1,25 @@
+suppliers_id int not_null auto_increment comment(Primary key - unique identifier for each supplier)
+suppliers_name varchar(32) not_null comment(Supplier company name)
+suppliers_image varchar(255) comment(Path to supplier logo or image file)
+date_added datetime comment(Timestamp when supplier was created)
+last_modified datetime comment(Timestamp of last modification to supplier)
+suppliers_manager varchar(64) comment(Name of supplier account manager or contact person)
+suppliers_phone varchar(32) comment(Supplier primary phone number)
+suppliers_email_address varchar(96) comment(Supplier email address for communication)
+suppliers_fax varchar(32) comment(Supplier fax number)
+suppliers_address varchar(64) comment(Supplier street address)
+suppliers_suburb varchar(32) comment(Supplier suburb or district)
+suppliers_postcode varchar(10) comment(Supplier postal code)
+suppliers_city varchar(32) comment(Supplier city)
+suppliers_states varchar(32) comment(Supplier state or province)
+suppliers_country_id int default(0) not_null comment(FK to countries table - supplier country)
+suppliers_notes text comment(Internal notes about the supplier)
+suppliers_status int(1) default(0) not_null comment(Supplier status - 0: inactive, 1: active)
+--
+primary suppliers_id
+idx_suppliers_name suppliers_name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Supplier identity and contact details, one row per supplier: company name, account manager, telephone, e-mail, postal address, country and internal notes.

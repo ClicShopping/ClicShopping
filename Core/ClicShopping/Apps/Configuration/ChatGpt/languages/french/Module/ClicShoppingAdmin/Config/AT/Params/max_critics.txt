@@ -1,0 +1,2 @@
+cfg_chatgpt_max_critics_title = Maximum Critics per Evaluation
+cfg_chatgpt_max_critics_description = Maximum number of critics that can evaluate a single action. More critics = better evaluation but higher cost. Recommended: 5.

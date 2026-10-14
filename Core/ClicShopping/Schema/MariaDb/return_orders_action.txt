@@ -1,0 +1,11 @@
+return_action_id int not_null default(0) comment(Primary key - unique identifier for each return action type)
+language_id int default(1) not_null comment(FK to languages table - language for action name)
+name varchar(255) not_null comment(Action name - e.g. Refund, Exchange, Store Credit, Repair)
+--
+primary return_action_id language_id
+idx_name name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Per-language label of a return action (repair, exchange, refund). Lookup table: join it for the label, never count returns here - the returns are in return_orders.

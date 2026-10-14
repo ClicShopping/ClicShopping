@@ -1,0 +1,15 @@
+id int(11) not_null auto_increment comment(Primary key - unique identifier for each web search source)
+site_domain varchar(255) not_null comment(Domain name of the web search source - e.g., wikipedia.org, stackoverflow.com)
+authority_score decimal(6,4) not_null comment(Authority/trust score for this source (0.0000-1.0000) - higher is more authoritative)
+status tinyint(1) not_null comment(Source status - 0: disabled, 1: enabled)
+description text not_null comment(Description of the source and its content focus)
+search_pattern varchar(255) comment(URL pattern for constructing search queries on this source)
+--
+primary id
+idx_site_domain site_domain
+idx_status_authority status authority_score
+
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci

@@ -1,0 +1,208 @@
+/**
+ * CockpitAI Module - Custom Styles
+ * Bootstrap 5.x compatible styling for strategic product analysis interface
+ * 
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+ */
+
+/* Score Cards */
+#CockpitAI-results .card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+#CockpitAI-results .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Score Display */
+#CockpitAI-results .display-4 {
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+/* Progress Bars */
+#CockpitAI-results .progress {
+  border-radius: 0.5rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#CockpitAI-results .progress-bar {
+  font-weight: 600;
+  transition: width 0.6s ease;
+}
+
+/* Quadrant Card */
+#CockpitAI-results .card.border-success,
+#CockpitAI-results .card.border-warning,
+#CockpitAI-results .card.border-danger,
+#CockpitAI-results .card.border-info,
+#CockpitAI-results .card.border-secondary {
+  border-width: 2px;
+}
+
+/* Action List */
+#CockpitAI-results .list-group-item {
+  border-left: 4px solid transparent;
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+#CockpitAI-results .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Priority Badges */
+#CockpitAI-results .badge.bg-danger {
+  animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Loading Spinner */
+#CockpitAI-loading .spinner-border {
+  animation: spinner-border 0.75s linear infinite;
+}
+
+/* History Table */
+#CockpitAI-results .table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+  cursor: pointer;
+}
+
+#CockpitAI-results .table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+}
+
+/* Collapsible Sections */
+#CockpitAI-results .collapse {
+  transition: height 0.35s ease;
+}
+
+/* Factor List */
+#CockpitAI-results #factors-x .list-group-item,
+#CockpitAI-results #metrics-y .list-group-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* Alert Success */
+#CockpitAI-results .alert-success {
+  border-left: 4px solid #28a745;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #CockpitAI-results .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  #CockpitAI-results .card-body {
+    padding: 1rem;
+  }
+  
+  #CockpitAI-results .table-responsive {
+    font-size: 0.85rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  #CockpitAI-analyze-btn,
+  #CockpitAI-refresh-btn,
+  .btn-outline-secondary,
+  #CockpitAI-help-accordion {
+    display: none !important;
+  }
+  
+  #CockpitAI-results .card {
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #dee2e6 !important;
+  }
+  
+  #CockpitAI-results .collapse {
+    display: block !important;
+    height: auto !important;
+  }
+}
+
+/* Animation for result appearance */
+#CockpitAI-results {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Error Alert */
+#CockpitAI-error {
+  border-left: 4px solid #dc3545;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Accordion Help Section */
+#CockpitAI-help-accordion .accordion-button:not(.collapsed) {
+  background-color: #e7f3ff;
+  color: #0d6efd;
+}
+
+#CockpitAI-help-accordion .accordion-body {
+  background-color: #f8f9fa;
+}
+
+/* Badge Styling */
+#CockpitAI-results .badge {
+  font-weight: 600;
+  padding: 0.35em 0.65em;
+  font-size: 0.85em;
+}
+
+/* Icon Spacing */
+#CockpitAI-results .bi {
+  margin-right: 0.25rem;
+}
+
+/* Card Header Styling */
+#CockpitAI-results .card-header {
+  font-weight: 600;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.125);
+}
+
+#CockpitAI-results .card-header.bg-primary,
+#CockpitAI-results .card-header.bg-success {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}

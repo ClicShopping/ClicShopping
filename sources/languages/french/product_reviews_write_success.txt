@@ -1,0 +1,8 @@
+ navbar_title = Commentaires
+ navbar_title_1 = Succès
+
+ heading_title_reviews_success = Commentaires envoyés
+
+ text_product_reviews_write_success = Votre commentaire a été envoyé, nous allons le révisionner et le valider. <br />Nous avons une politique concernant les commentaires que vous pouvez consulter dans nos conditions générales.<br />
+ merci beaucoup.<br /><br />{{store_owner}}
+

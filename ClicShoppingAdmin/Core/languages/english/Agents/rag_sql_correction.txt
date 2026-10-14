@@ -1,0 +1,24 @@
+llm_prompt_order_by_correction = You are an SQL expert. Fix the ORDER BY column reference error in this query.
+
+Error: {{error_message}}
+Unknown Column: {{unknown_column}}
+
+```sql
+{{query}}
+```
+
+When using aggregate functions (YEAR, QUARTER, MONTH, etc.) in GROUP BY:
+
+1. Use the SAME function expression in ORDER BY:
+   ✅ CORRECT: GROUP BY YEAR(date) ORDER BY YEAR(date)
+   ❌ WRONG: GROUP BY YEAR(date) ORDER BY year
+
+2. OR use column position numbers:
+   ✅ CORRECT: SELECT YEAR(date), SUM(value) ... ORDER BY 1
+
+3. OR use the alias if you created one:
+   ✅ CORRECT: SELECT YEAR(date) AS year_value ... ORDER BY year_value
+
+Fix ONLY the ORDER BY clause. Preserve the SELECT and GROUP BY clauses exactly as they are.
+
+Return ONLY the corrected SQL query, nothing else.

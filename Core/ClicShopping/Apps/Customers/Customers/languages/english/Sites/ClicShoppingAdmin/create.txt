@@ -1,0 +1,37 @@
+heading_title = Customer account creation
+
+tab_general = General
+tab_societe = Company
+tab_orders = Orders
+tab_options = Options
+
+email_subject = Customer account creation on {{store_name}}
+
+email_greet_mr = Hello Mr {{greet_mr}}
+email_greet_ms = Hello Mme {{greet_ms}}
+email_greet_none = Hello {{greet_none}}
+
+email_welcome = Welcome on {{store_name}}, we have created an account for you. To connect in the catalog you must recover your password and your login is your email If you any questions, please contact us.
+
+email_network = Follow us in real time on  :<br />
+email_twitter = http://www.twitter.com/
+email_facebook = http://www.facebook.com/
+
+text_info_country_zone = States / Province
+
+entry_state_error_select = Error Please select a good state
+error_email_address_exist = Error Email address: Exists in database, please change by another
+error_erreur_country = Error Country
+
+error_code_iso = Error code ISO
+error_firstname = Error First Name
+error_lastname = Error Last Name
+error_email = Error email
+error_street_address = Error Street Address
+error_postcode = Error Post code
+error_city = Error city
+error_country = Error country
+error_state = Error State
+error_telephone = Error Telephone
+error_email_exists = Error email exits
+error_tva_intracom = Error tva Intracom, please check your tva

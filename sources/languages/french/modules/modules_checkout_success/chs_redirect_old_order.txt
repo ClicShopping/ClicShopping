@@ -1,0 +1,2 @@
+module_checkout_success_redirect_old_order_title = Souhaitez-vous rediriger le client vers la page d'accueil après un certain délais ?
+module_checkout_success_redirect_old_order_description = Redirige le client vers la page d'accueil après un certain délais

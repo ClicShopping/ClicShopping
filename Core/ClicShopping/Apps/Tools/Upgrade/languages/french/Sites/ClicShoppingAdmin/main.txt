@@ -1,0 +1,170 @@
+heading_title = Extensions
+module_up_title = Extensions
+module_up_short_title = Extensions
+
+text_upgrade = Extensions
+text_configure = Configure Apps Modules
+
+text_intro = Cette app vous permet d'accéder à un gestionnaire d'extensions<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+
+module_up_introduction = Le processus d'installation crée la base de données et le menu pour ce module
+
+button_back = Retour
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall = Désinstaller
+button_uninstall = Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+button_upgrade = Extensions
+button_reset = Reset cache Files
+button_reset_temp = Reset Tmp
+button_analyse = Analyser
+button_update = Mettre à jour
+button_core = Core
+button_reset_cache_core = Reset cache core
+button_upgrade = Apps / Modules
+
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module ?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+title_help = Aide
+button_manual = Installation manuelle
+button_automatic_install = Installation automatiue
+text_local_version = Version locale :
+text_server_version = Version Serveur :
+text_up_to_date =
+<p>La recherche se fait uniquement à partir d'une partie du nom du module. Par exemple pour connaitre tous les modules d'entête il suffit d'écrire header, pour le bas de page, footer ...</p>
+<p>Veuillez sélectionner un module ou un critère de recherche avant de lancer la recherche</p>
+- <strong>Votre version est à jour. La version actuelle installée est : </strong>
+
+text_search = Rechercher
+
+text_step_upgrade = <p><strong>Procédure de mise à jour :</strong></p>
+  <p>Step 1 : Fermeture de la boutique</p>
+  <p>Step 2 : Téléchargement du zip de Github</p>
+  <p>Step 3 : Décompression et installation du fichier</p>
+  <p>Step 4 : Ouverture de la boutique</p>
+  <p>Step 5 : Terminer manuellement le processus d'installation</p>
+  <p>Step 6 : Vérifier le bon fonctionnement de ClicShopping</p>
+
+text_warning_upgrade = <p><strong>Le process va commencer, veuillez attendre un moment. Cette page sera mise à jour</strong></p>
+
+text_upgrade_version = <p>- <strong>Votre version de ClicShopping n'est pas à jour</strong>. votre version actuelle :</p>
+text_check_latest_release = Vérification des versions utilisées
+text_upgrade_site = Toutes les applications sont disponibles en consultant ces addresses (veuillez prendre note que cet espace est expérimental et il peut y avoir des erreurs :
+text_current_version = Version actuelle
+text_latest_version = Dernière version
+text_latest_release_date = Date dernière version
+text_changelog = Changements /Informations
+text_uptodate = Vous êtes à jour.
+text_upgrade_site = Toutes les applications sont dispOnibles à cette adresse :<br />
+
+text_upgrade_new_version = La nouvelle version est :
+text_reload = re-test
+test_download = Télécharger ClicShopping
+
+text_install_files = <strong>Veuillez lire ces informations avant de continuer.</strong><br /><br />
+- Module expérimentale, il peut y avoir des bogues qui peuvent apparaitre
+- Github fixe une limite de connexion à son API et un délai. Si cette limite apparait veuillez attendre et recommencer plus tard.
+- Le fichier d'information Json est téléchargé dans le répertoire Cache.<br />
+- La décompression / installation ne peut fonctionner que si le serveur l'autorise, à défaut il vous faudra adapter le chmod des répertoires à 777.<br />
+- Si le module ne s'installe pas, veuillez le télécharger et l'installer vous même via ftp.<br />
+    Pour les modules Officiels : https://github.com/ClicShoppingOfficialModulesV3<br />
+    Pour les modules communautaires : https://github.com/organizations/ClicShoppingV3Community<br />
+- le concept est en mode beta et doit être amélioré dans le temps. (votre aide sera la bienvenue)
+
+table_heading_module = Nom
+table_heading_description = Description
+table_heading_install = Install
+
+text_description = Description :
+text_licence = Licence :
+text_vendor = Concepteur :
+text_tag = Tag :
+text_module_type = Type de module :
+text_directory_install = Répertoire d'installation :
+text_download = Télécharger le module :
+text_activate = Pour activer l'Apps, copier ce lien dans votre url ou cliquer: <br />
+text_dependance = Dependance :
+text_temp_version = Version cache temp :
+text_installed_version = Version intallée :
+text_info_upload = Veuillez insérer le fichier zip à télécharger
+
+text_installed = Installé
+text_more_infos = Plus Infos :
+text_close = Fermer
+text_search = Rechercher
+text_top = -------- Top --------
+text_reset_success = La mise jour a été réalisée avec succès.
+button_not_free = Acheter
+button_free = Gratuit
+button_install = Installer
+button_update_start = Mettre à jour
+button_more_infos = Plus Infos
+button_reset_search = Reset
+button_marketplace = Marketplace
+button_setting = Configurer
+button_uninstallable = Non installable
+button_install_app = Installe App
+button_refresh = Actualiser
+
+text_search_limit = Limite recherche github :
+text_core_limit = Limite core github :
+text_cache_file = durée du cache : 1 mois
+text_count_search =  Nombre de module trouvé :
+text_rate_limit = Limite taux
+
+text_official = Official modules
+text_community = Community modules
+text_partner = Partner modules
+
+text_select_module_template = --Sélectionner Modules Template --
+text_select_module_fix = -- Sélectionner Modules Fixes --
+
+success_core_installed = La mise à jour a été faite avec succès
+success_file_installed = L'installation où la mise jour été faite avec succès, veuillez activer le module
+
+warning_no_module = Aucun module trouvé
+text_marketplace_username = Veuillez insérer les paramétres de votre compte en cliquant sur le bouton Configurer.<br />
+Pour utiliser la marketplace, vous devez nécessairement être inscrit sur le forum<br />
+Veuillez noter que vos connexions sont enregistrées ainsi que votre address IP et votre site internet.
+En cas d'abus, votre adresse IP peut être radiée définitvement.
+text_success_files_installed = le fichier a été installé
+error_file_not_installed = Une erreur s'est produite durant la procédure
+error_directory_not_writable = Le répertoire OnlineUpdates n'est pas en mode écriture
+error_rate_exceed = Limit de download de Github dépassé, veuillez revenir plus tard et réessayer
+error_curl_error_transfert_failed = Erreur de transfert
+error_fopen_file = Erreur ouverture fichier
+error_project_not_writable_on_server =  Le projet ne peut pas être sauvegarder sur le serveur
+error_link_not_allowed = Lien non accepté
+text_file_download_error = Erreur téléchargement
+text_error_username = Veuillez insérer votre email du forum comme username
+
+text_result_install = Résultat Installation
+error_result = Nou n'avouspas trouvé le fichier json. Veuillez vérifier le cache et l'installation
+text_info_result =
+- Close shop<br />
+            - Module Installed<br />
+            - Shop opened<br /><br />
+            - File name : {{file}} <br /><br />
+            - Info Json<br />
+
+text_marketplace_info = Pour pouvoir installer une app, vous devez être connecté sur le forum<p></p>
+Veuillez sélectionner une catégories pour afficher les apps et modules.<p></p>
+<strong>Note :</strong>  : - En fonction de la configuration de votre serveur et de ses autorisations, l'installation automatique risque de ne pas fonctionner, vous devrez le faire manuellement.<br />
+ - Vous pouvez aussi réactualiser la marketplace pour avoir les derniéres nouveautés ou paramétrer un cronjob (cf menu cronjob).
+
+text_marketplace_update =  Les catégories et les applications ont été mises à jour. <p></p>
+Veuillez actualiser une derniére fois votre page.
+text_error_api_connection = Erreur Api :
+text_success_files_installed = Apps Installée

@@ -1,0 +1,11 @@
+module_admin_dashboard_reviews_app_title = Do you want to install the customers Reviews ?
+module_admin_dashboard_reviews_app_description = Install the customers Reviews
+
+table_heading_products = Products
+table_heading_date_added = Date added
+table_heading_review_author = Author
+table_heading_rating = Rating
+table_heading_approved = Approuved ?
+table_heading_action = Actions
+
+icon_edit = Edit

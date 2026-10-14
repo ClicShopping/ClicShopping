@@ -1,0 +1,57 @@
+heading_title = Table des bases de données
+module_dt_title =  Table des bases de données
+module_dt_short_title = Table des bases de données
+
+text_data_base_tables = Table des bases de données
+text_configure =  Configurer App Module
+
+text_intro = Cette app vous permet d'accéder à un fomulaire de tables de bases de données<br /><br />
+- Cliquez sur configurer pour accéder à l'installation ou la désinstallation l'app.<br />
+- Cette app est dans le menu Outils / Export<br />
+
+module_dt_introduction = Le processus d'installation crée la base de données et le menu pour ce module
+
+button_install_title = Installer
+button_configure = Configurer
+button_save = Sauver
+button_dialog_uninstall =  Désinstaller
+button_uninstall =  Désinstaller
+button_delete = Supprimer
+button_cancel = Annuler
+button_data_base_tables = Bases de données
+button_reset = Reset
+button_analyse = Analyser
+button_update = Mettre à jour
+
+dialog_uninstall_title = Désinstaller
+dialog_uninstall_body = Souhaitez-vous installer cette App ?
+dialog_uninstall_title = Désinstaller le module?
+dialog_uninstall_body = Etes vous sur de désinstaller ce module?
+
+alert_module_install_success = Le module a été installé.
+alert_module_uninstall_success = Le module a été désinstallé.
+alert_cfg_saved_success = les paramètres de configuration ont été mises à jour.
+
+text_result_page = Page {{listing_from}} sur {{listing_total}}
+text_display_number_of_link = Affiche <strong>{{listing_from}}</strong> à <strong>{{listing_to}}</strong> (sur <strong>{{listing_total}}</strong>)
+
+
+table_heading_table = Tables
+table_heading_rows = Colonnes
+table_heading_size = Taille
+table_heading_engine = Engine
+table_heading_collation = Collation
+table_heading_msg_type = Type Message
+table_heading_msg = Message
+table_heading_queries = Requetes
+
+action_check_tables = Vérification des Tables
+action_analyze_tables = Analyser les Tables
+action_optimize_tables = Optimiser les Tables
+action_repair_tables = Repairer les Tables
+action_utf8_conversion = Convertir en utf8mb4
+
+action_utf8_conversion_from_autodetect = Auto-Detect
+action_utf8_conversion_from = de {{char_set}}
+
+

@@ -1,0 +1,3 @@
+module_header_noscript_title = Do  you want use noscript ?
+module_header_noscript_description = Display a message No Script for the browser doesn't use this script.
+module_header_noscript_text = <strong>JavaScript seem does'nt not activated in your browser or an ad-block.</strong><br />Please change your configuration to use this website.<br /><a href="https://www.enable-javascript.com/" target="_blank" rel="noopener">For more information, click here</a>.

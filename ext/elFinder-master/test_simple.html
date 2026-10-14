@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Test elFinder Simple</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha256-d5f10f852b112a514a19f2b778eef5d2d1307878757f0a24539c051831cefaf8=" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="elfinder"></div>
+    
+    <script>
+    require(['main.default.js'], function() {
+        $('#elfinder').elfinder({
+            url: 'php/connector.minimal.php?Admin=ClicShoppingAdmin',
+            height: 500,
+            debug: true
+        });
+    });
+    </script>
+</body>
+</html>
+
+
+

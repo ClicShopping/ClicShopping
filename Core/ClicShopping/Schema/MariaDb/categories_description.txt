@@ -1,0 +1,16 @@
+categories_id int default(0) not_null comment(FK to categories table - category identifier)
+language_id int default(1) not_null comment(FK to languages table - language identifier for this translation)
+categories_name varchar(255) not_null comment(Category name in the specified language)
+categories_description text comment(Detailed description of the category in the specified language)
+categories_seo_url varchar(255) comment(SEO-friendly URL slug for this category)
+categories_head_title_tag text null comment(HTML meta title tag for SEO)
+categories_head_desc_tag text null comment(HTML meta description tag for SEO)
+categories_head_keywords_tag text null comment(HTML meta keywords tag for SEO)
+--
+primary categories_id language_id
+idx_categories_name categories_name
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+comment Multi-language descriptions and SEO metadata for product categories

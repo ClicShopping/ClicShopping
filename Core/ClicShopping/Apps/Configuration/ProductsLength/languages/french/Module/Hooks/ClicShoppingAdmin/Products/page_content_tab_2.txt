@@ -1,0 +1,7 @@
+text_products_length_type = Type de dimension
+text_products_length = Dimension  (LxHxP)
+
+text_products_dimension_width = Largeur
+text_products_dimension_height = Hauteur
+text_products_dimension_depth = Profondeur
+text_products_volume = Volume

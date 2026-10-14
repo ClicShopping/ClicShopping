@@ -1,0 +1,16 @@
+timeout_cold_cache_error = Votre requête prend plus de temps que prévu. Ceci est normal pour la première exécution.
+timeout_cold_cache_explanation = Le système construit le cache pour cette requête. La prochaine exécution sera beaucoup plus rapide.
+timeout_cold_cache_guidance = Veuillez réessayer, votre prochaine requête sera plus rapide.
+
+timeout_general_error = Le traitement de votre requête prend plus de temps que prévu.
+timeout_general_explanation = Le système traite une requête complexe. Veuillez réessayer dans quelques instants.
+timeout_general_guidance = Veuillez réessayer votre requête.
+
+timeout_progress_processing = Traitement en cours...
+timeout_progress_with_percent = Traitement en cours... %s%% complété
+timeout_progress_taking_longer = Traitement en cours... Votre requête nécessite plus de temps que prévu.
+
+timeout_completion_message = Requête complétée en %ss
+timeout_completion_from_cache = Requête complétée en %ss (depuis le cache)
+
+timeout_retry_guidance = Veuillez réessayer, votre prochaine requête sera plus rapide.

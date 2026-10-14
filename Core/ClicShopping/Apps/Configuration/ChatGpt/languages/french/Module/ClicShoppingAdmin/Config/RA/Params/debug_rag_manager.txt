@@ -1,0 +1,5 @@
+cfg_chatgpt_debug_rag_manager_title = Activer le mode débogage RAG
+cfg_chatgpt_debug_rag_manager_description = Active la journalisation détaillée des opérations RAG. Lorsqu'activé, tous les processus RAG, erreurs et métriques de performance sont enregistrés pour faciliter le dépannage. Les logs sont écrits dans le répertoire de logs RAG. Recommandé : False pour la production, True pour le développement.
+
+cfg_chatgpt_debug_rag_manager_status_true = True
+cfg_chatgpt_debug_rag_manager_status_false = False

@@ -1,0 +1,7 @@
+module_admin_dashboard_clicshopping_latest_apps_title = Do you want to display the Latest Apps / Modules ?
+module_admin_dashboard_clicshopping_latest_apps_description = Latest Apps / Modules published on the marketplace
+
+text_module_admin_dashboard_clicshopping_latest_apps_tilte = Latest Apps / Modules
+text_module_admin_dashboard_clicshopping_latest_apps_date = Date
+text_module_admin_dashboard_clicshopping_latest_apps_join_community = Community
+text_module_admin_dashboard_clicshopping_latest_apps_search = Search / Install

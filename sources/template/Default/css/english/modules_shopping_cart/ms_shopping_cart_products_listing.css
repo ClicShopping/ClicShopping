@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) 2008–2026 Loic Richard
+ *
+ * Licensed under AGPLv3 or commercial license.
+ * See LICENSE file.
+
+ */
+
+.moduleShoppingCartProductsListingDiscount {
+  color: #BB0000;
+  font-weight: bold;
+}
+
+
+.ModulesShoppingCartproductsListingTableContent {
+}
+
+.ModulesShoppingCartProductsListingTableHeading {
+  border-bottom: 0.0625rem solid #EEEEEE;
+}
+
+td.ModulesShoppingCartProductsListingContent {
+  font-weight: bold;
+  padding-bottom: 0.625rem;
+}
+
+
+.ModulesShoppingCartProductsListingShoppingCartQuantity {
+  width: 70px !important;
+  font-weight: normal;
+  font-size: small;
+}
+
+.btn-ShoppingCartRefresh {
+  padding-top: 0rem;
+  padding-right: 0rem;
+  padding-bottom: 0rem;
+  padding-left: 0rem;
+}
+
+
+p.ModulesShoppingCartproductsListingOption {
+  font-size: xx-small;
+  font-style: italic;
+}
+
+p.ModulesShoppingCartproductsListingStockCheck {
+}
+
+.table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+@media screen and (max-width: 600px) {
+  table#cart tbody td .form-control {
+    width: 20%;
+    display: inline !important;
+  }
+
+  table#cart thead {
+    display: none;
+  }
+
+  table#cart tbody td {
+    display: block;
+    padding: .6rem;
+    min-width: 320px;
+  }
+
+  table#cart tbody tr td:first-child {
+  }
+
+  table#cart tbody td:before {
+    content: attr(data-th);
+    font-weight: bold;
+    display: inline-block;
+    width: 8rem;
+  }
+}
+

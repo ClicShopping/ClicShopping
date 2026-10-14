@@ -1,0 +1,6 @@
+cfg_item_status_title = Status
+cfg_item_status_description = Set True to enable or not the module
+
+cfg_item_status_true = True
+cfg_item_status_false = False
+

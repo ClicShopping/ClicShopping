@@ -1,0 +1,51 @@
+heading_title = Archive products
+module_ar_title = Archive products
+module_ar_short_title = Archive products
+
+text_products_archive =  Archive products
+text_configure = Configure App Module
+
+text_intro = This app allow you to include an archive pages. <br /><br />
+- Activate this module and activate the module products archive located in the products menu
+
+module_ar_introduction = The install process create the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_archive = Archive
+button_cancel = Cancel
+button_new = New
+button_unpack = Unpack
+button_reset = Reset
+
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+icon_unpack = Unpack
+
+heading_title = Product archive management
+heading_title_search = Search
+
+table_heading_model_archives = Model
+table_heading_date_archives = Archive Date
+table_heading_products_archives = Catalog
+table_heading_status = Product available
+table_heading_action = Actions
+table_heading_edit_products_archive = Activate the product
+text_edit_intro = Do  you want activate this product ?
+text_archive = <strong>Note : </strong>The reactivation article will display the product in the admin catalog at the same place where he was previously. <br /> Depending on the status, the product will be displayed or not in the catalog client side.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)

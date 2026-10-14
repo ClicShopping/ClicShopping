@@ -1,0 +1,11 @@
+
+navbar_title_1 = My account
+navbar_title_2 = Upload files
+
+heading_title = Files upload
+
+text_products_file_download_introduction = Please, fill theses files to allow you to download your files. Your upload is in stand by until we are looking if your files is corrector not.
+text_products_file_download_select_categories = Select your categories
+text_products_file_download = Upload your file
+text_products_file_download_message = Please, fill this area to describes your module
+text_products_file_download_success_uploading = File download is a success

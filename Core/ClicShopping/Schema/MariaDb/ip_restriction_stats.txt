@@ -1,0 +1,9 @@
+id int not_null auto_increment comment(Primary key - unique identifier for each blocked access attempt)
+ip_remote varchar(64) comment(IP address that attempted access and was blocked)
+--
+primary id
+##
+engine innodb
+character_set utf8mb4
+collate utf8mb4_unicode_ci
+ai_schema = exclude

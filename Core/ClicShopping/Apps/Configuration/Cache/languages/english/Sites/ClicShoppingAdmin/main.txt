@@ -1,0 +1,54 @@
+heading_title = Cache control 
+module_ca_title = Cache control
+module_ca_short_title = Cache control
+
+text_cache = Cache control
+text_configure = Configure App Module
+
+text_intro = This app allow you to include a cache page. <br /><br />
+- Activate this module located in the Configuration menu
+
+module_ca_introduction = The install process create the database settings for this module and the access menu
+
+button_back = Back
+button_install_title = Install
+button_configure = Configure
+button_save = Save
+button_dialog_uninstall =  Uninstall
+button_uninstall =  Uninstall
+button_delete = Delete
+button_cache = Cache control
+button_cancel = Cancel
+button_new = New
+button_insert = Insert
+button_reset = Reset
+button_update = Update
+image_reset = Remove Cache
+
+dialog_uninstall_title = Uninstall
+dialog_uninstall_body = Do you want to install this App ?
+dialog_uninstall_title = Uninstall Module?
+dialog_uninstall_body = Are you sure you want to uninstall this module?
+
+alert_module_install_success = Module has been successfully installed.
+alert_module_uninstall_success = Module has been successfully uninstalled.
+alert_cfg_saved_success = Configuration parameters have been successfully saved.
+
+text_result_page = Page {{listing_from}} of {{listing_total}}
+text_display_number_of_link = Display <strong>{{listing_from}}</strong> to <strong>{{listing_to}}</strong> (on <strong>{{listing_total}}</strong>)
+
+
+ table_heading_cache = Cache control Blocks
+ table_heading_cache_number_of_files = Total
+ table_heading_action = Action
+
+ text_file_does_not_exist = File does not exist
+ text_cache_directory = Cache control Directory:
+
+ error_cache_directory_does_not_exist = Error: Cache control directory does not exist. Please set this Configuration->Cache control.
+ error_cache_directory_not_writeable = Error: Cache control directory is not writeable.
+
+success_opcache_reset = OpCache has been reset successfully
+error_opcache_reset = Failed to reset OPcache
+warning_opcache_function = OPcache function not available
+error_memcached_reset = Failed to reset Memcached.

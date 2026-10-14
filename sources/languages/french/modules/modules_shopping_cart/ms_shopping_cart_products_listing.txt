@@ -1,0 +1,18 @@
+
+module_shopping_cart_products_listing_title = Souhaitez-vous afficher le  détail du panier d'achat ?
+module_shopping_cart_products_listing_description = Affiche le panier d'achat
+
+table_heading_quantity = Qté.
+table_heading_products = Article(s)
+table_heading_total = Total
+
+button_remove = Supprimer ce produit du panier
+text_shopping_cart_save_money_for_this_product = Si vous achetez ce produit vous pouvez économiser :
+text_shopping_cart_save_money_by_product = par quantité
+text_shopping_cart_products_discount_quantity = Vos rabais en fonction des quantités de produit commandés ont été appliquées. Vous sauvez
+text_shopping_cart_products_discount_without_tax = Hors taxes
+
+button_cancel = Annuler
+button_delete = Supprimer
+text_title_modal_delete = Etes-vous sur de votre décision ?
+text_title_modal_info = Cette supprimera le produit de votre panier

@@ -1,0 +1,7 @@
+text_products_length_type = Product lenght type
+text_products_length = Product lenght (LxHxW)
+
+text_products_dimension_width = Width
+text_products_dimension_height = Height
+text_products_dimension_depth = Depth
+text_products_volume = Volume

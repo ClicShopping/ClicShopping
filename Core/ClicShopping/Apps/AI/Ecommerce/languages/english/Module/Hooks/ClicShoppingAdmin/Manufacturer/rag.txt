@@ -1,0 +1,33 @@
+text_manufacturer_embedded = [Brand / Manufacturer]
+text_manufacturer_id = [Brand ID]
+text_manufacturer_name = [Brand name]
+text_manufacturer_description = [Brand description]
+text_manufacturer_seo_title = [Brand SEO title]
+text_manufacturer_seo_description = [Brand SEO description]
+text_manufacturer_seo_keywords = [Brand SEO keywords]
+text_manufacturer_suppliers_id = [Brand id]
+text_manufacturer_taxonomy = [Brand Taxonomy]
+
+text_create_taxonomy = You are a document analysis system. Extract a structured conceptual taxonomy from the following text.
+The text corresponds to an e-commerce category (brand-focused, not a product, not a supplier).
+The output must strictly follow the format below.
+Every relevant piece of information must be assigned to the appropriate dimension.
+Do not invent or infer information not explicitly present in the text.
+
+Expected format:
+
+[domain]: General domain of the brand or category (e.g. Home, Fashion, Electronics)
+[subdomain]: Segment, specialization or product line associated with the brand (e.g. Tableware, Computing, Furniture)
+[brand_name]: Official name of the brand or label
+[theme]: Conceptual, stylistic, or functional theme promoted by the brand (e.g. Luxury, Innovation, Sustainability)
+[usage_type]: General type of usage (e.g. Domestic, Professional, Outdoor)
+[usage_context]: Specific scenarios or contexts of use (e.g. Dining room, Office, Garden)
+[style]: Aesthetic or design identity associated with the brand (e.g. Minimalist, Vintage, Contemporary)
+[criteria]: Representative qualities or attributes emphasized by the brand (e.g. Quality, Elegance, Innovation)
+[symbolic_dimension]: Values or symbolic associations of the brand (e.g. Luxury, Sharing, Tradition)
+[sensory_dimension]: Sensory aspects if mentioned (e.g. Texture, Color, Finish)
+[composition]: Key elements, components, or products under the brand (e.g. Tableware, Glassware, Cutlery)
+[objective]: Purpose or goal promoted by the brand (e.g. Enhance dining experience, Create ambiance)
+[tags]: Free list of relevant keywords derived from the text, separated by commas
+
+Text: {{document_text}}

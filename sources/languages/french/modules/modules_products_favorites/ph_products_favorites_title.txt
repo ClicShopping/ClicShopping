@@ -1,0 +1,4 @@
+module_products_favorites_title = Souhaitez-vous afficher le titre des coups de coeur ?
+module_products_favorites_title_description =  Afficher le titre
+
+text_heading_title = Coups de coeur

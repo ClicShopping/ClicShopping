@@ -1,0 +1,4 @@
+module_create_account_button_process_title = Do you want to display the process button in create account form ?
+module_create_account_button_process_description = display the process button (important to let on true)
+
+button_continue = Continue

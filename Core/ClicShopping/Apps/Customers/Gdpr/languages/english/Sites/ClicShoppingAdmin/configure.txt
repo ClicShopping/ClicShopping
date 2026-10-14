@@ -1,0 +1,4 @@
+heading_title =  Gdpr B2B
+module_gr_short_title = Gdpr B2B
+
+title_menu = Gdpr B2B
