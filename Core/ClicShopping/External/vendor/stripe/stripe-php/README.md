@@ -58,15 +58,6 @@ If you use Composer, these dependencies should be handled automatically. If you 
 
 Simple usage looks like:
 
-```php
-$stripe = new \Stripe\StripeClient('');
-$customer = $stripe->customers->create([
-    'description' => 'example customer',
-    'email' => 'email@example.com',
-    'payment_method' => 'pm_card_visa',
-]);
-echo $customer;
-```
 
 ### Client/service patterns vs legacy patterns
 
