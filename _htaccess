@@ -1,0 +1,178 @@
+#Options -Indexes
+#Options +FollowSymlinks
+#Options -MultiViews
+
+#AllowOverride All
+#AcceptPathInfo on
+
+
+##################################
+# Your config to change and to customize
+##################################
+
+
+
+##################################
+# url rewiting
+#improve url rewriting
+#work fine without directory https://mydomain.com/test/index.php
+#the rewriting must be activated inside the application via the administration (SEO Url Pro)
+#You also must rewrite your hard link (ex : index.php?Products&Favorites ==> Products/Favorites) inside the page manager
+#uncomment the line between ifModule
+##################################
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. Force HTTPS et remove WWW - Local remove HTTPS
+    RewriteCond %{HTTPS} off [OR]
+    RewriteCond %{HTTP_HOST} ^www\. [NC]
+    RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+    # 2. Ignore files and real folders
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 3. Specific rules for ClicShopping SEO PRO
+    # On capture tout le chemin ($1) et on l'envoie à index.php - Sub directory subdirectory/index.php
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+</IfModule>
+
+
+
+
+##################################
+# Security
+# Be carefull approach is different : Linux, Ngix, IIS
+# Below for linux
+##################################
+# Protection des fichiers de configuration
+<FilesMatch "\.(ini|init|log|conf|env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+
+  <IfModule mod_headers.c>
+    # prevent mime based attacks
+    Header always set X-Content-Type-Options "nosniff"
+
+    #X Frame
+    Header always append X-Frame-Options SAMEORIGIN
+
+    # Clickjacking Protection
+    Header always set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+
+    # Cross-origin isolation
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+
+    #Remove Powered
+    Header always unset X-Powered-By
+
+    #HSTS
+    Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
+
+#http header
+  <FilesMatch ".(js|css|xml|gz|html)$">
+    Header append Vary: Accept-Encoding
+  </FilesMatch>
+</IfModule>
+##################################
+# Bot
+##################################
+##Rules to block bad bods from accessing web pages on your site.
+##Remove or add more rules as per your needs.
+
+BrowserMatchNoCase "Baiduspider" bots
+BrowserMatchNoCase "SemrushBot" bots
+BrowserMatchNoCase "Yandex" bots
+BrowserMatchNoCase "BLEXBot" bots
+BrowserMatchNoCase "AhrefsBot" bots
+BrowserMatchNoCase "DotBot" bots
+BrowserMatchNoCase "Exabot" bots
+BrowserMatchNoCase "SeznamBot" bots
+BrowserMatchNoCase "aiHitBot" bots
+BrowserMatchNoCase "spbot" bots
+BrowserMatchNoCase "MJ12bot" bots
+BrowserMatchNoCase "oBot" bots
+BrowserMatchNoCase "DeuSu" bots
+BrowserMatchNoCase "ia_archiver" bots
+BrowserMatchNoCase "MetaURI" bots
+BrowserMatchNoCase "FlipboardProxy" bots
+
+Order Allow,Deny
+Allow from ALL
+Deny from env=bots
+
+##################################
+#Caching schema
+##################################
+<IfModule mod_headers.c>
+    Header unset ETag
+    Header unset Last-Modified
+</IfModule>
+
+## EXPIRES CACHING ##
+## https://gtmetrix.com/leverage-browser-caching.html ##
+<IfModule mod_expires.c>
+    ExpiresActive On
+    # Images
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+
+    # CSS
+    ExpiresByType text/css "access plus 1 year"
+
+    # JavaScript
+    ExpiresByType text/javascript "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+
+    # Polices
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/x-font-woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/opentype "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType application/x-font-ttf "access plus 1 year"
+    ExpiresByType application/x-font-otf "access plus 1 year"
+    ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+</IfModule>
+
+##################################
+#apache 2.4
+##################################
+  <IfModule mod_version.c>
+      <IfModule mod_filter.c>
+        <IfVersion >= 2.4>
+            FilterDeclare COMPRESS
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'text/html'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'text/css'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'text/plain'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'text/xml'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'text/x-component'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/javascript'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/json'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/xml'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/xhtml+xml'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/rss+xml'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/atom+xml'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/vnd.ms-fontobject'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'image/svg+xml'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'image/x-icon'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'application/x-font-ttf'"
+            FilterProvider COMPRESS DEFLATE "%{Content_Type} = 'font/opentype'"
+            FilterChain COMPRESS
+            FilterProtocol COMPRESS DEFLATE change=yes;byteranges=no
+        </IfVersion>
+      </IfModule>
+  </IfModule>

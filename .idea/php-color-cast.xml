@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="phpColorCast">
+    <option name="current" value="Project" />
+    <option name="schemes">
+      <Scheme name="Project">
+        <option name="project" value="true" />
+      </Scheme>
+    </option>
+  </component>
+</project>
