@@ -1,5 +1,5 @@
 version4.33
-- fix / bug
+- fix / bug.
 - libraries updated
 - Cron Improvement
 - error_log management improved
