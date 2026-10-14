@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => 'e84261ea97ef924702e4bb0c5374756edbdb80c8',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'bfb640d565d26b17e92fe6a569b4186b689569b7',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => 'e84261ea97ef924702e4bb0c5374756edbdb80c8',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'bfb640d565d26b17e92fe6a569b4186b689569b7',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -487,9 +487,9 @@
             'dev_requirement' => false,
         ),
         'symfony/polyfill-deepclone' => array(
-            'pretty_version' => 'v1.43.1',
-            'version' => '1.43.1.0',
-            'reference' => 'aaba44b6ee7299ae65717811c55b57ab9bc0fedd',
+            'pretty_version' => 'v1.43.2',
+            'version' => '1.43.2.0',
+            'reference' => '82274308b59f6e96f53a3fb37fc40877d843e5a5',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-deepclone',
             'aliases' => array(),
