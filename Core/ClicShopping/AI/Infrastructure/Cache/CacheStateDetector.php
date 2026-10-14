@@ -15,7 +15,6 @@ namespace ClicShopping\AI\Infrastructure\Cache;
 
 
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * CacheStateDetector Class
@@ -202,7 +201,9 @@ class CacheStateDetector
     $ageSeconds = $currentTime - $timestamp;
     
     // This reader must agree with the writers: same knob, same fallback.
-    $ttl = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL');
+    $ttl = defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL') ?
+           CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL :
+           3600;
     
     // Check if cache has expired
     if ($ageSeconds > $ttl) {
@@ -292,4 +293,24 @@ class CacheStateDetector
     return $cacheState['state'] === 'warm';
   }
 
+  /**
+   * Get recommended timeout based on cache state
+   * 
+   * Provides timeout recommendation based on cache state.
+   * This is a helper method - actual timeout management should use AdaptiveTimeoutManager.
+   * 
+   * @param array $cacheState Cache state from detectCacheState()
+   * @return int Recommended timeout in seconds
+   */
+  public function getRecommendedTimeout(array $cacheState): int
+  {
+    // Cold cache: extended timeout (120 seconds)
+    // Warm cache: standard timeout (30 seconds)
+    
+    if ($this->isCold($cacheState)) {
+      return 120; // Extended timeout for cold cache
+    } else {
+      return 30; // Standard timeout for warm cache
+    }
+  }
 }

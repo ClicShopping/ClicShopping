@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubReputation;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\AgentEvaluation;
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\Models\ReputationHistory;
 use DateTimeImmutable;
@@ -26,6 +27,7 @@ use DateTimeImmutable;
 class ReputationTracker
 {
     private $db;
+    private string $prefix;
     private ReputationStore $store;
     private ReputationCalculator $calculator;
     
@@ -37,6 +39,7 @@ class ReputationTracker
     public function __construct()
     {
         $this->db = Registry::get('Db');
+        $this->prefix = CLICSHOPPING::getConfig('db_table_prefix', 'Database');
         $this->store = new ReputationStore();
         $this->calculator = new ReputationCalculator();
     }

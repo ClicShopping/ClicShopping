@@ -31,6 +31,7 @@ class SqlPerformanceValidator
     use SqlShapeHeuristics;
 
     private ?DatabaseSchemaManager $schemaManager;
+    private bool $debug;
 
     /**
      * Slow query patterns that may impact performance
@@ -47,11 +48,14 @@ class SqlPerformanceValidator
      * Constructor
      *
      * @param DatabaseSchemaManager|null $schemaManager Schema manager for index checking
+     * @param bool $debug Enable debug mode
      */
     public function __construct(
-        ?DatabaseSchemaManager $schemaManager = null
+        ?DatabaseSchemaManager $schemaManager = null,
+        bool $debug = false
     ) {
         $this->schemaManager = $schemaManager;
+        $this->debug = $debug;
     }
 
     /**

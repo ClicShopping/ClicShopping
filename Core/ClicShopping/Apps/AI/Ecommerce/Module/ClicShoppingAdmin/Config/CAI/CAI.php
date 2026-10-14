@@ -71,7 +71,7 @@ class CAI extends \ClicShopping\Apps\AI\Ecommerce\Module\ClicShoppingAdmin\Confi
     parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_ECOMMERCE_INSTALLED);
-    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
+    $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed);
 
     if ($installed_pos !== false) {
       unset($installed[$installed_pos]);

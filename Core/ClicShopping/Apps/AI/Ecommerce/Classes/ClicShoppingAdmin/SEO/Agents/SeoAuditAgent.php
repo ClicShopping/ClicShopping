@@ -36,8 +36,6 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\SEO\Models\AuditRep
  */
 class SeoAuditAgent implements AgentInterface
 {
-  public const ACTOR_ID = 'seo_audit_actor';
-
   /**
    * Unique runtime identifier for this agent instance.
    * @var string
@@ -78,7 +76,8 @@ class SeoAuditAgent implements AgentInterface
    */
   public function __construct()
   {
-    $this->actorId = self::ACTOR_ID;
+    // Generate a unique actor identifier for log tracing and orchestration identification.
+    $this->actorId = 'seo_audit_actor_' . uniqid();
 
     // Determine debug state based on the specific ClicShopping ChatGPT application constant.
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG') && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';

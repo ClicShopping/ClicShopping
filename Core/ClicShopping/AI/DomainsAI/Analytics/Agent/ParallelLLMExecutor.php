@@ -21,7 +21,6 @@ use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\TransferException;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * ParallelLLMExecutor Class
@@ -74,11 +73,15 @@ class ParallelLLMExecutor
     $this->debug = $debug ?? false;
     
     $this->timeout = $timeout ?? (
-      TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_TIMEOUT')
+      defined('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_TIMEOUT') 
+        ? (int)CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_TIMEOUT 
+        : 30
     );
     
     $this->maxConcurrent = $maxConcurrent ?? (
-      TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_MAX_CONCURRENT')
+      defined('CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_MAX_CONCURRENT') 
+        ? (int)CLICSHOPPING_APP_CHATGPT_RA_PARALLEL_MAX_CONCURRENT 
+        : 5
     );
     
     // Use configuration constant for parallel enabled
@@ -194,7 +197,6 @@ class ParallelLLMExecutor
 
       // Raw HTTP: no LLphant chat object, so CountingChat never sees these round-trips.
       Gpt::countRawLlmCall();
-      Gpt::captureLlmPrompt($requestOptions['json'] ?? null); // body only: the headers carry the API key
 
       $promises[$key] = $client->requestAsync(
         'POST',
@@ -252,8 +254,6 @@ class ParallelLLMExecutor
       // Parse the response using provider
       $parsedResponse = $this->provider->parseResponse($body);
 
-      Gpt::recordLlmTokens(\json_decode($body, true), $this->provider->getModel());
-
       if ($this->debug) {
         $this->logger->logSecurityEvent(
           "ParallelLLMExecutor: Request '{$key}' completed successfully in " . number_format($duration, 3) . "s (HTTP {$httpCode})",
@@ -270,7 +270,6 @@ class ParallelLLMExecutor
     }
 
     // Handle rejection (timeout, network error, etc.)
-    Gpt::recordLlmTokens(null);
     $reason = $result['reason'];
     
     // Use dedicated error detection methods

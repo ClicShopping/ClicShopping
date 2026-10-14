@@ -104,6 +104,13 @@ class WebSearchFacade
     // Debug mode
     $this->debug = \defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER')
       && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
+
+    // Log facade initialization
+    $this->logger->logEvent('websearch_facade_initialized', [
+      'component' => 'WebSearchFacade',
+      'api_key_configured' => !empty($this->apiKey),
+      'timestamp' => date('Y-m-d H:i:s')
+    ]);
   }
 
   /**
@@ -480,11 +487,10 @@ class WebSearchFacade
     }
 
     // Extract a small, enhancer-friendly context from the routing decision.
-    $routingArray = [];
+    $intent = [];
     if (is_object($routing) && method_exists($routing, 'toArray')) {
-      $routingArray = $routing->toArray();
+      $intent = $routing->toArray()['intent'] ?? [];
     }
-    $intent = $routingArray['intent'] ?? [];
 
     $context = [
       'query'         => $query,
@@ -495,8 +501,6 @@ class WebSearchFacade
       'language'      => $intent['language']      ?? ($options['language'] ?? null),
       'language_id'   => $options['language_id']  ?? null,
       'confidence'    => $intent['confidence']    ?? null,
-      // The region the offers were searched in: an enhancer stating an amount needs its unit.
-      'location_params' => $routingArray['location_params'] ?? [],
     ];
 
     foreach ($enhancers as $enhancer) {

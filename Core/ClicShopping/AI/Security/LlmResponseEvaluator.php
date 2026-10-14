@@ -12,7 +12,6 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Config\DomainConfig;
-use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\Config\DomainFields;
 
 /**
@@ -28,6 +27,8 @@ use ClicShopping\AI\Config\DomainFields;
  */
 class LlmResponseEvaluator
 {
+  private const DEFAULT_CRITIC_RESULT_MAX_CHARS = 8000;
+
   protected static ?SecurityLogger $securityLogger = null;
   private static bool $debug = false;
 
@@ -65,10 +66,6 @@ class LlmResponseEvaluator
       $evaluationResults['guardrails'] = $guardrailsValidation;
     }
 
-    // Unverified user reports travel with the metadata but never go back into the payload.
-    $userReports = array_values(array_filter(array_map('strval', (array)($groundingMetadata['user_reports'] ?? []))));
-    unset($groundingMetadata['user_reports']);
-
     if (!empty($groundingMetadata)) {
       $evaluationResults['grounding_metadata'] = $groundingMetadata;
 
@@ -104,7 +101,7 @@ class LlmResponseEvaluator
 
       // 5. Use evaluation model if available
       if (str_starts_with(Gpt::defaultModel(), 'gpt') || str_starts_with(Gpt::defaultModel(), 'anth')) {
-        $llmEvaluation = self::performLlmEvaluation($question, $result, $userReports);
+        $llmEvaluation = self::performLlmEvaluation($question, $result);
         $evaluationResults['llm_evaluation'] = $llmEvaluation;
       }
 
@@ -247,13 +244,13 @@ class LlmResponseEvaluator
    * and parses the returned evaluation. The result typically includes scores and comments
    * about accuracy, reliability, relevance, and clarity.
    */
-  private static function performLlmEvaluation(string $question, string $result, array $userReports = []): array
+  private static function performLlmEvaluation(string $question, string $result): array
   {
     self::initLogger();
     $trimmedResult = self::trimResultForCritic($result);
 
     $criteriaPrompt = self::getDefaultCriteriaEvaluatorPromptBuilder();
-    $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $trimmedResult, $userReports);
+    $evaluationPrompt = $criteriaPrompt->getEvaluationPromptForQuestion($question, $trimmedResult);
 
     if (self::$debug) {
       self::$securityLogger->logSecurityEvent('LLM Evaluation Prompt: ' . $evaluationPrompt, 'info');
@@ -283,17 +280,21 @@ class LlmResponseEvaluator
    *   2. Decode HTML entities so the critic reads "your price: 899€" instead
    *      of "your price: 899&#x20AC;".
    *   3. Collapse runs of whitespace.
-   *   4. Cap the result length at CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS.
+   *   4. Cap the result length at DEFAULT_CRITIC_RESULT_MAX_CHARS (8000), or
+   *      whatever CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS sets.
    *
    * The original payload is logged when truncation happens, so we can audit
    * what was dropped before evaluation.
    */
   private static function trimResultForCritic(string $result): string
   {
-    $maxChars = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS');
-
-    if ($maxChars <= 0) {
-      $maxChars = 8000;
+    if (\defined('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS')) {
+      $maxChars = (int) \constant('CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS');
+      if ($maxChars <= 0) {
+        $maxChars = self::DEFAULT_CRITIC_RESULT_MAX_CHARS;
+      }
+    } else {
+      $maxChars = self::DEFAULT_CRITIC_RESULT_MAX_CHARS;
     }
 
     $originalLength = mb_strlen($result);
@@ -340,26 +341,17 @@ class LlmResponseEvaluator
         $this->language = Registry::get('Language');
       }
 
-      public function getEvaluationPromptForQuestion(string $question, string $result, array $userReports = []): string
+      public function getEvaluationPromptForQuestion(string $question, string $result): string
       {
         // Internal SYSTEM prompt in English for LLM evaluation (not user-facing).
         // Loaded from a dedicated Agents/ file so it no longer reloads the shared 'main'
         // group (which would overwrite the application-language user-facing definitions
         // and force the final answer into English — the FR->EN restitution bug).
         DomainConfig::loadAgnosticLanguageFile('rag_guardrails', 'en');
-        $prompt = $this->language->getDef('llm_guardrails_prompt', [
+        return $this->language->getDef('llm_guardrails_prompt', [
           'result' => $result,
           'question' => $question
         ]);
-
-        // Appended only when a report exists, so the no-report prompt stays byte-identical.
-        if ($userReports !== []) {
-          $prompt .= "\n\n" . $this->language->getDef('llm_guardrails_user_reports', [
-            'reports' => implode(' | ', $userReports)
-          ]);
-        }
-
-        return $prompt;
       }
     };
   }
@@ -645,11 +637,16 @@ class LlmResponseEvaluator
     $hallucinationData = $evaluationResults['hallucination'] ?? [];
 
     $riskFactors = 0;
-    $totalFactors = 3;
+    $totalFactors = 4;
 
     // Suspicious patterns
     if (isset($hallucinationData['suspicious_patterns_count']) && $hallucinationData['suspicious_patterns_count'] > 0) {
       $riskFactors += min(1.0, $hallucinationData['suspicious_patterns_count'] / 3);
+    }
+
+    // Future dates
+    if (isset($hallucinationData['future_dates']) && !empty($hallucinationData['future_dates'])) {
+      $riskFactors += 1;
     }
 
     // Impossible values
@@ -670,7 +667,7 @@ class LlmResponseEvaluator
    */
   private static function calculateSourceQuality(array $evaluationResults): float
   {
-    $sourceData = $evaluationResults['guardrails']['sources'] ?? [];
+    $sourceData = $evaluationResults['sources'] ?? [];
 
     if (!isset($sourceData['source_count']) || $sourceData['source_count'] == 0) {
       return 0.3; // No sources = low quality but not critical
@@ -729,12 +726,12 @@ class LlmResponseEvaluator
     // New security recommendations
     $hallucinationRisk = self::calculateHallucinationRisk($evaluationResults);
     if ($hallucinationRisk > 0.5) {
-      $reco[] = CLICSHOPPING::getDef('llm_guardrails_prompt_hallucination');
+      $reco[] = "Warning: high hallucination risk detected";
     }
 
     $sourceQuality = self::calculateSourceQuality($evaluationResults);
     if ($sourceQuality < 0.5) {
-      $reco[] = CLICSHOPPING::getDef('llm_guardrails_prompt_sources');
+      $reco[] = "Improve the quality and reliability of sources";
     }
 
     return $reco;
@@ -767,6 +764,26 @@ class LlmResponseEvaluator
     if (self::$debug) {
       self::$securityLogger->logSecurityEvent('Evaluation saved: ' . json_encode($data), 'success');
     }
+  }
+
+  /**
+   * Validates the attribution quality in the AI-generated response.
+   *
+   * Checks for the presence of sources, citations, and references.
+   * Returns a float score between 0.0 and 1.0 based on the number of citations.
+   *
+   * @param string $result The AI-generated response to validate.
+   * @return float Attribution score (0.0 to 1.0).
+   */
+  private static function validateAttribution(string $result): float
+  {
+    $citations = substr_count($result, 'source:') + substr_count($result, '(voir') + preg_match_all('/\[.*?\]/', $result);
+
+    if ($citations === 0) {
+      return 0.0;
+    }
+
+    return min(1.0, $citations / 3);
   }
 
 }

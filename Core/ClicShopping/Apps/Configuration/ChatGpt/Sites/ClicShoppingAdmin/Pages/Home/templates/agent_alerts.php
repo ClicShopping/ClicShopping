@@ -20,28 +20,6 @@ use ClicShopping\OM\Registry;
 
 $CLICSHOPPING_ChatGpt = Registry::get('ChatGpt');
 $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
-
-// User reports of the last 7 days, grouped by kind of request. Collected here because the summary
-// card is rendered before the tab that lists them.
-$Qreports = $CLICSHOPPING_ChatGpt->db->prepare('select coalesce(i.request_type, "unknown") as request_type,
-                                                       count(*) as negative_count,
-                                                       max(f.date_added) as last_at,
-                                                       substring_index(group_concat(distinct i.question separator 0x1e), 0x1e, 3) as sample_questions,
-                                                       substring_index(group_concat(distinct nullif(json_unquote(json_extract(f.feedback_data, "$.feedback_text")), "") separator 0x1e), 0x1e, 3) as sample_comments,
-                                                       (select count(*)
-                                                          from :table_rag_interactions t
-                                                         where coalesce(t.request_type, "unknown") = coalesce(i.request_type, "unknown")
-                                                           and t.date_added >= date_sub(now(), interval 7 day)) as answers_total
-                                                from :table_rag_feedback f
-                                                left join :table_rag_interactions i on f.interaction_id = i.client_interaction_id
-                                                where f.feedback_type = "negative"
-                                                and f.date_added >= date_sub(now(), interval 7 day)
-                                                group by coalesce(i.request_type, "unknown")
-                                                order by negative_count desc
-                                               ');
-$Qreports->execute();
-
-$reports = $Qreports->fetchAll();
 ?>
 
 <div class="contentBody">
@@ -68,7 +46,7 @@ $reports = $Qreports->fetchAll();
 
   <!-- Alert Summary Cards -->
   <div class="row">
-    <div class="col-md">
+    <div class="col-md-3">
       <div class="card text-center border-warning">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_overdue_objectives'); ?></h5>
@@ -76,7 +54,7 @@ $reports = $Qreports->fetchAll();
         </div>
       </div>
     </div>
-    <div class="col-md">
+    <div class="col-md-3">
       <div class="card text-center border-danger">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_systematic_issues'); ?></h5>
@@ -84,7 +62,7 @@ $reports = $Qreports->fetchAll();
         </div>
       </div>
     </div>
-    <div class="col-md">
+    <div class="col-md-3">
       <div class="card text-center border-warning">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_failed_consensus'); ?></h5>
@@ -92,19 +70,11 @@ $reports = $Qreports->fetchAll();
         </div>
       </div>
     </div>
-    <div class="col-md">
+    <div class="col-md-3">
       <div class="card text-center border-danger">
         <div class="card-body">
           <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_failed_objectives'); ?></h5>
           <h2 id="alert-failed" class="text-danger">-</h2>
-        </div>
-      </div>
-    </div>
-    <div class="col-md">
-      <div class="card text-center border-warning">
-        <div class="card-body">
-          <h5 class="card-title"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_feedback'); ?></h5>
-          <h2 id="alert-negative" class="text-warning"><?php echo \count($reports); ?></h2>
         </div>
       </div>
     </div>
@@ -132,11 +102,6 @@ $reports = $Qreports->fetchAll();
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="failed-tab" data-bs-toggle="tab" data-bs-target="#failed" type="button">
         <?php echo $CLICSHOPPING_ChatGpt->getDef('text_failed_objectives'); ?>
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="negative-tab" data-bs-toggle="tab" data-bs-target="#negative" type="button">
-        <?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_feedback'); ?>
       </button>
     </li>
   </ul>
@@ -221,110 +186,6 @@ $reports = $Qreports->fetchAll();
             </thead>
             <tbody id="consensus-tbody"></tbody>
           </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- User Reports Tab -->
-    <div class="tab-pane fade" id="negative" role="tabpanel">
-      <div class="card">
-        <div class="card-body">
-          <div class="alert alert-info">
-            <?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_note'); ?>
-          </div>
-          <?php echo HTML::form('delete_reports', $CLICSHOPPING_ChatGpt->link('AgentAlerts&DeleteAll')); ?>
-
-          <div id="negative-toolbar" class="float-end">
-            <button id="negative-delete" class="btn btn-danger btn-sm">
-              <i class="bi bi-trash"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('button_delete_reports'); ?>
-            </button>
-          </div>
-
-          <table
-            id="negative-table"
-            data-toggle="table"
-            data-icons-prefix="bi"
-            data-icons="icons"
-            data-id-field="request_type"
-            data-select-item-name="selected[]"
-            data-click-to-select="true"
-            data-toolbar="#negative-toolbar"
-            data-buttons-class="primary"
-            data-show-columns="true"
-            data-mobile-responsive="true"
-            data-check-on-init="true"
-            data-show-export="true">
-
-            <thead class="dataTableHeadingRow">
-              <tr>
-                <th data-checkbox="true" data-field="state"></th>
-                <th data-field="request_type" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_request_type'); ?></th>
-                <th data-field="negative_count" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_negatives'); ?></th>
-                <th data-field="answers_total" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_answers_total'); ?></th>
-                <th data-field="negative_rate" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_negative_rate'); ?></th>
-                <th data-field="sample_questions" data-switchable="false"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_sample_questions'); ?></th>
-                <th data-field="sample_comments"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_sample_comments'); ?></th>
-                <th data-field="last_at" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_last_report'); ?></th>
-                <th data-field="severity" data-sortable="true"><?php echo $CLICSHOPPING_ChatGpt->getDef('text_severity'); ?></th>
-              </tr>
-            </thead>
-            <tbody>
-            <?php
-            foreach ($reports as $report) {
-              $negative_count = (int)$report['negative_count'];
-              $answers_total = (int)$report['answers_total'];
-              $negative_rate = $answers_total > 0 ? $negative_count / $answers_total : 0;
-
-              // Never critical on a handful: three reports AND a third of the answers.
-              $severity = ($negative_count >= 3 && $negative_rate >= 0.3) ? 'critical' : 'warning';
-              ?>
-              <tr>
-                <td></td>
-                <td><?php echo HTML::outputProtected($report['request_type']); ?></td>
-                <td><?php echo $negative_count; ?></td>
-                <td><?php echo $answers_total; ?></td>
-                <td><?php echo number_format($negative_rate * 100, 1); ?>%</td>
-                <td>
-                  <ul class="mb-0 ps-3">
-                    <?php
-                    foreach (array_filter(explode("\x1e", (string)$report['sample_questions'])) as $question) {
-                      ?>
-                      <li>
-                        <?php echo HTML::outputProtected($question); ?>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-1 py-0"
-                                data-purge-question="<?php echo HTML::outputProtected($question); ?>"
-                                title="<?php echo HTML::outputProtected($CLICSHOPPING_ChatGpt->getDef('text_purge_question_cache_title')); ?>">
-                          <i class="bi bi-eraser"></i> <?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_question_cache'); ?>
-                        </button>
-                      </li>
-                      <?php
-                    }
-                    ?>
-                  </ul>
-                </td>
-                <td>
-                  <ul class="mb-0 ps-3">
-                    <?php
-                    foreach (array_filter(explode("\x1e", (string)$report['sample_comments'])) as $comment) {
-                      echo '<li>' . HTML::outputProtected($comment) . '</li>';
-                    }
-                    ?>
-                  </ul>
-                </td>
-                <td><?php echo HTML::outputProtected($report['last_at']); ?></td>
-                <td><span class="badge bg-<?php echo $severity === 'critical' ? 'danger' : 'warning'; ?>"><?php echo $severity; ?></span></td>
-              </tr>
-              <?php
-            }
-
-            if ($reports === []) {
-              echo '<tr><td colspan="9" class="text-center">' . $CLICSHOPPING_ChatGpt->getDef('text_no_negative_feedback') . '</td></tr>';
-            }
-            ?>
-            </tbody>
-          </table>
-
-          <?php echo '</form>'; ?>
         </div>
       </div>
     </div>
@@ -432,7 +293,6 @@ $reports = $Qreports->fetchAll();
           <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_systematic'); ?></li>
           <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_consensus'); ?></li>
           <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_failed'); ?></li>
-          <li><?php echo $CLICSHOPPING_ChatGpt->getDef('help_negative'); ?></li>
         </ul>
       </div>
 
@@ -447,7 +307,6 @@ window.AgentAlertsConfig = {
   alertsEndpoint: 'ajax/Agent/get_agent_alerts.php',
   objectivesEndpoint: 'ajax/Agent/get_agent_objectives.php',
   manageEndpoint: 'ajax/Agent/agent_manage_objective.php',
-  purgeQuestionCacheEndpoint: 'ajax/RAG/purge_question_cache.php',
   labels: {
     no_overdue: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_overdue'); ?>",
     no_systematic: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_systematic'); ?>",
@@ -474,14 +333,7 @@ window.AgentAlertsConfig = {
     avg_score: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_avg_score'); ?>",
     min_score: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_min_score'); ?>",
     max_score: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_max_score'); ?>",
-    severity: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_severity'); ?>",
-    no_negative_feedback: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_no_negative_feedback'); ?>",
-    purge_question_cache: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_question_cache'); ?>",
-    purge_question_cache_title: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_question_cache_title'); ?>",
-    purge_done: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_done'); ?>",
-    purge_none: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_none'); ?>",
-    purge_failed: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_purge_failed'); ?>",
-    delete_reports_confirm: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_delete_reports_confirm'); ?>"
+    severity: "<?php echo $CLICSHOPPING_ChatGpt->getDef('text_severity'); ?>"
   }
 };
 </script>

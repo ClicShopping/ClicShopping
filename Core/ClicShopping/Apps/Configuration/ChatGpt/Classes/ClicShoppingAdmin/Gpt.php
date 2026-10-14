@@ -226,7 +226,7 @@ class Gpt
    * Map Anthropic model names between internal and API formats
    *
    * @param string $model Internal model name (e.g., 'anth-sonnet')
-   * @return string API model name (e.g., 'claude-opus-5')
+   * @return string API model name (e.g., 'claude-3-5-sonnet-20241022')
    */
   public static function mapAnthropicModelName(string $model): string
   {
@@ -347,17 +347,6 @@ class Gpt
   }
 
   /**
-   * Configured generation ceiling, in tokens. Single reading of CH_MAX_TOKEN for the callers
-   * that must stay coherent with each other: an answer and its restitution share one budget.
-   *
-   * @return int
-   */
-  public static function maxToken(): int
-  {
-    return defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 3500;
-  }
-
-  /**
    * Get GPT response (PUBLIC API - NO CHANGES TO SIGNATURE)
    *
    * @param string $question The question/prompt
@@ -394,31 +383,9 @@ class Gpt
   }
 
   /**
-   * Open the LLM count at a request entry point. @see LlmCallCounter::openRequest
-   *
-   * @return void
-   */
-  public static function openLlmRequest(): void
-  {
-    LlmCallCounter::openRequest();
-  }
-
-  /**
-   * @see LlmCallCounter::isRequestOpen
-   *
-   * @return bool
-   */
-  public static function isLlmRequestOpen(): bool
-  {
-    return LlmCallCounter::isRequestOpen();
-  }
-
-  /**
    * Number of real LLM round-trips made since the last reset, across BOTH the façade path
    * and the raw $chat->generateText() path (every chat object is wrapped at construction).
    * Unlike rag_statistics (one row per interaction), this is the exact per-request call count.
-   * Read BEFORE shutdown it excludes calls deferred past the response (PostResponseDeferrer):
-   * drain them with PostResponseDeferrer::runNow() first when the total must be complete.
    *
    * @return int
    */
@@ -459,91 +426,6 @@ class Gpt
   public static function countRawLlmCall(?string $role = null): void
   {
     LlmCallCounter::increment($role);
-  }
-
-  /**
-   * Hand the capture sink the body emitted by a raw-HTTP round-trip (no LLphant chat object,
-   * so {@see CountingChat} never sees it). No-op unless the capture sink is armed.
-   *
-   * @param mixed $payload The request body about to be sent.
-   */
-  public static function captureLlmPrompt(mixed $payload): void
-  {
-    LlmCallCounter::capturePrompt($payload);
-  }
-
-  /**
-   * File the token usage of a round-trip made without an LLphant chat object (raw HTTP), read
-   * from its own JSON body. Unreadable usage is filed as an unmeasured call, never as a zero.
-   *
-   * @param mixed $usage Decoded response body, or null when the call brought none back.
-   * @param string|null $model Model the request was sent to
-   */
-  public static function recordLlmTokens(mixed $usage, ?string $model = null): void
-  {
-    LlmCallCounter::recordTokens($usage, $model);
-  }
-
-  /**
-   * Tokens per model of the current request. @see LlmCallCounter::tokensByModel
-   *
-   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
-   */
-  public static function getLlmTokensByModel(): array
-  {
-    return LlmCallCounter::tokensByModel();
-  }
-
-  /**
-   * Round-trips of the current request per model then role. @see LlmCallCounter::callsByModelRole
-   *
-   * @return array<string, array<string, array{calls:int,unmeasured:int,prompt:int,completion:int,reasoning:int}>>
-   */
-  public static function getLlmCallsByModelRole(): array
-  {
-    return LlmCallCounter::callsByModelRole();
-  }
-
-  /**
-   * Embedding volume of the current request per model. @see LlmCallCounter::embeddings
-   *
-   * @return array<string, array{texts:int,chars:int}>
-   */
-  public static function getLlmEmbeddings(): array
-  {
-    return LlmCallCounter::embeddings();
-  }
-
-  /**
-   * Tokens of the current request per role (BENCH-3 (2a)): `completion` is the unit that says
-   * whether a call carries more work than another, which the call COUNT cannot.
-   *
-   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
-   */
-  public static function getLlmTokensByRole(): array
-  {
-    return LlmCallCounter::tokensByRole();
-  }
-
-  /**
-   * Tokens of the current request per CALL SITE, same shape as the per-role reading.
-   *
-   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
-   */
-  public static function getLlmTokensBySite(): array
-  {
-    return LlmCallCounter::tokensBySite();
-  }
-
-  /**
-   * Round-trips whose provider reported no usage, per call site. Non-empty means the token
-   * figures under-count — read it BEFORE reading the totals.
-   *
-   * @return array<string, int>
-   */
-  public static function getLlmUnmeasuredCalls(): array
-  {
-    return LlmCallCounter::unmeasuredCalls();
   }
 
   /**
@@ -589,5 +471,15 @@ class Gpt
   public static function gptModalMenu(): string
   {
     return UIGenerator::gptModalMenu();
+  }
+
+  /**
+   * Generates and returns the parameters and script configuration for integrating a ChatGPT model into CKEditor.
+   *
+   * @return string|bool Returns the generated script as a string if successful, otherwise, returns false.
+   */
+  public static function gptCkeditorParameters(): string|bool
+  {
+    return UIGenerator::gptCkeditorParameters();
   }
 }

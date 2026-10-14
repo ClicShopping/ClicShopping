@@ -12,12 +12,8 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
-use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AnalysisPlanAnnouncer;
 use ClicShopping\AI\DomainsAI\Analytics\Patterns\AnalyticsExecutorPatterns;
 use ClicShopping\AI\Infrastructure\Async\PostResponseDeferrer;
-use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ConversationTurnReader;
-use ClicShopping\AI\CoreAI\Memory\SubConversationMemory\ReferenceResolver;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * AnalyticsExecutor Class
@@ -159,49 +155,6 @@ class AnalyticsExecutor
   }
 
   /**
-   * Resolve a contextual reference carried by a decomposed sub-query
-   *
-   * @param string $query Sub-query text
-   * @param array $context Step context, carrying last_entity and the whole question
-   * @return string Resolved query, or the original one when nothing references the entity
-   */
-  private function resolveSubQueryReferences(string $query, array $context): string
-  {
-    $lastEntity = $context['last_entity'] ?? null;
-
-    if (!is_array($lastEntity) || empty($lastEntity)) {
-      return $query;
-    }
-
-    try {
-      $history = (new ConversationTurnReader($this->userId, $this->languageId, $this->debug))
-        ->getRecentTurns(TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS'));
-
-      // Same question: the entity comes from the sibling half, so the user-focus requirement of
-      // the inter-turn guard does not apply here.
-      $resolved = (new ReferenceResolver($this->debug))
-        ->resolve($query, $lastEntity, $history, true)['resolved_query'] ?? $query;
-    } catch (\Exception $e) {
-      // Reference resolution is never fatal: fall back to the sub-query as cut.
-      $this->logger->logSecurityEvent(
-        "Sub-query reference resolution failed: " . $e->getMessage(),
-        'warning'
-      );
-
-      return $query;
-    }
-
-    if ($resolved !== $query && $this->debug) {
-      $this->logger->logSecurityEvent(
-        "Resolved contextual reference in sub-query: '{$query}' → '{$resolved}'",
-        'info'
-      );
-    }
-
-    return $resolved;
-  }
-
-  /**
    * Execute analytics query
    *
    * @param string $query Query to execute
@@ -277,17 +230,8 @@ class AnalyticsExecutor
       $planQuery = (string)($context['query'] ?? '');
       $isSubQuery = $planQuery !== '' && trim($query) !== trim($planQuery);
 
-      // A half referencing the other one ("the orders of this product") is resolved against the
-      // entity the previous half produced. Sub-queries only: the whole query is already resolved
-      // by the orchestrator, and the resolver rewrites nothing when the half is self-contained.
-      if ($isSubQuery) {
-        $query = $this->resolveSubQueryReferences($query, $context);
-      }
-
-      $widerRequest = $isSubQuery ? (string)($context['plan_intent']['translated_query'] ?? '') : '';
-
       // Classification is always skipped here: the orchestrator already routed this as analytics.
-      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true, $isSubQuery, $widerRequest);
+      $rawResult = $this->analyticsAgent->processBusinessQuery($query, true, [], true, $isSubQuery);
       $executionTimeMs = (int)round((microtime(true) - $executionStart) * 1000);
 
       if ($this->debugRAManager) {
@@ -320,7 +264,51 @@ class AnalyticsExecutor
       }
 
       // Store entity in conversation memory for context enrichment in subsequent queries
-      $this->storeEntityContext($formattedResult, $isSubQuery);
+      if ($this->conversationMemory !== null) {
+        $entityId = $formattedResult['entity_id'] ?? null;
+        $entityType = $formattedResult['entity_type'] ?? null;
+        
+        if ($entityId !== null && $entityType !== null) {
+          // Extract entity name from results
+          $entityName = null;
+          $results = $formattedResult['results'] ?? [];
+          
+          if (!empty($results) && is_array($results[0])) {
+            $firstRow = $results[0];
+            $nameFields = ['products_name', 'name', 'manufacturers_name', 'categories_name', 'title'];
+            foreach ($nameFields as $field) {
+              if (isset($firstRow[$field]) && !empty($firstRow[$field])) {
+                $entityName = $firstRow[$field];
+                break;
+              }
+            }
+          }
+          
+          try {
+            $this->conversationMemory->setLastEntity((int)$entityId, $entityType, $entityName);
+            
+            if ($this->debug) {
+              $nameInfo = $entityName ? " (name: {$entityName})" : "";
+              $this->logger->logSecurityEvent(
+                "Stored entity in memory from analytics: {$entityType} (ID: {$entityId}){$nameInfo}",
+                'info'
+              );
+            }
+            
+            if ($this->debugRAManager) {
+              $nameInfo = $entityName ? ", Name={$entityName}" : "";
+              error_log("[AnalyticsExecutor] Stored entity in memory: ID={$entityId}, Type={$entityType}{$nameInfo}");
+            }
+          } catch (\Exception $e) {
+            if ($this->debug) {
+              $this->logger->logSecurityEvent(
+                "Error storing entity in memory: " . $e->getMessage(),
+                'warning'
+              );
+            }
+          }
+        }
+      }
 
       // Record real analytics execution + critic evaluation (no synthetic data).
       // Deferred to AFTER the response is flushed (PostResponseDeferrer): this is post-response
@@ -342,66 +330,6 @@ class AnalyticsExecutor
       error_log("[error] EXCEPTION in executeAnalyticsQuery: " . $e->getMessage());
       error_log(str_repeat("=", 100) . "\n");
       return $this->handleAnalyticsError($e, $query);
-    }
-  }
-
-  /**
-   * Store the produced entity as conversation context for follow-up queries.
-   *
-   * Sink-safe invariant (CONC-1): only the final turn writes context. Analytics sub-query steps
-   * are independent (depends_on: [], can_run_parallel: true) and their anaphora is resolved at
-   * decomposition, so a sub-query step must never write the shared last-entity sink — that write
-   * belongs to the single top-level turn (and StoreMemoryStage post-synthesis), so concurrent
-   * sub-queries cannot race it or pollute a sibling half's resolution.
-   *
-   * @param array $formattedResult Formatted analytics result
-   * @param bool $isSubQuery Whether this call is a decomposed sub-query step
-   * @return void
-   */
-  private function storeEntityContext(array $formattedResult, bool $isSubQuery): void
-  {
-    if ($isSubQuery || $this->conversationMemory === null) {
-      return;
-    }
-
-    $entityId = $formattedResult['entity_id'] ?? null;
-    $entityType = $formattedResult['entity_type'] ?? null;
-
-    if ($entityId === null || $entityType === null) {
-      return;
-    }
-
-    $entityName = null;
-    $results = $formattedResult['results'] ?? [];
-
-    if (!empty($results) && is_array($results[0])) {
-      $firstRow = $results[0];
-      $nameFields = ['products_name', 'name', 'manufacturers_name', 'categories_name', 'title'];
-      foreach ($nameFields as $field) {
-        if (isset($firstRow[$field]) && !empty($firstRow[$field])) {
-          $entityName = $firstRow[$field];
-          break;
-        }
-      }
-    }
-
-    try {
-      $this->conversationMemory->setLastEntity((int)$entityId, $entityType, $entityName);
-
-      if ($this->debug) {
-        $nameInfo = $entityName ? " (name: {$entityName})" : "";
-        $this->logger->logSecurityEvent(
-          "Stored entity in memory from analytics: {$entityType} (ID: {$entityId}){$nameInfo}",
-          'info'
-        );
-      }
-    } catch (\Exception $e) {
-      if ($this->debug) {
-        $this->logger->logSecurityEvent(
-          "Error storing entity in memory: " . $e->getMessage(),
-          'warning'
-        );
-      }
     }
   }
 
@@ -483,20 +411,22 @@ class AnalyticsExecutor
             }
           }
 
-          $notice = AnalysisPlanAnnouncer::sensitiveOutputNotice($bestInterpretation['sensitive_output'] ?? null);
-
           // Convert to standard analytics_response format
           return [
             'type' => 'analytics_response',
             'question' => $rawResult['query'] ?? '',
-            'interpretation' => $notice === '' ? $interpretation : $notice . "\n\n" . $interpretation,
-            'sensitive_output' => $bestInterpretation['sensitive_output'] ?? null,
+            'interpretation' => $interpretation,
             'results' => $bestInterpretation['results'],
             'sql_query' => $bestInterpretation['sql_query'] ?? '',
             'original_sql_query' => $bestInterpretation['sql_query'] ?? '',
             'entity_id' => null,
             'entity_type' => null,
-            'source_attribution' => $this->analyticsSourceAttribution($bestInterpretation['sql_query'] ?? null),
+            'source_attribution' => [
+              'source_type' => 'Analytics Database',
+              'source_icon' => '📊',
+              'source_details' => 'Data retrieved from transactional database',
+              'table_name' => $this->extractTableNameFromSql($bestInterpretation['sql_query'] ?? null),
+            ],
           ];
         }
       }
@@ -519,7 +449,12 @@ class AnalyticsExecutor
 
       // 🆕 Add source attribution if not already present
       if (!isset($rawResult['source_attribution'])) {
-        $rawResult['source_attribution'] = $this->analyticsSourceAttribution($rawResult['sql_query'] ?? null);
+        $rawResult['source_attribution'] = [
+          'source_type' => 'Analytics Database',
+          'source_icon' => '📊',
+          'source_details' => 'Data retrieved from transactional database',
+          'table_name' => $this->extractTableNameFromSql($rawResult['sql_query'] ?? null),
+        ];
       }
 
       return $rawResult;
@@ -549,11 +484,15 @@ class AnalyticsExecutor
       'original_sql_query' => $rawResult['original_sql_query'] ?? $rawResult['sql_query'] ?? '',
       'entity_id' => $rawResult['entity_id'] ?? null,
       'entity_type' => $rawResult['entity_type'] ?? null,
-      'derived_columns' => $rawResult['derived_columns'] ?? [],
     ];
 
     // 🆕 Add source attribution for analytics queries
-    $formatted['source_attribution'] = $this->analyticsSourceAttribution($formatted['sql_query']);
+    $formatted['source_attribution'] = [
+      'source_type' => 'Analytics Database',
+      'source_icon' => '📊',
+      'source_details' => 'Data retrieved from transactional database',
+      'table_name' => $this->extractTableNameFromSql($formatted['sql_query']),
+    ];
 
     // Add step entity metadata for tracking through pipeline
     if (isset($rawResult['entity_id'])) {
@@ -584,14 +523,10 @@ class AnalyticsExecutor
    */
   private function formatExecutionFailure(array $rawResult): array
   {
-    $message = trim((string)($rawResult['text_response'] ?? ''));
+    $message = CLICSHOPPING::getDef('text_query_generation_failed');
 
-    if ($message === '') {
-      $message = CLICSHOPPING::getDef('text_query_generation_failed');
-
-      if ($message === '' || $message === 'text_query_generation_failed') {
-        $message = 'No query could be built for this question.';
-      }
+    if ($message === '' || $message === 'text_query_generation_failed') {
+      $message = 'No query could be built for this question.';
     }
 
     if ($this->debugRAManager) {
@@ -614,7 +549,7 @@ class AnalyticsExecutor
       'source_attribution' => [
         'source_type' => 'Analytics Database',
         'source_icon' => '⚠️',
-        'source_details' => CLICSHOPPING::getDef('text_source_details_no_query'),
+        'source_details' => 'No query was executed for this question',
         'table_name' => 'unknown',
       ],
     ];
@@ -897,7 +832,7 @@ class AnalyticsExecutor
       'source_attribution' => [
         'source_type' => 'Analytics Database',
         'source_icon' => '⚠️',
-        'source_details' => CLICSHOPPING::getDef('text_source_details_sql_failed', ['period' => $temporalPeriod]),
+        'source_details' => "SQL generation failed for {$temporalPeriod} period",
         'table_name' => 'unknown',
       ],
     ];
@@ -991,7 +926,7 @@ class AnalyticsExecutor
       'source_attribution' => [
         'source_type' => 'Analytics Database',
         'source_icon' => 'ℹ️',
-        'source_details' => CLICSHOPPING::getDef('text_source_details_no_data', ['metric' => $baseMetric, 'period' => $temporalPeriod]),
+        'source_details' => "No {$baseMetric} data available for {$temporalPeriod} aggregation",
         'table_name' => 'orders', // Default table for analytics
       ],
     ];
@@ -1103,21 +1038,4 @@ class AnalyticsExecutor
     return $this->analyticsAgent;
   }
 
-
-  /**
-   * Source attribution of an analytics answer. source_type stays an internal identifier; only the
-   * details are user-facing prose and carry the interface language.
-   *
-   * @param string|null $sql The query that produced the rows
-   * @return array The source attribution block
-   */
-  private function analyticsSourceAttribution(?string $sql): array
-  {
-    return [
-      'source_type' => 'Analytics Database',
-      'source_icon' => '📊',
-      'source_details' => CLICSHOPPING::getDef('text_source_details_analytics_db'),
-      'table_name' => $this->extractTableNameFromSql($sql),
-    ];
-  }
 }

@@ -14,7 +14,6 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\Apps\Customers\Reviews\Reviews as ReviewsApp;
 use ClicShopping\OM\Registry;
 use function count;
-use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 /**
  * ReviewSentimentGenerator — shared product-level sentiment generation + persistence.
@@ -32,7 +31,7 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
  */
 class ReviewSentimentGenerator
 {
-  /** Minimum approved reviews required to analyse a product. Read by a Module hook. */
+  /** Minimum approved reviews required to analyse a product. */
   public const MIN_REVIEWS = 3;
 
   /** GPT temperature for the main analysis (stable, factual). */

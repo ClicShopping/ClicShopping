@@ -17,7 +17,7 @@ use ClicShopping\AI\Security\SecurityLogger;
  *
  * Coordinates security layers for query validation.
  * 
- * PURE LLM MODE (not optional - no switch disables it):
+ * PURE LLM MODE:
  * - Primary defense: SemanticSecurityAnalyzer (LLM-based)
  * - Pattern fallback: OPTIONAL (disabled by default)
  * - Processing: Always in English internally
@@ -99,10 +99,12 @@ class SecurityOrchestrator
           ]);
           
           // TODO: Implement pattern fallback (Phase 2)
-          return self::failClosed($query, 'LLM unavailable, pattern fallback not implemented', $startTime, 'llm_error');
+          // For now, allow query with warning
+          return self::buildResult(false, 0.0, 'none', 'LLM unavailable, pattern fallback not implemented', $startTime, 'llm_error');
         }
-
-        return self::failClosed($query, 'Security check unavailable', $startTime, 'llm_error');
+        
+        // No fallback - allow query with warning
+        return self::buildResult(false, 0.0, 'none', 'Security check unavailable', $startTime, 'llm_error');
       }
       
       // ============================================
@@ -184,30 +186,15 @@ class SecurityOrchestrator
       );
       
     } catch (\Exception $e) {
+      // Unexpected error - log and allow query
       self::$logger->logError('SecurityOrchestrator exception', [
         'query_preview' => substr($query, 0, 100),
         'exception' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
       ]);
       
-      return self::failClosed($query, 'Security check error', $startTime, 'error');
+      return self::buildResult(false, 0.0, 'none', 'Security check error', $startTime, 'error');
     }
-  }
-
-  /**
-   * No verdict from the analyzer: a security gate never fails open.
-   */
-  private static function failClosed(string $query, string $reason, float $startTime, string $method): array
-  {
-    // A logging failure must not decide the query.
-    try {
-      self::$logger->logSecurityDecision($query, true, 0.0, 'unavailable', $reason, [
-        'detection_method' => $method
-      ]);
-    } catch (\Throwable) {
-    }
-
-    return self::buildResult(true, 0.0, 'unavailable', $reason, $startTime, $method);
   }
   
   /**
@@ -217,6 +204,14 @@ class SecurityOrchestrator
    */
   private static function loadConfiguration(): array
   {
+    // Handle both boolean and string 'True'/'False' formats (DB compatibility)
+    $llmEnabled = true; // default
+
+    if (defined('CLICSHOPPING_APP_CHATGPT_RA_USE_LLM_PRIMARY_SECURITY')) {
+      $configValue = CLICSHOPPING_APP_CHATGPT_RA_USE_LLM_PRIMARY_SECURITY;
+      $llmEnabled = ($configValue === true || $configValue == 'True' || $configValue === 'true' || $configValue === '1');
+    }
+
     // Provide safe defaults when RAG/RA config is not installed
     $patternFallbackEnabled = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_PATTERN_FALLBACK');
     $threatThreshold = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD');
@@ -224,6 +219,9 @@ class SecurityOrchestrator
     $logBlockedOnly = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY');
 
     return [
+      // LLM-based security (PRIMARY)
+      'llm_enabled' => $llmEnabled,
+      
       // Pattern fallback (OPTIONAL - disabled by default)
       'pattern_fallback_enabled' => $patternFallbackEnabled,
       
@@ -292,6 +290,11 @@ class SecurityOrchestrator
   {
     $config = self::loadConfiguration();
     $errors = [];
+
+    // Check if LLM is enabled
+    if (!$config['llm_enabled']) {
+      $errors[] = 'LLM security is disabled - this is not recommended';
+    }
 
     // Check threat threshold
     if ($config['threat_threshold'] < 0.0 || $config['threat_threshold'] > 1.0) {

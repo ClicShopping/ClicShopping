@@ -27,46 +27,27 @@ use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
 class StatisticsManager
 {
   /**
-   * Record the token usage of the WHOLE request onto the tracker.
-   *
-   * Reads the per-request counter (facade AND raw HTTP paths) rather than the last facade call:
-   * a question makes 8 to 34 round-trips, so the last one under-counted the cost ~35x (COST-1).
+   * Record token usage from GPT response
    *
    * @param StatisticsTracker $statsTracker Statistics tracker instance
    * @return void
    */
   public static function recordTokenUsage(StatisticsTracker $statsTracker): void
   {
-    $prompt = 0;
-    $completion = 0;
-
-    // `reasoning` is a SUBSET of `completion` in the provider payload, never a third addend.
-    foreach (Gpt::getLlmTokensByRole() as $tokens) {
-      $prompt += $tokens['prompt'];
-      $completion += $tokens['completion'];
+    $tokenUsage = Gpt::getLastTokenUsage();
+    
+    if ($tokenUsage !== null) {
+      $statsTracker->setTokens($tokenUsage['prompt_tokens'], $tokenUsage['completion_tokens']);
+      
+      error_log(sprintf(
+        '📊 Tokens recorded: prompt=%d, completion=%d, total=%d',
+        $tokenUsage['prompt_tokens'],
+        $tokenUsage['completion_tokens'],
+        $tokenUsage['total_tokens']
+      ));
+    } else {
+      error_log('⚠️ No token usage data available from Gpt::getLastTokenUsage()');
     }
-
-    $unmeasured = Gpt::getLlmUnmeasuredCalls();
-
-    if (!empty($unmeasured)) {
-      error_log('[INFO : ALERT] Token usage under-counts, provider reported no usage for: ' . json_encode($unmeasured));
-    }
-
-    if ($prompt === 0 && $completion === 0) {
-      error_log('[INFO : ALERT] No token usage recorded for this request - the LLM call counter is empty.');
-
-      return;
-    }
-
-    $statsTracker->setTokens($prompt, $completion);
-    $statsTracker->setTokensByModel(Gpt::getLlmTokensByModel());
-
-    error_log(sprintf(
-      '📊 Tokens recorded: prompt=%d, completion=%d, total=%d',
-      $prompt,
-      $completion,
-      $prompt + $completion
-    ));
   }
   
   /**
@@ -81,7 +62,8 @@ class StatisticsManager
   {
     $confidenceScore = (float)($aiResponse['metrics']['confidence_score'] ?? ($aiResponse['intent']['confidence'] ?? 0));
     $intentType = $aiResponse['intent']['type'] ?? 'semantic';
-    $hasUsefulData = (!empty($dataToFormat['results']) || !empty($dataToFormat['response']) || !empty($dataToFormat['interpretation']));
+    $hasUsefulData = isset($dataToFormat) && is_array($dataToFormat) 
+                  && (!empty($dataToFormat['results']) || !empty($dataToFormat['response']) || !empty($dataToFormat['interpretation']));
     $responseLen = strlen($formatted);
     
     $securityScore = isset($aiResponse['metrics']['security_score']) 
@@ -134,7 +116,6 @@ class StatisticsManager
     // CLICSHOPPING_APP_CHATGPT_RA_INTERACTION_RESPONSE_MAX_CHARS after running
     // the ALTER to MEDIUMTEXT (suggested value: 16_000_000).
     $interactionData = self::truncateOversizedColumns($interactionData);
-    $interactionData = self::dropTraceColumnsWhenAbsent($interactionData, $db);
 
     try {
       $db->save('rag_interactions', $interactionData);
@@ -156,95 +137,6 @@ class StatisticsManager
     }
 
     return $dbInteractionId;
-  }
-
-  /**
-   * Persist a FAILED request, so the error reaches rag_interactions AND rag_statistics.
-   *
-   * A failed request is an interaction like any other: it must own a row, otherwise the error
-   * flag has no interaction_id to hang on and saveStatistics() refuses to write.
-   *
-   * @param StatisticsTracker $statsTracker Tracker of the failed request
-   * @param string $userQuery Question the user asked
-   * @param string $errorMessage Message shown to the user
-   * @param int $userId User ID
-   * @param string $sessionId Session ID
-   * @param int $languageId Language ID
-   * @return bool True when both rows were written
-   */
-  public static function persistFailure(
-    StatisticsTracker $statsTracker,
-    string $userQuery,
-    string $errorMessage,
-    int $userId,
-    string $sessionId,
-    int $languageId
-  ): bool {
-    if (!$statsTracker->getMetric('error_occurred')) {
-      $statsTracker->setError('processing_error', $errorMessage);
-    }
-
-    $responseTime = (microtime(true) - ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true))) * 1000;
-
-    $interactionData = self::buildInteractionData(
-      $userQuery,
-      $errorMessage,
-      ['intent' => ['type' => 'error'], 'agent_used' => 'error'],
-      ['entity_id' => 0, 'entity_type' => 'unknown'],
-      $userId,
-      $sessionId,
-      $languageId,
-      $responseTime,
-      ['response_quality' => 0],
-      $statsTracker,
-      'interaction_' . $userId . '_' . time() . '_' . substr(md5(uniqid('', true)), 0, 8)
-    );
-
-    return self::saveStatistics($statsTracker, self::persistInteraction($interactionData, $statsTracker));
-  }
-
-  /**
-   * Drop the AIACT-2 trace columns when the 4.33 upgrade has not been applied here.
-   * Sending an unknown column fails the whole INSERT, and the audit row is what would be lost.
-   *
-   * @param array $interactionData Row about to be written
-   * @param mixed $db Database instance
-   * @return array Row the current schema accepts
-   */
-  private static function dropTraceColumnsWhenAbsent(array $interactionData, mixed $db): array
-  {
-    if (self::interactionsHasTraceColumns($db)) {
-      return $interactionData;
-    }
-
-    unset($interactionData['sql_query'], $interactionData['validation_action'], $interactionData['validation_score']);
-
-    return $interactionData;
-  }
-
-  /**
-   * Whether rag_interactions carries the AIACT-2 trace columns. Probed at most once per request.
-   * A probe that cannot answer reports absence: degrading the row beats losing it.
-   *
-   * @param mixed $db Database instance
-   * @return bool
-   */
-  private static function interactionsHasTraceColumns(mixed $db): bool
-  {
-    static $exists = null;
-
-    if ($exists === null) {
-      try {
-        $Q = $db->prepare("SHOW COLUMNS FROM :table_rag_interactions LIKE 'sql_query'");
-        $Q->execute();
-        $exists = (bool)$Q->fetch();
-      } catch (\Exception $e) {
-        error_log('[INFO : ERROR]StatisticsManager: trace column probe failed: ' . $e->getMessage());
-        $exists = false;
-      }
-    }
-
-    return $exists;
   }
 
   /**
@@ -283,69 +175,6 @@ class StatisticsManager
   }
   
   /**
-   * Attribute tokens, model, provider and cost to the tracker when its path did not.
-   * Idempotent; runs before BOTH writes, rag_interactions snapshots the cost first.
-   * model_used = the model that consumed most; the cost itself is priced per model.
-   *
-   * @param StatisticsTracker $statsTracker Statistics tracker instance
-   * @return void
-   */
-  private static function attribute(StatisticsTracker $statsTracker): void
-  {
-    if ($statsTracker->getMetric('tokens_total') === null) {
-      self::recordTokenUsage($statsTracker);
-    }
-
-    if ($statsTracker->getModelTrace() === []) {
-      $statsTracker->setModelTrace(self::modelTrace());
-    }
-
-    if ($statsTracker->getMetric('model_used') !== null) {
-      return;
-    }
-
-    $model = Gpt::defaultModel();
-    $most = -1;
-
-    foreach ($statsTracker->getTokensByModel() as $name => $tokens) {
-      if ((string)$name !== '' && $tokens['prompt'] + $tokens['completion'] > $most) {
-        $model = (string)$name;
-        $most = $tokens['prompt'] + $tokens['completion'];
-      }
-    }
-
-    $statsTracker->setApiInfo(ModelManager::getModelProviderMap()[$model] ?? 'unknown', $model);
-  }
-
-  /**
-   * Every model the request reached, with its provider and role, then the embedding models:
-   * model_used keeps only the dominant one, this proves which provider saw which step.
-   *
-   * @return array{llm_calls: list<array<string, int|string>>, embeddings: list<array<string, int|string>>}
-   */
-  private static function modelTrace(): array
-  {
-    $providers = ModelManager::getModelProviderMap();
-    $calls = [];
-
-    foreach (Gpt::getLlmCallsByModelRole() as $model => $roles) {
-      $model = (string)$model;
-
-      foreach ($roles as $role => $trace) {
-        $calls[] = ['provider' => $providers[$model] ?? 'unknown', 'model' => $model !== '' ? $model : 'unknown', 'role' => (string)$role] + $trace;
-      }
-    }
-
-    $embeddings = [];
-
-    foreach (Gpt::getLlmEmbeddings() as $model => $volume) {
-      $embeddings[] = ['model' => (string)$model] + $volume;
-    }
-
-    return ['llm_calls' => $calls, 'embeddings' => $embeddings];
-  }
-
-  /**
    * Save statistics to database
    *
    * @param StatisticsTracker $statsTracker Statistics tracker instance
@@ -359,8 +188,6 @@ class StatisticsManager
       return false;
     }
     
-    self::attribute($statsTracker);
-
     try {
       $statsSaved = $statsTracker->save();
       
@@ -403,7 +230,6 @@ class StatisticsManager
     StatisticsTracker $statsTracker,
     string $clientInteractionId
   ): array {
-    self::attribute($statsTracker);
     $statsSnapshot = $statsTracker->getAllMetrics();
     
     $tokensUsed = $aiResponse['usage']['total_tokens']
@@ -424,9 +250,7 @@ class StatisticsManager
     
     $resolvedAgentUsed = $aiResponse['agent_used'] ?? 'unknown';
     $resolvedIntentType = $aiResponse['intent']['type'] ?? 'unknown';
-
-    $validation = self::extractValidationVerdict($aiResponse);
-
+    
     return [
       'user_id' => $userId,
       'session_id' => $sessionId,
@@ -436,7 +260,7 @@ class StatisticsManager
       'request_type' => $resolvedIntentType,
       'confidence' => $aiResponse['intent']['confidence'] ?? 0,
       'response_quality' => $responseQualityValue,
-      'response_time' => $responseTime,
+      'response_time' => $responseTime ?? 0,
       'execution_time' => $aiResponse['execution_time'] ?? 0,
       'tokens_used' => $tokensUsed,
       'api_cost' => $apiCostValue,
@@ -445,120 +269,7 @@ class StatisticsManager
       'entity_type' => $metadata['entity_type'],
       'agent_used' => $resolvedAgentUsed,
       'intent_type' => $resolvedIntentType,
-      'sql_query' => self::extractSqlQuery($aiResponse),
-      'validation_action' => $validation['action'],
-      'validation_score' => $validation['score'],
       'date_added' => 'now()',
-    ];
-  }
-
-  /**
-   * The SQL the run actually executed, read where the response exposes it.
-   *
-   * A planned run carries its SQL only in `sub_queries`, a hybrid one in `analytics_components`:
-   * every distinct statement is kept.
-   *
-   * @param array $aiResponse AI response from orchestrator
-   * @return string|null Executed SQL, null when the path ran none
-   */
-  private static function extractSqlQuery(array $aiResponse): ?string
-  {
-    foreach ([$aiResponse, $aiResponse['data'] ?? null, $aiResponse['result'] ?? null] as $node) {
-      $sql = is_array($node) ? self::usableSql($node['sql_query'] ?? null) : null;
-
-      if ($sql !== null) {
-        return $sql;
-      }
-    }
-
-    $statements = [];
-
-    foreach (['sub_queries', 'analytics_components'] as $key) {
-      $parts = $aiResponse[$key] ?? $aiResponse['data'][$key] ?? $aiResponse['result'][$key] ?? [];
-
-      foreach (is_array($parts) ? $parts : [] as $part) {
-        $sql = is_array($part) ? self::usableSql($part['sql_query'] ?? null) : null;
-
-        if ($sql !== null) {
-          $statements[$sql] = $sql;
-        }
-      }
-    }
-
-    return $statements === [] ? null : implode(";\n\n", $statements);
-  }
-
-  /**
-   * @param mixed $sql Candidate SQL
-   * @return string|null Trimmed SQL, null for a non-string, an empty string or 'N/A'
-   */
-  private static function usableSql(mixed $sql): ?string
-  {
-    if (!is_string($sql)) {
-      return null;
-    }
-
-    $sql = trim($sql);
-
-    // 'N/A' is the agent's own placeholder for "no SQL here" — store nothing rather than a word.
-    return $sql !== '' && strtoupper($sql) !== 'N/A' ? $sql : null;
-  }
-
-  /**
-   * The validation gate verdict on the delivered answer.
-   *
-   * `reason` is not stored: it is derivable from the pair — a null score under 'pass' is
-   * "no score available". A planned run carries one verdict per part in `sub_queries` or
-   * `analytics_components`: the harshest one is kept, a weak part must never read as 'pass'.
-   *
-   * @param array $aiResponse AI response from orchestrator
-   * @return array{action: string|null, score: float|null}
-   */
-  private static function extractValidationVerdict(array $aiResponse): array
-  {
-    $validation = $aiResponse['validation'] ?? $aiResponse['data']['validation'] ?? null;
-
-    if (is_array($validation)) {
-      return self::normalizeVerdict($validation);
-    }
-
-    $harshest = ['action' => null, 'score' => null];
-    $severity = ['pass' => 0, 'annotate' => 1, 'regenerate' => 2];
-
-    foreach (['sub_queries', 'analytics_components'] as $key) {
-      $parts = $aiResponse[$key] ?? $aiResponse['data'][$key] ?? $aiResponse['result'][$key] ?? [];
-
-      foreach (is_array($parts) ? $parts : [] as $part) {
-        $verdict = is_array($part) && is_array($part['validation'] ?? null) ? self::normalizeVerdict($part['validation']) : null;
-
-        if ($verdict === null || $verdict['action'] === null) {
-          continue;
-        }
-
-        $rank = $severity[$verdict['action']] ?? 1;
-        $best = $harshest['action'] === null ? -1 : ($severity[$harshest['action']] ?? 1);
-
-        if ($rank > $best || ($rank === $best && ($verdict['score'] ?? 1.0) < ($harshest['score'] ?? 1.0))) {
-          $harshest = $verdict;
-        }
-      }
-    }
-
-    return $harshest;
-  }
-
-  /**
-   * @param array $validation Raw gate verdict
-   * @return array{action: string|null, score: float|null}
-   */
-  private static function normalizeVerdict(array $validation): array
-  {
-    $action = $validation['action'] ?? null;
-    $score = $validation['score'] ?? null;
-
-    return [
-      'action' => is_string($action) && $action !== '' ? $action : null,
-      'score' => is_numeric($score) ? round((float)$score, 3) : null,
     ];
   }
 }

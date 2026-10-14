@@ -18,12 +18,14 @@ use ClicShopping\AI\Security\SecurityLogger;
  * - Intercepts system events
  * - Collects performance metrics
  * - Aggregates data in real-time
+ * - Notifies the MonitoringAgent
  * - Supports custom metrics
  */
 
 class MetricsCollector
 {
   private SecurityLogger $logger;
+  private ?MonitoringAgent $monitoringAgent = null;
   private bool $debug;
 
   // Buffer de métriques avant envoi
@@ -44,10 +46,13 @@ class MetricsCollector
 
   /**
    * Constructor
+   *
+   * @param MonitoringAgent|null $monitoringAgent Instance du MonitoringAgent
    */
-  public function __construct()
+  public function __construct(?MonitoringAgent $monitoringAgent = null)
   {
     $this->logger = new SecurityLogger();
+    $this->monitoringAgent = $monitoringAgent;
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     if ($this->debug) {
@@ -200,6 +205,11 @@ class MetricsCollector
     ];
 
     $this->metricsBuffer[] = $event;
+
+    // Notify MonitoringAgent
+    if ($this->monitoringAgent) {
+      $this->monitoringAgent->recordEvent($eventType, $metrics);
+    }
 
     $this->checkBuffer();
   }
@@ -647,6 +657,16 @@ class MetricsCollector
   public function __destruct()
   {
     $this->flush();
+  }
+
+  /**
+   * Updates the MonitoringAgent
+   * 
+   * @param MonitoringAgent $monitoringAgent MonitoringAgent instance
+   */
+  public function setMonitoringAgent(MonitoringAgent $monitoringAgent): void
+  {
+    $this->monitoringAgent = $monitoringAgent;
   }
 
   /**

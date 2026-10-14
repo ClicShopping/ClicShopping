@@ -30,21 +30,6 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
  *    equal length made the previous window overlap the current one by a day on leap years.
  * 3. `previous_period` is unchanged and remains a DURATION convention: the same span, immediately
  *    before. No calendar homologue is involved.
- * 4. `previous_year_comparable_days` is the WEEKDAY homologue: the same window shifted back 52 weeks,
- *    so both windows hold the same count of Mondays, Saturdays and business days. 19 August 2026 is a
- *    Wednesday, 19 August 2025 a Tuesday - on a weekday-sensitive activity that composition gap weighs
- *    more than 29 February. It is a SECOND metric next to the calendar one, never a replacement: the
- *    two answer different questions and are never summed or substituted for one another.
- * An unknown convention degrades to `none`: no comparison is better than a window nobody asked for.
- * A MISSING current window falls back on the configured default span (DefaultAnalysisWindow) and is
- * flagged `period_defaulted`, so the answer can name the window it used. With no default configured
- * the plan is flagged `period_missing` instead and the caller asks the user for the period.
- * A window is missing for two different reasons and only the plan can tell them apart: `set_bounded`
- * says something OTHER than time already bounds the measured set - the last N of an entity, one
- * customer, one category. Such a measure has no window to choose, so none is applied and none is
- * asked for; applying one narrows a set the question had already closed.
- * `all_time` says the question asks for the WHOLE history: no lower bound, the window ends today and
- * is named as such - never the default span, which would contradict the question.
  *
  * @package ClicShopping\AI\DomainsAI\Analytics\Planning
  */
@@ -53,74 +38,20 @@ final class PeriodResolver
   public const COMPARE_NONE = 'none';
   public const COMPARE_PREVIOUS_YEAR = 'previous_year';
   public const COMPARE_PREVIOUS_PERIOD = 'previous_period';
-  public const COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS = 'previous_year_comparable_days';
-
-  /** Calendar units: a breakdown by one of them cuts the event dates, never the lines of an order. */
-  public const CALENDAR_UNITS = ['year', 'quarter', 'month', 'week', 'day'];
-
-  /** 52 weeks: the shift that keeps the day of week, hence the count of business days. */
-  private const COMPARABLE_DAYS_SHIFT = '-364 days';
 
   /**
-   * A dimension named after a calendar unit (month, quarter, months, weekday, period_month…) is
-   * carried by the event date: one value per order, so it fans nothing out.
-   *
-   * @param string $dimension Dimension as the plan writes it
-   * @return bool True when the dimension is a calendar breakdown
-   */
-  public static function isCalendarDimension(string $dimension): bool
-  {
-    $d = strtolower($dimension);
-
-    foreach (self::CALENDAR_UNITS as $unit) {
-      if (str_contains($d, $unit)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_year_comparable_days|previous_period, set_bounded?: bool, all_time?: bool}`
+   * @param array $periods `{current: {from, to}, compare: none|previous_year|previous_period}`
    * @param \DateTimeImmutable|null $observedAt Observation date; defaults to now. Injected by tests only.
-   * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d,
-   *               plus `default_days` when the window came from the default, or
-   *               `{current: {from: null, to: null}, compare: none, period_missing: true}`, or the
-   *               same bounds flagged `set_bounded` when the question bounds the set without time, or
-   *               `{current: {from: null, to}, compare: none, all_time: true}` for the whole history
-   * @throws \InvalidArgumentException When the current window is reversed or contains unreadable dates
+   * @return array Allow-listed `{current: {from, to}, compare, previous?: {from, to}}`, every bound Y-m-d
+   * @throws \InvalidArgumentException When the current window is missing, reversed, or contains unreadable dates
    */
   public static function resolve(array $periods, ?\DateTimeImmutable $observedAt = null): array
   {
     $from = (string)($periods['current']['from'] ?? '');
     $to = (string)($periods['current']['to'] ?? '');
-    $defaultDays = 0.0;
-
-    if (($from === '' || $to === '') && ($periods['set_bounded'] ?? false) === true) {
-      return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'set_bounded' => true];
-    }
-
-    if ($from === '' && ($periods['all_time'] ?? false) === true) {
-      try {
-        $end = $to !== '' ? new \DateTimeImmutable($to) : ($observedAt ?? new \DateTimeImmutable());
-      } catch (\Throwable $e) {
-        throw new \InvalidArgumentException('The plan carries an unreadable period bound: ' . $e->getMessage());
-      }
-
-      return ['current' => ['from' => null, 'to' => $end->format('Y-m-d')], 'compare' => self::COMPARE_NONE, 'all_time' => true];
-    }
 
     if ($from === '' || $to === '') {
-      $default = DefaultAnalysisWindow::window($observedAt);
-
-      if ($default === null) {
-        return ['current' => ['from' => null, 'to' => null], 'compare' => self::COMPARE_NONE, 'period_missing' => true];
-      }
-
-      $from = $default['from'];
-      $to = $default['to'];
-      $defaultDays = DefaultAnalysisWindow::days();
+      throw new \InvalidArgumentException('The plan carries no current period');
     }
 
     try {
@@ -135,12 +66,6 @@ final class PeriodResolver
     }
 
     $compare = (string)($periods['compare'] ?? self::COMPARE_NONE);
-
-    if (!in_array($compare, [self::COMPARE_NONE, self::COMPARE_PREVIOUS_YEAR,
-                             self::COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS, self::COMPARE_PREVIOUS_PERIOD], true)) {
-      $compare = self::COMPARE_NONE;
-    }
-
     $today = ($observedAt ?? new \DateTimeImmutable())->setTime(0, 0);
 
     // Comparing bounds the current window at the observation date: the months it has no data
@@ -160,11 +85,6 @@ final class PeriodResolver
       'compare' => $compare,
     ];
 
-    // Carried so the answer can say the window was not asked for, and how wide it is.
-    if ($defaultDays > 0.0) {
-      $resolved['default_days'] = $defaultDays;
-    }
-
     if ($compare === self::COMPARE_NONE) {
       return $resolved;
     }
@@ -172,9 +92,6 @@ final class PeriodResolver
     if ($compare === self::COMPARE_PREVIOUS_YEAR) {
       $previousStart = self::sameDayLastYear($start);
       $previousEnd = self::sameDayLastYear($end);
-    } elseif ($compare === self::COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS) {
-      $previousStart = $start->modify(self::COMPARABLE_DAYS_SHIFT);
-      $previousEnd = $end->modify(self::COMPARABLE_DAYS_SHIFT);
     } else {
       // Duration convention: the same span, ending the day before the current window opens.
       $lengthInDays = (int)$start->diff($end)->days;

@@ -14,13 +14,11 @@ use ClicShopping\OM\Registry;
   <?php if ($config['rag_enabled']): ?>
   <?php
   // Generate AJAX URLs for JavaScript
+  $ajax_analyze_feedbacks_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/RAG/analyze_feedbacks.php';
   $ajax_get_feedbacks_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/RAG/get_recent_feedbacks.php';
   $ajax_manage_cache_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/RAG/manage_cache.php';
   $get_cache_stats_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'). 'ajax/RAG/get_cache_stats.php';
   $get_cache_performance_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'). 'ajax/RAG/get_cache_performance.php';
-  $get_security_report_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'). 'ajax/Gouvernance/get_security_report.php';
-  $clear_security_noise_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'). 'ajax/Gouvernance/clear_security_noise.php';
-  $get_feedback_report_url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin'). 'ajax/Gouvernance/get_feedback_report.php';
   ?>
 <script>
   // Single injection of PHP data into APP_DATA
@@ -28,31 +26,13 @@ use ClicShopping\OM\Registry;
   // Unified APP_DATA structure with all necessary data
   $appData = [
     'ajax' => [
+      'analyze' => $ajax_analyze_feedbacks_url,
       'get' => $ajax_get_feedbacks_url,
       'getFeedbacksUrl' => $ajax_get_feedbacks_url,
       'cache' => $ajax_manage_cache_url,
       'cacheStatsUrl' => $get_cache_stats_url,
       'cachePerformanceUrl' => $get_cache_performance_url,
-      'securityReportUrl' => $get_security_report_url,
-      'securityClearUrl' => $clear_security_noise_url,
-      'feedbackReportUrl' => $get_feedback_report_url
-    ],
-    // Wording stays in the language files: the script only interpolates it.
-    'labels' => [
-      'security' => [
-        'generated' => $CLICSHOPPING_ChatGpt->getDef('security_report_generated'),
-        'population' => $CLICSHOPPING_ChatGpt->getDef('security_report_population'),
-        'reportFailed' => $CLICSHOPPING_ChatGpt->getDef('security_report_failed'),
-        'clearFailed' => $CLICSHOPPING_ChatGpt->getDef('security_clear_failed')
-      ],
-      'feedback' => [
-        'generated' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_generated'),
-        'reportFailed' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_failed'),
-        'recompute' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_recompute'),
-        'runFresh' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_run_fresh'),
-        'runStored' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_run_stored'),
-        'samples' => $CLICSHOPPING_ChatGpt->getDef('feedback_report_samples')
-      ]
+      'analyzeFeedbacksUrl' => $ajax_analyze_feedbacks_url
     ],
     'systemReport' => $systemReport,
     'globalStats' => $globalStats,
@@ -99,6 +79,4 @@ use ClicShopping\OM\Registry;
 <script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/feedback.js'); ?>"></script>
 <script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/latency_charts.js'); ?>"></script>
 <script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Rag/cache_performance_charts.js'); ?>"></script>
-<script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Gouvernance/security_report.js'); ?>"></script>
-<script defer src="<?php echo CLICSHOPPING::link('Shop/ext/javascript/clicshopping/ClicShoppingAdmin/Gouvernance/feedback_report.js'); ?>"></script>
 <?php endif; ?>

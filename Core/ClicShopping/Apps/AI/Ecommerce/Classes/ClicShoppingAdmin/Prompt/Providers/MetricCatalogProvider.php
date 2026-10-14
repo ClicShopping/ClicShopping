@@ -61,7 +61,7 @@ class MetricCatalogProvider implements PromptPlaceholderProviderInterface
    * @param int $languageId Language of the prompt being built
    * @return string One line per metric, empty when the catalogue is empty
    */
-  public function render(int $languageId, ?array $resultRows = null): string
+  public function render(int $languageId): string
   {
     $catalog = MetricCatalog::all();
 
@@ -80,19 +80,7 @@ class MetricCatalogProvider implements PromptPlaceholderProviderInterface
       ]);
     }
 
-    // A split dimension is matched by its exact name: unnamed here, the model invents a synonym.
-    $splits = array_unique([...array_filter(array_column($catalog, 'split'), 'is_string'), ...MetricCatalog::namedDimensions()]);
-    $dimensionRows = [];
-
-    foreach ($splits as $split) {
-      $dimensionRows[] = $this->getDef('text_metric_dimension_row', [
-        'name' => $split,
-        'definition' => $this->getDef('text_metric_dimension_' . $split),
-      ]);
-    }
-
-    return $this->getDef('text_metric_catalog_intro') . "\n" . implode("\n", $rows)
-      . ($dimensionRows === [] ? '' : "\n" . $this->getDef('text_metric_dimension_intro') . "\n" . implode("\n", $dimensionRows));
+    return $this->getDef('text_metric_catalog_intro') . "\n" . implode("\n", $rows);
   }
 
   /**

@@ -12,7 +12,7 @@ use ClicShopping\OM\HTML;
 
 class display_memory_context extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'True';
+  public $default = 'False';
   public int|null $sort_order = 90;
 
   protected function init()

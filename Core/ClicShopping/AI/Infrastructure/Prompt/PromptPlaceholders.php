@@ -30,21 +30,19 @@ class PromptPlaceholders
    * @param string $message Assembled prompt, possibly carrying placeholders
    * @param string $tablePrefix Install DB table prefix (db_table_prefix)
    * @param int $languageId Language ID to inject
-   * @param array|null $resultRows Rows the prompt interprets, null when it interprets none
    * @return string Prompt ready to be sent to the LLM
    */
-  public static function resolve(string $message, string $tablePrefix, int $languageId, ?array $resultRows = null): string
+  public static function resolve(string $message, string $tablePrefix, int $languageId): string
   {
     $baseCurrency = \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '';
 
-    // Dynamic tokens first: what a provider renders may itself carry the static ones.
-    $message = PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId, $resultRows);
-
-    return str_replace(
+    $message = str_replace(
       [self::TABLE_PREFIX, self::LANGUAGE_ID, self::BASE_CURRENCY],
       [$tablePrefix, (string)$languageId, $baseCurrency],
       $message
     );
+
+    return PromptPlaceholderRegistry::getInstance()->resolve($message, $languageId);
   }
 
   /**

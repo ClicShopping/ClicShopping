@@ -240,14 +240,13 @@ comment IP address whitelist for API access control
 
 ## 9. Cache — 5-Tier Architecture
 
-| Tier | Technology   | Scope                           | Switch          |
-|------|--------------|---------------------------------|-----------------|
-| 1    | OpCache      | PHP bytecode                    | `php.ini`       |
-| 2    | Static cache | Pre-rendered Shop catalog pages | `USE_CACHE`     |
-| 3    | APCu         | Process-local shared memory     | `USE_APCU`      |
-| 4    | Memcached    | Multi-server distributed cache  | `USE_MEMCACHED` |
-| 5    | Redis        | Sessions + application data     | `USE_REDIS`     |
-
+| Tier | Technology   | Scope                           |
+|------|--------------|---------------------------------|
+| 1    | OpCache      | PHP bytecode                    |
+| 2    | Static cache | Pre-rendered Shop catalog pages |
+| 3    | Memcached    | Multi-server distributed cache  |
+| 4    | Redis        | Sessions + application data     |
+| 5    | APCu         | User space cache                |
 
 Do not introduce a sixth mechanism without explicit agreement.
 

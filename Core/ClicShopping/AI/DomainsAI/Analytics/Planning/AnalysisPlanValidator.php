@@ -10,8 +10,6 @@ declare(strict_types=1);
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
 
-use ClicShopping\AI\Config\TechnicalDefaults;
-
 /**
  * AnalysisPlanValidator
  *
@@ -27,36 +25,15 @@ use ClicShopping\AI\Config\TechnicalDefaults;
  */
 class AnalysisPlanValidator
 {
-  /** @var array<string, array{grain: string, type: string, definition: string, aggregation?: string, split?: string, line_alternative?: string}> */
+  /** @var array<string, array{grain: string, type: string, definition: string}> */
   private array $catalog;
 
-  /** @var array<string, true> Dimensions the domain declares at order grain (one value per order) */
-  private array $orderSideDimensions = [];
-
-  /** @var array<string, string> Dimension => the dimension it is read under once filtered on a value */
-  private array $filteredDimensionReadings = [];
-
-  /** Grain of the domain's dated fact (its event axis): a metric there fans out over a line dimension */
-  private string $factGrain;
-
   /**
-   * @param array<string, array{grain: string, type: string, definition: string, aggregation?: string, split?: string, line_alternative?: string}> $catalog Domain metric catalogue
-   * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
-   * @param array<string, string> $filteredDimensionReadings Dimension => its reading under a filter on one of its values
-   * @param string $factGrain Grain of the domain's dated fact; '' when none is declared (no fan-out check)
+   * @param array<string, array{grain: string, type: string, definition: string}> $catalog Domain metric catalogue
    */
-  public function __construct(array $catalog, array $orderSideDimensions = [], array $filteredDimensionReadings = [], string $factGrain = '')
+  public function __construct(array $catalog)
   {
     $this->catalog = $catalog;
-    $this->factGrain = $factGrain;
-
-    foreach ($orderSideDimensions as $dimension) {
-      $this->orderSideDimensions[strtolower(trim((string)$dimension))] = true;
-    }
-
-    foreach ($filteredDimensionReadings as $from => $to) {
-      $this->filteredDimensionReadings[strtolower(trim((string)$from))] = strtolower(trim((string)$to));
-    }
   }
 
   /**
@@ -64,7 +41,7 @@ class AnalysisPlanValidator
    * proposed was rejected". Only the second is a refusal the user must be told about.
    *
    * @param array $plan Raw plan as parsed from the model's JSON
-   * @return array{plan: array|null, unsatisfiable: array<int, array{element: string, label: string, reason: string, kind?: string}>, errors: array<int, string>, no_metric_proposed: bool}
+   * @return array{plan: array|null, unsatisfiable: array<int, array{element: string, label: string, reason: string}>, errors: array<int, string>, no_metric_proposed: bool}
    */
   public function validate(array $plan): array
   {
@@ -132,28 +109,8 @@ class AnalysisPlanValidator
     }
 
     $unsatisfiable = array_merge($unsatisfiable, $declared);
-    $askedDimensions = $this->promoteSeriesUnit($rawMetrics, is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : []);
-    $filters = is_array($plan['filters'] ?? null) ? $plan['filters'] : [];
-    [$askedDimensions, $filters, $rankings] = $this->readFilteredDimensions($askedDimensions, $filters, $rankings);
-
-    // An order-grain metric broken down by a product dimension fans out (counted once per line), and
-    // restricted to a hierarchy member it would sum whole orders: swap to the line-grain sibling, or
-    // record it unsatisfiable. Before the split: the split belongs to the metric that remains.
-    $hierarchyFilters = array_intersect(array_keys($filters), [...array_keys($this->filteredDimensionReadings), ...array_values($this->filteredDimensionReadings)]);
-    $renamed = [];
-    $metrics = $this->resolveGrainConflicts($metrics, [...$askedDimensions, ...$hierarchyFilters], $unsatisfiable, $renamed);
-    $dimensions = self::splitDimensions($metrics, $askedDimensions, $rankings);
-    $metrics = $this->applySeriesSample($metrics, $periods, $askedDimensions, $unsatisfiable);
-
-    if ($metrics === []) {
-      // Everything proposed was withheld (grain conflict, series too short): a named refusal.
-      return ['plan' => null, 'unsatisfiable' => $unsatisfiable, 'errors' => $errors,
-              'no_metric_proposed' => false];
-    }
-
-    $rankings = self::remapRankings($rankings, $renamed, array_column($metrics, 'name'));
-    // A split is not a breakdown the question asked: it crosses the dense axis, never cancels it.
-    $periods['time_grain'] = self::timeGrain($periods, $askedDimensions, $rankings);
+    $dimensions = is_array($plan['dimensions'] ?? null) ? $plan['dimensions'] : [];
+    $periods['time_grain'] = self::timeGrain($periods, $dimensions, $rankings);
 
     // Build the returned plan as an explicit allow-list: only these keys are trusted.
     $returnedPlan = [
@@ -161,203 +118,13 @@ class AnalysisPlanValidator
       'metrics' => $metrics,
       'dimensions' => $dimensions,
       'rankings' => $rankings,
-      'filters' => $filters,
+      'filters' => is_array($plan['filters'] ?? null) ? $plan['filters'] : [],
       'complexity' => is_numeric($plan['complexity'] ?? null) ? (int)$plan['complexity'] : 1,
       'unsatisfiable' => $unsatisfiable,
     ];
 
     return ['plan' => $returnedPlan, 'unsatisfiable' => $unsatisfiable, 'errors' => $errors,
             'no_metric_proposed' => false];
-  }
-
-
-  /**
-   * Read a dimension filtered on one value under the dimension the domain declares for that case.
-   *
-   * A hierarchical dimension filtered on a member means that member's sub-tree: read under the
-   * plain dimension, its rows would be named after a top-level ancestor, not after the member.
-   *
-   * @param array $dimensions Dimensions the model asked for
-   * @param array $filters Filters the model asked for
-   * @param array $rankings Validated rankings
-   * @return array{0: array, 1: array, 2: array} Dimensions, filters and rankings, rewritten where declared
-   */
-  private function readFilteredDimensions(array $dimensions, array $filters, array $rankings): array
-  {
-    foreach ($this->filteredDimensionReadings as $from => $to) {
-      $value = $filters[$from] ?? null;
-
-      if (!is_scalar($value) || (string)$value === '') {
-        continue;
-      }
-
-      unset($filters[$from]);
-      $filters[$to] = $value;
-      $dimensions = array_values(array_unique(array_map(static fn($d) => $d === $from ? $to : $d, $dimensions)));
-
-      foreach ($rankings as $i => $ranking) {
-        if (($ranking['partition_by'] ?? null) === $from) {
-          $rankings[$i]['partition_by'] = $to;
-        }
-      }
-    }
-
-    return [$dimensions, $filters, $rankings];
-  }
-
-  /**
-   * Break a bare total down by the dimension the domain declared on its metric.
-   *
-   * Two populations that are not established on the same basis must not be silently summed into
-   * one figure: the merchant has to see them apart, and to be told why. The split rides the SAME
-   * query as the total, so the two tables can never disagree with it.
-   *
-   * Only on a BARE total: a question that already asks for a breakdown or a ranking carries its
-   * own grain, and crossing it with this one multiplies the rows without answering anything.
-   *
-   * @param array $metrics Validated metrics, carrying the catalogue's `split` where declared
-   * @param array $dimensions Dimensions the model asked for
-   * @param array $rankings Validated rankings
-   * @return array Dimensions, with the split appended when it applies
-   */
-  private static function splitDimensions(array $metrics, array $dimensions, array $rankings): array
-  {
-    if ($dimensions !== [] || $rankings !== []) {
-      return $dimensions;
-    }
-
-    foreach ($metrics as $metric) {
-      $split = $metric['split'] ?? null;
-
-      if (is_string($split) && $split !== '' && !in_array($split, $dimensions, true)) {
-        $dimensions[] = $split;
-      }
-    }
-
-    return $dimensions;
-  }
-
-  /**
-   * Keep an order-grain metric honest under a product breakdown.
-   *
-   * A JOIN to reach a product dimension (category, product, supplier) turns one order into one
-   * row per line, so an order-level value summed or averaged over it is weighted by lines-per-
-   * order - a silently wrong figure. A dimension is order-side (safe) only when it is a declared
-   * `split` or declared order-side; every other dimension is a product breakdown. When the catalogue names a line-grain
-   * sibling the metric is swapped to it (revenue per category IS the sum of line revenues); a
-   * distinct count is kept; otherwise the value is not attributable to the dimension and is
-   * recorded unsatisfiable.
-   *
-   * Order-side dimensions are the catalogue's splits, those the domain declares at order grain and
-   * every calendar unit (the event date); an undeclared one is read as a product breakdown (an
-   * honest refusal, never a wrong number).
-   *
-   * @param array<int, array{name: string, grain: string, type: string}> $metrics Validated metrics
-   * @param array<int, string> $dimensions Resolved dimensions
-   * @param array $unsatisfiable Collected removals, by reference
-   * @param array<string, string> $renamed Swaps applied, by reference (old name => new name)
-   * @return array<int, array> Metrics with order-grain conflicts swapped or removed
-   */
-  private function resolveGrainConflicts(array $metrics, array $dimensions, array &$unsatisfiable, array &$renamed): array
-  {
-    $splitDimensions = [];
-    foreach ($this->catalog as $entry) {
-      if (is_string($entry['split'] ?? null) && $entry['split'] !== '') {
-        $splitDimensions[$entry['split']] = true;
-      }
-    }
-
-    $orderSide = $this->orderSideDimensions;
-    $productDimensions = array_filter($dimensions, static fn($d): bool => !isset($splitDimensions[$d])
-      && !isset($orderSide[strtolower(trim((string)$d))])
-      && !PeriodResolver::isCalendarDimension((string)$d));
-
-    if ($productDimensions === []) {
-      return $metrics;
-    }
-
-    $resolved = [];
-    $seen = [];
-
-    foreach ($metrics as $metric) {
-      $distinct = ($this->catalog[$metric['name']]['aggregation'] ?? '') === MetricAggregation::DISTINCT_COUNT;
-
-      // A distinct count counts each order once per dimension value: lines never multiply it, but
-      // an order under several values counts in each, so its rows never add up to a total.
-      $orderGrain = $this->factGrain !== '' && ($metric['grain'] ?? '') === $this->factGrain;
-
-      if (!$orderGrain || $distinct) {
-        if ($orderGrain) {
-          $metric['non_additive'] = true;
-        }
-
-        $name = $metric['name'];
-        if (!isset($seen[$name])) { $seen[$name] = true; $resolved[] = $metric; }
-
-        continue;
-      }
-
-      $alt = $this->catalog[$metric['name']]['line_alternative'] ?? null;
-
-      if (is_string($alt) && $alt !== '' && isset($this->catalog[$alt])) {
-        $renamed[$metric['name']] = $alt;
-
-        if (!isset($seen[$alt])) {
-          $seen[$alt] = true;
-          $entry = ['name' => $alt, 'grain' => $this->catalog[$alt]['grain'], 'type' => $this->catalog[$alt]['type']];
-
-          if (is_string($this->catalog[$alt]['basis'] ?? null) && $this->catalog[$alt]['basis'] !== '') {
-            $entry['basis'] = $this->catalog[$alt]['basis'];
-          }
-
-          if (is_string($this->catalog[$alt]['split'] ?? null) && $this->catalog[$alt]['split'] !== '') {
-            $entry['split'] = $this->catalog[$alt]['split'];
-          }
-
-          $resolved[] = $entry;
-        }
-
-        continue;
-      }
-
-      $unsatisfiable[] = [
-        'element' => 'metric:' . $metric['name'],
-        'label' => $metric['name'],
-        'reason' => 'a fact-grain metric cannot be broken down by a line dimension without counting each fact once per line',
-        'kind' => 'grain_conflict',
-      ];
-    }
-
-    return $resolved;
-  }
-
-  /**
-   * Follow the grain-conflict swaps into the rankings: rename a ranked metric that was swapped,
-   * and drop a ranking whose metric no longer survives (a ranking on nothing ranks nothing).
-   *
-   * @param array<int, array> $rankings Validated rankings
-   * @param array<string, string> $renamed Swaps applied (old name => new name)
-   * @param array<int, string> $keptNames Names of the metrics still in the plan
-   * @return array<int, array> Rankings, remapped and pruned
-   */
-  private static function remapRankings(array $rankings, array $renamed, array $keptNames): array
-  {
-    $out = [];
-
-    foreach ($rankings as $ranking) {
-      $metric = $ranking['metric'] ?? '';
-
-      if (isset($renamed[$metric])) {
-        $ranking['metric'] = $renamed[$metric];
-        $metric = $renamed[$metric];
-      }
-
-      if (in_array($metric, $keptNames, true)) {
-        $out[] = $ranking;
-      }
-    }
-
-    return $out;
   }
 
   /**
@@ -379,140 +146,6 @@ class AnalysisPlanValidator
     $compared = ($periods['compare'] ?? PeriodResolver::COMPARE_NONE) !== PeriodResolver::COMPARE_NONE;
 
     return $compared && $dimensions === [] && $rankings === [] ? 'day' : 'window';
-  }
-
-  /**
-   * A series statistic is read once per calendar period of the window - the unit the plan named on
-   * the metric, else the finest calendar dimension, else the month: stamp it, and withhold the statistic when the window holds fewer periods than the configured
-   * minimum - a dispersion over three points informs nothing.
-   *
-   * @param array $metrics Validated metrics
-   * @param array $periods Resolved periods
-   * @param array $dimensions Dimensions the model asked for
-   * @param array $unsatisfiable Collected removals, by reference
-   * @return array Metrics kept, series statistics carrying `series_unit`
-   */
-  private function applySeriesSample(array $metrics, array $periods, array $dimensions, array &$unsatisfiable): array
-  {
-    $required = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_STATS_MIN_PERIODS');
-    $kept = [];
-
-    foreach ($metrics as $metric) {
-      if (!$this->isSeriesStatistic($metric['name'])) {
-        $kept[] = $metric;
-
-        continue;
-      }
-
-      $unit = $metric['series_unit'] ?? self::seriesUnit($dimensions);
-      $count = self::countPeriods($periods, $unit);
-
-      // ponytail: an all-time window has no lower bound to count before execution; it is not checked.
-      if ($count !== null && $count < $required) {
-        $unsatisfiable[] = [
-          'element' => 'metric:' . $metric['name'],
-          'label' => $metric['name'],
-          'reason' => "the window holds {$count} {$unit} periods, a series statistic needs {$required}",
-          'kind' => 'insufficient_sample',
-          'periods' => $count,
-          'required' => $required,
-          'unit' => $unit,
-        ];
-
-        continue;
-      }
-
-      $metric['series_unit'] = $unit;
-      $kept[] = $metric;
-    }
-
-    return $kept;
-  }
-
-  /**
-   * A calendar unit set on a metric that is NOT a series statistic is a per-period breakdown:
-   * it becomes the dimension, unless one is already asked.
-   *
-   * @param array $rawMetrics Metrics as the model proposed them
-   * @param array $dimensions Dimensions the model asked for
-   * @return array Dimensions, with the unit appended when it was only carried by a metric
-   */
-  private function promoteSeriesUnit(array $rawMetrics, array $dimensions): array
-  {
-    foreach ($rawMetrics as $metric) {
-      $name = is_array($metric) && is_string($metric['name'] ?? null) ? $metric['name'] : '';
-      $unit = is_array($metric) && is_string($metric['series_unit'] ?? null) ? strtolower(trim($metric['series_unit'])) : '';
-
-      if (!isset($this->catalog[$name]) || $this->isSeriesStatistic($name) || !in_array($unit, PeriodResolver::CALENDAR_UNITS, true)) {
-        continue;
-      }
-
-      foreach ($dimensions as $dimension) {
-        if (is_string($dimension) && PeriodResolver::isCalendarDimension($dimension)) {
-          return $dimensions;
-        }
-      }
-
-      $dimensions[] = $unit;
-    }
-
-    return $dimensions;
-  }
-
-  /**
-   * @param string $name Catalogue metric name
-   * @return bool True when the metric is a statistic over a series of calendar periods
-   */
-  private function isSeriesStatistic(string $name): bool
-  {
-    return ($this->catalog[$name]['aggregation'] ?? '') === MetricAggregation::SERIES_STATISTIC;
-  }
-
-  /**
-   * @param array $dimensions Dimensions the model asked for
-   * @return string The finest calendar unit they name, `month` when they name none
-   */
-  private static function seriesUnit(array $dimensions): string
-  {
-    foreach (array_reverse(PeriodResolver::CALENDAR_UNITS) as $unit) {
-      foreach ($dimensions as $dimension) {
-        if (is_string($dimension) && str_contains(strtolower($dimension), $unit)) {
-          return $unit;
-        }
-      }
-    }
-
-    return 'month';
-  }
-
-  /**
-   * Calendar periods the current window touches, a partial period at either end counted.
-   *
-   * @param array $periods Resolved periods
-   * @param string $unit Calendar unit
-   * @return int|null Null when the window has no lower or upper bound
-   */
-  private static function countPeriods(array $periods, string $unit): ?int
-  {
-    $from = $periods['current']['from'] ?? null;
-    $to = $periods['current']['to'] ?? null;
-
-    if (!is_string($from) || !is_string($to)) {
-      return null;
-    }
-
-    $f = new \DateTimeImmutable($from);
-    $t = new \DateTimeImmutable($to);
-    $monday = static fn(\DateTimeImmutable $d): \DateTimeImmutable => $d->modify('-' . ((int)$d->format('N') - 1) . ' days');
-
-    return match ($unit) {
-      'year' => (int)$t->format('Y') - (int)$f->format('Y') + 1,
-      'quarter' => ((int)$t->format('Y') * 4 + intdiv((int)$t->format('n') - 1, 3))
-        - ((int)$f->format('Y') * 4 + intdiv((int)$f->format('n') - 1, 3)) + 1,
-      'month' => ((int)$t->format('Y') * 12 + (int)$t->format('n')) - ((int)$f->format('Y') * 12 + (int)$f->format('n')) + 1,
-      'week' => intdiv((int)$monday($f)->diff($monday($t))->days, 7) + 1,
-      default => (int)$f->diff($t)->days + 1,
-    };
   }
 
   /**
@@ -594,30 +227,11 @@ class AnalysisPlanValidator
       }
 
       // The catalogue wins over what the model declared.
-      $entry = [
+      $kept[] = [
         'name' => $name,
         'grain' => $this->catalog[$name]['grain'],
         'type' => $this->catalog[$name]['type'],
       ];
-
-      // Carried only when the domain declared one: the plan is what reaches the restitution.
-      if (is_string($this->catalog[$name]['basis'] ?? null) && $this->catalog[$name]['basis'] !== '') {
-        $entry['basis'] = $this->catalog[$name]['basis'];
-      }
-
-      // Same rule for the dimension that breaks the metric down.
-      if (is_string($this->catalog[$name]['split'] ?? null) && $this->catalog[$name]['split'] !== '') {
-        $entry['split'] = $this->catalog[$name]['split'];
-      }
-
-      // The period a series statistic reads, as the question names it: not a dimension, a one-figure
-      // statistic keeps one row.
-      $unit = is_array($metric) && is_string($metric['series_unit'] ?? null) ? strtolower(trim($metric['series_unit'])) : '';
-      if ($this->isSeriesStatistic($name) && in_array($unit, PeriodResolver::CALENDAR_UNITS, true)) {
-        $entry['series_unit'] = $unit;
-      }
-
-      $kept[] = $entry;
     }
 
     return $kept;

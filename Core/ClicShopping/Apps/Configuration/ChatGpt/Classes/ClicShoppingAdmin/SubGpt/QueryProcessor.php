@@ -10,8 +10,6 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubG
 
 use ClicShopping\AI\CoreAI\Orchestrator\OrchestratorAgent;
 use ClicShopping\AI\Infrastructure\Metrics\StatisticsTracker;
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Registry;
 
 /**
  * QueryProcessor
@@ -30,37 +28,15 @@ class QueryProcessor
   /**
    * Process query with orchestrator agent
    *
-   * Only production site building an OrchestratorAgent, so it is where the four branches
-   * (rag, websearch, hybrid, analytics) are capped, before any LLM round-trip is billed.
-   *
    * @param string $query User query
    * @param int $userId User ID
    * @param int $languageId Language ID
    * @param StatisticsTracker $statsTracker Statistics tracker instance
-   * @param string $channel Caller channel disambiguating the user id: admin, mcp or system
    * @return array AI response with success, data, intent, agent_used keys
    * @throws \Exception If orchestrator fails
    */
-  public static function process(string $query, int $userId, int $languageId, StatisticsTracker $statsTracker, string $channel = 'admin'): array
+  public static function process(string $query, int $userId, int $languageId, StatisticsTracker $statsTracker): array
   {
-    if (!RequestValidator::checkRateLimit($channel, $userId)) {
-      $language = Registry::get('Language');
-      $language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
-      $message = CLICSHOPPING::getDef('text_rate_limit_exceeded');
-
-      $statsTracker->setError('rate_limited', 'Rate limit exceeded for ' . $channel . ':' . $userId);
-
-      return [
-        'success' => false,
-        'type' => 'rate_limited',
-        'error' => 'rate_limited',
-        'text_response' => $message,
-        'response' => $message,
-        'sources' => [],
-        'data' => []
-      ];
-    }
-
     $orchestrator = new OrchestratorAgent($userId, $languageId);
     $aiResponse = $orchestrator->processWithValidation($query);
     
@@ -84,7 +60,8 @@ class QueryProcessor
     $statsTracker
       ->setAgentType($aiResponse['agent_used'] ?? 'unknown')
       ->setClassificationType($aiResponse['intent']['type'] ?? 'unknown')
-      ->setConfidence($aiResponse['intent']['confidence'] ?? 0);
+      ->setConfidence($aiResponse['intent']['confidence'] ?? 0)
+      ->setApiInfo('openai', ModelManager::defaultModel());
     
     if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
       error_log('[INFO : SUCCESS] ORCHESTRATOR PROCESSED SUCCESSFULLY');

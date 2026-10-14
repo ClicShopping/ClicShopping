@@ -13,8 +13,6 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Language;
-use ClicShopping\AI\Helper\FuturePeriodMask;
-use ClicShopping\AI\Config\DomainConfig;
 
 /**
  * AbstractFormatter - Base class for all result formatters
@@ -37,7 +35,6 @@ abstract class AbstractFormatter
     }
 
     $this->language = Registry::get('Language');
-    $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
   }
 
   /**
@@ -53,53 +50,6 @@ abstract class AbstractFormatter
    * @return bool
    */
   abstract public function canHandle(array $results): bool;
-
-  /**
-   * Render a generated SQL query behind the collapsed show/hide button.
-   *
-   * Every query shown in the chat goes through here: closed by default, opened on demand
-   * (chat_send.js initSqlToggles).
-   *
-   * @param string $sql Query, already formatted by the caller
-   * @return string HTML
-   */
-  protected function renderSqlToggle(string $sql): string
-  {
-    $id = 'sqlQueryCollapse_' . bin2hex(random_bytes(6));
-
-    return "<div class='mb-3'>"
-      . "<a href='#' class='btn btn-primary btn-sm' data-sql-toggle='{$id}'>" . htmlspecialchars($this->language->getDef('toggle_sql_query')) . "</a>"
-      . "<div id='{$id}' style='display:none;' class='mt-2'><div class='card card-body'>"
-      . "<div class='fw-bold mb-2 text-primary'>" . htmlspecialchars($this->language->getDef('sql_query_label')) . "</div>"
-      . "<pre class='mb-0' style='font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; font-family:monospace;'>" . htmlspecialchars($sql) . "</pre>"
-      . "</div></div></div>";
-  }
-
-  /**
-   * The documents a semantic answer was built from, as the small italic line under it.
-   *
-   * @param array $attribution Semantic source attribution, carrying 'document_names'
-   * @return string HTML, empty when no document is named
-   */
-  protected function renderDocumentSources(array $attribution): string
-  {
-    $docNames = array_values(array_filter((array)($attribution['document_names'] ?? []), 'is_string'));
-
-    if ($docNames === []) {
-      return '';
-    }
-
-    DomainConfig::loadAgnosticLanguageFile('rag_formatters', null);
-    $names = array_map('htmlspecialchars', $docNames);
-    $last = array_pop($names);
-    $list = $names === [] ? $last : implode(', ', $names) . ' ' . $this->language->getDef('text_rag_semantic_and') . ' ' . $last;
-    $label = $this->language->getDef(count($docNames) > 1 ? 'text_rag_semantic_sources' : 'text_rag_semantic_source');
-
-    return "<div class='mt-3'></div>"
-      . "<div class='document-sources' style='font-size: 0.9em; color: #666; font-style: italic;'>"
-      . '<strong>' . $label . ' :</strong> ' . $list
-      . '</div>';
-  }
 
   /**
    * Pretty format SQL query
@@ -131,123 +81,15 @@ abstract class AbstractFormatter
     $tableParts = $this->buildTableOpenTag($cssClass);
     $output = $tableParts['toolbar'] . $tableParts['table'];
 
-    // Les colonnes sont l'UNION des cles, et chaque ligne est alignee dessus : une ligne plus courte
-    // que l'en-tete decale ses cellules, et bootstrap-table lit alors une colonne qui n'existe pas.
-    $columns = [];
-
-    foreach ($data as $row) {
-      if (is_array($row)) {
-        foreach (array_keys($row) as $key) {
-          $columns[$key] = '';
-        }
-      }
-    }
-
-    if ($columns !== []) {
-      $aligned = [];
-
-      foreach ($data as $row) {
-        if (!is_array($row)) {
-          continue;
-        }
-
-        $line = [];
-
-        foreach ($columns as $key => $empty) {
-          $line[$key] = $row[$key] ?? '';  // TEMOIN
-        }
-
-        $aligned[] = $line;
-      }
-
-      $output .= $this->generateTableHeaders($columns);
-      $output .= $this->generateTableRows($aligned);
+    $firstRow = !empty($data) ? array_values($data)[0] : null;
+    if (is_array($firstRow)) {
+      $output .= $this->generateTableHeaders($firstRow);
+      $output .= $this->generateTableRows($data);
     }
 
     $output .= "</table>";
 
     return $output;
-  }
-
-  /**
-   * Render rows as a table, split into captioned sub-tables when a column carries a
-   * text_table_split_reason_<col> label; a single table otherwise. Shared by the analytics
-   * and hybrid paths so both restitution channels apply the same split.
-   *
-   * @param array $data Result rows
-   * @param string $cssClass Table CSS classes
-   * @return string Rendered HTML
-   */
-  protected function renderDataTable(array $data, string $cssClass = 'table table-bordered table-striped'): string
-  {
-    $column = $this->splitColumn($data);
-
-    if ($column === null) {
-      return $this->generateTable($data, $cssClass);
-    }
-
-    $output = "<p class='split-reason'>" . htmlspecialchars($this->language->getDef('text_table_split_reason_' . $column)) . "</p>";
-
-    foreach ($this->groupRows($data, $column) as $value => $rows) {
-      $key = 'text_table_split_' . $column . '_' . $value;
-      $caption = $this->language->getDef($key);
-
-      $output .= "<h6>" . htmlspecialchars($caption === $key ? (string)$value : $caption) . "</h6>";
-      $output .= $this->generateTable($rows, $cssClass);
-    }
-
-    return $output;
-  }
-
-  /**
-   * The column the rows are split on, or null when they render as one table.
-   *
-   * A column is a split column when its REASON label is defined: declaring the label is what
-   * turns the split on, so no domain name is ever written here. One group renders as one table.
-   *
-   * @param array $data Result rows
-   * @return string|null Column name, or null
-   */
-  protected function splitColumn(array $data): ?string
-  {
-    $first = reset($data);
-
-    if (!is_array($first) || count($data) < 2) {
-      return null;
-    }
-
-    foreach (array_keys($first) as $column) {
-      $key = 'text_table_split_reason_' . $column;
-
-      if (is_string($column) && $this->language->getDef($key) !== $key
-        && count($this->groupRows($data, $column)) > 1) {
-        return $column;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * @param array $data Result rows
-   * @param string $column Column to group on
-   * @return array<string, array> Rows per value, the column itself dropped from each row
-   */
-  protected function groupRows(array $data, string $column): array
-  {
-    $groups = [];
-
-    foreach ($data as $row) {
-      if (!is_array($row) || !array_key_exists($column, $row)) {
-        continue;
-      }
-
-      $value = (string)$row[$column];
-      unset($row[$column]);
-      $groups[$value][] = $row;
-    }
-
-    return $groups;
   }
 
   /**
@@ -389,15 +231,12 @@ abstract class AbstractFormatter
   {
     $rows = "<tbody>";
 
-    $marker = CLICSHOPPING::getDef('text_future_period_out_of_scope');
-
     foreach ($data as $row) {
       $rows .= "<tr>";
-      // A period still to come is out of scope, never a zero (SQL-42).
-      $filteredRow = FuturePeriodMask::apply($this->filterSystemMetadata($row), $marker);
+      $filteredRow = $this->filterSystemMetadata($row);
 
       foreach ($filteredRow as $key => $value) {
-        $formattedValue = $this->formatCellValue($key, $value, $filteredRow);
+        $formattedValue = $this->formatCellValue($key, $value);
         $rows .= "<td>" . $formattedValue . "</td>";
       }
       $rows .= "</tr>";
@@ -410,47 +249,7 @@ abstract class AbstractFormatter
   /**
    * Format cell value based on column name
    */
-  /**
-   * The currency to print next to an amount: the one the ROW names, never a default assumed.
-   *
-   * A query may return amounts in more than one currency at once - a value stored in the base
-   * currency next to the same value converted at the order rate. Stamping the shop currency on
-   * both labels one of them wrong, and a wrong label reads as fact. So: pair the amount with the
-   * currency column that names it, fall back to the row's only currency, and print NO currency
-   * when the row carries several and none of them can be paired.
-   *
-   * @param string $columnName Amount column being rendered
-   * @param array $row The whole row, empty when the caller has none
-   * @return string Currency to append, or an empty string to append none
-   */
-  private function currencyForAmount(string $columnName, array $row): string
-  {
-    $currencies = [];
-
-    foreach ($row as $key => $value) {
-      if (is_string($key) && preg_match('/currency|devise/i', $key)
-        && is_string($value) && preg_match('/^[A-Za-z]{3}$/', trim($value))) {
-        $currencies[$key] = strtoupper(trim($value));
-      }
-    }
-
-    if ($currencies === []) {
-      return defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '€';
-    }
-
-    // `amount_charged` belongs to `charged_currency`: the qualifier is in both names.
-    foreach ($currencies as $key => $code) {
-      $qualifier = trim(preg_replace('/currency|devise|_+/i', ' ', $key) ?? '');
-
-      if ($qualifier !== '' && stripos($columnName, $qualifier) !== false) {
-        return $code;
-      }
-    }
-
-    return count($currencies) === 1 ? reset($currencies) : '';
-  }
-
-  protected function formatCellValue(string $columnName, mixed $value, array $row = []): string
+  protected function formatCellValue(string $columnName, mixed $value): string
   {
     if ($value === null) return '-';
     if ($value === '') return '-';
@@ -460,27 +259,8 @@ abstract class AbstractFormatter
       $value = Hash::displayDecryptedDataText($value);
     }
 
-    // A code with a declared label (value_{column}_{code}) is shown translated, never raw.
-    if (is_string($value) && preg_match('/^[a-z_]+$/', $value)) {
-      $valueKey = 'value_' . $columnName . '_' . $value;
-      $label = CLICSHOPPING::getDef($valueKey);
-
-      if ($label && $label !== $valueKey) {
-        return htmlspecialchars($label);
-      }
-    }
-
-    // Matched on whole name tokens: stockout_* or *_days must never fall into a quantity rule.
-    $tokens = explode('_', strtolower($columnName));
-
-    // A probability is a 0..1 share.
-    if (in_array('probability', $tokens, true) && is_numeric($value)) {
-      return number_format((float)$value * 100, 1, ',', ' ') . ' %';
-    }
-
     // Quantities (must be tested FIRST before prices)
-    if (array_intersect($tokens, ['quantity', 'stock', 'sold', 'count', 'number', 'items']) !== []
-        || in_array($columnName, ['total_products', 'total_quantity'], true)) {
+    if (preg_match('/(quantity|stock|sold|count|total_products|total_quantity|number|items)/i', $columnName)) {
       if (is_numeric($value)) {
         return number_format((int)$value, 0, ',', ' ');
       }
@@ -489,9 +269,8 @@ abstract class AbstractFormatter
     // Prices and amounts
     if (preg_match('/(price|amount|revenue|total_amount|subtotal|cost)/i', $columnName)) {
       if (is_numeric($value)) {
-        $currency = $this->currencyForAmount($columnName, $row);
-
-        return number_format((float)$value, 2, ',', ' ') . ($currency === '' ? '' : ' ' . $currency);
+        $currency = defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : '€';
+        return number_format((float)$value, 2, ',', ' ') . ' ' . $currency;
       }
     }
 
@@ -500,11 +279,7 @@ abstract class AbstractFormatter
       if (is_numeric($value) && $value > 1000000000) {
         return date('d/m/Y H:i', (int)$value);
       }
-      // A pure date carries no time: never print a fabricated 00:00.
-      if (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$value)) {
-        return date('d/m/Y', strtotime($value));
-      }
-      if (preg_match('/^\d{4}-\d{2}-\d{2}/', (string)$value)) {
+      if (preg_match('/^\d{4}-\d{2}-\d{2}/', $value)) {
         return date('d/m/Y H:i', strtotime($value));
       }
     }
@@ -525,11 +300,11 @@ abstract class AbstractFormatter
     }
 
     $output = '<div class="source-attribution alert alert-info" style="margin-top: 10px; padding: 10px; border-left: 4px solid #17a2b8;">';
-    $output .= '<h6 style="margin-top: 0;"><strong>' . htmlspecialchars($this->language->getDef('text_source_attribution_title')) . '</strong></h6>';
-
-    // Main source type with icon. source_type is an internal identifier: label it here, never at the producer.
+    $output .= '<h6 style="margin-top: 0;"><strong>📍 Source d\'Information</strong></h6>';
+    
+    // Main source type with icon
     $icon = $sourceAttribution['source_icon'] ?? '📄';
-    $sourceType = $this->sourceTypeLabel((string)($sourceAttribution['source_type'] ?? ''));
+    $sourceType = $sourceAttribution['source_type'] ?? 'Unknown';
     $sourceDetails = $sourceAttribution['source_details'] ?? '';
     
     $output .= '<div style="margin-bottom: 5px;">';
@@ -546,27 +321,27 @@ abstract class AbstractFormatter
     // Additional details based on source type
     if (isset($sourceAttribution['table_name']) && $sourceAttribution['table_name'] !== 'database') {
       $output .= '<div style="font-size: 0.85em; color: #555;">';
-      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_table')) . ' <code>' . htmlspecialchars($sourceAttribution['table_name']) . '</code>';
+      $output .= '📋 Table: <code>' . htmlspecialchars($sourceAttribution['table_name']) . '</code>';
       $output .= '</div>';
     }
     
     if (isset($sourceAttribution['document_count']) && $sourceAttribution['document_count'] > 0) {
       $output .= '<div style="font-size: 0.85em; color: #555;">';
-      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_documents')) . ' ' . $sourceAttribution['document_count'];
+      $output .= '📚 Documents: ' . $sourceAttribution['document_count'];
       $output .= '</div>';
     }
     
     if (isset($sourceAttribution['urls']) && is_array($sourceAttribution['urls']) && !empty($sourceAttribution['urls'])) {
       $output .= '<div style="font-size: 0.85em; color: #555; margin-top: 5px;">';
-      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_urls')) . ' ';
+      $output .= '🔗 URLs: ';
       $urlCount = count($sourceAttribution['urls']);
-      $output .= '<span class="badge badge-secondary">' . $urlCount . ' ' . htmlspecialchars($this->language->getDef('text_source_attribution_url_count')) . '</span>';
+      $output .= '<span class="badge badge-secondary">' . $urlCount . ' source(s)</span>';
       $output .= '</div>';
     }
     
     if (isset($sourceAttribution['sources']) && is_array($sourceAttribution['sources'])) {
       $output .= '<div style="font-size: 0.85em; color: #555; margin-top: 5px;">';
-      $output .= htmlspecialchars($this->language->getDef('text_source_attribution_multiple')) . ' ';
+      $output .= '🔀 Sources multiples: ';
       $output .= '<ul style="margin: 5px 0; padding-left: 20px;">';
       foreach ($sourceAttribution['sources'] as $source) {
         $output .= '<li>' . htmlspecialchars($source) . '</li>';
@@ -578,23 +353,5 @@ abstract class AbstractFormatter
     $output .= '</div>';
     
     return $output;
-  }
-
-  /**
-   * Label an internal source-type identifier, falling back to the identifier when no label exists.
-   *
-   * @param string $sourceType Internal identifier, e.g. 'Analytics Database'
-   * @return string The label in the interface language
-   */
-  private function sourceTypeLabel(string $sourceType): string
-  {
-    if ($sourceType === '') {
-      return $this->language->getDef('text_source_attribution_unknown');
-    }
-
-    $key = 'text_source_type_' . strtolower(preg_replace('/[^a-z0-9]+/i', '_', $sourceType));
-    $label = $this->language->getDef($key);
-
-    return ($label === '' || $label === $key) ? $sourceType : $label;
   }
 }

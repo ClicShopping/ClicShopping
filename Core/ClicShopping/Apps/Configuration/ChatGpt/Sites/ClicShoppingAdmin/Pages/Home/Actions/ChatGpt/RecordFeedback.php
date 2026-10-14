@@ -8,17 +8,16 @@
 
 namespace ClicShopping\Apps\Configuration\ChatGpt\Sites\ClicShoppingAdmin\Pages\Home\Actions\ChatGpt;
 
-use ClicShopping\AI\CoreAI\Memory\ConversationMemory;
+use ClicShopping\Apps\Configuration\ChatGpt\Classes\Rag\ConversationMemory;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
-use \ClicShopping\OM\Domains\PagesActionsAbstract;
 
 /**
  * RecordFeedback Action
  * 
  * Endpoint pour enregistrer le feedback utilisateur sur les réponses du chat
  */
-class RecordFeedback extends PagesActionsAbstract
+class RecordFeedback extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
   public function execute()
   {
@@ -89,12 +88,12 @@ class RecordFeedback extends PagesActionsAbstract
       if ($result) {
         echo json_encode([
           'success' => true,
-          'message' => 'Feedback saved with success'
+          'message' => 'Feedback enregistré avec succès'
         ]);
       } else {
         echo json_encode([
           'success' => false,
-          'error' => 'Error, failled to save the feedback'
+          'error' => 'Échec de l\'enregistrement du feedback'
         ]);
       }
       

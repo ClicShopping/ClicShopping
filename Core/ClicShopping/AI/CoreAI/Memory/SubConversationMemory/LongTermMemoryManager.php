@@ -37,6 +37,7 @@ class LongTermMemoryManager
   private EmbeddingGeneratorInterface $embeddingGenerator;
   private SecurityLogger $logger;
   private bool $debug;
+  private float $similarityThreshold;
   private int $maxChunkSize = 2000; // Max characters per chunk (reduced chunking to avoid perceived duplicates)
   private EntityMatcher $entityMatcher;
   private MemoryDeduplicator $deduplicator;
@@ -48,15 +49,18 @@ class LongTermMemoryManager
    *
    * @param MariaDBVectorStore $vectorStore Vector store instance
    * @param EmbeddingGeneratorInterface $embeddingGenerator Embedding generator
+   * @param float $similarityThreshold Threshold for semantic search
    * @param bool $debug Enable debug logging
    */
   public function __construct(
     MariaDBVectorStore $vectorStore,
     EmbeddingGeneratorInterface $embeddingGenerator,
+    float $similarityThreshold = 0.7,
     bool $debug = false
   ) {
     $this->vectorStore = $vectorStore;
     $this->embeddingGenerator = $embeddingGenerator;
+    $this->similarityThreshold = $similarityThreshold;
     $this->debug = $debug;
     $this->logger = new SecurityLogger();
     $this->entityMatcher = new EntityMatcher($debug);
@@ -66,7 +70,7 @@ class LongTermMemoryManager
 
     if ($this->debug) {
       $this->logger->logSecurityEvent(
-        "LongTermMemoryManager initialized",
+        "LongTermMemoryManager initialized with similarityThreshold={$similarityThreshold}",
         'info'
       );
     }
@@ -177,6 +181,12 @@ class LongTermMemoryManager
       
       $metadata['sourcename'] = $document->sourceName; // Keep consistent
 
+      // Store metadata - PHP 8.4+ compatible
+      // LLPhant Document uses dynamic properties, suppress warning
+      if (!property_exists($document, 'metadata')) {
+        // Initialize as empty array if property doesn't exist
+        @$document->metadata = [];
+      }
       $document->metadata = $metadata;
       
       // 🔧 FIX: Log what we're about to store
@@ -236,8 +246,8 @@ class LongTermMemoryManager
       // Build the per-user / per-language metadata filter (null = no filter).
       $filter = $this->retriever->buildMetadataFilter($userId, $languageId);
 
-      // Fetch + rank candidate documents (search, score-sort, limit).
-      $resultsArray = $this->retriever->fetchRanked($query, $limit, $filter);
+      // Fetch + rank candidate documents (initial search, fallback cascade, score-sort, limit).
+      $resultsArray = $this->retriever->fetchRanked($query, $limit, $filter, $userId, $languageId);
 
       // Apply entity-specific filtering to prevent context pollution
       // This ensures "article 4" doesn't return "article 3" content

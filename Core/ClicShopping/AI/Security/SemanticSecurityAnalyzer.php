@@ -17,7 +17,6 @@ use ClicShopping\OM\Registry;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * SemanticSecurityAnalyzer
@@ -35,6 +34,9 @@ class SemanticSecurityAnalyzer
   private static ?SecurityLogger $logger = null;
   private static mixed $language = null;
   private static bool $debug = false;
+  
+  // Threat score threshold for blocking (configurable)
+  private const DEFAULT_THREAT_THRESHOLD = 0.7;
   
   // Cache namespace for security analysis
   // This creates cache files in: Work/Cache/Rag/Security/
@@ -750,7 +752,7 @@ class SemanticSecurityAnalyzer
    */
   private static function getThreatThreshold(): float
   {
-    return TechnicalDefaults::float('CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD');
+    return CLICSHOPPING_APP_CHATGPT_RA_SECURITY_THREAT_THRESHOLD;
   }
 
   /**

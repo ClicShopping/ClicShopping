@@ -6,7 +6,7 @@
 
   class cache_semantic_queries extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
   {
-    public $default = 'True';
+    public $default = 'False';
     public int|null $sort_order = 80;
 
     protected function init()

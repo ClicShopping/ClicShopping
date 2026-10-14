@@ -45,6 +45,19 @@ namespace ClicShopping\AI\DomainsAI\Analytics\Patterns;
 class MultiTemporalPostFilter
 {
   /**
+   * Temporal period keywords (English-only)
+   * These are the aggregation periods that can be combined
+   */
+  private static array $temporalPeriods = [
+    'month', 'months', 'monthly',
+    'quarter', 'quarters', 'quarterly',
+    'semester', 'semesters', 'half-year', 'half year',
+    'year', 'years', 'yearly', 'annual', 'annually',
+    'week', 'weeks', 'weekly',
+    'day', 'days', 'daily',
+  ];
+  
+  /**
    * Temporal connectors (English-only)
    * These words indicate multiple temporal requests
    */

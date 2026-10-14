@@ -48,7 +48,7 @@ class Insert extends \ClicShopping\OM\Domains\PagesActionsAbstract
         'ai_model_status_default' => isset($_POST['ai_model_status_default']) ? 1 : 0,
         'ai_model_status_fallback' => isset($_POST['ai_model_status_fallback']) ? 1 : 0,
         'sort_order' => 0,
-      ] + AiModelsAdmin::capabilityFields($_POST);
+      ];
 
       AiModelsAdmin::insertModel($data);
 

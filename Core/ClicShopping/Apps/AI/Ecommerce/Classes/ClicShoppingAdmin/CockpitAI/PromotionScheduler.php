@@ -2,28 +2,29 @@
   namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI;
 
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\MarginCalculator;
-use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
   /**
-* PromotionScheduler v5
-*
-* Manages the escalation of promotional tiers P1-P4 with two levels of adaptation:
-* Level 1 — Temporal Adaptive (views7d / avgViews7d):
-* Compresses or expands the thresholds at J+7/14/21 depending on relative traffic.
-*
-* Level 2 — High-Intent Acceleration (Phase 4):
-* If high_intent_ratio > threshold AND sufficient stock AND sufficient margin:
-* → Skips P1, starts directly at P2 (hot iron, act now)
-* → Mark trigger_strategy = 'high_intent_flash' for FeedbackCollector
-*
-* Mandatory Acceleration Safeguards (critical point 6):
-* - margin_percentage > CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE (via MarginCalculator)
-* - products_quantity above the alert threshold and safety_stock (no promotion on imminent stockout)
-* - ordersDetected = 0 (already an order → STOP, no acceleration)
-*/
+   * PromotionScheduler v5
+   *
+   * Gère l'escalade des paliers promotionnels P1..P4 avec deux niveaux d'adaptation :
+   *
+   * Niveau 1 — Adaptatif temporel (views7d / avgViews7d) :
+   *   Compresse ou étend les seuils J+7/14/21 selon le trafic relatif.
+   *
+   * Niveau 2 — Accélération high-intent (Phase 4) :
+   *   Si high_intent_ratio > seuil ET stock suffisant ET marge suffisante :
+   *   → Saute P1, démarre directement à P2 (fer chaud, agir maintenant)
+   *   → Marque trigger_strategy = 'high_intent_flash' pour FeedbackCollector
+   *
+   * Garde-fous obligatoires accélération (critic point 6) :
+   *   - margin_percentage > CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE (via MarginCalculator)
+   *   - products_quantity > safety_stock (pas de promo sur rupture imminente)
+   *   - ordersDetected = 0 (déjà une commande → STOP, pas d'accélération)
+   */
   class PromotionScheduler
   {
     /** Seuil high_intent_ratio au-dessus duquel l'accélération P1→P2 se déclenche */
+    private const HIGH_INTENT_THRESHOLD = 0.7;
 
     private array $config;
     private bool $debug;
@@ -34,10 +35,10 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
       // Récupération des taux depuis la configuration ou valeurs par défaut
       $this->config = [
-        'p1' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P1'),
-        'p2' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P2'),
-        'p3' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P3'),
-        'p4' => EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P4'),
+        'p1' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P1') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P1 : 5),
+        'p2' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P2') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P2 : 8),
+        'p3' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P3') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P3 : 12),
+        'p4' => (float)(defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P4') ? CLICSHOPPING_APP_ECOMMERCE_CAI_PROMO_P4 : 15),
       ];
     }
 
@@ -65,8 +66,8 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
       // Bonus high-intent : si ratio élevé, on commence légèrement plus haut que P1
       // mais sans dépasser P2 (l'accélération franche est dans getNextStep)
-      if ($highIntentRatio > EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')) {
-        $intentBonus = ($highIntentRatio - EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')) * 2.0; // 0..0.6
+      if ($highIntentRatio > self::HIGH_INTENT_THRESHOLD) {
+        $intentBonus = ($highIntentRatio - self::HIGH_INTENT_THRESHOLD) * 2.0; // 0..0.6
         $coefficient = max($coefficient, 1.0 + $intentBonus);
       }
 
@@ -149,40 +150,29 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
         ];
       }
 
-      // ── Alert threshold: no promotion, regardless of the path ────────
-      // The P2/P3/P4 progression did not control any stock. 'STOP' is the only value that
-       // the caller reads as "do not promote": it maps it to REMOVE.
-      if (!empty($productData) && !$this->isStockSufficient($productData)) {
-        return [
-          'action'           => 'STOP',
-          'rate'             => 0,
-          'reason'           => 'Stock at or below the alert threshold, no promotion',
-          'trigger_strategy' => 'standard',
-        ];
-      }
-
       // ── Phase 4 : Accélération high-intent ────────────────────────────────
       // Conditions :
       //   1. high_intent_ratio > HIGH_INTENT_THRESHOLD (0.7)
       //   2. Aucune commande (déjà vérifié ci-dessus)
       //   3. Marge suffisante (MarginCalculator)
-      //   4. Stock déjà contrôlé plus haut, pour tous les chemins
+      //   4. Stock > safety_stock (pas de promo sur rupture imminente)
       //   5. Promo au début du cycle (daysActive < seuil P2 normal)
-      if ($highIntentRatio > EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')
+      if ($highIntentRatio > self::HIGH_INTENT_THRESHOLD
         && !empty($productData)
         && $this->isMarginSufficient($productData)
+        && $this->isStockSufficient($productData)
         && $daysActive < 7  // seulement au début — sinon laisser la progression normale
       ) {
         if ($this->debug) {
           error_log("[Info CockpitAI PromotionScheduler] HIGH-INTENT ACCELERATION:"
-            . " ratio=$highIntentRatio threshold=" . EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD')
+            . " ratio=$highIntentRatio threshold=" . self::HIGH_INTENT_THRESHOLD
             . " → skipping P1, starting at P2");
         }
 
         return [
           'action'           => 'P2',
           'rate'             => $this->config['p2'],
-          'reason'           => "High-intent acceleration (ratio=$highIntentRatio > " . EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_EC_CAI_HIGH_INTENT_THRESHOLD') . "): starting at P2",
+          'reason'           => "High-intent acceleration (ratio=$highIntentRatio > " . self::HIGH_INTENT_THRESHOLD . "): starting at P2",
           'trigger_strategy' => 'high_intent_flash',  // tag pour FeedbackCollector
         ];
       }
@@ -248,7 +238,9 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
           return false;
         }
 
-        $minMarginRate = EcommerceDefaults::float('CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE');
+        $minMarginRate = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE')
+          ? (float)CLICSHOPPING_APP_ECOMMERCE_CAI_MARGIN_RATE
+          : 15.0;
 
         $marginPct = $margin['margin_percentage'] ?? 0;
 
@@ -278,20 +270,10 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
     {
       $currentStock = (float)($productData['products_quantity'] ?? 0);
       $safetyStock  = (float)($productData['safety_stock'] ?? 0);
-      $alertStock   = (float)($productData['alert_stock'] ?? 0);
 
       if ($currentStock <= 0) {
         if ($this->debug) {
-          error_log("[Info CockpitAI PromotionScheduler] STOCK blocked: stock=$currentStock ≤ 0");
-        }
-        return false;
-      }
-
-      // The alert threshold binds on its own: safety_stock is 0 for a product with no demand
-      // history, and the check below is then skipped entirely.
-      if ($alertStock > 0 && $currentStock <= $alertStock) {
-        if ($this->debug) {
-          error_log("[Info CockpitAI PromotionScheduler] STOCK blocked: stock=$currentStock ≤ alert_stock=$alertStock");
+          error_log("[Info CockpitAI PromotionScheduler] HIGH-INTENT blocked: stock=$currentStock ≤ 0");
         }
         return false;
       }
@@ -300,7 +282,7 @@ use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
       // (pour absorber la demande supplémentaire générée par la promo)
       if ($safetyStock > 0 && $currentStock < ($safetyStock * 1.5)) {
         if ($this->debug) {
-          error_log("[Info CockpitAI PromotionScheduler] STOCK blocked: stock=$currentStock < safety_stock×1.5=" . ($safetyStock * 1.5));
+          error_log("[Info CockpitAI PromotionScheduler] HIGH-INTENT blocked: stock=$currentStock < safety_stock×1.5=" . ($safetyStock * 1.5));
         }
         return false;
       }

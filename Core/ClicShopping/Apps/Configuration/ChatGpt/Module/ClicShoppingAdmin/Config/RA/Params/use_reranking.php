@@ -12,7 +12,7 @@ use ClicShopping\OM\HTML;
 
 class use_reranking extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'True';
+  public $default = 'False';
   public int|null $sort_order = 110;
 
   protected function init()

@@ -44,14 +44,14 @@ class CheckAPI extends AdminDashboardAbstract
     $this->description = $this->app->getDef('module_admin_dashboard_total_check_api_app_description');
 
     if (\defined('MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_STATUS')) {
-      $this->sort_order = defined('MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_SORT_ORDER') ? (int)MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_SORT_ORDER : 0;
+      $this->sort_order = (int)MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_SORT_ORDER ?? 0;
       $this->enabled = (MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_STATUS == 'True');
     }
   }
 
   /**
    * Generates and returns the dashboard output for the module.
-   * Alerts on a missing API key, and on a missing AI Act responsible person.
+   * If the API key for the ChatGPT application is not set, returns an alert message.
    *
    * @return string The generated output, including alert information if the API key is missing.
    */
@@ -59,39 +59,24 @@ class CheckAPI extends AdminDashboardAbstract
   {
     $output = '';
 
-    try {
-      $apiKey = Gpt::getProviderApiKey('openai')['api_key'];
+    $apiKey = Gpt::getProviderApiKey('openai')['api_key'];
 
-      // Mandatory under Regulation (EU) 2024/1689: the accountable deployer must be named.
-      $responsible = \defined('CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE')
-        ? trim(CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE)
-        : '';
-
-      if (empty($apiKey) || $responsible === '') {
+    if (empty($apiKey)) {
+      try {
         $link = HTML::link($this->app->link('Configuration\ChatGpt&Configure'), $this->app->getDef('module_admin_dashboard_check_api_app_link'));
 
         $contentWidth = defined('MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_CONTENT_WIDTH') ? (int) MODULE_ADMIN_DASHBOARD_GPT_CHECK_API_APP_CONTENT_WIDTH : 12;
 
         $output = '<div class="col-md-' . $contentWidth . '">';
-
-        if (empty($apiKey)) {
-          $output .= '<div class="alert alert-warning" role="alert">';
-          $output .= $this->app->getDef('module_admin_dashboard_check_api_app_alert', ['gpt_link' => $link]);
-          $output .= '</div>';
-        }
-
-        if ($responsible === '') {
-          $output .= '<div class="alert alert-danger" role="alert">';
-          $output .= $this->app->getDef('module_admin_dashboard_check_api_app_ai_act_alert', ['gpt_link' => $link]);
-          $output .= '</div>';
-        }
-
+        $output .= '<div class="alert alert-warning" role="alert">';
+        $output .= $this->app->getDef('module_admin_dashboard_check_api_app_alert', ['gpt_link' => $link]);
         $output .= '</div>';
+        $output .= '</div>';
+      } catch (Exception $e) {
+        error_log("Dashboard CheckAPI error: " . $e->getMessage());
+        $output = '<div class="col-md-12"><div class="alert alert-danger">Erreur de configuration ChatGPT</div></div>';
       }
-    } catch (\Exception $e) {
-      error_log("Dashboard CheckAPI error: " . $e->getMessage());
-      $output = '<div class="col-md-12"><div class="alert alert-danger">' . $this->app->getDef('module_admin_dashboard_check_api_app_error') . '</div></div>';
-    }
+   }
 
     return $output;
   }

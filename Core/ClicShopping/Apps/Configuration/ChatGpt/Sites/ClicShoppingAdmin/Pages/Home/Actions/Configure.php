@@ -22,7 +22,6 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $this->page->setFile('configure.php');
     $this->page->data['action'] = 'Configure';
 
-    $CLICSHOPPING_ChatGpt->loadDefinitions('ClicShoppingAdmin/main');
     $CLICSHOPPING_ChatGpt->loadDefinitions('ClicShoppingAdmin/configure');
 
     $modules = $CLICSHOPPING_ChatGpt->getConfigModules();
@@ -36,6 +35,6 @@ class Configure extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
     }
 
-    $this->page->data['current_module'] = (isset($_GET['module']) && \in_array($_GET['module'], $modules, true)) ? $_GET['module'] : $default_module;
+    $this->page->data['current_module'] = (isset($_GET['module']) && \in_array($_GET['module'], $modules)) ? $_GET['module'] : $default_module;
   }
 }

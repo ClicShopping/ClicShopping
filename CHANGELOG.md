@@ -15,14 +15,14 @@ version4.33
   - Add distinction between Agents and Actors
   - AI review sentiment analysis improved and refactored with agentic approach
   - ChatGpt Apps refactored
-    - Gpt-4 series removed for Gpt-5  & Gpt-6 only
+    - Gpt-4 series removed for Gpt-5 only
     - New features and configuration for use Llm
   - AI response time optimization
   - Some AI refactorisation and improvement to solidify the code, response
   - best solidity chat response
+  - Add AI ACT European Law improved
   - graph & granularity implemented
-  - Governance & AI-Act implemented (not a complete observability system) : modèle ADG basis approach
-
+  
 ---------------
 version4.32
 - Schema updated

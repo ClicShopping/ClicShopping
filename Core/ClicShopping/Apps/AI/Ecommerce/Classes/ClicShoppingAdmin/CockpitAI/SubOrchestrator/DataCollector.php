@@ -10,7 +10,6 @@
 
   use ClicShopping\OM\Registry;
   use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\ProductStock;
-  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\StockForecastService;
 
   /**
    * DataCollector
@@ -24,7 +23,7 @@
    * Timeout: 2 s (enforced by the caller — PipelineRunner).
    * On failure: throw exception → pipeline aborts (Step 1 is critical).
    *
-   * Data collected
+   * ── Data collected ───────────────────────────────────────────────────────────
    *
    * Score_X (product quality) sources:
    *   clic_products              : image, zoom image, date_added, model, sku, ean,
@@ -34,7 +33,7 @@
    *
    * Score_Y (commercial performance) sources:
    *   clic_products_viewed       : views last 30 days
-   *   clic_orders_products       : order count (lifetime + metrics window), total quantity
+   *   clic_orders_products       : order count, total quantity
    *   clic_orders_products_download + clic_orders : return count
    *   clic_specials              : active promotion
    *   clic_products              : products_view flag
@@ -51,21 +50,6 @@
   class DataCollector
   {
     private const TIMEOUT_SECONDS = 2.0;
-    public const DEFAULT_METRICS_WINDOW_DAYS = 30;
-
-
-    /**
-     * Window shared by views, orders and the conversion rate, in days.
-     * A rate whose two terms do not share one window has no dimension.
-     */
-    public static function metricsWindowDays(): int
-    {
-      $days = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_METRICS_WINDOW_DAYS')
-        ? (int)CLICSHOPPING_APP_ECOMMERCE_CAI_METRICS_WINDOW_DAYS
-        : self::DEFAULT_METRICS_WINDOW_DAYS;
-
-      return max(1, $days);
-    }
 
     private mixed $db;
     private mixed $debug;
@@ -86,11 +70,10 @@
      */
     public function collect(int $productId, int $languageId): array
     {
-      $startTime  = microtime(true);
-      $windowDays = self::metricsWindowDays();
+      $startTime = microtime(true);
 
       try {
-        // Core product + description
+        // ── Core product + description ──────────────────────────────────────
         // Note: products_image_medium / products_image_small do not exist in
         //       clic_products — only products_image and products_image_zoom.
         // Note: products_featured_status does not exist - using products_view instead
@@ -104,7 +87,6 @@
                                                  p.products_status,
                                                  p.products_weight,
                                                  p.products_quantity,
-                                                 p.products_quantity_alert,
                                                  p.products_price,
                                                  p.products_cost,
                                                  p.products_handling,
@@ -160,18 +142,17 @@
         // Stratégie :
         //   1. Si CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING = True → lire depuis tracking (données précises)
         //   2. Sinon → utiliser products_viewed (cumulatif, proxy imparfait mais disponible)
+        // Dans les deux cas, on respecte products_date_available : un produit disponible
+        // depuis moins de 30 jours ne peut pas avoir 30 jours de vues.
         $views30d = 0;
 
-        $viewsAreWindowed = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING')
-                         && CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING === 'True';
-
-        if ($viewsAreWindowed) {
+        if (\defined('CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING') && CLICSHOPPING_APP_ECOMMERCE_CAI_PRODUCT_TRACKING === 'True') {
           // Source précise : tracking pondéré sur 30 jours
           $Qviews30d = $this->db->prepare('SELECT COUNT(*) AS views_30d
                                            FROM :table_products_cockpit_ai_tracking_impressions
                                            WHERE products_id = :product_id
                                            AND language_id = :language_id
-                                           AND displayed_at >= DATE_SUB(NOW(), INTERVAL ' . $windowDays . ' DAY)');
+                                           AND displayed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
           $Qviews30d->bindInt(':product_id', $productId);
           $Qviews30d->bindInt(':language_id', $languageId);
           $Qviews30d->execute();
@@ -182,15 +163,17 @@
           $views30d = (int)($product['products_viewed'] ?? 0);
         }
 
-        // Normalise onto the window: tracking rows are already bounded, the lifetime
-        // counter is scaled DOWN when the product is OLDER than the window.
+        // Respect de products_date_available : si le produit est disponible depuis
+        // moins de 30 jours, les vues sont forcément <= jours_disponibles
+        // (ne pas surestimer le trafic d'un produit récent)
         $dateAvailable = $product['products_date_available'] ?? $product['products_date_added'] ?? null;
-        $daysAvailable = ($dateAvailable && $dateAvailable !== '0000-00-00 00:00:00')
-                       ? max(1, (int)((time() - strtotime($dateAvailable)) / 86400))
-                       : $windowDays;
 
-        if (!$viewsAreWindowed && $daysAvailable > $windowDays) {
-          $views30d = (int)round($views30d * ($windowDays / $daysAvailable));
+        if ($dateAvailable && $dateAvailable !== '0000-00-00 00:00:00') {
+          $daysAvailable = max(1, (int)((time() - strtotime($dateAvailable)) / 86400));
+          if ($daysAvailable < 30) {
+            // Pro-rata : views × (jours_disponibles / 30)
+            $views30d = (int)round($views30d * ($daysAvailable / 30));
+          }
         }
 
         // ── Views last 7 days — produit + moyenne catalogue ────────────────
@@ -214,13 +197,9 @@
         $Qavg7d->execute();
         $avgViews7d = (float)$Qavg7d->valueDecimal('avg_views_7d');
 
-        // Orders
+        // ── Orders ─────────────────────────────────────────────────────────
         $Qorders = $this->db->prepare(' SELECT COUNT(DISTINCT op.orders_id) AS order_count,
-                                               COALESCE(SUM(op.products_quantity), 0) AS total_quantity,
-                                               COUNT(DISTINCT CASE
-                                                 WHEN o.date_purchased >= DATE_SUB(NOW(), INTERVAL ' . $windowDays . ' DAY)
-                                                 THEN op.orders_id
-                                               END) AS order_count_window
+                                               COALESCE(SUM(op.products_quantity), 0) AS total_quantity
                                         FROM :table_orders_products op
                                         INNER JOIN :table_orders o ON op.orders_id = o.orders_id
                                         WHERE op.products_id = :product_id
@@ -228,9 +207,8 @@
                                       ');
         $Qorders->bindInt(':product_id', $productId);
         $Qorders->execute();
-        $orderCount       = $Qorders->valueInt('order_count');
-        $orderCount30d    = $Qorders->valueInt('order_count_window');
-        $totalQuantity    = $Qorders->valueInt('total_quantity');
+        $orderCount    = $Qorders->valueInt('order_count');
+        $totalQuantity = $Qorders->valueInt('total_quantity');
 
         $this->checkTimeout($startTime, 'orders query');
 
@@ -435,13 +413,11 @@
           }
         }
 
-        // Derived metrics
-        $conversionRate = $views30d > 0 ? ($orderCount30d / $views30d) : 0.0;
+        // ── Derived metrics ────────────────────────────────────────────────
+        $conversionRate = $views30d > 0 ? ($orderCount / $views30d) : 0.0;
+        $returnRate     = $orderCount > 0 ? ($returnCount / $orderCount) : 0.0;
 
-        // The return query above is disabled: 0 is NOT MEASURED, not "no returns". null excludes
-        $returnRate = null;
-
-        // Featured (products_featured)
+        // ── Featured (products_featured) ──────────────────────────────────
         // Table: clic_products_featured (products_id, status, ...) — status=1 = active.
         $Qfeatured = $this->db->prepare('SELECT COUNT(*) AS featured_count
                                           FROM :table_products_featured
@@ -451,9 +427,6 @@
         $Qfeatured->bindInt(':product_id', $productId);
         $Qfeatured->execute();
         $featured = $Qfeatured->valueInt('featured_count') > 0;
-
-        // Threshold in force: the product's own, else STOCK_REORDER_LEVEL.
-        $alertStock = ProductStock::effectiveAlertStock((float)($product['products_quantity_alert'] ?? 0));
 
         $result_array = [
           // Identity
@@ -472,8 +445,6 @@
           'manufacturers_id'             => $product['manufacturers_id'] ?? null,
           'products_weight'              => $product['products_weight'] ?? null,
           'products_quantity'            => $product['products_quantity'] ?? null,
-          'alert_stock'                  => $alertStock,
-          'below_alert'                  => $alertStock > 0 && (float)($product['products_quantity'] ?? 0) <= $alertStock,
           'products_description'         => $product['products_description'] ?? '',
           'products_description_summary' => $product['products_description_summary'] ?? '',
           'products_head_title_tag'      => $product['products_head_title_tag'] ?? '',
@@ -514,7 +485,6 @@
           'views_30d'            => $views30d,
           'orders'               => $orderCount,
           'order_count'          => $orderCount,
-          'orders_30d'           => $orderCount30d,
           'total_quantity'       => $totalQuantity,
           'conversion_rate'      => $conversionRate,
           'return_count'         => $returnCount,
@@ -604,8 +574,8 @@
       ];
 
       try {
-        // History window comes from the CockpitAI configuration.
-        $dailyDemandSeries = ProductStock::getDailyDemandSeriesByProducts($productId, StockForecastService::configuredHistoryDays());
+        // Retrieve 90-day daily demand series
+        $dailyDemandSeries = ProductStock::getDailyDemandSeriesByProducts($productId, 90);
         $result['daily_demand_series'] = $dailyDemandSeries;
 
         // Calculate stock velocity (total_sold_90d / current_stock)
@@ -640,21 +610,19 @@
           if ($currentStock <= 0) {
             $result['stockout_probability'] = 1.0;
           } else {
-            // Stock-out over the 30-day horizon: pass the HORIZON demand (mean_total/stddev_total),
-            // not the daily stats — daily would compare current stock against a single day's demand.
             $stockoutProb = ProductStock::calculateStockoutProbability(
               (float)$currentStock,
-              $demandForecast['mean_total'],
-              $demandForecast['stddev_total']
+              $demandStats['mean'],
+              $demandStats['stddev']
             );
             $result['stockout_probability'] = round($stockoutProb, 4);
           }
 
-          // Lead time from the stock configuration, service level from the CockpitAI one.
+          // Calculate safety stock (7-day lead time, 95% service level)
           $safetyStock = ProductStock::calculateSafetyStockFromDailyDemand(
             $dailyDemandSeries,
-            ProductStock::configuredLeadTimeDays(),
-            StockForecastService::configuredServiceLevel()
+            7,
+            0.95
           );
           $result['safety_stock'] = round($safetyStock, 2);
         } else {

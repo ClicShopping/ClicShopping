@@ -1,0 +1,5 @@
+cfg_chatgpt_use_llm_primary_security_title = Activer la sécurité primaire basée sur LLM
+cfg_chatgpt_use_llm_primary_security_description = Active l'analyse de sécurité alimentée par LLM pour la validation des requêtes et la détection des menaces. Lorsqu'activé, l'IA analyse les requêtes entrantes pour détecter les risques de sécurité potentiels, les tentatives d'injection SQL, les patterns malveillants et les accès non autorisés aux données avant le traitement. Utilise la compréhension du langage naturel pour détecter des vecteurs d'attaque sophistiqués que les filtres basés sur des patterns pourraient manquer. Fournit une couche de sécurité supplémentaire au-delà de la validation traditionnelle. Recommandé : True pour les environnements de production afin d'améliorer la posture de sécurité et protéger les données sensibles.
+
+cfg_chatgpt_use_llm_primary_security_status_true = True
+cfg_chatgpt_use_llm_primary_security_status_false = False

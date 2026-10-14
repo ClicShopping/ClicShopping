@@ -48,7 +48,7 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
         'ai_model_status_llm_recommended' => isset($_POST['ai_model_status_llm_recommended']) ? 1 : 0,
         'ai_model_status_default' => isset($_POST['ai_model_status_default']) ? 1 : 0,
         'ai_model_status_fallback' => isset($_POST['ai_model_status_fallback']) ? 1 : 0,
-      ] + AiModelsAdmin::capabilityFields($_POST);
+      ];
 
       AiModelsAdmin::updateModel($id, $data);
 

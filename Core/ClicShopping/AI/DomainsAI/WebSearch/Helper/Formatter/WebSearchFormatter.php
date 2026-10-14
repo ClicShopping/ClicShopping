@@ -35,6 +35,11 @@ class WebSearchFormatter extends AbstractFormatter
   private $language;
   
   /**
+   * @var string Current language code
+   */
+  private string $languageCode;
+  
+  /**
    * Constructor
    * 
    * @param bool $debug Enable debug mode
@@ -46,6 +51,7 @@ class WebSearchFormatter extends AbstractFormatter
     
     // Initialize language
     $this->language = Registry::get('Language');
+    $this->languageCode = $this->language->get('code');
 
     // Load shared user-facing labels once (interface language)
     $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -85,11 +91,8 @@ class WebSearchFormatter extends AbstractFormatter
       }
     }
 
-    if (!isset($results['comparison_table']) && !empty($results['shopping_results'])) {
-      $results['comparison_table'] = $this->buildComparisonTable($results['shopping_results']);
-    }
-
     $output = "<div class='web-search-results'>";
+    $output .= "<h4>" . $this->language->getDef('text_rag_web_search_results_for') . " " . htmlspecialchars($question) . "</h4>";
 
     $this->renderPrimaryResultSections($results, $output);
 
@@ -227,7 +230,11 @@ class WebSearchFormatter extends AbstractFormatter
         error_log("[WebSearchFormatter::format] Calling formatShoppingResults() with " . count($results['shopping_results']) . " items");
       }
 
+
       $output .= $this->formatShoppingResults($results['shopping_results']);
+
+
+
     } else {
       if ($this->debug) {
         error_log("[WebSearchFormatter::format] NO shopping_results to format");
@@ -278,6 +285,76 @@ class WebSearchFormatter extends AbstractFormatter
     }
 
     $output .= "</div>";
+    return $output;
+  }
+
+  /**
+   * Format price comparison data
+   * 
+   * @param array $priceComparison Price comparison data
+   * @return string Formatted HTML
+   */
+  private function formatPriceComparison(array $priceComparison): string
+  {
+    $output = "<div class='price-comparison alert alert-info'>";
+    $output .= "<h5>💰 " . $this->language->getDef('text_rag_web_search_price_comparison') . "</h5>";
+
+    // Internal price
+    if (isset($priceComparison['internal_price'])) {
+      $internalPrice = $priceComparison['internal_price'];
+      $currency = $priceComparison['currency'] ?? '€';
+      $output .= "<div class='internal-price'>";
+      $output .= "<strong>" . $this->language->getDef('text_rag_web_search_our_price') . "</strong> " . number_format((float)$internalPrice, 2, ',', ' ') . " {$currency}";
+      $output .= "</div>";
+    }
+
+    // External prices
+    if (isset($priceComparison['external_prices']) && is_array($priceComparison['external_prices'])) {
+      $output .= "<div class='external-prices' style='margin-top: 10px;'>";
+      $output .= "<strong>" . $this->language->getDef('text_rag_web_search_competitor_prices') . "</strong>";
+      $output .= "<ul>";
+      
+      foreach ($priceComparison['external_prices'] as $competitor) {
+        $name = $competitor['name'] ?? 'Unknown';
+        $price = $competitor['price'] ?? 0;
+        $url = $competitor['url'] ?? '';
+        $currency = $competitor['currency'] ?? '€';
+        
+        $output .= "<li>";
+        $output .= htmlspecialchars($name) . " : " . number_format((float)$price, 2, ',', ' ') . " {$currency}";
+        
+        if (!empty($url)) {
+          $output .= " <a href='" . htmlspecialchars($url) . "' target='_blank' rel='noopener noreferrer'>🔗 " . $this->language->getDef('text_rag_web_search_see') . "</a>";
+        }
+        
+        // Show percentage difference if internal price exists
+        if (isset($priceComparison['internal_price'])) {
+          $diff = (($price - $priceComparison['internal_price']) / $priceComparison['internal_price']) * 100;
+          $diffFormatted = number_format($diff, 1);
+          
+          if ($diff > 0) {
+            $output .= " <span class='text-success'>(+{$diffFormatted}%)</span>";
+          } elseif ($diff < 0) {
+            $output .= " <span class='text-danger'>({$diffFormatted}%)</span>";
+          }
+        }
+        
+        $output .= "</li>";
+      }
+      
+      $output .= "</ul>";
+      $output .= "</div>";
+    }
+
+    // Recommendation
+    if (isset($priceComparison['recommendation'])) {
+      $output .= "<div class='recommendation' style='margin-top: 10px; padding: 8px; background-color: #f8f9fa; border-radius: 4px;'>";
+      $output .= "<strong>💡 " . $this->language->getDef('text_rag_web_search_recommendation') . "</strong> " . htmlspecialchars($priceComparison['recommendation']);
+      $output .= "</div>";
+    }
+
+    $output .= "</div>";
+
     return $output;
   }
 
@@ -391,64 +468,6 @@ class WebSearchFormatter extends AbstractFormatter
     $output .= "</div>";
 
     return $output;
-  }
-
-  /**
-   * Derive the comparison table from the shopping offers: one row per competitor.
-   *
-   * Agnostic — the keys come from the engine's own result rows, no merchant is named here.
-   *
-   * @param array $shoppingResults Offers as returned by the search engine
-   * @return array Rows ready for generateTable(), empty when no offer carries a price
-   */
-  private function buildComparisonTable(array $shoppingResults): array
-  {
-    $rows = [];
-
-    foreach ($shoppingResults as $offer) {
-      if (!is_array($offer)) {
-        continue;
-      }
-
-      $price = (string)($offer['price'] ?? '');
-      $title = (string)($offer['title'] ?? '');
-
-      if ($price === '' && $title === '') {
-        continue;
-      }
-
-      $row = [
-        'source' => (string)($offer['source'] ?? ''),
-        'title' => $title,
-        'price' => $price,
-      ];
-
-      if (isset($offer['old_price']) && (string)$offer['old_price'] !== '') {
-        $row['old_price'] = (string)$offer['old_price'];
-      }
-
-      if (isset($offer['rating']) && $offer['rating'] !== '') {
-        $row['rating'] = (string)$offer['rating'];
-      }
-
-      $link = '';
-
-      foreach (['link', 'product_link'] as $key) {
-        if (!empty($offer[$key]) && is_string($offer[$key])) {
-          $link = $offer[$key];
-          break;
-        }
-      }
-
-      if ($link !== '') {
-        $row['link'] = $link;
-      }
-
-      $rows[] = $row;
-    }
-
-    // Une seule offre n'est pas une comparaison.
-    return count($rows) > 1 ? $rows : [];
   }
 
   /**
@@ -805,7 +824,6 @@ class WebSearchFormatter extends AbstractFormatter
 
     $keyword    = $trendsData['keyword']    ?? '';
     $dateRange  = $trendsData['date_range'] ?? 'today 12-m';
-    $geo        = (string)($trendsData['geo'] ?? '');
     $timeline   = $trendsData['timeline'];
     $pointCount = count($timeline);
 
@@ -908,139 +926,11 @@ class WebSearchFormatter extends AbstractFormatter
         . "ℹ️ " . htmlspecialchars($disclaimer)
         . "</div>";
 
-    // What was actually measured: the searched keyword is not always the user's wording, and the
-    // scope is not always the area they named - Trends has no department granularity.
-    $scope = $geo !== '' ? $geo : $this->language->getDef('text_rag_trends_scope_worldwide');
-    $output .= "<p style='font-size:0.85em; color:#666; margin-bottom:4px;'>"
-        . htmlspecialchars($this->language->getDef('text_rag_trends_scope', ['keyword' => $keyword, 'scope' => $scope]))
-        . "</p>";
-
-    $output .= $this->formatTrendsSparsityNotice($values);
-    $output .= $this->formatTrendsAnalysis($timeline);
-
     $output .= "<p style='font-size:0.85em; color:#666; margin-bottom:12px;'>{$pointCount} points — " . htmlspecialchars($dateRange) . "</p>";
     $output .= $svg;
     $output .= "</div>";
 
     return $output;
-  }
-
-  /**
-   * Warn when the series is too sparse to read as a trend.
-   *
-   * A rare keyword returns mostly zeros, and Trends normalises to the peak: one isolated week then
-   * reads 100 and the curve looks like a spike. Measured 2026-09-14: 96% zeros on a rare keyword,
-   * 0% on a usable one - the threshold sits far from both.
-   *
-   * @param array $values The normalised timeline values
-   * @return string The notice HTML, empty when the series is dense enough
-   */
-  private function formatTrendsSparsityNotice(array $values): string
-  {
-    $total = count($values);
-
-    if ($total === 0) {
-      return '';
-    }
-
-    $zeros = count(array_filter($values, static fn($v) => (int)$v === 0));
-
-    if (!$this->trendsIsSparse($values)) {
-      return '';
-    }
-
-    return "<div class='alert alert-warning' style='font-size:0.85em; color:#856404; background:#fff3cd; "
-        . "border:1px solid #ffeeba; border-radius:4px; padding:8px 12px; margin:8px 0;'>⚠️ "
-        . htmlspecialchars($this->language->getDef('text_rag_trends_sparse', ['zeros' => (string)$zeros, 'total' => (string)$total]))
-        . "</div>";
-  }
-
-  /**
-   * Is the series too sparse to be read as a trend? 60% of empty weeks, measured far from both a
-   * rare keyword (96%) and a usable one (0%).
-   *
-   * @param array $values The normalised timeline values
-   * @return bool True when the series carries too little data
-   */
-  private function trendsIsSparse(array $values): bool
-  {
-    $total = count($values);
-
-    if ($total === 0) {
-      return true;
-    }
-
-    return count(array_filter($values, static fn($v) => (int)$v === 0)) * 100 >= $total * 60;
-  }
-
-  /**
-   * Deterministic reading of the series: period, peak, recent level against the period average.
-   *
-   * Computed from the timeline, never narrated by a model - the figures shown are the figures
-   * measured. A running last week is excluded from every average: it is incomplete, not low. A
-   * direction is stated only when the series is dense enough to carry one.
-   *
-   * @param array $timeline The normalised timeline, oldest first
-   * @return string The analysis HTML, empty when nothing can be read
-   */
-  private function formatTrendsAnalysis(array $timeline): string
-  {
-    $complete = array_values(array_filter($timeline, static fn($p) => empty($p['partial'])));
-    $hadPartial = count($complete) !== count($timeline);
-    $weeks = count($complete);
-
-    if ($weeks < 4) {
-      return '';
-    }
-
-    $values = array_map(static fn($p) => (int)($p['value'] ?? 0), $complete);
-    $average = array_sum($values) / $weeks;
-
-    $peakIndex = (int)array_search(max($values), $values, true);
-    $recentCount = min(4, $weeks);
-    $recent = array_sum(array_slice($values, -$recentCount)) / $recentCount;
-
-    $lines = [];
-    $lines[] = $this->language->getDef('text_rag_trends_analysis_period', [
-      'from' => (string)($complete[0]['date'] ?? ''),
-      'to' => (string)($complete[$weeks - 1]['date'] ?? ''),
-      'weeks' => (string)$weeks,
-    ]);
-    $lines[] = $this->language->getDef('text_rag_trends_analysis_peak', [
-      'date' => (string)($complete[$peakIndex]['date'] ?? ''),
-      'value' => (string)$values[$peakIndex],
-    ]);
-
-    // A direction on a mostly-empty series would be noise dressed as a finding.
-    if ($average > 0 && !$this->trendsIsSparse($values)) {
-      $delta = $recent - $average;
-      $key = abs($delta) < 5 ? 'flat' : ($delta > 0 ? 'up' : 'down');
-
-      $lines[] = $this->language->getDef('text_rag_trends_analysis_level', [
-        'weeks' => (string)$recentCount,
-        'recent' => (string)(int)round($recent),
-        'average' => (string)(int)round($average),
-      ]);
-      $lines[] = $this->language->getDef('text_rag_trends_analysis_' . $key, [
-        'delta' => (string)(int)round(abs($delta)),
-        'percent' => (string)(int)round(abs($delta) / $average * 100),
-      ]);
-    }
-
-    if ($hadPartial) {
-      $lines[] = $this->language->getDef('text_rag_trends_analysis_partial');
-    }
-
-    $output = "<div class='trends-analysis' style='font-size:0.9em; color:#212529; background:#f8f9fa; "
-        . "border:1px solid #e9ecef; border-radius:4px; padding:10px 12px; margin:8px 0;'>";
-    $output .= "<strong>" . htmlspecialchars($this->language->getDef('text_rag_trends_analysis_title')) . "</strong>";
-    $output .= "<ul style='margin:6px 0 0 0; padding-left:20px;'>";
-
-    foreach ($lines as $line) {
-      $output .= "<li>" . htmlspecialchars($line) . "</li>";
-    }
-
-    return $output . "</ul></div>";
   }
 
   /**

@@ -19,9 +19,7 @@ use ClicShopping\OM\Registry;
  */
 class StatisticsTracker
 {
-  /** SQL predicate: a row whose cost was priced per model. Every cost aggregate filters on it and counts its rows. */
-  public const ATTRIBUTED_COST_ROW = "JSON_CONTAINS_PATH(metadata, 'one', '$.tokens_by_model')";
-
+  private $db;
   private string $prefix;
   private $startTime;
   private $interactionId;
@@ -61,12 +59,6 @@ class StatisticsTracker
 
   // Observe-first quality verdict detail (stored in metadata.quality JSON)
   private array $qualityVerdict = [];
-
-  /** @var array<string, array{prompt:int,completion:int,reasoning:int}> tokens per model, '' = not reported (metadata.tokens_by_model) */
-  private array $tokensByModel = [];
-
-  /** @var array{llm_calls?: list<array<string, int|string>>, embeddings?: list<array<string, int|string>>} metadata.llm_calls / metadata.embeddings */
-  private array $modelTrace = [];
   
   /**
    * Constructeur
@@ -77,6 +69,7 @@ class StatisticsTracker
    */
   public function __construct(?int $userId = null, ?string $sessionId = null, ?int $languageId = null)
   {
+    $this->db = Registry::get('Db');
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
     $this->userId = $userId ?? 1;
     $this->sessionId = $sessionId ?? session_id();
@@ -170,7 +163,6 @@ class StatisticsTracker
   {
     $this->metrics['api_provider'] = $provider;
     $this->metrics['model_used'] = $model;
-    $this->calculateCost();
     return $this;
   }
   
@@ -306,71 +298,12 @@ class StatisticsTracker
   }
   
   /**
-   * Tokens of the request split per model, so every call is priced at its own model's rate.
-   *
-   * @param array<string, array{prompt:int,completion:int,reasoning:int}> $tokensByModel
-   * @return self
-   */
-  public function setTokensByModel(array $tokensByModel): self
-  {
-    $this->tokensByModel = $tokensByModel;
-    $this->calculateCost();
-    return $this;
-  }
-
-  /**
-   * @return array<string, array{prompt:int,completion:int,reasoning:int}>
-   */
-  public function getTokensByModel(): array
-  {
-    return $this->tokensByModel;
-  }
-
-  /**
-   * Every model the request reached (provider, role, calls, tokens) and the embedding models.
-   *
-   * @param array{llm_calls?: list<array<string, int|string>>, embeddings?: list<array<string, int|string>>} $trace
-   * @return self
-   */
-  public function setModelTrace(array $trace): self
-  {
-    $this->modelTrace = array_filter($trace);
-    return $this;
-  }
-
-  /**
-   * @return array{llm_calls?: list<array<string, int|string>>, embeddings?: list<array<string, int|string>>}
-   */
-  public function getModelTrace(): array
-  {
-    return $this->modelTrace;
-  }
-
-  /**
-   * Calculates API cost: per model when the split is known, else on model_used.
+   * Calculates API cost based on tokens and model
    * 
    * @return void
    */
   private function calculateCost(): void
   {
-    if ($this->tokensByModel !== []) {
-      $total = 0.0;
-
-      foreach ($this->tokensByModel as $model => $tokens) {
-        $model = (string)$model !== '' ? (string)$model : $this->metrics['model_used'];
-
-        if ($model === null) {
-          return;
-        }
-
-        // An uncatalogued model is logged by the calculator and left out, never priced at another rate.
-        $total += ApiCostCalculator::calculateCost($model, $tokens['prompt'], $tokens['completion']) ?? 0.0;
-      }
-
-      $this->metrics['api_cost_usd'] = round($total, 6);
-      return;
-    }
-
     if ($this->metrics['tokens_prompt'] === null || $this->metrics['tokens_completion'] === null || $this->metrics['model_used'] === null) {
       return;
     }
@@ -437,12 +370,6 @@ class StatisticsTracker
       if (!empty($this->qualityVerdict)) {
         $metadata['quality'] = $this->qualityVerdict;
       }
-
-      if ($this->tokensByModel !== []) {
-        $metadata['tokens_by_model'] = $this->tokensByModel;
-      }
-
-      $metadata += $this->modelTrace;
 
       // Convert metadata to JSON (null if empty)
       $metadataJson = !empty($metadata) ? json_encode($metadata) : null;

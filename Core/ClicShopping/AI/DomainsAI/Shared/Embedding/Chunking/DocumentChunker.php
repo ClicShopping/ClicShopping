@@ -32,12 +32,9 @@ final class DocumentChunker
    *
    * @param Document $document Document to split; returned untouched by a non-splitting policy
    * @param ChunkPolicy $policy Cap, separator cascade and hard-split flag
-   * @param string $carryHeader Identity block repeated at the head of EVERY chunk. Without it a
-   *                            chunk other than the first is anonymous prose, and a model reading
-   *                            it alone attributes it to whatever record it guesses (RAG-1).
    * @return Document[] Chunks, each honouring the cap when the policy hard-splits
    */
-  public static function split(Document $document, ChunkPolicy $policy, string $carryHeader = ''): array
+  public static function split(Document $document, ChunkPolicy $policy): array
   {
     if ($policy->splitsNothing()) {
       return [$document];
@@ -67,7 +64,7 @@ final class DocumentChunker
     }
 
     if (!$policy->hardSplit) {
-      return self::carryHeader($chunks, $carryHeader);
+      return $chunks;
     }
 
     // A single unbroken run has no separator to split on, so the cascade leaves it
@@ -85,31 +82,7 @@ final class DocumentChunker
       }
     }
 
-    return self::carryHeader($capped, $carryHeader);
-  }
-
-  /**
-   * Repeat the identity block at the head of every chunk that does not already carry it.
-   *
-   * @param Document[] $chunks Chunks produced by the policy
-   * @param string $carryHeader Identity block; an empty one leaves the chunks untouched
-   * @return Document[] Chunks, each stating what record it belongs to
-   */
-  private static function carryHeader(array $chunks, string $carryHeader): array
-  {
-    if ($carryHeader === '' || count($chunks) < 2) {
-      return $chunks;
-    }
-
-    $headed = [];
-
-    foreach ($chunks as $chunk) {
-      $headed[] = str_starts_with(ltrim($chunk->content), ltrim($carryHeader))
-        ? $chunk
-        : self::cloneWithContent($chunk, $carryHeader . "\n" . $chunk->content);
-    }
-
-    return $headed;
+    return $capped;
   }
 
   /**

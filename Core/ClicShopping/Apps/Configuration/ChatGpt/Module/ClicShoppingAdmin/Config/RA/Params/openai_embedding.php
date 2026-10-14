@@ -12,7 +12,7 @@ use ClicShopping\OM\HTML;
 
 class openai_embedding extends \ClicShopping\Apps\Configuration\ChatGpt\Module\ClicShoppingAdmin\Config\ConfigParamAbstract
 {
-  public $default = 'True';
+  public $default = 'False';
   public int|null $sort_order = 36;
 
   protected function init()

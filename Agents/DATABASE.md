@@ -96,13 +96,9 @@ Five distinct slots with non-interchangeable roles:
 ### Decision rule
 
 ```
-New table for an App    → Core/ClicShopping/Apps/{Vendor}/{AppName}/Sql/MariaDb/  (the installer)
-                        + Core/ClicShopping/Schema/MariaDb/<table>.txt            (the canonical form)
-New *_embedding table   → the App installer ONLY: an embedding table is optional, no Schema/ .txt;
-                          an existing embedding .txt must stay identical to its installer CREATE
+New table for an App    → Core/ClicShopping/Apps/{Vendor}/{AppName}/Sql/MariaDb/
 New table for overload  → Core/ClicShopping/Custom/Schema/
-Existing table          → Core/ClicShopping/Schema/MariaDb/ is the source of truth — never alter an
-                          existing definition there without agreement
+Read existing schema    → Core/ClicShopping/Schema/MariaDb/ (never modify)
 Version migration notes → sql_upgrade/ (documentation only — never write code here)
 ```
 

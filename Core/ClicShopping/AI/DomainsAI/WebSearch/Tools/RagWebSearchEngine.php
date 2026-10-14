@@ -11,7 +11,6 @@ namespace ClicShopping\AI\DomainsAI\WebSearch\Tools;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\SerpApiClient;
 use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
-use ClicShopping\AI\InterfacesAI\BatchableWebSearchInterface;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 use ClicShopping\OM\CLICSHOPPING;
 
@@ -27,7 +26,7 @@ use ClicShopping\OM\CLICSHOPPING;
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Executor
  */
-class RagWebSearchEngine implements WebSearchInterface, BatchableWebSearchInterface
+class RagWebSearchEngine implements WebSearchInterface
 {
   private const ENGINE_NAME = 'rag_websearch';
   private const DEFAULT_MAX_RESULTS_PER_SITE = 5;
@@ -36,8 +35,6 @@ class RagWebSearchEngine implements WebSearchInterface, BatchableWebSearchInterf
   private WebSearchLogger $logger;
   private bool $debug;
   private string $prefixDb;
-  /** @var array<string,array> Site row per batch key, so the return leg keeps its patterns */
-  private array $batchSites = [];
   
   /**
    * Constructor
@@ -84,191 +81,131 @@ class RagWebSearchEngine implements WebSearchInterface, BatchableWebSearchInterf
   {
     $startTime = microtime(true);
 
-    $requests = $this->prepareBatchRequests($query, $options);
-
-    if ($requests === []) {
-      return $this->buildErrorResponse($this->lastPreparationError(), $query, $startTime);
-    }
-
-    // One round for every site: this engine's own worst case is its slowest site, not their sum.
-    $result = $this->buildResultFromBatch($this->client->runBatch($requests), $query, $options);
-    $result['metadata']['execution_time'] = microtime(true) - $startTime;
-
-    return $result;
-  }
-
-  /**
-   * Declare one call per active site so they all run in the same round.
-   *
-   * The site row is kept in PHP under the same key; nothing about it travels through the URL.
-   *
-   * @param string $query Search query
-   * @param array $options Options array with optional target_site filter
-   * @return array<string,array> One request per site domain
-   */
-  public function prepareBatchRequests(string $query, array $options = []): array
-  {
-    $this->batchSites = [];
-
-    if (!$this->validateConfig()) {
-      return [];
-    }
-
-    $activeSites = $this->getActiveSites($options);
-
-    if (empty($activeSites)) {
-      return [];
-    }
-
-    $params = $this->buildSearchParams($options);
-    $requests = [];
-
-    foreach ($activeSites as $site) {
-      $key = (string)$site['site_domain'];
-      $request = $this->client->buildHttpRequest(
-        self::SERPAPI_ENGINE,
-        $query . ' site:' . $site['site_domain'],
-        $params,
-        $key
-      );
-
-      if ($request === false) {
-        continue;
+    try {
+      // Validate configuration
+      if (!$this->validateConfig()) {
+        return $this->buildErrorResponse(
+          'Configuration validation failed: No active sites configured or SerpAPI key missing',
+          $query,
+          $startTime
+        );
       }
 
-      $requests[$key] = $request;
-      $this->batchSites[$key] = $site;
-    }
+      // Get active sites from database (traditional scraping)
+      $activeSites = $this->getActiveSites($options);
 
-    if ($this->debug) {
-      error_log(sprintf('[RagWebSearchEngine] Declared %d site searches', count($requests)));
-    }
-
-    return $requests;
-  }
-
-  /**
-   * Build the unified result from the responses of the declared site searches.
-   *
-   * @param array<string,string|false> $responses Raw body per site domain
-   * @param string $query Search query
-   * @param array $options Unused, the extraction reads its patterns from the site row
-   * @return array Same structure search() returns
-   */
-  public function buildResultFromBatch(array $responses, string $query, array $options = []): array
-  {
-    $startTime = microtime(true);
-    $ragResults = [];
-    $totalResults = 0;
-    $totalPricesExtracted = 0;
-
-    foreach ($responses as $key => $body) {
-      $site = $this->batchSites[$key] ?? null;
-
-      if ($site === null) {
-        continue;
+      if (empty($activeSites)) {
+        return $this->buildErrorResponse(
+          'No active competitor sites found in ' . $this->prefixDb . 'rag_websearch table',
+          $query,
+          $startTime
+        );
       }
-
-      $siteResults = $this->extractSiteResults($body, $site, (string)$key);
-
-      if (empty($siteResults)) {
-        continue;
-      }
-
-      $pricesFound = count(array_filter($siteResults, fn($r) => $r['extracted_price'] !== null));
-      $totalPricesExtracted += $pricesFound;
-
-      $ragResults[] = [
-        'site' => $site['site_domain'],
-        'site_name' => $site['site_domain'],
-        'results' => $siteResults,
-        'result_count' => count($siteResults),
-        'prices_extracted' => $pricesFound,
-      ];
-
-      $totalResults += count($siteResults);
-
-      $this->logScrapingActivity($query, $site, count($siteResults));
-    }
-
-    $siteCount = count($this->batchSites);
-
-    $result = [
-      'success' => true,
-      'query' => $query,
-      'ai_overview' => null,
-      'organic_results' => [],
-      'shopping_results' => [],
-      'rag_results' => $ragResults,
-      'metadata' => [
-        'mode' => 'mode_c_rag_websearch',
-        'engine' => self::ENGINE_NAME,
-        'execution_method' => 'db_scraping',
-        'sites_searched' => $siteCount,
-        'total_results' => $totalResults,
-        'prices_extracted' => $totalPricesExtracted,
-        'execution_time' => microtime(true) - $startTime,
-      ],
-    ];
-
-    $siteNames = implode(', ', array_column($this->batchSites, 'site_domain'));
-
-    if ($totalResults === 0) {
-      // Case 1: site was searched but returned no organic results at all
-      $result['metadata']['user_notification'] = [
-        'type' => 'warning',
-        'message' => sprintf(
-          'No results were found on %s for "%s". Showing Google Shopping results as alternative.',
-          $siteNames,
-          $query
-        ),
-        'fallback' => 'google_shopping',
-      ];
 
       if ($this->debug) {
-        error_log(sprintf('[RagWebSearchEngine] No results scraped from %s — notifying user', $siteNames));
+        error_log(sprintf(
+          '[RagWebSearchEngine] Found %d active sites to search',
+          count($activeSites)
+        ));
       }
-    } elseif ($totalPricesExtracted === 0) {
-      // Case 2: pages found but the price regex did not match — scraping pattern may be outdated
-      $result['metadata']['user_notification'] = [
-        'type' => 'info',
-        'message' => sprintf(
-          'Products were found on %s but prices could not be extracted (scraping pattern may need updating). Prices from Google Shopping are shown as alternative.',
-          $siteNames
-        ),
-        'fallback' => 'google_shopping',
+
+      // Execute searches for each site
+      $ragResults = [];
+      $totalResults = 0;
+      $totalPricesExtracted = 0;
+
+      foreach ($activeSites as $site) {
+        $siteResults = $this->searchSite($query, $site, $options);
+
+        if (!empty($siteResults)) {
+          $pricesFound = count(array_filter($siteResults, fn($r) => $r['extracted_price'] !== null));
+          $totalPricesExtracted += $pricesFound;
+
+          $ragResults[] = [
+            'site' => $site['site_domain'],
+            'site_name' => $site['site_domain'],
+            'results' => $siteResults,
+            'result_count' => count($siteResults),
+            'prices_extracted' => $pricesFound,
+          ];
+
+          $totalResults += count($siteResults);
+
+          $this->logScrapingActivity($query, $site, count($siteResults));
+        }
+      }
+
+      // Build unified result structure
+      $result = [
+        'success' => true,
+        'query' => $query,
+        'ai_overview' => null,
+        'organic_results' => [],
+        'shopping_results' => [],
+        'rag_results' => $ragResults,
+        'metadata' => [
+          'mode' => 'mode_c_rag_websearch',
+          'engine' => self::ENGINE_NAME,
+          'execution_method' => 'db_scraping',
+          'sites_searched' => count($activeSites),
+          'total_results' => $totalResults,
+          'prices_extracted' => $totalPricesExtracted,
+          'execution_time' => microtime(true) - $startTime,
+        ],
       ];
 
-      if ($this->debug) {
-        error_log(sprintf('[RagWebSearchEngine] %d results from %s but 0 prices extracted — pattern mismatch', $totalResults, $siteNames));
-      }
-    }
+      $siteNames = implode(', ', array_column($activeSites, 'site_domain'));
 
-    if ($this->debug) {
-      error_log(sprintf(
-        '[RagWebSearchEngine] Search completed in %.3fs - Query: %s - Sites: %d - Results: %d',
-        $result['metadata']['execution_time'],
+      if ($totalResults === 0) {
+        // Case 1: site was searched but returned no organic results at all
+        $result['metadata']['user_notification'] = [
+          'type' => 'warning',
+          'message' => sprintf(
+            'No results were found on %s for "%s". Showing Google Shopping results as alternative.',
+            $siteNames,
+            $query
+          ),
+          'fallback' => 'google_shopping',
+        ];
+
+        if ($this->debug) {
+          error_log(sprintf('[RagWebSearchEngine] No results scraped from %s — notifying user', $siteNames));
+        }
+      } elseif ($totalPricesExtracted === 0) {
+        // Case 2: pages found but the price regex did not match — scraping pattern may be outdated
+        $result['metadata']['user_notification'] = [
+          'type' => 'info',
+          'message' => sprintf(
+            'Products were found on %s but prices could not be extracted (scraping pattern may need updating). Prices from Google Shopping are shown as alternative.',
+            $siteNames
+          ),
+          'fallback' => 'google_shopping',
+        ];
+
+        if ($this->debug) {
+          error_log(sprintf('[RagWebSearchEngine] %d results from %s but 0 prices extracted — pattern mismatch', $totalResults, $siteNames));
+        }
+      }
+
+      if ($this->debug) {
+        error_log(sprintf(
+          '[RagWebSearchEngine] Search completed in %.3fs - Query: %s - Sites: %d - Results: %d',
+          $result['metadata']['execution_time'],
+          $query,
+          count($activeSites),
+          $totalResults
+        ));
+      }
+
+      return $result;
+
+    } catch (\Exception $e) {
+      return $this->buildErrorResponse(
+        'Exception: ' . $e->getMessage(),
         $query,
-        $siteCount,
-        $totalResults
-      ));
+        $startTime
+      );
     }
-
-    return $result;
-  }
-
-  /**
-   * Why no call could be declared — the three causes must not collapse into one message.
-   *
-   * @return string Reason, phrased for the user-facing error response
-   */
-  private function lastPreparationError(): string
-  {
-    if (!$this->validateConfig()) {
-      return 'Configuration validation failed: No active sites configured or SerpAPI key missing';
-    }
-
-    return 'No active competitor sites found in ' . $this->prefixDb . 'rag_websearch table';
   }
 
   /**
@@ -338,40 +275,52 @@ class RagWebSearchEngine implements WebSearchInterface, BatchableWebSearchInterf
   }
 
   /**
-   * Turn one site's raw response into its extracted products.
+   * Search a specific site using site:domain.com operator
    *
-   * @param string|false $body Raw body for that site, false when the call failed
-   * @param array $site Site configuration with search_pattern
-   * @param string $key Batch key, so the failure cause can be read back
-   * @return array Extracted products, empty when nothing usable came back
+   * Executes SerpAPI search with engine=google and site: operator.
+   * Extracts product information using site-specific patterns.
+   *
+   * @param string $query Original query
+   * @param array $site Site configuration from database
+   * @param array $options Search options
+   * @return array Extracted results
    */
-  private function extractSiteResults(string|false $body, array $site, string $key): array
+  private function searchSite(string $query, array $site, array $options): array
   {
     try {
-      $data = $this->client->decodeResponse(self::SERPAPI_ENGINE, $body, $key);
+      // Build site-specific query using site: operator
+      $siteQuery = $query . ' site:' . $site['site_domain'];
+
+      // Build search parameters
+      $params = $this->buildSearchParams($options);
+
+      // Execute search via SerpAPI
+      $data = $this->client->search(self::SERPAPI_ENGINE, $siteQuery, $params);
 
       if ($data === false) {
         if ($this->debug) {
           error_log(sprintf(
-            '[RagWebSearchEngine] SerpAPI request failed for site %s: %s',
-            $site['site_domain'],
-            $this->client->lastError($key)
+            '[RagWebSearchEngine] SerpAPI request failed for site: %s',
+            $site['site_domain']
           ));
         }
-
         return [];
       }
 
+      // Extract organic results
       $organicResults = $data['organic_results'] ?? [];
 
       if (empty($organicResults)) {
         if ($this->debug) {
-          error_log(sprintf('[RagWebSearchEngine] No results found for site: %s', $site['site_domain']));
+          error_log(sprintf(
+            '[RagWebSearchEngine] No results found for site: %s',
+            $site['site_domain']
+          ));
         }
-
         return [];
       }
 
+      // Extract product information using site-specific patterns
       $extractedResults = [];
 
       foreach ($organicResults as $result) {
@@ -396,7 +345,7 @@ class RagWebSearchEngine implements WebSearchInterface, BatchableWebSearchInterf
     } catch (\Exception $e) {
       if ($this->debug) {
         error_log(sprintf(
-          '[RagWebSearchEngine] Error extracting site %s: %s',
+          '[RagWebSearchEngine] Error searching site %s: %s',
           $site['site_domain'],
           $e->getMessage()
         ));
@@ -671,6 +620,40 @@ class RagWebSearchEngine implements WebSearchInterface, BatchableWebSearchInterf
         error_log('[RagWebSearchEngine] Error logging scraping activity: ' . $e->getMessage());
       }
     }
+  }
+
+  /**
+   * Build SerpAPI URL stub — not supported by RagWebSearchEngine
+   *
+   * RagWebSearchEngine executes N requests (one per active site from rag_websearch)
+   * and cannot be represented as a single URL. Hybrid execution must use search() directly.
+   * This stub satisfies the WebSearchInterface contract.
+   *
+   * @param string $query Search query
+   * @param array $options Options array
+   * @return string Empty string — use search() instead
+   */
+  public function buildSerpApiUrl(string $query, array $options = []): string
+  {
+    return '';
+  }
+
+  /**
+   * Parse response stub — not supported by RagWebSearchEngine
+   *
+   * RagWebSearchEngine requires multi-site execution via search().
+   * This stub satisfies the WebSearchInterface contract.
+   *
+   * @param string $jsonResponse Raw JSON response
+   * @return array Error response directing callers to use search()
+   */
+  public function parseResponse(string $jsonResponse): array
+  {
+    return $this->buildErrorResponse(
+      'RagWebSearchEngine requires multi-site execution via search(). Use WebSearchExecutor with search() calls.',
+      '',
+      0
+    );
   }
 
   /**

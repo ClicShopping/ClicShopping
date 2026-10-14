@@ -13,30 +13,29 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Cache as OMCache;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Config\AutonomousConfig;
-use ClicShopping\AI\Config\TechnicalDefaults;
+use ClicShopping\AI\Config\AgentSystemConfig;
 use ClicShopping\AI\CoreAI\Orchestrator\CorrectionAgent;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
-use ClicShopping\AI\DomainsAI\Analytics\Executor\AnalyticsSqlExecutor;
+use ClicShopping\AI\CoreAI\Orchestrator\SubValidation\ValidationGate;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\QueryExecutor;
 use ClicShopping\AI\DomainsAI\Analytics\Executor\SqlQueryProcessor;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\AnalyticsErrorHandler;
-use ClicShopping\AI\DomainsAI\Analytics\Helper\Formatter\AnalysisPlanAnnouncer;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 use ClicShopping\AI\DomainsAI\Analytics\Planning\AnalysisPlanner;
-use ClicShopping\AI\DomainsAI\Analytics\Planning\DefaultAnalysisWindow;
-use ClicShopping\AI\DomainsAI\Analytics\Planning\PlanSqlCompiler;
 use ClicShopping\AI\DomainsAI\DomainRegistry;
-use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
 use ClicShopping\AI\Infrastructure\Cache\QueryCache;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Prompt\PromptBuilder;
-use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
+use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
+use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\Security\LlmGuardrails;
+use ClicShopping\AI\Helper\TypeSafetyGuard;
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 
@@ -72,11 +71,14 @@ class AnalyticsAgent implements AgentInterface
   private mixed $db;
   private mixed $language;
   private int $languageId;
+  private array $correctionLog = [];
   private ?string $sqlCacheKey = null;
   private bool $enablePromptCache;
   private bool $debug = false;
   private SecurityLogger $securityLogger;
+  private RateLimit $rateLimit;
   private string $userId;
+  private DbSecurity $dbSecurity;
 
   private mixed $maxRowsForInterpretation;
 
@@ -84,7 +86,7 @@ class AnalyticsAgent implements AgentInterface
   private DatabaseSchemaManager $schemaManager;
   private SqlQueryProcessor $queryProcessor;
   private QueryExecutor $queryExecutor;
-  private AnalyticsSqlExecutor $sqlExecutor;
+  private ResultInterpreter $resultInterpreter;
   private QueryEnricher $queryEnricher;
   private AnalyticsQueryClassifier $queryClassifier;
   private CorrectionAgent $correctionAgent;
@@ -94,13 +96,10 @@ class AnalyticsAgent implements AgentInterface
   private ?AnalysisPlanner $analysisPlanner = null;
   private ?array $analysisPlan = null;
   private array $analysisPlanReserve = [];
-  private bool $asksAction = false;
-
-  private AnalysisPlanAnnouncer $planAnnouncer;
-  private AnalyticsResultStage $resultStage;
   private AmbiguityHandler $ambiguityHandler;
   private AnalyticsErrorHandler $errorHandler;
   private AnalyticsObjectiveRunner $objectiveRunner;
+  private mixed $app;
   
   private mixed $conversationMemory = null;
   private ?AutonomousConfig $autonomousConfig = null;
@@ -127,6 +126,7 @@ class AnalyticsAgent implements AgentInterface
       Registry::set('ChatGpt', new ChatGpt());
     }
 
+    $this->app = Registry::get('ChatGpt');
 
     // This replaces the duplicated model detection logic with a single, maintainable function
     $model = Gpt::defaultModel();
@@ -144,6 +144,8 @@ class AnalyticsAgent implements AgentInterface
 
     // Initialize security components
     $this->securityLogger = new SecurityLogger();
+    $this->rateLimit = new RateLimit('analytics_agent', 50, 60); // 50 requests per minute
+    $this->dbSecurity = new DbSecurity();
 
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
@@ -177,13 +179,15 @@ class AnalyticsAgent implements AgentInterface
     $this->queryExecutor = new QueryExecutor(
       $this->db,
       $this->securityLogger,
+      $this->dbSecurity,
       $this->debug
     );
 
-    $resultInterpreter = new ResultInterpreter(
-      $this->getInterpreterChat(),
+    $this->resultInterpreter = new ResultInterpreter(
+      $this->chat,
       new Cache($enablePromptCache),  // ResultInterpreter has its own cache instance
       $this->securityLogger,
+      $this->app,
       $this->maxRowsForInterpretation,
       $this->enablePromptCache,
       $this->debug
@@ -203,7 +207,8 @@ class AnalyticsAgent implements AgentInterface
     $this->errorHandler = new AnalyticsErrorHandler(
       $this->db,
       $this->correctionAgent,
-      $this->queryExecutor
+      $this->queryExecutor,
+      $this->debug
     );
 
     // Initialize AmbiguityHandler for handling ambiguous queries
@@ -215,25 +220,15 @@ class AnalyticsAgent implements AgentInterface
       $this->debug
     );
 
-    $this->sqlExecutor = new AnalyticsSqlExecutor(
-      $this->queryProcessor,
-      $this->queryExecutor,
-      $this->errorHandler,
-      $this->securityLogger,
-      $this->debug
-    );
-
     // Autonomous-agent concern extracted from this class (god-class decomposition);
     // kept for the live createLocalObjective() telemetry path (objective register).
     $this->objectiveRunner = new AnalyticsObjectiveRunner($this->autonomousConfig, $this->debug, $this->securityLogger);
-
-    $this->planAnnouncer = new AnalysisPlanAnnouncer($this->debug);
-    $this->resultStage = new AnalyticsResultStage($resultInterpreter, $this->errorHandler, $this->debug);
 
     // Pre-execution confidence/abstention concern extracted from this class (god-class decomposition).
     $this->abstentionEvaluator = new AnalyticsAbstentionEvaluator($this->abstentionManager, $this->debug);
 
     try {
+      $this->schemaManager->initializeTableRelationships();
       $this->schemaManager->buildDatabaseSchema();
     } catch (\Exception $e) {
       $this->securityLogger->logApplicationError("Error during AnalyticsAgent initialization: " . $e->getMessage());
@@ -256,7 +251,7 @@ class AnalyticsAgent implements AgentInterface
    *               - results: Query results
    *               - corrections: Any applied corrections
    */
-  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false, string $widerRequest = ''): array
+  public function processBusinessQuery(string $question, bool $includeSQL = true, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog("\n" . str_repeat("=", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.processBusinessQuery() - START");
@@ -295,15 +290,14 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("\n--- STEP 2: Execute query ---");
       $this->debugLog("Calling executeQuery()...");
 
-      $results = $this->executeQuery($question, $feedbackContext, $skipClassification, $isSubQuery, $widerRequest);
+      $results = $this->executeQuery($question, $feedbackContext, $skipClassification, $isSubQuery);
 
       $this->debugLog("executeQuery() returned:");
       $this->debugLog("  type: " . ($results['type'] ?? 'unknown'));
       $this->debugLog("  has error: " . (isset($results['error']) ? 'YES' : 'NO'));
       $this->debugLog("  has results: " . (isset($results['results']) ? 'YES (' . count($results['results']) . ' rows)' : 'NO'));
 
-      $results = $this->sqlExecutor->validateAndReexecuteSqlDates($results, $question);
-      $results = $this->sqlExecutor->guardSensitiveOutput($results, $question, $this->userId);
+      $results = $this->validateAndReexecuteSqlDates($results, $question);
 
       if (($results['type'] ?? 'unknown') === 'error') {
         $this->debugLog("ERROR in executeQuery: " . ($results['error'] ?? 'unknown'));
@@ -311,23 +305,15 @@ class AnalyticsAgent implements AgentInterface
       }
 
       // Handle unknown or incomplete results (early returns)
-      $earlyReturn = $this->resultStage->resolveEarlyResultReturn($results, $question);
+      $earlyReturn = $this->resolveEarlyResultReturn($results, $question);
       if ($earlyReturn !== null) {
         return $earlyReturn;
       }
 
-      // 2.5. Let the active domain add columns to the rows (forecast, risk, ...)
-      $results = $this->resultStage->enrichResultRows($results);
-
-      // 2.75. Drop the lines whose margin has no cost basis, BEFORE interpretation: pruning after
-      // it would leave the prose quoting the figure the guard withheld.
-      $withheld = $this->planAnnouncer->withholdRowsWithoutCostBasis($results);
-      $results = $withheld['results'];
-
       // 3. Interpret the results
       $this->debugLog("\n--- STEP 3: Interpret results ---");
 
-      $interpretation = $this->resultStage->determineInterpretation($question, $results, $this->asksAction, $this->nonAdditiveMetrics());
+      $interpretation = $this->determineInterpretation($question, $results);
 
       // 3.5. 🆕 Update cache with interpretation
       if (!empty($results['sql_query']) && !($results['cached'] ?? false)) {
@@ -360,20 +346,22 @@ class AnalyticsAgent implements AgentInterface
         'count' => $results['count'],
         'results' => $results['results'],
         'cached' => $results['cached'] ?? false,  // 🆕 Propagate cached flag
-        'derived_columns' => $results['derived_columns'] ?? [],
-        'sensitive_output' => $results['sensitive_output'] ?? null,
       ];
-
-      $response += self::ambiguityKeysOf($results);
 
       // Add cache metadata if available
       if (isset($results['cache_age'])) {
         $response['cache_age'] = $results['cache_age'];
       }
 
-      $this->persistAnalysisPlanContext($response, $isSubQuery);
+      if ($this->analysisPlan !== null) {
+        $response['analysis_plan'] = $this->analysisPlan;
 
-      $this->planAnnouncer->announce($response, $this->analysisPlan, $this->analysisPlanReserve, $withheld['withheld'], $withheld['share'], $withheld['no_sale']);
+        if ($this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
+          $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
+        }
+      }
+
+      $this->announceAnalysisPlanReserve($response);
 
       if ($includeSQL) {
         $response['sql_query'] = $results['sql_query'] ?? 'N/A';
@@ -383,16 +371,8 @@ class AnalyticsAgent implements AgentInterface
         }
       }
 
-      // Validation gate — closes the agentic critique loop (see AnalyticsResultStage::applyValidationGate()).
-      $this->resultStage->applyValidationGate(
-        $question,
-        $includeSQL,
-        $interpretation,
-        $results,
-        $response,
-        $this->conversationMemory,
-        fn(string $q, array $feedback): array => ['results' => $this->sqlExecutor->guardSensitiveOutput($this->executeQuery($q, $feedback), $q, $this->userId), 'asks_action' => $this->asksAction, 'non_additive' => $this->nonAdditiveMetrics()]
-      );
+      // Validation gate — closes the agentic critique loop (see applyValidationGate()).
+      $this->applyValidationGate($question, $includeSQL, $interpretation, $results, $response);
 
       // 5. Extraire entity_id si présent
       $this->debugLog("\n--- STEP 5: Extract entity info ---");
@@ -428,6 +408,188 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
+   * Resolve an early-return response for clarification/ambiguous/empty results.
+   *
+   * Extracted verbatim from processBusinessQuery. Returns the response to send back
+   * directly (clarification, ambiguous, or a no-results error), or null to continue
+   * the normal interpretation flow.
+   *
+   * @param array $results Executed query results
+   * @param string $question Original business question
+   * @return array|null Early response, or null to continue
+   */
+  private function resolveEarlyResultReturn(array $results, string $question): ?array
+  {
+    // Handle unknown or incomplete results
+    // ✅ FIX: Allow ambiguous results which use 'interpretation_results' instead of 'results'
+    $isAmbiguous = isset($results['type']) && $results['type'] === 'analytics_results_ambiguous';
+    $isClarification = isset($results['type']) && $results['type'] === 'clarification_needed';
+    $hasResults = isset($results['results']) && $results['results'] !== null;
+    $hasInterpretationResults = isset($results['interpretation_results']) && !empty($results['interpretation_results']);
+
+    // ✅ FIX: For clarification requests, return them directly
+    if ($isClarification) {
+      $this->debugLog("✅ Clarification needed - returning directly");
+      return $results;
+    }
+
+    // ✅ FIX: For ambiguous results, return them directly without interpretation
+    if ($isAmbiguous && $hasInterpretationResults) {
+      $this->debugLog("✅ Ambiguous results detected - returning directly");
+      return $results;
+    }
+
+    if (!$hasResults && !$hasInterpretationResults && !$isAmbiguous && !$isClarification) {
+      $this->debugLog("WARNING: No results array in executeQuery response");
+      return [
+        'type' => 'error',
+        'error' => 'Query execution failed to return results',
+        'question' => $question,
+        'details' => $results
+      ];
+    }
+
+    return null;
+  }
+
+  /**
+   * Determine the interpretation for an executed analytics result.
+   *
+   * Extracted verbatim from processBusinessQuery (STEP 3). Reuses a cached
+   * interpretation when present, otherwise generates an empty-results message or a
+   * fresh interpretation from the result rows.
+   *
+   * @param string $question Original business question
+   * @param array $results Executed query results
+   * @return mixed Interpretation (normally a string; may be array on upstream quirks)
+   */
+  private function determineInterpretation(string $question, array $results): mixed
+  {
+    // 🆕 Check if interpretation is already in cache
+    if (isset($results['interpretation']) && !empty($results['interpretation'])) {
+      $interpretation = $results['interpretation'];
+      $this->debugLog("✅ Using cached interpretation");
+
+      // Type-safe logging with TypeSafetyGuard
+      if (is_array($interpretation)) {
+        $this->debugLog(" WARNING: Cached interpretation is an array, not a string");
+      }
+
+      $logSnippet = TypeSafetyGuard::safeSubstr($interpretation, 0, 200);
+      $this->debugLog("Interpretation: " . $logSnippet . "...");
+    } else {
+      if (empty($results['results'])) {
+        $this->debugLog("⚠️  WARNING: No results to interpret, generating empty results message");
+        $interpretation = $this->errorHandler->generateEmptyResultsMessage($question, $results, $this->debug);
+        $this->debugLog(" Empty results message: " . $interpretation);
+      } else {
+        // Generate new interpretation only if we have data
+        $interpretation = $this->resultInterpreter->interpretResults($question, $results['results'], $results['sql_query'] ?? '');
+        $this->debugLog(" Generated new interpretation");
+
+        // Type-safe logging with TypeSafetyGuard
+        if (is_array($interpretation)) {
+          $this->debugLog(" WARNING: interpretResults() returned an array, not a string");
+        }
+
+        $logSnippet = TypeSafetyGuard::safeSubstr($interpretation, 0, 200);
+        $this->debugLog("Interpretation: " . $logSnippet . "...");
+      }
+    }
+
+    return $interpretation;
+  }
+
+  /**
+   * Apply the optional LLM validation gate to a built analytics response.
+   *
+   * OFF by default (flag undefined) -> no behaviour change. When enabled, an LLM
+   * evaluation (model-agnostic, no regex) scores the answer; ValidationGate turns the
+   * score into a decision. On 'regenerate' it re-runs generation ONCE with the critique
+   * as feedback, keeping the new answer ONLY if it scores strictly better (never a
+   * regression). The computed evaluation is attached to the response so the formatter
+   * reuses it (no double LLM call). Mutates $results and $response by reference.
+   *
+   * @param string $question Original business question
+   * @param bool $includeSQL Whether SQL fields are exposed in the response
+   * @param mixed $interpretation Generated interpretation (string when gate runs)
+   * @param array $results Query results, mutated by reference on regeneration
+   * @param array $response Built response, mutated by reference
+   * @return void
+   */
+  private function applyValidationGate(string $question, bool $includeSQL, mixed $interpretation, array &$results, array &$response): void
+  {
+    if (AgentSystemConfig::isValidationGateEnabled()
+        && is_string($interpretation) && $interpretation !== '') {
+      try {
+        $evaluation = LlmGuardrails::checkGuardrails($question, $interpretation);
+
+        if (is_array($evaluation)) {
+          $score = isset($evaluation['overall_score']) ? (float) $evaluation['overall_score'] : null;
+          $issues = $evaluation['llm_evaluation']['detected_issues'] ?? [];
+          $decision = ValidationGate::decide($score, $issues);
+
+          // Bounded regeneration (one attempt), non-regressive (keep only if strictly better).
+          if ($decision['action'] === 'regenerate' && $score !== null && !empty($results['results'])) {
+            $feedback = [[
+              'feedback_type' => 'correction',
+              'original_query' => $question,
+              'sql_query' => $results['sql_query'] ?? '',
+              'corrected_response' => '',
+              'correction_comment' => 'The previous SQL was judged low quality (score ' . round($score, 2)
+                . '). Do NOT reproduce it. Issues: ' . implode('; ', array_slice($issues, 0, 5))
+                . '. Regenerate a corrected SQL that preserves ALL constraints of the question.',
+              'interaction_id' => 'validation_gate_' . uniqid(),
+            ]];
+
+            $regen = $this->executeQuery($question, $feedback);
+
+            if (($regen['type'] ?? 'error') !== 'error' && !empty($regen['results'])) {
+              $regenInterp = $this->resultInterpreter->interpretResults($question, $regen['results'], $regen['sql_query'] ?? '');
+
+              if (is_string($regenInterp) && $regenInterp !== '') {
+                $regenEval = LlmGuardrails::checkGuardrails($question, $regenInterp);
+                $regenScore = is_array($regenEval) && isset($regenEval['overall_score']) ? (float) $regenEval['overall_score'] : null;
+
+                if ($regenScore !== null && $regenScore > $score) {
+                  // Adopt the strictly-better regenerated answer.
+                  $interpretation = $regenInterp;
+                  $results = $regen;
+                  $evaluation = $regenEval;
+                  $score = $regenScore;
+                  $issues = $regenEval['llm_evaluation']['detected_issues'] ?? [];
+                  $decision = ValidationGate::decide($score, $issues);
+
+                  $response['interpretation'] = $regenInterp;
+                  $response['results'] = $regen['results'];
+                  $response['count'] = $regen['count'] ?? count($regen['results']);
+                  if ($includeSQL) {
+                    $response['sql_query'] = $regen['sql_query'] ?? ($response['sql_query'] ?? 'N/A');
+                  }
+                  $this->debugLog("Validation gate: regenerated (improved to " . round($regenScore, 2) . ")");
+                } else {
+                  $this->debugLog("Validation gate: regeneration not better, kept original");
+                }
+              }
+            }
+          }
+
+          $response['validation'] = [
+            'action' => $decision['action'],
+            'reason' => $decision['reason'],
+            'score' => $decision['score'],
+          ];
+          // Pass the computed evaluation to the formatter to avoid a second LLM call.
+          $response['validation_evaluation'] = $evaluation;
+          $this->debugLog("Validation gate: {$decision['action']} ({$decision['reason']})");
+        }
+      } catch (\Exception $e) {
+        $this->debugLog("Validation gate error: " . $e->getMessage());
+      }
+    }
+  }
+
+  /**
    * Determines if a query is analytical in nature.
    * Public API kept for external callers (e.g. MultiDBRAGManager); delegates to AnalyticsQueryClassifier.
    *
@@ -450,8 +612,6 @@ class AnalyticsAgent implements AgentInterface
    * @param bool $skipClassification When true, the orchestrator already classified this as analytics
    * @param bool $isSubQuery When true, the query is a decomposed fragment (from PlanExecutor) and the
    *                         ambiguity gate is skipped — a fragment has no period of its own to ask about
-   * @param string $widerRequest The whole request the fragment was cut from, already English — where
-   *                             that period was stated. Empty when the question stands alone.
    * @return array Results array containing:
    *               - type: 'success' or 'error'
    *               - message: Result message or error description
@@ -459,13 +619,22 @@ class AnalyticsAgent implements AgentInterface
    *               - suggestion: Error fix suggestion if applicable
    *               - recovery_attempted: Boolean indicating if recovery was attempted
    */
-  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false, string $widerRequest = ''): array
+  public function executeQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog(str_repeat("-", 100));
     $this->debugLog("DEBUG: AnalyticsAgent.executeQuery() - START");
     $this->debugLog("-" . str_repeat("-", 99));
     $this->debugLog("Question: '{$question}'");
     $this->debugLog("Feedback context items: " . count($feedbackContext));
+
+    if (!$this->rateLimit->checkLimit($this->userId)) {
+      $this->debugLog("RATE LIMIT EXCEEDED");
+      return [
+        'type' => 'error',
+        'message' => 'Rate limit exceeded',
+        'query' => $question,
+      ];
+    }
 
     $safeQuestion = InputValidator::validateParameter($question, 'string');
     if ($safeQuestion !== $question) {
@@ -475,7 +644,7 @@ class AnalyticsAgent implements AgentInterface
 
     try {
       $this->debugLog("\nCalling processAnalyticsQuery()...");
-      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification, $isSubQuery, $widerRequest);
+      $result = $this->processAnalyticsQuery($question, $feedbackContext, $skipClassification, $isSubQuery);
 
       $this->debugLog("processAnalyticsQuery() returned:");
       $this->debugLog("  type: " . ($result['type'] ?? 'unknown'));
@@ -514,13 +683,11 @@ class AnalyticsAgent implements AgentInterface
    * @param bool $skipClassification When true, the orchestrator already classified this as analytics
    * @param bool $isSubQuery When true (decomposed fragment from PlanExecutor), the ambiguity-detection
    *                         stage is skipped — see STEP 0/0.5 below
-   * @param string $widerRequest The whole request this fragment was cut from, already English. Empty
-   *                             when the question stands alone.
    *
    * A failure is RETURNED as a 'error' response carrying the ambiguity metadata, never thrown:
    * that metadata exists only in this scope.
    */
-  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false, string $widerRequest = ''): array
+  private function processAnalyticsQuery(string $question, array $feedbackContext = [], bool $skipClassification = false, bool $isSubQuery = false): array
   {
     $this->debugLog(str_repeat(".", 100));
     $this->debugLog("AnalyticsAgent.processAnalyticsQuery() - START", "QUERY");
@@ -535,7 +702,6 @@ class AnalyticsAgent implements AgentInterface
     // previous one would silently key the SQL cache of this one.
     $this->analysisPlan = null;
     $this->analysisPlanReserve = [];
-    $this->asksAction = false;
 
     try {
 
@@ -618,9 +784,8 @@ class AnalyticsAgent implements AgentInterface
       if ($planner !== null) {
         $this->debugLog("--- STEP 0.75: Build the analysis plan ---", "PLAN");
 
-        $planResult = $planner->plan($this->translateForGeneration($questionForGeneration), $widerRequest);
+        $planResult = $planner->plan($this->translateForGeneration($questionForGeneration));
         $this->analysisPlan = $planResult['plan'];
-        $this->asksAction = $planResult['act'] ?? false;
 
         if ($this->analysisPlan === null) {
           if ($planResult['no_metric_proposed'] ?? false) {
@@ -634,16 +799,6 @@ class AnalyticsAgent implements AgentInterface
 
             return $this->analysisPlanRefusal($question, $planResult, $ambiguityAnalysis);
           }
-        }
-
-        if (($this->analysisPlan['periods']['period_missing'] ?? false) === true) {
-          $this->debugLog("PLAN WITHOUT WINDOW: asking the user for the period", "PLAN");
-
-          $clarification = AgentResponseHelper::buildClarificationRequest($question, 'time');
-          // Distinguishable from the ambiguity stage, which asks the same question earlier.
-          $clarification['clarification_source'] = 'analysis_plan';
-
-          return $clarification;
         }
 
         if ($planResult['unsatisfiable'] !== []) {
@@ -664,10 +819,10 @@ class AnalyticsAgent implements AgentInterface
 
       $this->debugLog("--- STEP 2: Generate SQL from question ---", "SQL");
 
-      $sqlQueries = $this->compiledSqlQueries() ?? $this->generateSqlQueries($questionForGeneration, $feedbackContext);
+      $sqlQueries = $this->generateSqlQueries($questionForGeneration, $feedbackContext);
 
       $this->debugLog("--- STEP 3: Execute SQL queries ---", "EXECUTION");
-      return $this->sqlExecutor->executeSqlQueries($sqlQueries, $question, $this->ambiguityMetadata($ambiguityAnalysis), $this->analysisPlan, $this->sqlCacheKey);
+      return $this->executeSqlQueries($sqlQueries, $question, $ambiguityAnalysis);
 
     } catch (\Exception $e) {
       $this->debugLog("\nFINAL EXCEPTION: " . $e->getMessage());
@@ -682,34 +837,6 @@ class AnalyticsAgent implements AgentInterface
         ...$this->ambiguityMetadata($ambiguityAnalysis),
       ];
     }
-  }
-
-  /**
-   * SQL compiled from the validated plan, or null when the plan stays with the model: no plan,
-   * compiler switched off, or a plan outside the compiled slices. Never written to the SQL cache.
-   *
-   * @return array<int, string>|null One executable query, placeholders resolved
-   */
-  private function compiledSqlQueries(): ?array
-  {
-    $domainApp = DomainRegistry::getInstance()->getActiveApp();
-
-    if ($this->analysisPlan === null || TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_PLAN_COMPILER_STATUS') != 'True'
-      || $domainApp === null || !method_exists($domainApp, 'getEventAxis') || !method_exists($domainApp, 'getMetricCatalog')) {
-      return null;
-    }
-
-    $sql = PlanSqlCompiler::compile($this->analysisPlan, $domainApp->getMetricCatalog(), $domainApp->getEventAxis(),
-      method_exists($domainApp, 'getGrainKeys') ? $domainApp->getGrainKeys() : []);
-
-    if ($sql === null) {
-      return null;
-    }
-
-    $this->sqlCacheKey = null;
-    $this->debugLog("SQL COMPILED from the plan - no generation call", "SQL");
-
-    return [PromptPlaceholders::resolve($sql, (string)CLICSHOPPING::getConfig('db_table_prefix'), $this->languageId)];
   }
 
   /**
@@ -739,41 +866,52 @@ class AnalyticsAgent implements AgentInterface
       return null;
     }
 
-    $orderSideDimensions = method_exists($domainApp, 'getOrderSideDimensions') ? $domainApp->getOrderSideDimensions() : [];
-
-    $terms = method_exists($domainApp, 'getMetricTerms') ? $domainApp->getMetricTerms() : [];
-
-    $readings = method_exists($domainApp, 'getFilteredDimensionReadings') ? $domainApp->getFilteredDimensionReadings() : [];
-
-    $factGrain = method_exists($domainApp, 'getEventAxis') ? (string)($domainApp->getEventAxis()['axis']['fact']['grain'] ?? '') : '';
-
-    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId, $orderSideDimensions, $terms, $readings, $factGrain);
+    $this->analysisPlanner = new AnalysisPlanner($catalog, $this->languageId);
 
     return $this->analysisPlanner;
   }
 
   /**
-   * Attach the analysis plan to the response and record it as conversation context.
+   * Announce, AT THE HEAD of the answer, what the plan could not honour.
    *
-   * Sink-safe invariant (CONC-1): only the final turn writes context. A sub-query step
-   * still exposes its plan on its own response, but never writes the shared last-plan sink —
-   * that write belongs to the single top-level turn, so concurrent sub-queries cannot race it.
+   * The reserve rides the `interpretation` string itself rather than a metadata key: that
+   * string is what the restitution gates carry through to the user verbatim, and a key beside
+   * it would be dropped by the first gate that rebuilds the response.
+   *
+   * It is added AFTER the result cache was written, so the cached entry keeps the plain
+   * interpretation and the reserve is rebuilt from the plan on every turn, hit or miss.
    *
    * @param array $response Response being assembled, mutated in place
-   * @param bool $isSubQuery Whether this call is a decomposed sub-query step
    * @return void
    */
-  private function persistAnalysisPlanContext(array &$response, bool $isSubQuery): void
+  private function announceAnalysisPlanReserve(array &$response): void
   {
-    if ($this->analysisPlan === null) {
+    if ($this->analysisPlanReserve === []) {
       return;
     }
 
-    $response['analysis_plan'] = $this->analysisPlan;
+    // Name the measure as the question named it; an entry with no label has nothing sayable.
+    $labels = array_values(array_unique(array_filter(
+      array_column($this->analysisPlanReserve, 'label'),
+      static fn($label): bool => is_string($label) && $label !== ''
+    )));
 
-    if (!$isSubQuery && $this->conversationMemory !== null && method_exists($this->conversationMemory, 'setLastAnalysisPlan')) {
-      $this->conversationMemory->setLastAnalysisPlan($this->analysisPlan);
+    $response['analysis_plan_unsatisfiable'] = $this->analysisPlanReserve;
+
+    if ($labels === []) {
+      return;
     }
+
+    $reserve = CLICSHOPPING::getDef('text_analysis_plan_reserve', ['elements' => implode(', ', $labels)]);
+
+    if ($reserve === '' || $reserve === 'text_analysis_plan_reserve') {
+      return;
+    }
+
+    $response['analysis_plan_reserve'] = $reserve;
+    $response['interpretation'] = trim($reserve . "\n\n" . (string)($response['interpretation'] ?? ''));
+
+    $this->debugLog("PLAN RESERVE announced: " . $reserve, "PLAN");
   }
 
   /**
@@ -794,17 +932,16 @@ class AnalyticsAgent implements AgentInterface
    */
   private function analysisPlanRefusal(string $question, array $planResult, array $ambiguityAnalysis): array
   {
-    $sample = AnalysisPlanAnnouncer::insufficientSampleNotice($planResult['unsatisfiable']);
     $elements = array_values(array_filter(array_map(
-      static fn(array $entry): string => ($entry['kind'] ?? '') === 'insufficient_sample'
-        ? ''
-        : ((string)($entry['label'] ?? '') !== '' ? (string)$entry['label'] : (string)($entry['element'] ?? '')),
+      static fn(array $entry): string => (string)($entry['label'] ?? '') !== ''
+        ? (string)$entry['label']
+        : (string)($entry['element'] ?? ''),
       $planResult['unsatisfiable']
     )));
 
-    $message = $elements !== []
-      ? trim($sample . "\n\n" . CLICSHOPPING::getDef('text_analysis_plan_refused_details', ['elements' => implode(', ', $elements)]))
-      : ($sample !== '' ? $sample : CLICSHOPPING::getDef('text_analysis_plan_refused'));
+    $message = $elements === []
+      ? CLICSHOPPING::getDef('text_analysis_plan_refused')
+      : CLICSHOPPING::getDef('text_analysis_plan_refused_details', ['elements' => implode(', ', $elements)]);
 
     return [
       'type' => 'error',
@@ -855,6 +992,221 @@ class AnalyticsAgent implements AgentInterface
     }
 
     return $fresh;
+  }
+
+  /**
+   * Replace the cached SQL of the query in flight with the one that actually worked.
+   *
+   * generateSqlQueries() caches the FIRST DRAFT, before execution. When that draft turns out to
+   * be wrong and gets corrected, the correction used to be lost: the result cache kept the fixed
+   * SQL, the SQL cache kept the broken one, and the same question replayed the faulty draft while
+   * paying for the correction all over again (BACKLOG lot A). Both caches now share one freshness
+   * rule (see cachedSqlIsFresh), so they can no longer disagree on what is stale — but they can
+   * still disagree on CONTENT, which is what this method fixes.
+   *
+   * @param string $correctedSql The query that executed successfully
+   * @return void
+   */
+  private function promoteCorrectedSqlToCache(string $correctedSql): void
+  {
+    if ($this->sqlCacheKey === null || trim($correctedSql) === '') {
+      return;
+    }
+
+    (new OMCache($this->sqlCacheKey, 'Rag/SQL'))->save($correctedSql);
+    $this->debugLog("  SQL cache updated with the corrected query", "CACHE");
+  }
+
+  /**
+   * STEP 3: execute each generated SQL query (with validation, intelligent correction on
+   * failure, and result caching), interpret and assemble the analytics response. Extracted
+   * verbatim from processAnalyticsQuery. Throws on unrecoverable execution failure.
+   *
+   * @param array $sqlQueries Generated SQL queries (STEP 2)
+   * @param string $question Original question
+   * @param array $ambiguityAnalysis Ambiguity metadata echoed into the response
+   * @return array The assembled analytics_results response
+   */
+  private function executeSqlQueries(array $sqlQueries, string $question, array $ambiguityAnalysis): array
+  {
+    $results = [];
+    $this->correctionLog = [];
+
+    foreach ($sqlQueries as $idx => $sqlQuery) {
+      $this->debugLog("Processing SQL query " . ($idx + 1), "EXECUTION");
+      $this->debugLog("Original: " . substr($sqlQuery, 0, 150) . "...", "EXECUTION");
+
+      $resolvedQuery = $this->queryProcessor->resolvePlaceholders($sqlQuery);
+      $this->debugLog("After placeholder resolution: " . substr($resolvedQuery, 0, 150) . "...", "EXECUTION");
+
+      $likeValidation = $this->queryProcessor->validateLikePatterns($resolvedQuery);
+      if (!empty($likeValidation['warnings'])) {
+        $this->debugLog("LIKE pattern warnings: " . count($likeValidation['warnings']), "VALIDATION");
+
+        // Log warnings using security logger
+        foreach ($likeValidation['warnings'] as $warning) {
+          $this->securityLogger->logSecurityEvent(
+            "LIKE pattern validation warning: " . $warning,
+            'warning',
+            [
+              'sql_snippet' => substr($resolvedQuery, 0, 200),
+              'like_count' => $likeValidation['like_count'],
+              'patterns' => $likeValidation['patterns']
+            ]
+          );
+        }
+
+        // Log suggestions if available
+        if (!empty($likeValidation['suggestions'])) {
+          $this->debugLog("Suggestions: " . implode('; ', $likeValidation['suggestions']), "VALIDATION");
+        }
+      } else {
+        $this->debugLog("LIKE pattern validation: PASSED (" . $likeValidation['like_count'] . " patterns checked)", "VALIDATION");
+      }
+
+      $validation = InputValidator::validateSqlQuery($resolvedQuery);
+      $this->debugLog("SQL validation: " . ($validation['valid'] ? 'VALID' : 'INVALID'), "VALIDATION");
+
+      if (!$validation['valid']) {
+        $this->debugLog("  Validation issues: " . implode(', ', $validation['issues']));
+        continue;
+      }
+
+      $finalQuery = $validation['valid'] ? $resolvedQuery : $sqlQuery;
+      $finalQuery = $this->queryProcessor->fixDateFilters($finalQuery);
+      // Schema-level guard: never GROUP BY a GDPR-encrypted column (shatters aggregation).
+      $finalQuery = $this->queryProcessor->fixEncryptedGroupBy($finalQuery);
+
+      $this->debugLog("  Final query to execute: " . substr($finalQuery, 0, 150) . "...");
+
+      try {
+        $this->debugLog("  Executing query...");
+        $executionResult = $this->queryExecutor->execute($finalQuery);
+
+        if (!$executionResult['success']) {
+          throw new \Exception($executionResult['error'] ?? 'Query execution failed');
+        }
+
+        $queryResults = $executionResult['data'];
+
+        $this->debugLog("  Query executed successfully!");
+        $this->debugLog("  Rows returned: " . count($queryResults));
+
+        if (!empty($queryResults)) {
+          $this->debugLog("  First row keys: " . implode(', ', array_keys($queryResults[0])));
+          $this->debugLog("  First row preview: " . json_encode(array_slice($queryResults[0], 0, 3)));
+        }
+
+        // Extract entity_id using QueryExecutor
+        $entityInfo = $this->queryExecutor->extractEntityIdFromResults($queryResults);
+        $entityId = $entityInfo['entity_id'];
+        $entityType = $entityInfo['entity_type'];
+
+        if ($entityId !== null) {
+          $this->debugLog("  Entity extracted: ID={$entityId}, Type={$entityType}");
+        }
+
+        $results = [
+          'type' => 'analytics_results',
+          'query' => $question,
+          'sql_query' => $finalQuery,
+          'original_sql_query' => $sqlQuery,
+          'corrections' => $this->correctionLog,
+          'results' => $queryResults,
+          'count' => count($queryResults),
+          'entity_id' => $entityId,
+          'entity_type' => $entityType,
+          ...$this->ambiguityMetadata($ambiguityAnalysis),
+        ];
+
+        // 🆕 CACHE THE SUCCESSFUL RESULT
+        $this->debugLog("   Caching successful query result in QueryCache");
+        $this->queryCache->set(
+          $question,
+          $finalQuery,
+          $queryResults,
+          [
+            'entity_id' => $entityId,
+            'entity_type' => $entityType
+          ]
+        );
+
+      } catch (\Exception $e) {
+        $this->debugLog("  QUERY EXECUTION FAILED: " . $e->getMessage());
+        $this->debugLog("  Attempting intelligent correction...");
+
+        $correctionResult = $this->errorHandler->attemptIntelligentCorrection($e, $finalQuery, $sqlQuery, $question);
+
+        if ($correctionResult['success']) {
+          $this->debugLog("  Correction successful!");
+
+          // Use the corrected data as the main result (not append to array)
+          $correctedData = $correctionResult['data'];
+
+          // Extract entity info from corrected results
+          $entityInfo = $this->queryExecutor->extractEntityIdFromResults($correctedData['results']);
+
+          $results = [
+            'type' => 'analytics_results',
+            'query' => $question,
+            'sql_query' => $correctedData['executed_query'],
+            'original_sql_query' => $sqlQuery,
+            'corrections' => $correctedData['corrections'] ?? [],
+            'results' => $correctedData['results'],
+            'count' => count($correctedData['results']),
+            'entity_id' => $entityInfo['entity_id'],
+            'entity_type' => $entityInfo['entity_type'],
+            ...$this->ambiguityMetadata($ambiguityAnalysis),
+          ];
+
+          // 🆕 CACHE THE CORRECTED RESULT
+          if (!empty($correctedData['results'])) {
+            $this->debugLog("  Caching corrected query result");
+            $this->queryCache->set(
+              $question,
+              $correctedData['executed_query'],
+              $correctedData['results'],
+              [
+                'entity_id' => $entityInfo['entity_id'],
+                'entity_type' => $entityInfo['entity_type']
+              ]
+            );
+
+            $this->promoteCorrectedSqlToCache($correctedData['executed_query']);
+          }
+        } elseif (!empty($correctionResult['empty_after_correction'])) {
+          // Corrected query ran but returned 0 rows: render an honest empty result (like a
+          // legitimately-empty query), never a false "correction succeeded" on a broken query.
+          $this->debugLog("  Correction returned 0 rows — honest empty result (not a success).");
+
+          $results = [
+            'type' => 'analytics_results',
+            'query' => $question,
+            'sql_query' => $correctionResult['executed_query'] ?? $finalQuery,
+            'original_sql_query' => $sqlQuery,
+            'corrections' => $correctionResult['corrections'] ?? $this->correctionLog,
+            'results' => [],
+            'count' => 0,
+            'entity_id' => null,
+            'entity_type' => null,
+            ...$this->ambiguityMetadata($ambiguityAnalysis),
+          ];
+        } else {
+          $this->debugLog("  Correction failed");
+          throw new \Exception("Execution failed after intelligent correction attempt: " . $e->getMessage());
+        }
+      }
+    }
+
+    // Every candidate was skipped by validation: returning [] here made the caller report an empty
+    // result set, i.e. "no data" for a question no query ever asked.
+    if ($results === []) {
+      $this->debugLog("  No candidate SQL passed validation — nothing was executed", "EXECUTION");
+      throw new \Exception('No generated SQL query passed validation');
+    }
+
+    $this->debugLog("\n" . "." . str_repeat(".", 99) . "\n");
+    return $results;
   }
 
   /**
@@ -1014,11 +1366,16 @@ class AnalyticsAgent implements AgentInterface
         'entity_id' => $cacheResult['entity_id'] ?? null,
         'entity_type' => $cacheResult['entity_type'] ?? null,
         'interpretation' => $cacheResult['interpretation'] ?? null,  // 🆕 Return cached interpretation
-        // A replayed answer settled the same ambiguity as the first one: same producer, same keys.
-        ...$this->ambiguityMetadata($ambiguityAnalysis),
+        'ambiguous' => $ambiguityAnalysis['is_ambiguous'],  // Add ambiguity metadata
+        'ambiguity_type' => $ambiguityAnalysis['ambiguity_type'] ?? null,
         'cached' => true,
         'cache_age' => $cacheResult['cache_age'] ?? null
       ];
+
+      // A replayed answer settled the same ambiguity as the first one: it must say so too.
+      if (isset($ambiguityAnalysis['applied_interpretation'])) {
+        $response['applied_interpretation'] = $ambiguityAnalysis['applied_interpretation'];
+      }
 
       return $response;
     }
@@ -1056,17 +1413,6 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
-   * The ambiguity metadata carried by an execution result, for the rebuilt success response.
-   *
-   * @param array $results Execution result, already holding ambiguityMetadata()
-   * @return array<string, mixed> Only the ambiguity keys present in $results
-   */
-  private static function ambiguityKeysOf(array $results): array
-  {
-    return array_intersect_key($results, array_flip(['ambiguous', 'ambiguity_type', 'interpretations', 'applied_interpretation']));
-  }
-
-  /**
    * STEP 0.5 (compute): runs the ambiguity analysis for the query.
    *
    * The former high-confidence skip is gone: it treated "the classifier is sure this is
@@ -1082,7 +1428,7 @@ class AnalyticsAgent implements AgentInterface
   private function analyzeAmbiguity(string $question, string $queryForAmbiguity): array
   {
     // Detector analyses are cached, so the cost is one call per distinct query, not per request.
-    return DefaultAnalysisWindow::demoteTimeAmbiguity($this->ambiguityDetector->detectAmbiguity($queryForAmbiguity));
+    return $this->ambiguityDetector->detectAmbiguity($queryForAmbiguity);
   }
 
   /**
@@ -1144,29 +1490,6 @@ class AnalyticsAgent implements AgentInterface
     return EnglishQueryNormalizer::normalize($query);
   }
 
-
-  /**
-   * Build the chat dedicated to result interpretation
-   *
-   * Falls back to the shared chat if the provider cannot give a second instance: a degraded
-   * (verbose) prompt is preferable to losing the interpretation entirely.
-   *
-   * @return mixed Chat instance carrying the interpreter system message
-   */
-  private function getInterpreterChat(): mixed
-  {
-    try {
-      $chat = Gpt::getChatForModel(Gpt::defaultModel());
-      $chat->setSystemMessage($this->promptBuilder->getInterpreterSystemMessage());
-
-      return $chat;
-    } catch (\Exception $e) {
-      $this->debugLog('AnalyticsAgent: interpreter chat failed, falling back to shared chat: ' . $e->getMessage());
-
-      return $this->chat;
-    }
-  }
-
   /**
    * Update system message for query (Schema RAG)
    *
@@ -1196,9 +1519,8 @@ class AnalyticsAgent implements AgentInterface
       $this->debugLog("Updating system message with Schema RAG", "SCHEMA_RAG");
       $this->debugLog("Model: {$modelName}", "SCHEMA_RAG");
 
-      // Get query-specific system message. The plan (built at STEP 0.75) drives the
-      // schema join map: the window is traversed WITH the plan, never the raw question.
-      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName, $this->analysisPlan);
+      // Get query-specific system message
+      $systemMessage = $this->promptBuilder->getSystemMessage('analytics', $query, $modelName);
 
       // Update chat system message
       $this->chat->setSystemMessage($systemMessage);
@@ -1305,13 +1627,84 @@ class AnalyticsAgent implements AgentInterface
   }
 
   /**
-   * @return array<int, string> Plan metrics whose rows never add up across the breakdown (validator mark)
+   * Execute a sub-query from a compound query
+   *
+   * This method executes a single sub-query through the normal analytics flow
+   * but skips compound query detection to prevent infinite recursion.
+   *
+   * @param string $subQuery The sub-query to execute
+   * @param array $feedbackContext Feedback context for learning
+   * @return array Query results
    */
-  private function nonAdditiveMetrics(): array
+  private function executeSubQuery(string $subQuery, array $feedbackContext = []): array
   {
-    return array_values(array_map(
-      static fn(array $m): string => (string)$m['name'],
-      array_filter($this->analysisPlan['metrics'] ?? [], static fn($m): bool => is_array($m) && ($m['non_additive'] ?? false) === true)
-    ));
+    $this->debugLog("Executing sub-query: " . substr($subQuery, 0, 80), "COMPOUND_SUB");
+
+    try {
+      // Use executeQuery which will go through the normal flow
+      // The sub-query will be processed individually
+      $result = $this->executeQuery($subQuery, $feedbackContext);
+
+      // If successful, try to get interpretation
+      if (($result['type'] ?? 'error') !== 'error' && !empty($result['results'])) {
+        $interpretation = $this->resultInterpreter->interpretResults($subQuery, $result['results'], $result['sql_query'] ?? '');
+        $result['interpretation'] = $interpretation;
+      }
+
+      return $result;
+
+    } catch (\Exception $e) {
+      $this->debugLog("Sub-query execution failed: " . $e->getMessage(), "COMPOUND_SUB");
+
+      return [
+        'type' => 'error',
+        'error' => $e->getMessage(),
+        'query' => $subQuery
+      ];
+    }
+  }
+
+  /**
+   * Validate and fix SQL date logic, re-executing the corrected query when needed
+   * (extracted verbatim from processBusinessQuery to cut NPath).
+   */
+  private function validateAndReexecuteSqlDates(array $results, string $question): array
+  {
+    if (isset($results['sql_query']) && !empty($results['sql_query'])) {
+      $dateValidator = new \ClicShopping\AI\DomainsAI\Analytics\Validator\SqlDateValidator($this->debug);
+      $dateValidation = $dateValidator->validateAndFix($results['sql_query'], $question);
+
+      if ($dateValidation['corrected']) {
+        $this->debugLog(" SQL date logic corrected in processBusinessQuery: " . $dateValidation['reason']);
+
+        // Update the SQL in results
+        $results['original_sql_query'] = $results['sql_query'];
+        $results['sql_query'] = $dateValidation['sql'];
+
+        // Re-execute the corrected SQL
+        $this->debugLog(" Re-executing corrected SQL...");
+        try {
+          $executionResult = $this->queryExecutor->execute($dateValidation['sql']);
+
+          if ($executionResult['success']) {
+            $results['results'] = $executionResult['data'];
+            $results['count'] = count($executionResult['data']);
+            $this->debugLog("✅ Corrected SQL executed successfully, returned " . $results['count'] . " rows");
+
+            // Clear cached interpretation so it gets regenerated with new results
+            if (isset($results['interpretation'])) {
+              unset($results['interpretation']);
+              $this->debugLog("Cleared cached interpretation to force regeneration with corrected results");
+            }
+          } else {
+            $this->debugLog("⚠️  Corrected SQL execution failed: " . ($executionResult['error'] ?? 'unknown'));
+          }
+        } catch (\Exception $e) {
+          $this->debugLog("⚠️  Error re-executing corrected SQL: " . $e->getMessage());
+        }
+      }
+    }
+
+    return $results;
   }
 }

@@ -204,7 +204,7 @@ class MariaDBVectorStore extends VectorStoreBase
     $embedding = $this->embeddingGenerator->embedText($document->content);
     $this->validateEmbeddingFormat($embedding);
 
-    $metadata = $document->metadata;
+    $metadata = isset($document->metadata) ? $document->metadata : [];
 
     $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata, $embedding);
 
@@ -216,7 +216,7 @@ class MariaDBVectorStore extends VectorStoreBase
       'hash' => $document->hash ?? '',
     ];
 
-    if (!empty($metadata)) {
+    if (!empty($metadata) && is_array($metadata)) {
       $documentMetadata = array_merge($documentMetadata, $metadata);
     }
 
@@ -410,6 +410,13 @@ class MariaDBVectorStore extends VectorStoreBase
   {
     try {
       $embedding = is_array($query) ? $query : $this->embeddingGenerator->embedText($query);
+
+      if (!is_array($embedding)) {
+        $embeddingType = gettype($embedding);
+        $embeddingValue = is_string($embedding) ? substr($embedding, 0, 100) : var_export($embedding, true);
+        $generatorClass = get_class($this->embeddingGenerator);
+        throw new \RuntimeException("Embedding generator ({$generatorClass}) returned non-array value. Type: {$embeddingType}, Value: {$embeddingValue}");
+      }
 
       $embedding = array_map('floatval', $embedding);
       $embeddingText = '[' . implode(',', $embedding) . ']';
@@ -662,7 +669,8 @@ class MariaDBVectorStore extends VectorStoreBase
       $embedding = $this->embeddingGenerator->embedText($document->content);
       $this->validateEmbeddingFormat($embedding);
 
-      $metadata = $document->metadata;
+      // Get metadata safely
+      $metadata = isset($document->metadata) ? $document->metadata : [];
 
       // Prepare embedding and metadata
       $preparedData = $this->prepareEmbeddingAndMetadata($document->content, $metadata, $embedding);
@@ -676,7 +684,7 @@ class MariaDBVectorStore extends VectorStoreBase
         'hash' => $document->hash ?? '',
       ];
       
-      if (!empty($metadata)) {
+      if (!empty($metadata) && is_array($metadata)) {
         $documentMetadata = array_merge($documentMetadata, $metadata);
       }
       

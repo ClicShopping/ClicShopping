@@ -9,6 +9,7 @@
 namespace ClicShopping\AI\Rag;
 
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\ChatGpt\ChatGpt;
@@ -16,11 +17,16 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\AI\Infrastructure\Storage\MariaDBVectorStore;
+use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
+use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsQueryHeuristics;
 use ClicShopping\AI\Config\DomainConfig;
+
+use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
+
 use ClicShopping\AI\Rag\Reranking\DocumentReranker;
+
 use LLPhant\Embeddings\Document;
 use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * MultiDBRAGManager Class
@@ -50,6 +56,7 @@ class MultiDBRAGManager
   private mixed $securityLogger;
   private bool $debug = false;
 
+  private int $userId;
 
   private ?DocumentReranker $reranker = null;
   private bool $useReranking = false;
@@ -75,6 +82,7 @@ class MultiDBRAGManager
     
     // $this->db = Registry::get('Db');
     $this->language = Registry::get('Language');
+    $this->userId = AdministratorAdmin::getUserAdminId() ?? 0; // Default to 0 if no admin logged in
 
     // Load language definitions for ChatGpt app
     // Language definitions are now loaded from main.txt via CLICSHOPPING::getDef()
@@ -134,7 +142,7 @@ class MultiDBRAGManager
         $chat = Gpt::getChatForModel();
 
         // Number of documents to return after reranking
-        $nrOfOutputDocuments = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT');
+        $nrOfOutputDocuments = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
 
         $this->reranker = new DocumentReranker($chat, $nrOfOutputDocuments, $this->debug);
 
@@ -839,7 +847,7 @@ class MultiDBRAGManager
 
         // Get the configured number of output documents for reranking
         // We send 2-3x more documents than we want back to give the LLM options
-        $rerankingOutputCount = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT');
+        $rerankingOutputCount = CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT;
 
         // Send 2x the output count to the reranker (but not more than available)
         $initialLimit = min(count($allResults), $rerankingOutputCount * 2);
@@ -933,6 +941,79 @@ class MultiDBRAGManager
     }
 
     return $documents;
+  }
+
+
+
+  /**
+   * Executes an analytical query on e-commerce data
+   *
+   * This method is specifically designed for analytical queries
+   * that require calculations, aggregations, or precise searches
+   * on numerical or structured data.
+   *
+   * @param string $query User\'s question or query
+   * @param string|null $entityType Type of entity to analyze (products, orders, etc.)
+   * @return array Analysis results with structured data
+   */
+  public function executeAnalyticsQuery(string $query, string|null $entityType = null): array
+  {
+    try {
+      $analyticsAgent = new AnalyticsAgent();
+
+      //Check the request
+      if (!$analyticsAgent->isAnalyticsQuery($query)) {
+        return [
+          'type' => 'not_analytics',
+          'message' => CLICSHOPPING::getDef('text_not_analytics')
+        ];
+      }
+
+      $results = $analyticsAgent->processBusinessQuery($query);
+
+      if ($results['type'] === 'error') {
+        return [
+          'type' => 'error',
+          'message' => $results['message']
+        ];
+      }
+
+      $matchedCategories = AnalyticsQueryHeuristics::getAnalyticsCategories($query);
+
+      $response = [
+        'type' => 'analytics_results',
+        'query' => $query,
+        'matched_categories' => $matchedCategories,
+        'interpretation' => Hash::displayDecryptedDataText($results['interpretation'] ?? ''),
+        'count' => $results['count'] ?? 0,
+        'results' => $results['results'] ?? []
+      ];
+
+      // If we have multiple SQL query blocks
+      if (isset($results[‘multi_query_results’])) {
+        $response[‘multi_query_results’] = $results[‘multi_query_results’];
+      } // Otherwise return the single SQL query
+      else {
+        // sql_query key created by processBusinessQuery
+        $response[‘sql_query’] = $results[‘sql_query’] ?? ‘’;
+        // if you keep the original
+        if (isset($results[‘original_sql_query’])) {
+          $response[‘original_sql_query’] = $results[‘original_sql_query’];
+        }
+        // possible corrections
+        if (isset($results[‘corrections’])) {
+          $response[‘corrections’] = $results[‘corrections’];
+        }
+      }
+
+      return $response;
+
+    } catch (\Exception $e) {
+      return [
+        'type' => 'error',
+        'message' => 'Error executing analytics query: ' . $e->getMessage()
+      ];
+    }
   }
 
   /**
@@ -1054,7 +1135,7 @@ class MultiDBRAGManager
       }
 
       try {
-        $answer = Gpt::getGptResponse($synthesisPrompt, Gpt::maxToken());
+        $answer = Gpt::getGptResponse($synthesisPrompt, 300);
 
         if ($this->debug) {
           error_log("Generated answer length: " . strlen($answer) . " chars");

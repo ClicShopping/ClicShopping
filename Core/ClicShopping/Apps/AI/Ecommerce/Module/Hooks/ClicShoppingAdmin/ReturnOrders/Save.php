@@ -144,9 +144,7 @@ class Save implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
-      return false;
-    }
+    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
 
     if (!Gpt::checkGptStatus()) {
       return false;

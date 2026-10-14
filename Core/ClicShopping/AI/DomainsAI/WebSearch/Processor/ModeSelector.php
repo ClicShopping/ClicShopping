@@ -9,6 +9,11 @@
  *
  * Licensed under AGPLv3 or commercial license.
  * See LICENSE file.
+ *
+ * @package ClicShopping\AI\DomainsAI\WebSearch\Processor
+ * @since 2026-05-05
+ *
+ * Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.1.1, 9.1.2, 9.1.3, 9.1.4, 9.1.5
  */
 
 namespace ClicShopping\AI\DomainsAI\WebSearch\Processor;
@@ -51,11 +56,6 @@ class ModeSelector
    * @var string Database table prefix
    */
   private string $prefixDb;
-
-  /**
-   * @var string|null Store country ISO-2, resolved once per request
-   */
-  private static ?string $storeCountryIso = null;
 
   /**
    * @var string|null Current query being processed (for analytics)
@@ -216,6 +216,107 @@ class ModeSelector
     ]);
 
     return ['mode_a_ai_overview'];
+  }
+
+  /**
+   * Ask user for mode preference (user-centric approach)
+   *
+   * Displays 3 options to user:
+   * 1. WebSearch (Mode C - RAG WebSearch)
+   * 2. Google Shopping (Mode B - recommended)
+   * 3. Both (Mode C + Mode B - comprehensive)
+   *
+   * Implements Requirement 4: User-centric mode selection
+   *
+   * @deprecated CLI mode removed - automatic mode selection used instead
+   * @return string User choice ('1', '2', '3', or empty string if timeout)
+   */
+  private function askUserForModePreference(): string
+  {
+    // Present options to user
+    echo "\n🔍 How would you like to analyze prices?\n\n";
+    
+    echo "1️⃣  Analyse via WebSearch\n";
+    echo "   → Search specific registered competitor sites\n";
+    echo "   → More targeted results\n\n";
+    
+    echo "2️⃣  Analyse via Google Shopping (recommended)\n";
+    echo "   → Broad competitor search across all merchants\n";
+    echo "   → More comprehensive coverage\n\n";
+    
+    echo "3️⃣  Analyse with WebSearch and Google Shopping\n";
+    echo "   → Both targeted and broad search\n";
+    echo "   → Most complete analysis\n\n";
+    
+    echo "Choose (1, 2, or 3): ";
+    
+    // Get user input with timeout
+    $choice = $this->getUserInputWithTimeout(30);
+    
+    if ($this->debug) {
+      error_log("ModeSelector::askUserForModePreference() - User choice: " . ($choice ?: 'timeout'));
+    }
+    
+    return $choice;
+  }
+
+  /**
+   * Get user input with timeout
+   *
+   * Uses stream_select() for timeout handling.
+   * Returns user input or empty string if timeout.
+   *
+   * Implements Requirement 4: Timeout handling (30 seconds)
+   *
+   * @deprecated CLI mode removed - automatic mode selection used instead
+   * @param int $timeout Timeout in seconds
+   * @return string User input (trimmed) or empty string if timeout
+   */
+  private function getUserInputWithTimeout(int $timeout): string
+  {
+    // Check if running in CLI mode
+    if (php_sapi_name() !== 'cli') {
+      // Not in CLI mode - return default choice
+      $this->log("Not in CLI mode, using default choice", [
+        'sapi_name' => php_sapi_name()
+      ]);
+      return '2'; // Default to Google Shopping
+    }
+
+    // Check if STDIN is available
+    if (!defined('STDIN') || !is_resource(STDIN)) {
+      $this->log("STDIN not available, using default choice");
+      return '2'; // Default to Google Shopping
+    }
+
+    $read = [STDIN];
+    $write = null;
+    $except = null;
+    
+    // Wait for input with timeout
+    $result = stream_select($read, $write, $except, $timeout);
+    
+    if ($result === false) {
+      // Error occurred
+      $this->log("stream_select() error, using default choice");
+      return '';
+    }
+    
+    if ($result === 0) {
+      // Timeout occurred
+      $this->log("User input timeout ({$timeout}s), using default choice");
+      return '';
+    }
+    
+    // Input available - read it
+    $input = fgets(STDIN);
+    
+    if ($input === false) {
+      $this->log("Failed to read from STDIN, using default choice");
+      return '';
+    }
+    
+    return trim($input);
   }
 
   /**
@@ -820,45 +921,6 @@ class ModeSelector
   }
 
   /**
-   * The country the shop itself sells from, as an ISO-2 code
-   *
-   * Google Trends has no finer mesh than a region, so a departement-level question is served at
-   * country level; the answer announces its scope. The interface language is NOT a country —
-   * reading it as one produced "EN" as a country code.
-   *
-   * STORE_COUNTRY is a countries_id of the Countries app, where a row can be edited, disabled or
-   * deleted. `status` gates whether a country is OFFERED, never what the shop's own country is,
-   * so it is deliberately not filtered here; a missing row falls back.
-   *
-   * @return string ISO-2 code, the interface language code when the store country cannot be read
-   */
-  private function storeCountryIso(): string
-  {
-    if (self::$storeCountryIso !== null) {
-      return self::$storeCountryIso;
-    }
-
-    // A language code is NOT a country: it is refused downstream and falls to FALLBACK_REGION.
-    // No country is named here — removing a language must not move the shop to another market.
-    $fallback = mb_strtoupper($this->language->getCode() ?? 'en');
-
-    if (!\defined('STORE_COUNTRY')) {
-      return self::$storeCountryIso = $fallback;
-    }
-
-    try {
-      $sql = "SELECT countries_iso_code_2 FROM {$this->prefixDb}countries WHERE countries_id = :id";
-      $row = DoctrineOrm::selectOne($sql, ['id' => (int)STORE_COUNTRY]);
-    } catch (\Throwable $e) {
-      return self::$storeCountryIso = $fallback;
-    }
-
-    $iso = mb_strtoupper(trim((string)($row['countries_iso_code_2'] ?? '')));
-
-    return self::$storeCountryIso = $iso !== '' ? $iso : $fallback;
-  }
-
-  /**
    * Map location to currency and region parameters
    *
    * Implements requirement 9.1.2: Location-to-currency mapping.
@@ -872,9 +934,8 @@ class ModeSelector
    */
   public function mapLocationToParams(?string $location): array
   {
-    $defaultRegion = $this->storeCountryIso();
-    $interfaceLanguage = (string) ($this->language->getCode() ?? 'en');
-    $defaultParams = LocationPatterns::getLocationParams($defaultRegion, '', $interfaceLanguage);
+    $defaultRegion = mb_strtoupper($this->language->getCode() ?? 'FR');
+    $defaultParams = LocationPatterns::getLocationParams($defaultRegion);
 
     if ($location === null || trim($location) === '') {
       if ($this->debug) {
@@ -886,7 +947,7 @@ class ModeSelector
     // PureLLM: location est déjà un code ISO retourné par IntentRouter (ex: "FR", "US")
     // getLocationParams gère le fallback si le code est inconnu
     $countryCode = mb_strtoupper(trim($location));
-    $params = LocationPatterns::getLocationParams($countryCode, $defaultRegion, $interfaceLanguage);
+    $params = LocationPatterns::getLocationParams($countryCode, $defaultRegion);
 
     if ($this->debug) {
       error_log("ModeSelector::mapLocationToParams() - Country: {$countryCode}, Params: " . json_encode($params));
@@ -918,6 +979,19 @@ class ModeSelector
     return LocationPatterns::getStopwords($language);
   }
 
+  /**
+   * Get location currency map
+   *
+   * Returns the complete location-to-currency mapping.
+   * Useful for debugging and testing.
+   * Delegates to LocationPatterns.
+   *
+   * @return array Location currency map
+   */
+  public function getLocationCurrencyMap(): array
+  {
+    return LocationPatterns::$locationCurrencyMap;
+  }
 
   /**
    * Process user choice for mode selection

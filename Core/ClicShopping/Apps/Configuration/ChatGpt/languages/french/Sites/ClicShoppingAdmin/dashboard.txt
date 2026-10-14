@@ -15,7 +15,7 @@ text_ĥeading_remove_cache = Réinitialiser Cache
 # Métriques principales
 metric_total_requests = Requêtes Totales
 metric_since_startup = depuis le démarrage
-metric_error_rate = Taux d'erreur (requêtes utilisateur)
+metric_error_rate = Taux d'Erreur
 metric_errors_count = erreurs
 metric_response_time = Temps de Réponse
 metric_average = moyenne
@@ -73,14 +73,14 @@ security_low_scores = Scores faibles
 # Agents
 agents_total_usage = Utilisations Totales
 agents_avg_success_rate = Taux de Succès Moyen
-agents_all = Tous composants confondus
-agents_most_used = Composant le Plus Utilisé
-agents_main = Composant principal
-agents_performance = Performance par Composant
+agents_all = Tous agents confondus
+agents_most_used = Agent le Plus Utilisé
+agents_main = Agent principal
+agents_performance = Performance par Agent
 agents_usage = Utilisations
 agents_success_rate = Taux de Succès
 agents_avg_confidence = Confiance Moyenne
-agents_usage_distribution = Répartition de l'Usage des Composants
+agents_usage_distribution = Répartition de l'Usage des Agents
 
 # Modes de Raisonnement
 reasoning_modes_title = Statistiques des Modes de Raisonnement
@@ -101,8 +101,8 @@ chart_performance_evolution = Évolution des Performances
 chart_severity_distribution = Distribution des Sévérités
 chart_request_types = Distribution des Types de Requêtes
 chart_security_scores = Scores de Sécurité
-chart_agents_performance = Performance par Composant
-chart_agents_usage = Répartition de l'Usage des Composants
+chart_agents_performance = Performance par Agent
+chart_agents_usage = Répartition de l'Usage des Agents
 chart_reasoning_modes = Utilisation des Modes de Raisonnement
 chart_no_data = Pas de données disponibles
 
@@ -301,15 +301,15 @@ latency_auto_collect = Les métriques de latence seront collectées automatiquem
 # Évolution des Performances
 perf_evolution = 📈 Évolution des Performances
 perf_severity_distribution = Distribution des Sévérités
-perf_agent_distribution = Répartition de l'Usage des Composants
-perf_agent_performance = 📊 Performance par Composant
-perf_agent_name = Composant
+perf_agent_distribution = Répartition de l'Usage des Agents
+perf_agent_performance = 📊 Performance par Agent
+perf_agent_name = Agent
 perf_agent_usage = Utilisations
 perf_agent_percentage = %
 perf_agent_success_rate = Taux de Succès
 perf_agent_avg_confidence = Confiance Moyenne
 perf_no_agent_data = Aucune donnée d'agents disponible
-perf_agent_data_info = Les statistiques des composants apparaîtront ici une fois que des requêtes auront été traitées.
+perf_agent_data_info = Les statistiques des agents apparaîtront ici une fois que des requêtes auront été traitées.
 
 # Onglets
 tab_general = Général
@@ -336,7 +336,6 @@ alert_acknowledged_at = Acquitté le
 alert_acknowledge = Acquitter
 alert_acknowledge_tooltip = Marquer cette alerte comme acquittée
 alert_acknowledged_success = Alerte acquittée avec succès
-alert_action_failed = L'action sur l'alerte a échoué
 alert_resolve = Résoudre
 alert_resolve_tooltip = Résoudre et supprimer cette alerte
 alert_resolved_success = Alerte résolue avec succès
@@ -354,7 +353,6 @@ trend_increasing = ↗ Croissante
 trend_decreasing = ↘ Décroissante
 trend_stable = → Stable
 trend_insufficient_data = Données insuffisantes pour les tendances. Collecte en cours...
-trend_window_explanation = Évolution sur les {days} derniers jours comparés aux {days} jours précédents. L'onglet Général compte toutes les requêtes depuis le démarrage : ses chiffres sont cumulés et ne correspondent donc pas à ceux-ci.
 
 # Recommandations
 recommendation_title = Recommandations
@@ -431,6 +429,7 @@ latency_rec_speedup = Le fast-lane est {factor}x plus rapide! Continuez à l'opt
 latency_rec_normal = Les performances sont dans la normale. Continuez à surveiller.
 
 # Analyse IA
+ai_analysis_title = 🤖 Analyse IA
 
 # Modal Réinitialiser Stats
 modal_reset_stats_title = ⚠️ Réinitialiser toutes les statistiques
@@ -538,6 +537,9 @@ tab7_recommendations = Recommandations
 
 # Onglet 11 - Analyse Feedback
 tab11_title = ⭐ Analyse des Feedbacks
+tab11_analyze_negative = 🔍 Analyser Négatifs
+tab11_analyze_positive = ✨ Analyser Positifs
+tab11_analyze_complete = 📊 Analyse Complète
 tab11_no_feedback = Aucun feedback enregistré
 tab11_feedback_will_appear = Les feedbacks apparaîtront ici une fois que les utilisateurs auront soumis leurs retours.
 tab11_recent_feedbacks = 📝 Feedbacks Récents
@@ -680,6 +682,7 @@ cache_reset_resetting = Resetting...
 # Éléments UI additionnels
 tab6_global_metrics = Métriques Globales
 tab11_metrics_summary = Résumé des métriques
+tab11_analysis_in_progress = Analyse en cours...
 
 
 # Répartition des Sources
@@ -871,79 +874,3 @@ tab_cache = Cache
 # Data Scientist : point d'entrée vers le dashboard Pondération adaptative (orphelin auparavant)
 button_adaptive_weighting = ⚖️ Pondération adaptative
 text_adaptive_weighting_help = Réglage & métriques des poids adaptatifs Actor-Critic
-security_report_button = Rapport
-security_clear_button = Purger le bruit
-security_report_title = Rapport du journal de sécurité
-security_report_generated = Généré le {{date}} — fenêtre : {{days}} derniers jours
-security_report_population = Population : {{total}} événements, dont {{noise}} traces de cycle de vie et {{security}} événements de sécurité, {{real_threats}} menace(s) réelle(s), {{blocked}} bloquée(s)
-security_report_noise_title = Le journal n'est majoritairement pas fait d'événements de sécurité
-security_report_noise_body = {{noise}} événements sur {{total}} ({{percent}} %) sont des traces de cycle de vie de composant ({{types}}), pas des décisions de sécurité. Ils forment le dénominateur de tous les taux de cet écran : la détection et le blocage sont donc dilués par des événements qui ne pouvaient pas être une menace.
-security_report_none_threat_type_title = Le compteur « menaces détectées » compte des non-menaces
-security_report_none_threat_type_body = {{counted}} événement(s) sont comptés comme menaces détectées, mais {{real}} seulement portent un type de menace autre que « none ». Le taux de détection de {{rate}} % mesure donc des événements qui enregistrent explicitement l'absence de menace.
-security_report_score_population_title = Le score de menace moyen décrit une autre population
-security_report_score_population_body = {{with_score}} événements sur {{total}} portent un score de menace ; la moyenne ignore les autres silencieusement et s'affiche à côté du compte complet.
-security_report_limits = Ce que ce rapport ne peut pas dire : il ne couvre que les {{days}} derniers jours et les {{security}} événement(s) de sécurité réellement écrits au journal. Une attaque qu'aucune couche n'a enregistrée n'y laisse aucune trace : ce rapport prouve ce qui a été journalisé, jamais ce qui s'est produit.
-security_clear_confirm = Supprimer les traces de cycle de vie de composant du journal de sécurité ? Les événements portant une menace, une décision ou un blocage sont conservés.
-security_clear_done = {{deleted}} trace(s) de cycle de vie supprimée(s). La suppression est enregistrée sur le canal de sécurité.
-security_clear_failed = Le journal de sécurité n'a pas pu être nettoyé.
-security_report_failed = Le rapport de sécurité n'a pas pu être généré.
-security_report_detections_label = Ce qui a réellement été détecté — tout le journal, pas seulement la fenêtre
-security_report_no_detection = Aucune détection sur cette fenêtre : rien n'a été signalé, il n'y a donc rien à instruire.
-security_report_detections_title = {{count}} détection(s), {{blocked}} bloquée(s) — instruire chaque raison
-security_report_detections_body = Le journal a enregistré {{count}} détection(s) sur {{reasons}} raison(s) distincte(s), dont {{blocked}} bloquée(s). Une détection jamais bloquée est l'une de deux choses, et seul un humain les distingue : un faux positif dont la règle doit être réglée, ou une menace réelle qui est passée.
-security_report_detections_action = Pour chaque raison ci-dessous : rejouer une de ses requêtes. Si la règle se déclenche encore sur une question légitime, régler la règle — ne pas faire taire l'événement. Si elle ne se déclenche plus, la règle a déjà été corrigée et les lignes sont de l'historique : rien à faire au-delà d'en noter la date.
-security_report_noise_action = Retirer l'écriture à sa source, puis utiliser « Purger le bruit » une fois. Purger sans retirer l'écrivain, c'est repurger la semaine suivante — une trace de cycle de vie appartient au journal applicatif, jamais au journal de sécurité.
-security_report_none_threat_type_action = Cesser de compter « none » comme une détection : le taux de détection doit compter les types de menace autres que « none », sinon enregistrer l'absence de menace fait monter le chiffre censé révéler les menaces.
-security_report_score_population_action = Afficher la moyenne à côté de la population sur laquelle elle est calculée, ou la laisser vide : une moyenne sur 8 lignes affichée à côté d'un total de plusieurs milliers se lit comme décrivant le total.
-security_report_limits_label = Ce que ce rapport ne peut pas prouver
-security_report_exposure_title = Exposition : {{status}} — {{level}}/100 sur une échelle sûr → danger
-security_report_exposure_body = {{real_threats}} menace(s) réelle(s), {{critical}} critique(s), {{blocked}} bloquée(s) sur la fenêtre. L'échelle va dans UN SEUL sens : 0 signifie que rien n'a été détecté, 100 que le journal est plein de critiques bloquées. Elle remplace le score de santé, qui donnait des points pour être attaqué et se lisait donc à l'envers.
-security_report_exposure_action = Lire ce chiffre avec la ligne de couverture, jamais seul : un détecteur à l'arrêt rend le même 0 qu'une plateforme calme. Une exposition qui monte appelle l'instruction des détections ci-dessous ; une exposition à 0 avec un journal vivant est l'état recherché.
-security_report_silent_journal_title = Le journal n'a rien enregistré sur {{days}} jours — le zéro ne prouve rien
-security_report_silent_journal_body = Aucun événement de sécurité n'a été écrit sur la fenêtre. Une exposition de 0 devient alors illisible : un détecteur qui ne tourne plus et une plateforme que personne n'attaque produisent exactement le même chiffre.
-security_report_silent_journal_action = Envoyer une question dans le chat et vérifier qu'une ligne `query_allowed` apparaît. Si rien n'apparaît, les couches de sécurité ne journalisent plus et tous les chiffres de cet écran ne décrivent rien.
-security_report_false_positives_title = {{detections}} détection(s) par motifs sur {{queries}} requête(s) que la couche LLM a blanchies
-security_report_false_positives_body = La couche par motifs a signalé ces requêtes alors que la couche sémantique a répondu « none » sur la même empreinte de requête. Les deux verdicts sont déjà dans le journal : le désaccord s'établit donc sans un seul appel LLM supplémentaire, et il rend la même réponse à chaque lecture.
-security_report_false_positives_action = Un désaccord n'est pas une menace, c'est une règle à régler : la couche par motifs se déclenche là où la couche qui lit le sens ne voit rien. Corriger le motif, jamais faire taire l'événement. Là où le verdict LLM est ABSENT plutôt que « none », c'est le seul cas qui mérite un jugement LLM différé.
-security_report_coverage_label = Couverture
-security_exposure = Exposition sécurité
-security_exposure_safe = Sûr — aucune détection
-security_exposure_low = Faible — quelques détections
-security_exposure_watch = Vigilance — détections à instruire
-security_exposure_danger = Danger — menaces détectées et bloquées
-security_exposure_unknown = Inconnu — le journal n'a pas pu être lu
-security_coverage_line = Couverture : {{events}} événement(s) de sécurité sur {{days}} jours, couches : {{layers}}. Une exposition à 0 ne veut dire quelque chose que si cette ligne n'est pas vide.
-feedback_report_button = Constats
-feedback_report_title = Rapport du journal des retours
-feedback_report_generated = Généré le {{date}} — fenêtre : {{days}} derniers jours. Les deux tableaux de bord lisent ce même run.
-feedback_report_scope = Portée : agent {{agent}}, intention {{intent}}
-feedback_report_no_finding = Aucun constat sur cette fenêtre : chaque retour atteint son interaction, porte sa trace et s'accorde avec la porte de validation.
-feedback_report_limits = Ce que ce rapport ne peut pas dire : il ne couvre que les {{days}} derniers jours et les retours réellement déposés. Un utilisateur mécontent qui n'a rien dit n'y laisse aucune trace : ce rapport décrit ce qui a été signalé, jamais ce qui a été vécu.
-feedback_report_failed = Le rapport des retours n'a pas pu être généré.
-feedback_report_recompute = Relancer l'analyse
-feedback_report_run_fresh = Analyse produite à l'instant
-feedback_report_run_stored = Run enregistré, réutilisé jusqu'à 24 heures
-feedback_report_samples = Lignes à ouvrir
-feedback_report_unstable_notice = <strong>Analyse partielle : la fenêtre n'a pas le volume requis.</strong> Elle porte {{total}} retour(s) sur {{days}} jours, il en faut {{threshold}} pour qu'une PART veuille dire quelque chose — à ce volume, « 100 % » décrit une seule ligne et un retour de plus le ferait tomber à 50 %. Les constats qui notent sur une part sont donc écartés : les afficher n'apporterait que du bruit. Ce qui reste ci-dessous COMPTE DES LIGNES et ne dépend pas du volume : une réponse sans SQL en est une, même seule. Cet encadré disparaît, et l'analyse complète s'affiche, dès que la fenêtre atteint {{threshold}} retours.
-feedback_report_unjoinable_feedback_title = {{unjoinable}} retour(s) n'atteignent aucune interaction
-feedback_report_unjoinable_feedback_body = {{unjoinable}} retours sur {{total}} portent un jeton qui ne correspond à aucune ligne du journal d'interactions. Rien ne dit ce qui a été demandé, ce qui a été répondu ni quel agent a tourné : ces retours ne sont pas exploitables du tout.
-feedback_report_unjoinable_feedback_action = À faire : ouvrir les jetons listés ci-dessous et chercher leur trace — <code>SELECT * FROM rag_interactions WHERE client_interaction_id = '&lt;jeton&gt;'</code>. S'il ne rend rien, le jeton écrit avant la persistance n'est pas celui rendu au navigateur : c'est là qu'est le défaut, dans le code qui dépose le retour. Les {{unjoinable}} retours déjà orphelins sont perdus, ils ne servent qu'à dater la panne.
-feedback_report_blind_trace_title = {{without_sql}} retour(s) sur une réponse que le système ne sait pas montrer
-feedback_report_blind_trace_body = Sur {{sql_bearing}} réponses signalées construites à partir de SQL, {{without_sql}} ne portent aucun SQL et {{without_verdict}} aucun verdict de porte. On demande à un humain de corriger une requête que rien n'a enregistrée.
-feedback_report_blind_trace_action = À regarder : les lignes ci-dessous, colonnes <code>sql_query</code> et <code>validation_action</code> de <code>rag_interactions</code>. Rien à réparer sur l'existant — ces colonnes se remplissent à partir de maintenant. À faire : reposer une question analytique, puis vérifier que la nouvelle ligne les porte. Si {{without_sql}} ne baisse pas alors que de nouveaux retours arrivent, l'écriture de la trace est cassée, pas l'historique.
-feedback_report_negative_concentration_title = {{negatives}} plainte(s) sur {{reported}} visent le même chemin : agent {{agent}}, intention {{intent}}
-feedback_report_negative_concentration_body = Sur {{reported}} retour(s) négatif(s) de la fenêtre, {{negatives}} ({{share}} %) portent sur l'agent {{agent}} traitant une intention {{intent}}. Une concentration aussi forte désigne un défaut sur UN chemin, pas un mécontentement général — à condition que la population soit suffisante pour que la part veuille dire quelque chose.
-feedback_report_negative_concentration_action = Lire le SQL des interactions de ce chemin avant de toucher à autre chose : <code>SELECT question, sql_query, validation_action FROM rag_interactions WHERE agent_used = '{{agent}}' AND intent_type = '{{intent}}'</code>, croisé aux retours négatifs de la fenêtre. Le reste de la plateforme n'est pas ce qui est signalé.
-feedback_report_silent_comment_title = {{silent}} retour(s) négatif(s) sans un mot
-feedback_report_silent_comment_body = {{silent}} retours négatifs sur {{negatives}} ne portent aucun texte. Ils disent que quelque chose n'allait pas, et rien d'autre : ils pèsent sur tous les taux sans être exploitables.
-feedback_report_silent_comment_action = À faire : rien sur ces {{silent}} lignes — un retour muet ne se diagnostique pas. Juger les taux sur les seuls retours qui portent un texte, et si la part de muets reste haute, ajouter au formulaire de retour une raison en un clic : c'est le formulaire qu'on corrige, pas la réponse.
-feedback_report_verdict_disagreement_title = {{disagreements}} réponse(s) validées par la porte et rejetées par le lecteur
-feedback_report_verdict_disagreement_body = Sur {{with_verdict}} réponses signalées portant un verdict, {{disagreements}} ont été marquées « pass » par la porte de validation et signalées comme fausses par l'utilisateur. Le critique machine et son lecteur ne sont pas d'accord sur celles-là.
-feedback_report_verdict_disagreement_action = La paire à lire en PREMIER : la porte a marqué ces réponses « pass », le lecteur les a rejetées. À faire : pour chaque ligne ci-dessous, comparer <code>question</code> et <code>sql_query</code> — si le SQL répond à une autre question que celle posée, le défaut est en amont de la porte ; s'il y répond et que la réponse déplaît, c'est le seuil de la porte qu'il faut revoir, pas la génération.
-feedback_report_thin_population_title = {{total}} retour(s) sur {{days}} jours — trop peu pour un taux
-feedback_report_thin_population_body = La fenêtre porte {{total}} retours, en dessous du seuil de {{threshold}} sous lequel un pourcentage décrit deux ou trois lignes. Chaque part ci-dessus est exacte, aucune n'est représentative.
-feedback_report_thin_population_action = À faire avant tout le reste : lire les constats ci-dessous UN RETOUR À LA FOIS, jamais comme des taux — sur {{total}} retours, un pourcentage décrit deux ou trois lignes. Cet avertissement disparaît de lui-même au-delà de {{threshold}} retours sur la fenêtre.
-
-feedback_report_withheld = {{withheld}} constat(s) écarté(s) à ce volume. Ils reviendront d'eux-mêmes à partir de {{threshold}} retours sur la fenêtre — rien n'est perdu, le journal les a enregistrés.
-
-cost_coverage_line = Sur {{rows}} requête(s) tarifée(s) depuis le {{since}} — les lignes antérieures ne portent pas de modèle et ne sont pas tarifées. Non comptés : embeddings (~1 %) et appel différé après réponse (0–4 %).

@@ -202,62 +202,6 @@
     `).join('');
   }
 
-  /**
-   * Clear the cached answer of ONE question, in place.
-   *
-   * Deliberately AJAX where the deletion is a form: this must NOT reload the page — you purge,
-   * you read the outcome next to the question, then you go and ask it again.
-   */
-  function purgeQuestionCache(button) {
-    const labels = getLabels();
-    const question = button.getAttribute('data-purge-question') || '';
-    const config = window.AgentAlertsConfig || {};
-
-    button.disabled = true;
-
-    fetch((config.baseUrl || '') + (config.purgeQuestionCacheEndpoint || ''), {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({question: question})
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.success) {
-          button.insertAdjacentHTML('afterend', ` <span class="text-danger">${escapeHtml(labels.purge_failed || '')}</span>`);
-          return;
-        }
-
-        // Nothing cached is an ANSWER, not a failure: it says the report is about a fresh answer.
-        const message = data.rows_deleted > 0
-          ? (labels.purge_done || '').replace('{rows}', String(data.rows_deleted))
-          : (labels.purge_none || '');
-
-        button.insertAdjacentHTML('afterend', ` <span class="text-success">${escapeHtml(message)}</span>`);
-      })
-      .catch(() => {
-        button.insertAdjacentHTML('afterend', ` <span class="text-danger">${escapeHtml(labels.purge_failed || '')}</span>`);
-      })
-      .finally(() => button.remove());
-  }
-
-  document.addEventListener('click', function (event) {
-    const button = event.target.closest('[data-purge-question]');
-
-    if (button) {
-      event.preventDefault();
-      purgeQuestionCache(button);
-    }
-  });
-
-  // The form posts to the DeleteAll action; the reports do not come back, so ask first.
-  document.addEventListener('click', function (event) {
-    const button = event.target.closest('#negative-delete');
-
-    if (button && !confirm(getLabels().delete_reports_confirm || '')) {
-      event.preventDefault();
-    }
-  });
-
   function calculateOverdue(createdAt, estimatedTime) {
     const labels = getLabels();
     if (!createdAt || !estimatedTime) return labels.na || '';
@@ -309,19 +253,6 @@
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
-  }
-
-  /**
-   * Escape for a QUOTED ATTRIBUTE. escapeHtml() leaves quotes alone — enough between tags, not
-   * enough inside an attribute, where a question carrying " would close it and inject its own.
-   */
-  function escapeAttr(text) {
-    return String(text === null || text === undefined ? '' : text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
   }
 
   function updateElement(id, value) {

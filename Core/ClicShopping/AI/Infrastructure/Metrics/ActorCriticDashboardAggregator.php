@@ -15,6 +15,7 @@ namespace ClicShopping\AI\Infrastructure\Metrics;
 
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * ActorCriticDashboardAggregator Class
@@ -30,12 +31,14 @@ class ActorCriticDashboardAggregator
 {
   private ActorMetricsCollector $actorMetrics;
   private CriticMetricsCollector $criticMetrics;
+  private $db;
   private string $prefix;
   
   public function __construct()
   {
     $this->actorMetrics = new ActorMetricsCollector();
     $this->criticMetrics = new CriticMetricsCollector();
+    $this->db = Registry::get('Db');
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
   }
   
@@ -81,16 +84,16 @@ class ActorCriticDashboardAggregator
   {
     try {
       // Count registered actors
-      $actorCount = DoctrineOrm::selectOne("
+      $actorCount = DoctrineOrm::query("
         SELECT COUNT(DISTINCT actor_id) as count
-        FROM {$this->prefix}rag_agent_actor_registry
-      ")['count'] ?? 0;
+        FROM {$this->prefix}_rag_agent_actor_registry
+      ")->fetch()['count'] ?? 0;
 
       // Count registered critics
-      $criticCount = DoctrineOrm::selectOne("
+      $criticCount = DoctrineOrm::query("
         SELECT COUNT(DISTINCT critic_id) as count
-        FROM {$this->prefix}rag_agent_critic_registry
-      ")['count'] ?? 0;
+        FROM {$this->prefix}_rag_agent_critic_registry
+      ")->fetch()['count'] ?? 0;
 
       // Calculate separation ratio
       $separationRatio = ($actorCount + $criticCount) > 0
@@ -139,25 +142,20 @@ class ActorCriticDashboardAggregator
     $totalSuccessRate = 0.0;
     $totalExecutionTime = 0.0;
     $totalQualityScore = 0.0;
-    $qualityCount = 0;
     $actorCount = count($allMetrics);
 
     foreach ($allMetrics as $metrics) {
       $totalExecutions += $metrics['total_executions'];
       $totalSuccessRate += $metrics['success_rate'];
       $totalExecutionTime += $metrics['avg_execution_time_ms'];
-      // Averaged over the actors that recorded a quality, never over the others as zeros.
-      if ($metrics['avg_quality_score'] !== null) {
-        $totalQualityScore += $metrics['avg_quality_score'];
-        $qualityCount++;
-      }
+      $totalQualityScore += $metrics['avg_quality_score'];
     }
 
     return [
       'total_executions' => $totalExecutions,
       'avg_success_rate' => round($totalSuccessRate / $actorCount, 2),
       'avg_execution_time_ms' => round($totalExecutionTime / $actorCount, 2),
-      'avg_quality_score' => $qualityCount > 0 ? round($totalQualityScore / $qualityCount, 4) : null,
+      'avg_quality_score' => round($totalQualityScore / $actorCount, 4),
       'by_actor' => $allMetrics
     ];
   }
@@ -216,14 +214,14 @@ class ActorCriticDashboardAggregator
       $sql = "
         SELECT 
           COUNT(*) as total_coordinations,
-          AVG(execution_time_ms) as avg_execution_time,
-          AVG(evaluation_time_ms) as avg_evaluation_time,
-          AVG(total_time_ms) as avg_total_time
-        FROM {$this->prefix}rag_agent_coordinated_results
+          AVG(JSON_EXTRACT(metadata, '$.execution_time')) as avg_execution_time,
+          AVG(JSON_EXTRACT(metadata, '$.evaluation_time')) as avg_evaluation_time,
+          AVG(JSON_EXTRACT(metadata, '$.total_time')) as avg_total_time
+        FROM {$this->prefix}_rag_agent_coordinated_results
         WHERE created_at > DATE_SUB(NOW(), INTERVAL ? DAY)
       ";
 
-      $result = DoctrineOrm::selectOne($sql, [$days]);
+      $result = DoctrineOrm::query($sql, [$days])->fetch();
 
       if (!$result || $result['total_coordinations'] == 0) {
         return [
@@ -261,10 +259,10 @@ class ActorCriticDashboardAggregator
   {
     try {
       // Get all actors
-      $actors = DoctrineOrm::select("
+      $actors = DoctrineOrm::query("
         SELECT DISTINCT actor_id
-        FROM {$this->prefix}rag_agent_actor_registry
-      ");
+        FROM {$this->prefix}_rag_agent_actor_registry
+      ")->fetchAll();
 
       $actorUtilizations = [];
       $totalActorUtilization = 0.0;
@@ -280,10 +278,10 @@ class ActorCriticDashboardAggregator
         : 0.0;
 
       // Get all critics
-      $critics = DoctrineOrm::select("
+      $critics = DoctrineOrm::query("
         SELECT DISTINCT critic_id
-        FROM {$this->prefix}rag_agent_critic_registry
-      ");
+        FROM {$this->prefix}_rag_agent_critic_registry
+      ")->fetchAll();
 
       $criticUtilizations = [];
       $totalCriticUtilization = 0.0;
@@ -361,7 +359,7 @@ class ActorCriticDashboardAggregator
   {
     try {
       // Actor execution trends
-      $actorTrends = DoctrineOrm::select("
+      $actorTrends = DoctrineOrm::query("
         SELECT 
           DATE(executed_at) as date,
           COUNT(*) as executions,
@@ -372,20 +370,20 @@ class ActorCriticDashboardAggregator
         WHERE executed_at > DATE_SUB(NOW(), INTERVAL ? DAY)
         GROUP BY DATE(executed_at)
         ORDER BY date ASC
-      ", [$days]);
+      ", [$days])->fetchAll();
 
       // Critic evaluation trends
-      $criticTrends = DoctrineOrm::select("
+      $criticTrends = DoctrineOrm::query("
         SELECT 
           DATE(evaluated_at) as date,
           COUNT(*) as evaluations,
           AVG(evaluation_time_ms) as avg_time_ms,
-          AVG(overall_score) as avg_overall_score
+          AVG(agreement_score) as avg_agreement
         FROM {$this->prefix}rag_agent_critic_evaluations
         WHERE evaluated_at > DATE_SUB(NOW(), INTERVAL ? DAY)
         GROUP BY DATE(evaluated_at)
         ORDER BY date ASC
-      ", [$days]);
+      ", [$days])->fetchAll();
 
       return [
         'actor_trends' => $actorTrends,

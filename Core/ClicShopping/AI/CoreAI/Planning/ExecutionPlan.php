@@ -8,6 +8,9 @@
 
 namespace ClicShopping\AI\CoreAI\Planning;
 
+use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
+use ClicShopping\AI\Rag\MultiDBRAGManager;
+use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
 
 /**
  * ExecutionPlan Class
@@ -36,6 +39,14 @@ class ExecutionPlan
   private array $stepResults = [];
   private ?string $finalResult = null;
   private float $executionTime = 0.0;
+
+  private ?AnalyticsAgent $analyticsAgent = null;
+  private ?MultiDBRAGManager $ragManager = null;
+  private bool $debug;
+  private string $userId;
+  private int $languageId;
+
+  private ?CalculatorTool $calculatorTool = null;
 
 
   /**

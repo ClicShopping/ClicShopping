@@ -47,6 +47,7 @@ class DomainRouter implements DomainRouterInterface
   private SecurityLogger $securityLogger;
   private bool $debug;
   private array $domainMap;
+  private array $domainInstances;
 
   /**
    * Constructor
@@ -59,6 +60,7 @@ class DomainRouter implements DomainRouterInterface
   {
     $this->debug = $debug;
     $this->securityLogger = new SecurityLogger();
+    $this->domainInstances = [];
 
     // Initialize domain mapping
     // Maps intent types to domain class names
@@ -162,6 +164,8 @@ class DomainRouter implements DomainRouterInterface
 
     // TODO: Implement QueryTypeDomainInterface for all domains
     // TODO: Return domain instance instead of class name
+    // Example future implementation:
+    // return $this->getDomainInstance($domainClass, $context);
 
     return $domainClass;
   }
@@ -237,6 +241,120 @@ class DomainRouter implements DomainRouterInterface
     }
 
     return true;
+  }
+
+  /**
+   * Get domain capabilities
+   *
+   * Returns information about what a domain can do.
+   * Used for capability-based routing and feature availability checks.
+   *
+   * Capability structure:
+   * [
+   *     'available' => bool,            // Whether domain is available
+   *     'domain_class' => string,       // Domain class name
+   *     'query_types' => array,         // Supported query types
+   *     'operations' => array,          // Supported operations
+   *     'features' => array,            // Available features
+   *     'entity_types' => array,        // Supported entity types
+   *     'limitations' => array,         // Known limitations (optional)
+   *     'dependencies' => array         // Required dependencies (optional)
+   * ]
+   *
+   * Query types by domain:
+   * - Semantic: ['factual', 'informational', 'similarity']
+   * - Analytics: ['analytical', 'statistical', 'aggregation']
+   * - Hybrid: ['complex', 'multi-faceted', 'comparative']
+   * - WebSearch: ['external', 'real-time', 'market_data']
+   *
+   * Operations by domain:
+   * - Semantic: ['search', 'retrieve', 'compare']
+   * - Analytics: ['aggregate', 'analyze', 'calculate', 'filter']
+   * - Hybrid: ['split', 'synthesize', 'coordinate']
+   * - WebSearch: ['search', 'fetch', 'compare']
+   *
+   * Features by domain:
+   * - Semantic: ['caching', 'embeddings', 'vector_search']
+   * - Analytics: ['sql_generation', 'caching', 'validation']
+   * - Hybrid: ['task_planning', 'parallel_execution', 'result_synthesis']
+   * - WebSearch: ['external_api', 'caching', 'rate_limiting']
+   *
+   * Examples:
+   * - getDomainCapabilities('semantic') → ['available' => true,
+   *   'query_types' => ['factual', 'informational'], ...]
+   * - getDomainCapabilities('analytics') → ['available' => true,
+   *   'operations' => ['aggregate', 'analyze'], ...]
+   * - getDomainCapabilities('unknown') → ['available' => false,
+   *   'error' => 'Domain not found']
+   *
+   * @param string $intentType Intent type to get capabilities for
+   * @return array Domain capabilities information
+   */
+  public function getDomainCapabilities(string $intentType): array
+  {
+    $domainClass = $this->domainMap[$intentType] ?? null;
+
+    if ($domainClass === null) {
+      // Log domain not found
+      $this->securityLogger->logStructured('warning', 'DomainRouter', 'capabilities_request_failed', [
+        'intent_type' => $intentType,
+        'reason' => 'domain_not_registered',
+        'available_domains' => array_keys($this->domainMap)
+      ]);
+      
+      return [
+        'available' => false,
+        'error' => 'Domain not found'
+      ];
+    }
+
+    // TODO: Implement getCapabilities() when domains implement QueryTypeDomainInterface
+    // For now, return basic capabilities based on domain type
+
+    $capabilities = match ($intentType) {
+      'semantic' => [
+        'query_types' => ['factual', 'informational', 'similarity'],
+        'operations' => ['search', 'retrieve', 'compare'],
+        'features' => ['caching', 'embeddings', 'vector_search'],
+        'entity_types' => ['product', 'category', 'content']
+      ],
+      'analytics' => [
+        'query_types' => ['analytical', 'statistical', 'aggregation'],
+        'operations' => ['aggregate', 'analyze', 'calculate', 'filter'],
+        'features' => ['sql_generation', 'caching', 'validation'],
+        'entity_types' => ['product', 'order', 'customer', 'revenue']
+      ],
+      'hybrid' => [
+        'query_types' => ['complex', 'multi-faceted', 'comparative'],
+        'operations' => ['split', 'synthesize', 'coordinate'],
+        'features' => ['task_planning', 'parallel_execution', 'result_synthesis'],
+        'entity_types' => ['all']
+      ],
+      'web_search' => [
+        'query_types' => ['external', 'real-time', 'market_data'],
+        'operations' => ['search', 'fetch', 'compare'],
+        'features' => ['external_api', 'caching', 'rate_limiting'],
+        'entity_types' => ['external_data']
+      ],
+      default => []
+    };
+
+    $capabilities['available'] = true;
+    $capabilities['domain_class'] = $domainClass;
+
+    // Log capabilities retrieval
+    if ($this->debug) {
+      $this->securityLogger->logStructured('info', 'DomainRouter', 'capabilities_retrieved', [
+        'intent_type' => $intentType,
+        'domain_class' => $domainClass,
+        'query_types_count' => count($capabilities['query_types'] ?? []),
+        'operations_count' => count($capabilities['operations'] ?? []),
+        'features_count' => count($capabilities['features'] ?? []),
+        'entity_types_count' => count($capabilities['entity_types'] ?? [])
+      ]);
+    }
+
+    return $capabilities;
   }
 
   /**
@@ -381,5 +499,31 @@ class DomainRouter implements DomainRouterInterface
     }
 
     return $this->domainMap;
+  }
+
+  /**
+   * Get domain instance (future implementation)
+   *
+   * Creates or retrieves cached domain instance.
+   * Will be used when domains implement QueryTypeDomainInterface.
+   *
+   * @param string $domainClass Domain class name
+   * @param array $context Initialization context
+   * @return QueryTypeDomainInterface Domain instance
+   * @throws \Exception When domain instance creation is not yet implemented
+   */
+  private function getDomainInstance(string $domainClass, array $context = []): QueryTypeDomainInterface
+  {
+    // Log attempt to get domain instance
+    $this->securityLogger->logStructured('error', 'DomainRouter', 'domain_instance_not_implemented', [
+      'domain_class' => $domainClass,
+      'context_keys' => array_keys($context),
+      'message' => 'Domain instance creation not yet implemented - returning class name instead'
+    ]);
+
+    // TODO: Implement domain instance caching
+    // TODO: Implement domain initialization with context
+
+    throw new \Exception('Domain instance creation not yet implemented');
   }
 }

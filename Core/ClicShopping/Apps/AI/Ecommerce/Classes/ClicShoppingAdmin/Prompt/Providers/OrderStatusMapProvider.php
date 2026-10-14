@@ -56,8 +56,9 @@ class OrderStatusMapProvider implements PromptPlaceholderProviderInterface
   }
 
   /**
-   * Declaring the status tables here is what lets the freshness rule notice that the merchant
-   * rewrote a definition or changed an accounting weight.
+   * The status tables are never joined by the generated SQL — it filters `orders_status = 3`,
+   * a column of `orders`. Declaring them here is what lets the freshness rule notice that the
+   * merchant rewrote a definition.
    *
    * @return array<int, string> Unprefixed status tables
    */
@@ -72,7 +73,7 @@ class OrderStatusMapProvider implements PromptPlaceholderProviderInterface
    * @param int $languageId Language of the rows to read - the same one the generated SQL will filter on
    * @return string Rendered map, empty when no section could be read
    */
-  public function render(int $languageId, ?array $resultRows = null): string
+  public function render(int $languageId): string
   {
     $this->loadDefinitions();
 

@@ -126,19 +126,20 @@ class AmbiguousResultFormatter extends AbstractFormatter
     $html .= '<h4>' . $number . '. ' . htmlspecialchars($interpretation['label']) . '</h4>';
     $html .= '</div>';
     $html .= '<div class="card-body">';
-
-    $notice = AnalysisPlanAnnouncer::sensitiveOutputNotice($interpretation['sensitive_output'] ?? null);
-    if ($notice !== '') {
-      $html .= '<p class="alert alert-warning">' . htmlspecialchars($notice) . '</p>';
-    }
-
+    
     // Description
     $html .= '<p class="interpretation-description text-muted">';
     $html .= htmlspecialchars($interpretation['description']);
     $html .= '</p>';
     
+    // SQL Query (collapsible)
     if (isset($interpretation['sql_query'])) {
-      $html .= $this->renderSqlToggle((string)$interpretation['sql_query']);
+      $html .= '<details class="sql-details mb-3">';
+      $html .= '<summary class="text-primary" style="cursor: pointer;">' . $this->language->getDef('text_rag_ambiguous_view_sql') . '</summary>';
+      $html .= '<pre class="sql-query bg-light p-2 mt-2"><code>';
+      $html .= htmlspecialchars($interpretation['sql_query']);
+      $html .= '</code></pre>';
+      $html .= '</details>';
     }
     
     // Results

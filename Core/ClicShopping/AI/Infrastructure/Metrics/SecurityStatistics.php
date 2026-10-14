@@ -12,6 +12,7 @@
 namespace ClicShopping\AI\Infrastructure\Metrics;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\CLICSHOPPING;
 
 /**
  * Class SecurityStatistics
@@ -22,6 +23,7 @@ use ClicShopping\OM\Registry;
 class SecurityStatistics
 {
     private $db;
+    private string $prefix;
     
     /**
      * Constructor
@@ -31,6 +33,7 @@ class SecurityStatistics
         if (Registry::exists('Db')) {
             $this->db = Registry::get('Db');
         }
+        $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
     }
     
     /**

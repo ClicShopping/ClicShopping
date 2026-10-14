@@ -151,9 +151,7 @@ class Process implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
-      return;
-    }
+    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
 
     if (!Gpt::checkGptStatus()) {
       return;
@@ -258,11 +256,9 @@ class Process implements HooksInterface
         $languageId = $target['languages_id'];
 
         try {
-          // CRITICAL CALL: executeAnalysisCron triggers the ActionExecutor
+          // CRITICAL CALL: executeAnalysis triggers the ActionExecutor
           // Si CLICSHOPPING_APP_ECOMMERCE_CAI_AUTO_MODE est True, le prix change ici.
-          // Variante cron OBLIGATOIRE : executeAnalysis() exige $_SESSION['admin'] et meurt
-          // sur « Access denied » depuis un ordonnanceur externe (CAI-1 b, mesuré).
-          $result = $orchestrator->executeAnalysisCron($productId, $languageId, self::CRON_USER_ID);
+          $result = $orchestrator->executeAnalysis($productId, $languageId, self::CRON_USER_ID);
 
           $summary['analyses_succeeded']++;
 
@@ -473,7 +469,7 @@ class Process implements HooksInterface
    */
   private function sendSummaryEmail(array $summary, float $duration): void
   {
-    $recipient = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL') && trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) !== '' ? trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) : (\defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '');
+    $recipient = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL') && trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) !== '' ? trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) : (STORE_OWNER_EMAIL_ADDRESS ?? '');
 
     if (empty($recipient)) {
       if ($this->debug) {

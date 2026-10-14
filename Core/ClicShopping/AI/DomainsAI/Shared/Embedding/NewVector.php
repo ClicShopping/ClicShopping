@@ -25,15 +25,10 @@ use LLPhant\Embeddings\EmbeddingGenerator\Ollama\OllamaEmbeddingGenerator;
 use LLPhant\Embeddings\EmbeddingGenerator\VoyageAI\Voyage3EmbeddingGenerator;
 use LLPhant\Embeddings\EmbeddingGenerator\VoyageAI\Voyage3LargeEmbeddingGenerator;
 use LLPhant\Embeddings\EmbeddingGenerator\VoyageAI\Voyage3LiteEmbeddingGenerator;
-use LLPhant\MistralAIConfig;
-use LLPhant\OllamaConfig;
 use LLPhant\OpenAIConfig;
 use LLPhant\VoyageAIConfig;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubGpt\CountingEmbeddingGenerator;
-use LLPhant\Embeddings\EmbeddingGenerator\EmbeddingGeneratorInterface;
 use ClicShopping\AI\Security\InputValidator;
-use ClicShopping\AI\Security\OutboundPolicy;
 
 
 class NewVector
@@ -70,11 +65,11 @@ class NewVector
       return !empty(Gpt::getProviderApiKey('mistral')['api_key']);
     } elseif (str_starts_with($model, 'voyage')) {
       return !empty(CLICSHOPPING_APP_CHATGPT_RA_API_KEY_VOYAGE_AI);
+    } elseif (str_starts_with($model, 'ollama')) {
+      return true;
     }
 
-    // Anything not served by a cloud provider is a local Ollama model, which needs no key. Mirrors
-    // the dispatch of gptEmbeddingsModel(), whose else branch is Ollama.
-    return true;
+    return false;
   }
 
   /**
@@ -87,7 +82,7 @@ class NewVector
     $array = [
       ['id' => 'gpt-large', 'text' => 'OpenAI Large embedding (3072 dimensions)'],
       ['id' => 'gpt-medium', 'text' => 'OpenAI Medium embedding (1536 dimensions)'],
-      ['id' => 'nomic-embed-text', 'text' => 'Ollama embedding nomic-embed-text (768 dimensions)'],
+      ['id' => 'nomic-embed-text', 'text' => 'Ollama embedding nomic-embed-text (1536 dimensions)'],
       ['id' => 'mistral', 'text' => 'Mistral embedding (1024 dimensions)'],
       ['id' => 'voyage3', 'text' => 'Voyage 3 embedding (1024 dimensions)'],
       ['id' => 'voyage3-large', 'text' => 'Voyage 3 Large embedding (4096 dimensions)'],
@@ -106,20 +101,8 @@ class NewVector
   {
     Gpt::getEnvironment();
 
-    $model = (string)CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
-    $generator = self::buildEmbeddingsModel($model);
+    $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
 
-    return $generator === null ? null : new CountingEmbeddingGenerator($generator, $model);
-  }
-
-  /**
-   * Provider generator for the given embedding model, unwrapped.
-   *
-   * @param string $model Configured embedding model key
-   * @return EmbeddingGeneratorInterface|null
-   */
-  private static function buildEmbeddingsModel(string $model): ?EmbeddingGeneratorInterface
-  {
     if (!$model) {
       return null;
     }
@@ -133,38 +116,29 @@ class NewVector
     if (str_starts_with($model, 'gpt-large')) {
       $config = new OpenAIConfig();
       $config->apiKey = $api_key;
-      OutboundPolicy::assertAllowed((string)$config->url, 'embeddings');
       return new OpenAI3LargeEmbeddingGenerator($config);
     } elseif (str_starts_with($model, 'gpt-medium')) {
       $config = new OpenAIConfig();
       $config->apiKey = $api_key;
-      OutboundPolicy::assertAllowed((string)$config->url, 'embeddings');
       return new OpenAI3SmallEmbeddingGenerator($config);
     } elseif (str_starts_with($model, 'mistral')) {
-      $config = new MistralAIConfig();
+      $config = new OpenAIConfig();
       $config->apiKey = $api_key;
-      OutboundPolicy::assertAllowed((string)$config->url, 'embeddings');
       return new MistralEmbeddingGenerator($config);
     } elseif (str_starts_with($model, 'voyage3-large')) {
       $config = new VoyageAIConfig();
       $config->apiKey = $api_key;
-      OutboundPolicy::assertAllowed((string)$config->url, 'embeddings');
       return new Voyage3LargeEmbeddingGenerator($config);
     } elseif (str_starts_with($model, 'voyage3-lite')) {
       $config = new VoyageAIConfig();
       $config->apiKey = $api_key;
-      OutboundPolicy::assertAllowed((string)$config->url, 'embeddings');
       return new Voyage3LiteEmbeddingGenerator($config);
     } elseif (str_starts_with($model, 'voyage3')) {
       $config = new VoyageAIConfig();
       $config->apiKey = $api_key;
-      OutboundPolicy::assertAllowed((string)$config->url, 'embeddings');
       return new Voyage3EmbeddingGenerator($config);
     } else {
-      $config = new OllamaConfig();
-      $config->model = $model;
-      OutboundPolicy::assertAllowed($config->url, 'embeddings');
-      return new OllamaEmbeddingGenerator($config);
+      return new OllamaEmbeddingGenerator($model);
     }
   }
 
@@ -177,7 +151,7 @@ class NewVector
    * @return array|null The generated embeddings or null on error
    * @throws ClientExceptionInterface
    */
-  public static function createEmbedding(string|null $path_file_upload, string|null $text_description, ?int $token_length = null, string $carryHeader = '')
+  public static function createEmbedding(string|null $path_file_upload, string|null $text_description, ?int $token_length = null)
   {
     $embeddingGenerator = self::gptEmbeddingsModel();
 
@@ -232,7 +206,7 @@ class NewVector
 
         // Generate cache key (content + model + token_length)
         $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
-        $cacheKey = md5($totalContent . $model . $token_length . $carryHeader);
+        $cacheKey = md5($totalContent . $model . $token_length);
 
         // Check cache (namespace: Rag/Embeddings)
         $cache = new Cache($cacheKey, 'Rag/Embeddings');
@@ -258,7 +232,7 @@ class NewVector
         // File branch keeps the '.' separator it inherited from splitDocuments().
         $splitDocuments = [];
         foreach ($documents as $fileDocument) {
-          foreach (DocumentChunker::split($fileDocument, ChunkPolicy::ofChars($token_length, ['.']), $carryHeader) as $piece) {
+          foreach (DocumentChunker::split($fileDocument, ChunkPolicy::ofChars($token_length, ['.'])) as $piece) {
             $splitDocuments[] = $piece;
           }
         }
@@ -294,7 +268,7 @@ class NewVector
         if ($estimatedTokens > $token_length) {
           // Multi-chunk text - cache the entire result
           $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
-          $cacheKey = md5($text_description . $model . $token_length . $carryHeader);
+          $cacheKey = md5($text_description . $model . $token_length);
 
           // Check cache (namespace: Rag/Embeddings)
           $cache = new Cache($cacheKey, 'Rag/Embeddings');
@@ -315,7 +289,7 @@ class NewVector
           $tempDocument->sourceName = 'manual';
           $tempDocument->sourceType = 'manual';
 
-          $splitDocuments = DocumentChunker::split($tempDocument, ChunkPolicy::ofChars($token_length), $carryHeader);
+          $splitDocuments = DocumentChunker::split($tempDocument, ChunkPolicy::ofChars($token_length));
           $formattedDocuments = EmbeddingFormatter::formatEmbeddings($splitDocuments);
 
           // Generate embeddings (API call 200-500ms)
@@ -384,7 +358,7 @@ class NewVector
 
       if (str_contains($e->getMessage(), 'maximum context length') && $token_length > 200) {
         error_log("Retrying with smaller chunk size...");
-        return self::createEmbedding($path_file_upload, $text_description, (int)($token_length / 2), $carryHeader);
+        return self::createEmbedding($path_file_upload, $text_description, (int)($token_length / 2));
       }
 
       return null;
@@ -406,7 +380,7 @@ class NewVector
           'sourceName' => $doc->sourceName ?? null,
           'sourceType' => $doc->sourceType ?? null,
           'chunkNumber' => $doc->chunkNumber ?? null,
-          'metadata' => $doc->metadata,
+          'metadata' => $doc->metadata ?? null,
           'id' => $doc->id ?? null,
         ];
       }
@@ -864,20 +838,21 @@ class NewVector
    */
   public static function getEmbeddingLength(): int
   {
-    $model = CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL;
-
-    return match (true) {
-      str_starts_with($model, 'gpt-large') => 3072,
-      str_starts_with($model, 'gpt-medium') => 1536,
-      str_starts_with($model, 'mistral') => 1024,
-      str_starts_with($model, 'voyage3-large') => 4096,
-      str_starts_with($model, 'voyage3-lite') => 384,
-      str_starts_with($model, 'voyage3') => 1024,
-      str_starts_with($model, 'nomic') => 768,
-      // Unknown model: the widest dimension the stores were declared with, so a vector is never
-      // silently truncated. LLPhant reads the real length from Ollama /show at generation time.
-      default => 3072,
-    };
+    if (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'gpt-large')) {
+      return 3072;
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'gpt-medium')) {
+      return 1536;
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'mistral')) {
+      return 1024;
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3-large')) {
+      return 4096;
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3-lite')) {
+      return 384;
+    } elseif (str_starts_with(CLICSHOPPING_APP_CHATGPT_RA_EMBEDDING_MODEL, 'voyage3')) {
+      return 1024;
+    } else {
+      return 1536;
+    }
   }
 
   /**

@@ -21,7 +21,6 @@
 ✗ Hardcoding a secret, an API key or an encryption key in the code
 ✗ Writing an inline `on*` handler — HTML::button() strips them (sanitizeHtmlAttributes)
 ✗ Accepting a POST that carries no valid `formid` token
-✗ Deleting or updating on a GET request (an id in the URL is not a confirmation)
 ✗ Exposing an admin ajax endpoint without AdministratorAdmin::hasUserAccess()
 ✗ Logging a password, a token or a decrypted value
 ```
@@ -32,7 +31,7 @@
 |---|---|---|
 | `output()` | `htmlspecialchars` with `ENT_QUOTES \| ENT_HTML5`, optional translation table | any value rendered into HTML |
 | `outputProtected()` | same, no translation table | the same, when no substitution is wanted |
-| `sanitize()` | replaces `<`, `>`, `&lt;`, `&gt;`, `%3c`, `%2f` and runs of spaces with `_`; takes `mixed`, returns `''` for an array or an object | a value used as an identifier, never as displayed text |
+| `sanitize()` | replaces `<`, `>`, `&lt;`, `&gt;`, `%3c`, `%2f` and runs of spaces with `_` | a value used as an identifier, never as displayed text |
 | `sanitizeUrl()` | rejects the `javascript:` protocol | every url reaching `HTML::link()` — applied automatically |
 | `sanitizeHtmlAttributes()` | strips inline `on*` event handlers | applied automatically by the attribute-taking helpers |
 
@@ -41,12 +40,9 @@ truncates comparison operators. Never use it to make a value safe to display.
 
 ## 3. CSRF
 
-`HTML::form()` emits `formid` only with `['tokenize' => true]` AND when `$_SESSION['sessiontoken']`
-exists (`OM/HTML.php:379`). The token is created by the `Session/StartAfter` hook of each site
-(`Core/Module/Hooks/{Shop,ClicShoppingAdmin}/Session/StartAfter.php`).
-An action processing a POST must verify it with `hash_equals()`, after checking the session token is
-non-empty (`hash_equals('', '')` is true). A POST without a valid token is not
-a degraded case to work around: reject it.
+Every form built by `HTML::form()` carries `formid`, holding `$_SESSION['sessiontoken']`
+(`OM/HTML.php:371`). An action processing a POST must verify it. A POST without a valid token is
+not a degraded case to work around: reject it.
 
 ## 4. Cryptography — `OM/Hash.php`
 
@@ -77,12 +73,9 @@ unlikely the url looks.
 
 ## 7. GDPR
 
-`Apps/Customers/Gdpr/` owns consent, export and the inactivity cron. A new feature storing personal
-data declares itself there rather than growing its own mechanism.
+`Apps/Customers/Gdpr/` owns consent, export and erasure. A new feature storing personal data
+declares itself there rather than growing its own mechanism.
 
-- **Erasure has ONE point**: `Apps/Customers/Customers/Classes/Shared/CustomerDataEraser::erase()`.
-  Every deletion path calls it (Shop account, admin Customers/GuestCustomer/Members/Gdpr, Gdpr cron,
-  Shop API). A table holding customer data is added to ITS list, never to a caller's.
 ---
 
 ## To be covered

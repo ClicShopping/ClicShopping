@@ -22,6 +22,7 @@ use ClicShopping\OM\Registry;
 class SqlQueryProcessor
 {
   private SecurityLogger $securityLogger;
+  private int $languageId;
   private bool $debug;
   private array $placeholderMap;
 
@@ -37,6 +38,7 @@ class SqlQueryProcessor
   public function __construct(SecurityLogger $securityLogger, int $languageId, bool $debug = false)
   {
     $this->securityLogger = $securityLogger;
+    $this->languageId = $languageId;
     $this->debug = $debug;
     $this->db = Registry::get('Db');
 
@@ -480,6 +482,27 @@ class SqlQueryProcessor
         ],
       ];
     }
+  }
+
+  /**
+   * Validates SQL syntax using InputValidator
+   * Logs security events for invalid syntax
+   *
+   * @param array $validation Validation result from InputValidator
+   * @param string $query SQL query being validated
+   * @return bool True if valid, false otherwise
+   */
+  private function isSqlSyntaxValid(array $validation, string $query): bool
+  {
+    if (!$validation['valid']) {
+      $this->securityLogger->logSecurityEvent(
+        "Rejected query due to invalid SQL syntax (parse failure)",
+        'warning',
+        ['query' => $query]
+      );
+      return false;
+    }
+    return true;
   }
 
   /**

@@ -154,9 +154,6 @@ class EntityTracker
 
       // Query the most recent interaction with a valid entity
       // Order by date_modified (most recent first)
-      // Same boundary as ConversationTurnReader: the two feed the same reference resolution.
-      $boundary = ConversationBoundary::clause($this->userId, $this->languageId, $params);
-
       $sql = "
         SELECT entity_id, metadata
         FROM {$tableName}
@@ -164,7 +161,6 @@ class EntityTracker
         {$languageFilter}
         AND entity_id IS NOT NULL
         AND entity_id != 0
-        {$boundary}
         ORDER BY date_modified DESC
         LIMIT 1
       ";
@@ -225,8 +221,8 @@ class EntityTracker
   /**
    * Get the last tracked entity for contextual reference resolution.
    * 
-   * This method provides the last entity in a format suitable for ReferenceResolver,
-   * eliminating the need for the resolver to determine "last entity" itself.
+   * This method provides the last entity in a format suitable for ContextResolver,
+   * eliminating the need for ContextResolver to determine "last entity" itself.
    *
    * @return array Array with 'id', 'type', and 'reference' keys
    */

@@ -30,8 +30,6 @@ use ClicShopping\AI\RegistryAI\ActorRegistry;
  */
 class ChatReplayActor implements ActorInterface
 {
-  public const ACTOR_ID = 'chat_replay_actor';
-
   public const ACTION_TYPE = 'chat_response_eval';
   public const OUTPUT_TYPE = 'chat_response';
 
@@ -40,7 +38,7 @@ class ChatReplayActor implements ActorInterface
 
   public function __construct(bool $debug = false, ?ActorRegistry $registry = null)
   {
-    $this->actorId = self::ACTOR_ID;
+    $this->actorId = 'chat_replay_actor_' . uniqid();
     $this->debug = $debug;
 
     if ($registry !== null) {

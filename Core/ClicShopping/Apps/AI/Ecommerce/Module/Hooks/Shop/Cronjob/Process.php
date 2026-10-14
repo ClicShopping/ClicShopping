@@ -18,7 +18,6 @@
   use ClicShopping\Apps\AI\Ecommerce\Ecommerce as EcommerceApp;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Common\CronLogger;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\CockpitAIOrchestrator;
-  use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\EmbeddingService;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\FeedbackCollector;
   use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\RuleAdjuster;
   use ClicShopping\Apps\AI\Ecommerce\Classes\Shared\SeoCronRunner;
@@ -153,9 +152,7 @@ class Process implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
-      return;
-    }
+    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
 
     if (!Gpt::checkGptStatus()) {
       return;
@@ -260,16 +257,9 @@ class Process implements HooksInterface
         $languageId = $target['languages_id'];
 
         try {
-          // CRITICAL CALL: executeAnalysisCron triggers the ActionExecutor
+          // CRITICAL CALL: executeAnalysis triggers the ActionExecutor
           // Si CLICSHOPPING_APP_ECOMMERCE_CAI_AUTO_MODE est True, le prix change ici.
-          // Variante cron OBLIGATOIRE : executeAnalysis() exige $_SESSION['admin'] et meurt
-          // sur « Access denied » depuis un ordonnanceur externe (CAI-1 b, mesuré).
-          // (A) and (B) only: the product itself changed. A format bump (D) rewrites the
-          // metadata, it does not make the analysis stale — forcing it there would buy an
-          // LLM call per product for a shape change.
-          $productChanged = \in_array($target['reason'] ?? '', ['ordered', 'modified'], true);
-
-          $result = $orchestrator->executeAnalysisCron($productId, $languageId, self::CRON_USER_ID, $productChanged);
+          $result = $orchestrator->executeAnalysis($productId, $languageId, self::CRON_USER_ID);
 
           $summary['analyses_succeeded']++;
 
@@ -367,13 +357,10 @@ class Process implements HooksInterface
   }
     
   /**
-   * Fetch distinct (product_id, language_id) pairs to analyse.
+   * Fetch distinct (product_id, language_id) pairs for products ordered today.
    *
-   * Four sources, crossed with all active store languages: (A) ordered today,
-   * (B) modified since the last analysis, (C) never analysed, (D) latest analysis
-   * written on an older EMBEDDING_FORMAT_VERSION. Each target carries the reason it
-   * was picked: only (A) and (B) mean the PRODUCT changed, and so demand a fresh
-   * LLM analysis rather than the stored one.
+   * Crosses today's ordered products with all active store languages so the
+   * analysis is stored for every language the store supports.
    *
    * "Today" = date_purchased >= CURDATE() in the server timezone.
    * Status ≥ 3 = processing or completed (matches DataCollector convention).
@@ -382,7 +369,7 @@ class Process implements HooksInterface
    */
   private function fetchTodayTargets(): array
   {
-    // Source A: products ordered today (priority 1
+    // ── Source A: products ordered today (priority 1) ──────────────────
     $Qproducts = $this->db->prepare('SELECT DISTINCT op.products_id
                                       FROM :table_orders_products op
                                       INNER JOIN :table_orders o ON op.orders_id = o.orders_id
@@ -393,7 +380,7 @@ class Process implements HooksInterface
 
     $productIds = [];
     while ($row = $Qproducts->fetch()) {
-      $productIds[(int)$row['products_id']] ??= 'ordered';
+      $productIds[(int)$row['products_id']] = true;
     }
 
     // ── Source B: products modified since the last CockpitAI analysis ──
@@ -415,7 +402,7 @@ class Process implements HooksInterface
       ');
       $QmodSinceLast->execute();
       while ($row = $QmodSinceLast->fetch()) {
-        $productIds[(int)$row['products_id']] ??= 'modified';
+        $productIds[(int)$row['products_id']] = true;
       }
     } catch (\Throwable $e) {
       if ($this->debug) {
@@ -439,7 +426,7 @@ class Process implements HooksInterface
       ');
       $QneverAnalysed->execute();
       while ($row = $QneverAnalysed->fetch()) {
-        $productIds[(int)$row['products_id']] ??= 'never';
+        $productIds[(int)$row['products_id']] = true;
       }
     } catch (\Throwable $e) {
       if ($this->debug) {
@@ -447,36 +434,8 @@ class Process implements HooksInterface
       }
     }
 
-    // ── Source D: latest analysis written on an older metadata format ──
-    // The only source that does not depend on a product changing: a corrected
-    // calculation reaches the catalogue by bumping EMBEDDING_FORMAT_VERSION.
-    try {
-      $QstaleFormat = $this->db->prepare('
-        SELECT DISTINCT e.entity_id AS products_id
-        FROM :table_products_cockpit_ai_embedding e
-        INNER JOIN (
-          SELECT entity_id, language_id, MAX(id) AS last_id
-          FROM :table_products_cockpit_ai_embedding
-          GROUP BY entity_id, language_id
-        ) l ON l.last_id = e.id
-        INNER JOIN :table_products p ON p.products_id = e.entity_id
-        WHERE p.products_status = 1
-          AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(e.metadata, \'$.embedding_format_version\')), \'\') <> :format_version
-        ORDER BY e.entity_id
-        LIMIT 100
-      ');
-      $QstaleFormat->bindValue(':format_version', EmbeddingService::EMBEDDING_FORMAT_VERSION);
-      $QstaleFormat->execute();
-      while ($row = $QstaleFormat->fetch()) {
-        $productIds[(int)$row['products_id']] ??= 'stale_format';
-      }
-    } catch (\Throwable $e) {
-      if ($this->debug) {
-        error_log('[ProductCockpitAi] Source D (stale format) query failed: ' . $e->getMessage());
-      }
-    }
-
     if (empty($productIds)) return [];
+    $productIds = array_keys($productIds);
 
     // 2. Fetch active languages
     $Qlangs = $this->db->prepare('SELECT languages_id 
@@ -488,12 +447,11 @@ class Process implements HooksInterface
 
     // 3. Build the target list (Product x Languages)
     $targets = [];
-    foreach ($productIds as $pId => $reason) {
+    foreach ($productIds as $pId) {
       foreach ($languages as $l) {
         $targets[] = [
           'products_id' => $pId,
-          'languages_id' => (int)$l['languages_id'],
-          'reason' => $reason,
+          'languages_id' => (int)$l['languages_id']
         ];
       }
     }
@@ -512,7 +470,7 @@ class Process implements HooksInterface
    */
   private function sendSummaryEmail(array $summary, float $duration): void
   {
-    $recipient = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL') && trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) !== '' ? trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) : (\defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '');
+    $recipient = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL') && trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) !== '' ? trim(CLICSHOPPING_APP_ECOMMERCE_CAI_CRON_EMAIL) : (STORE_OWNER_EMAIL_ADDRESS ?? '');
 
     if (empty($recipient)) {
       if ($this->debug) {

@@ -11,7 +11,6 @@ namespace ClicShopping\AI\DomainsAI\Hybrid\Helper\Formatter\SubResultFormatters;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\LlmGuardrails;
-use ClicShopping\AI\Rag\RagContextFormatter;
 
 /**
  * HybridFormatter - Formats hybrid query results
@@ -27,6 +26,7 @@ use ClicShopping\AI\Rag\RagContextFormatter;
 class HybridFormatter extends AbstractFormatter
 {
   private $language;
+  private string $languageCode;
 
   public function __construct(bool $debug = false, bool $displaySql = false)
   {
@@ -34,6 +34,7 @@ class HybridFormatter extends AbstractFormatter
     
     // Initialize language support
     $this->language = Registry::get('Language');
+    $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
     Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -56,6 +57,7 @@ class HybridFormatter extends AbstractFormatter
     }
 
     $output = '<div class="hybrid-results col-md-12">';
+    $output .= "<h4>" . htmlspecialchars($this->language->getDef('results_for')) . " " . htmlspecialchars($question) . "</h4>";
 
     // Display source attribution (shows combined sources)
     if (isset($results['source_attribution'])) {
@@ -105,35 +107,40 @@ class HybridFormatter extends AbstractFormatter
       if (!empty($semanticText)) {
         $output .= "<div class='semantic-response'>" . nl2br(htmlspecialchars($semanticText)) . "</div>";
       }
-
-      $output .= $this->renderDocumentSources((array)($semanticComp['source_attribution'] ?? []));
       
-      // Sources: document names only, extracts would repeat the rendered answer.
-      $documents = $this->listSourceDocuments($semanticComp['sources'] ?? []);
-
-      if ($documents !== []) {
+      // Display sources
+      if (isset($semanticComp['sources']) && is_array($semanticComp['sources']) && !empty($semanticComp['sources'])) {
         $output .= "<div class='mt-3'>";
         $output .= "<details>";
-        $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($documents) . ")</strong></summary>";
-        $output .= "<ul class='mt-2' style='font-size: 0.9em;'>";
-        foreach ($documents as $name) {
-          $output .= "<li>" . htmlspecialchars($name) . "</li>";
+        $output .= "<summary style='cursor: pointer; font-size: 0.9em; color: #666;'><strong>📖 " . htmlspecialchars($this->language->getDef('sources_label')) . " (" . count($semanticComp['sources']) . ")</strong></summary>";
+        $output .= "<ul class='mt-2'>";
+        foreach ($semanticComp['sources'] as $source) {
+          if (is_array($source)) {
+            $sourceText = $source['content'] ?? $source['text'] ?? '';
+            $sourceType = $source['type'] ?? '';
+            if (!empty($sourceText)) {
+              $output .= "<li style='margin-bottom: 10px;'>";
+              if (!empty($sourceType)) {
+                $output .= "<span class='badge bg-secondary'>" . htmlspecialchars($sourceType) . "</span> ";
+              }
+              $output .= htmlspecialchars(substr($sourceText, 0, 200)) . (strlen($sourceText) > 200 ? '...' : '');
+              $output .= "</li>";
+            }
+          }
         }
         $output .= "</ul>";
         $output .= "</details>";
         $output .= "</div>";
       }
-
+      
       $output .= "</div>";
     }
 
     // Display the synthesized response (optional, as summary)
     if (!empty($responseContent) && (empty($results['analytics_component']) && empty($results['semantic_component']))) {
       // Only show text_response if we don't have structured components
-      $formattedResponse = Hash::displayDecryptedDataText($responseContent);
+      $formattedResponse = nl2br(Hash::displayDecryptedDataText($responseContent));
       $output .= "<div class='response'><strong>" . htmlspecialchars($this->language->getDef('response_label')) . "</strong><br>" . $formattedResponse . "</div>";
-      // No component carries the footer here: the reader must still see which documents answered.
-      $output .= $this->renderDocumentSources((array)($results['source_attribution'] ?? []));
     }
 
     // Render actual results from sub-queries, not just metadata
@@ -197,14 +204,42 @@ class HybridFormatter extends AbstractFormatter
         $output .= "<div class='analytics-interpretation mb-3'>" . nl2br(htmlspecialchars($analyticsInterpretation)) . "</div>";
       }
 
+      // SQL Query (always visible)
       if (!empty($analyticsComp['sql_query'])) {
-        $output .= $this->renderSqlToggle($this->formatSqlQuery($analyticsComp['sql_query']));
+        $output .= "<div class='mb-3' style='background:#f8f9fa; border-left:3px solid #0d6efd; padding:15px; border-radius:4px;'>";
+        $output .= "<div style='font-weight:bold; margin-bottom:8px; color:#0d6efd;'>🔍 Requête SQL :</div>";
+        $output .= "<pre style='margin:0; font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; background:#fff; padding:10px; border-radius:3px; font-family:monospace;'>" . htmlspecialchars($this->formatSqlQuery($analyticsComp['sql_query'])) . "</pre>";
+        $output .= "</div>";
       }
 
       
-      // Shared split-aware renderer: header translation + tax-convention split, like the pure-analytics path.
+      // Display results as table
       if (isset($analyticsComp['results']) && is_array($analyticsComp['results']) && !empty($analyticsComp['results'])) {
-        $output .= $this->renderDataTable($analyticsComp['results'], 'table table-sm table-bordered table-striped');
+        $tableParts = $this->buildTableOpenTag('table table-sm table-bordered table-striped');
+        $output .= $tableParts['toolbar'] . $tableParts['table'];
+        
+        // Table header
+        $firstRow = $analyticsComp['results'][0];
+        if (is_array($firstRow)) {
+          $output .= "<thead class='table-light'><tr>";
+          foreach (array_keys($firstRow) as $column) {
+            $output .= "<th>" . htmlspecialchars(ucfirst(str_replace('_', ' ', $column))) . "</th>";
+          }
+          $output .= "</tr></thead>";
+          
+          // Table body
+          $output .= "<tbody>";
+          foreach ($analyticsComp['results'] as $row) {
+            $output .= "<tr>";
+          foreach ($row as $column => $value) {
+            $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
+          }
+            $output .= "</tr>";
+          }
+          $output .= "</tbody>";
+        }
+        
+        $output .= "</table>";
       }
       
       $output .= "</div>";
@@ -269,8 +304,24 @@ class HybridFormatter extends AbstractFormatter
         if ($subType === 'analytics' && isset($subQuery['results'])) {
           $output .= "<div class='mt-4'>";
 
-        if (!empty($subQuery['sql_query'])) {
-          $output .= $this->renderSqlToggle($this->formatSqlQuery($subQuery['sql_query']));
+        $analyticsSub = $subQuery;
+        $collapseId = 'sqlQueryCollapse_' . uniqid();
+
+        if (!empty($analyticsSub['sql_query'])) {
+            $output .= "<div class='mb-3'>";
+            $output .= "<a href='#' class='btn btn-primary btn-sm' data-sql-toggle='{$collapseId}'>";
+            $output .= htmlspecialchars($this->language->getDef('toggle_sql_query'));
+            $output .= "</a>";
+
+            $output .= "<div id='{$collapseId}' style='display:none;' class='mt-2'>";
+            $output .= "<div class='card card-body'>";
+            $output .= "<div class='fw-bold mb-2 text-primary'>" . htmlspecialchars($this->language->getDef('sql_query_label')) . "</div>";
+            $output .= "<pre class='mb-0' style='font-size:0.85em; white-space:pre-wrap; word-wrap:break-word; font-family:monospace;'>";
+            $output .= htmlspecialchars($this->formatSqlQuery($analyticsSub['sql_query']));
+            $output .= "</pre>";
+            $output .= "</div>";
+            $output .= "</div>";
+            $output .= "</div>";
         }
 
           $output .= "<h5>" . htmlspecialchars($this->language->getDef('hybrid_analytics_results_title')) . "</h5>";
@@ -359,10 +410,25 @@ class HybridFormatter extends AbstractFormatter
     if (isset($subQuery['results']) && is_array($subQuery['results'])) {
       $output .= "<div class='analytics-results'>";
       
-      // Row-shaped results: render via the shared split-aware table, so the hybrid path gets the
-      // same column-name translation and tax-convention split as the pure-analytics path.
+      // If results are already rows (associative arrays), render directly
       if (!empty($subQuery['results']) && is_array($subQuery['results'][0])) {
-        $output .= $this->renderDataTable($subQuery['results'], 'table table-sm table-bordered');
+        $firstRow = $subQuery['results'][0];
+        $tableParts = $this->buildTableOpenTag('table table-sm table-bordered');
+        $output .= $tableParts['toolbar'] . $tableParts['table'];
+        $output .= "<thead><tr>";
+        foreach (array_keys($firstRow) as $column) {
+          $output .= "<th>" . htmlspecialchars($column) . "</th>";
+        }
+        $output .= "</tr></thead>";
+        $output .= "<tbody>";
+        foreach ($subQuery['results'] as $row) {
+          $output .= "<tr>";
+          foreach ($row as $column => $value) {
+            $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
+          }
+          $output .= "</tr>";
+        }
+        $output .= "</tbody></table>";
         $output .= "</div>";
         return $output;
       }
@@ -387,7 +453,7 @@ class HybridFormatter extends AbstractFormatter
               foreach ($result['rows'] as $row) {
                 $output .= "<tr>";
             foreach ($row as $column => $value) {
-              $output .= "<td>" . $this->formatCellValue((string)$column, $value, $row) . "</td>";
+              $output .= "<td>" . $this->formatCellValue((string)$column, $value) . "</td>";
             }
             $output .= "</tr>";
           }
@@ -456,29 +522,5 @@ class HybridFormatter extends AbstractFormatter
     ];
 
     return $icons[$type] ?? '🤖';
-  }
-
-  /**
-   * Distinct names of the documents the retrieved extracts come from.
-   *
-   * @param mixed $sources Retrieved extracts, as Document objects or arrays
-   * @return list<string> Document names, in retrieval order; an empty extract names no document
-   */
-  private function listSourceDocuments(mixed $sources): array
-  {
-    $names = new RagContextFormatter();
-    $documents = [];
-
-    foreach (is_array($sources) ? $sources : [] as $source) {
-      $content = is_object($source) ? ($source->content ?? '') : (is_array($source) ? ($source['content'] ?? $source['text'] ?? '') : '');
-
-      if (!is_string($content) || trim($content) === '') {
-        continue;
-      }
-
-      $documents[$names->extractDocumentName($source)] = true;
-    }
-
-    return array_map('strval', array_keys($documents));
   }
 }

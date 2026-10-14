@@ -15,6 +15,7 @@ namespace ClicShopping\AI\Infrastructure\Metrics;
 
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * CriticMetricsCollector Class
@@ -29,6 +30,7 @@ use ClicShopping\OM\CLICSHOPPING;
  */
 class CriticMetricsCollector
 {
+  private $db;
   private string $prefix;
   private bool $debug;
   
@@ -41,6 +43,7 @@ class CriticMetricsCollector
   
   public function __construct()
   {
+    $this->db = Registry::get('Db');
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && 
                    CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';

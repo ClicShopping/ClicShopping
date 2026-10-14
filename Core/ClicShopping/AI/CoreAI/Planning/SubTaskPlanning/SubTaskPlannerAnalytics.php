@@ -13,9 +13,9 @@ namespace ClicShopping\AI\CoreAI\Planning\SubTaskPlanning;
 
 
 use ClicShopping\AI\Config\TechnicalDefaults;
-use ClicShopping\AI\CoreAI\Planning\ExecutionModeMatrix;
 use ClicShopping\AI\CoreAI\Planning\TaskStep;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\DomainsAI\DomainRegistry;
 
 
 class SubTaskPlannerAnalytics
@@ -113,21 +113,6 @@ class SubTaskPlannerAnalytics
             return [];
         }
 
-        // the matrix decides whether to decompose at all — SINGLE keeps one query even if the cut has parts (same-grain
-        // multi-metric); the cut is honoured only for DECOMPOSE / MULTI_QUERY. 
-        if (array_key_exists('multiple_grains', $intent)) {
-            $mode = ExecutionModeMatrix::decide(
-                (bool)($intent['multiple_metrics'] ?? false),
-                (bool)($intent['multiple_grains'] ?? false),
-                ($intent['time_constraint'] ?? '') === 'comparison',
-                (bool)($intent['has_ranking'] ?? false)
-            );
-
-            if ($mode === ExecutionModeMatrix::MODE_SINGLE) {
-                return [];
-            }
-        }
-
         $texts = [];
 
         foreach ($raw as $subQuery) {
@@ -179,6 +164,7 @@ class SubTaskPlannerAnalytics
                 'sub_query' => $stepQuery,
                 'intent' => $intent,
                 'data_source' => 'internal_database',
+                'tables' => $this->getTablesFromDomain(),
                 'processing_mode' => 'sql_generation',
                 'depends_on' => [],
                 'can_run_parallel' => true,
@@ -188,6 +174,28 @@ class SubTaskPlannerAnalytics
         );
     }
 
+    /**
+     * Get tables from active domain configuration
+     * 
+     * @return array Array of table names from domain entity config
+     */
+    private function getTablesFromDomain(): array
+    {
+        $domainApp = DomainRegistry::getInstance()->getActiveApp();
+        if ($domainApp && method_exists($domainApp, 'getEntityConfig')) {
+            $entityConfig = $domainApp->getEntityConfig();
+            $tables = [];
+            foreach ($entityConfig as $entity) {
+                if (isset($entity['table'])) {
+                    $tables[] = $entity['table'];
+                }
+            }
+            return array_unique($tables);
+        }
+        
+        return [];
+    }
+    
     /**
      * Get planner metadata
      * 

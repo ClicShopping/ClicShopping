@@ -37,6 +37,7 @@ class ReasoningAgent implements AgentInterface
   }
 
   private SecurityLogger $securityLogger;
+  private mixed $chat;
   private bool $debug;
   private ?ReasoningAgentStats $persistentStats = null;
   private ?AgentAbstentionManager $abstentionManager = null;

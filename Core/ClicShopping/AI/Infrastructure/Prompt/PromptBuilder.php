@@ -15,7 +15,6 @@ use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
 use ClicShopping\AI\Infrastructure\Schema\SchemaEmbedder;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
-use ClicShopping\AI\RegistryAI\SchemaGraphRegistry;
 use ClicShopping\OM\CLICSHOPPING;
 
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -47,10 +46,10 @@ class PromptBuilder
   private string $useCache;
   private ?SchemaRetriever $schemaRetriever = null;
   private string $currentQuery = '';
-  private ?array $currentPlan = null;
   private string $tablePrefix;
   
   private string $modelName;
+  private string $agentType = 'analytics';
   
   /**
    * Constructor
@@ -122,11 +121,10 @@ class PromptBuilder
    * @param string $agentType Agent type (analytics — the only reachable builder)
    * @param string $query User query (optional, for Schema RAG)
    * @param string|null $modelName Model name (optional, for Schema RAG); null keeps the catalogued default
-   * @param array|null $plan Validated analysis plan (optional); drives the schema join map
    * @return string Complete system message
    * @throws \InvalidArgumentException If agent type is invalid
    */
-  public function getSystemMessage(string $agentType = 'analytics', string $query = '', ?string $modelName = null, ?array $plan = null): string
+  public function getSystemMessage(string $agentType = 'analytics', string $query = '', ?string $modelName = null): string
   {
     // Validate agent type
     if (!in_array($agentType, self::AGENT_TYPES, true)) {
@@ -134,8 +132,8 @@ class PromptBuilder
     }
 
     // Store parameters for buildSystemMessage()
+    $this->agentType = $agentType;
     $this->currentQuery = $query;
-    $this->currentPlan = $plan;
     
     if ($modelName !== null && $modelName !== '') {
       $this->modelName = $modelName;
@@ -207,33 +205,6 @@ class PromptBuilder
   }
   
   /**
-   * Get the system message of the RESULT INTERPRETER
-   *
-   * The interpreter reads rows, it does not write SQL: it only needs the business semantics
-   * (order status map, revenue rules), never the SQL rule book and its examples.
-   *
-   * @return string Interpreter system message, placeholders resolved
-   */
-  public function getInterpreterSystemMessage(): string
-  {
-    $staticKey = "interpreter_{$this->languageId}";
-
-    if (isset(self::$systemMessageCache[$staticKey])) {
-      return self::$systemMessageCache[$staticKey];
-    }
-
-    DomainConfig::loadLanguageFile('rag_analytics_agent');
-
-    $message = $this->language->getDef('text_system_message') . "\n\n" .
-      $this->language->getDef('text_order_calculation');
-
-    $message = PromptPlaceholders::resolve($message, $this->tablePrefix, $this->languageId);
-    self::$systemMessageCache[$staticKey] = $message;
-
-    return $message;
-  }
-
-  /**
    * Build complete system message
    *
    * Routes to the analytics builder; any other type is a programming error
@@ -263,23 +234,23 @@ class PromptBuilder
    */
   private function buildSystemMessageAnalytics(): string
   {
-    // Agnostic SQL rules (Agents/), then the domain layer that fills their {{domain_*}} slots.
-    DomainConfig::loadAgnosticLanguageFile('rag_sql_generation');
+    // Load language definitions from ClicShoppingAdmin/Core/languages/main.txt
+    // This loads the AnalyticsAgent prompt definitions in English
     DomainConfig::loadLanguageFile('rag_analytics_agent');
 
     // Get all prompt components
     $baseSystemMessage = $this->language->getDef('text_system_message');
     $orderCalculation = $this->language->getDef('text_order_calculation');
     $queryExamples = $this->language->getDef('text_query_examples');
-    $sqlGenerationRules = $this->sqlRulesSection('text_sql_rules_generation');
-    $aggregationRules = $this->sqlRulesSection('text_sql_rules_aggregation');
-    $orderGrainRules = $this->sqlRulesSection('text_sql_rules_grain');
-    $sqlFormatInstructions = $this->sqlRulesSection('text_sql_rules_format');
-    $text_multi_query_warning = $this->sqlRulesSection('text_sql_rules_multi_query_warning');
-    $securityGuidelines = $this->sqlRulesSection('text_sql_rules_security');
+    $sqlGenerationRules = $this->language->getDef('text_sql_generation_rules');
+    $aggregationRules = $this->language->getDef('text_aggregation_rules');  // 🚨 CRITICAL: Load aggregation rules
+    $orderGrainRules = $this->language->getDef('text_order_grain_rules');
+    $sqlFormatInstructions = $this->language->getDef('text_sql_format_instructions');
+    $text_multi_query_warning = $this->language->getDef('text_multi_query_warning');
+    $securityGuidelines = $this->language->getDef('text_security_guidelines');
     $entityMetadataGuidelines = $this->language->getDef('text_entity_metadata_guidelines');
     $multiTokenRules = $this->language->getDef('multi_token_rules');
-    $responseFormat = $this->sqlRulesSection('text_sql_rules_response_format');
+    $responseFormat = $this->language->getDef('text_response_format');
     $text_rag_system_analytics_rules = $this->language->getDef('text_rag_system_analytics_rules');
 
     // TASK 1.1: Add current date context for relative date queries
@@ -287,9 +258,6 @@ class PromptBuilder
 
     // Get table structure instructions (Schema RAG or full schema)
     $tableStructureInstructions = $this->getTableStructureInstructions();
-
-    // Join map (keys + cardinality) for the tables the plan touches — '' when no plan.
-    $schemaJoinMap = $this->buildSchemaJoinMap();
 
     // Debug logging for loaded components
     if ($this->debug) {
@@ -321,7 +289,6 @@ class PromptBuilder
       $securityGuidelines . "\n\n" .                                 // 3. Security and prohibition rules
       $text_rag_system_analytics_rules . "\n\n" .                    // 4. Critical ambiguity rules
       $tableStructureInstructions . "\n\n" .                         // 5. Database schema (the playground)
-      $schemaJoinMap .                                               // 5bis. Plan-scoped join map (own trailing gap, '' when absent)
       $entityMetadataGuidelines . "\n\n" .                           // 6. Schema metadata
       $aggregationRules . "\n\n" .                                   // 7. 🚨 CRITICAL: Aggregation rules (MUST be before SQL generation)
       $orderGrainRules . "\n\n" .                                    // 7bis. Join grain: an order-level value over a product join is repeated per line
@@ -357,25 +324,6 @@ class PromptBuilder
     return $finalMessage;
   }
   
-  /**
-   * Agnostic SQL rule section with the domain's text injected at each {{domain_x}} slot
-   *
-   * Plain replacement, never getDef() vars: those strip the braces of every other token
-   * ({{table_prefix}}, {{language_id}}) that PromptPlaceholders still has to resolve.
-   *
-   * @param string $key Key of an Agents/rag_sql_generation section
-   * @return string Section text; a slot the domain does not define resolves to ''
-   */
-  private function sqlRulesSection(string $key): string
-  {
-    return (string)preg_replace_callback('/\{\{domain_([a-z0-9_]+)\}\}/', function (array $m): string {
-      $domainKey = 'text_sql_domain_' . $m[1];
-      $value = $this->language->getDef($domainKey);
-
-      return $value === $domainKey ? '' : $value;
-    }, $this->language->getDef($key));
-  }
-
   /**
    * Build current date context for analytics queries
    *
@@ -505,61 +453,6 @@ class PromptBuilder
     return $this->buildFullSchemaWithComments();
   }
   
-  /**
-   * Plan-scoped schema join map: the tables the plan's metric grains and dimensions
-   * touch, with the join key and cardinality on each edge. Traversed WITH the plan,
-   * never the raw question, so the aggregation grain is carried by structure rather
-   * than a prompt sentence. Additive to the schema window: it names no route and no
-   * choice, only the keys a JOIN needs (guardrail — knowledge, not decision).
-   *
-   * @return string Rendered block with a trailing gap, or '' when no plan yields edges
-   */
-  private function buildSchemaJoinMap(): string
-  {
-    if ($this->currentPlan === null) {
-      return '';
-    }
-
-    $grains = [];
-
-    foreach (($this->currentPlan['metrics'] ?? []) as $metric) {
-      if (isset($metric['grain']) && is_string($metric['grain'])) {
-        $grains[] = $metric['grain'];
-      }
-    }
-
-    $dimensions = is_array($this->currentPlan['dimensions'] ?? null) ? $this->currentPlan['dimensions'] : [];
-    $startTokens = array_merge($grains, array_filter($dimensions, 'is_string'));
-
-    if ($startTokens === []) {
-      return '';
-    }
-
-    $projection = SchemaGraphRegistry::getInstance()->projectWindow($startTokens);
-
-    if ($projection['edges'] === []) {
-      return '';
-    }
-
-    $header = $this->language->getDef('text_schema_join_map');
-
-    // Key absent: skip rather than emit a raw key name into the prompt.
-    if ($header === '' || $header === 'text_schema_join_map') {
-      return '';
-    }
-
-    $lines = [];
-
-    foreach ($projection['edges'] as $edge) {
-      $from = PromptPlaceholders::TABLE_PREFIX . $edge['from_table'];
-      $to = PromptPlaceholders::TABLE_PREFIX . $edge['to_table'];
-      $lines[] = '- ' . $from . ' (' . $edge['cardinality'] . ') ' . $to
-        . ' ON ' . $from . '.' . $edge['from_col'] . ' = ' . $to . '.' . $edge['to_col'];
-    }
-
-    return $header . "\n" . implode("\n", $lines) . "\n\n";
-  }
-
   /**
    * Estimate token count for text
    *

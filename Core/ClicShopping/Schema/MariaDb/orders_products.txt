@@ -7,7 +7,6 @@ products_price decimal(15,4) not_null comment(Base product price at time of orde
 final_price decimal(15,4) not_null comment(Final product price at time of order after discounts before tax)
 products_tax decimal(7,4) not_null comment(Tax rate applied to this product - percentage as decimal)
 products_quantity int(2) not_null comment(Quantity of this product ordered)
-products_unit_cost decimal(15,4) comment(Cost basis per unit at time of order - products_cost plus products_handling, frozen when the line is written; NULL when the product had no cost or the line predates this column)
 --
 primary orders_products_id
 idx_orders_products_orders_id orders_id

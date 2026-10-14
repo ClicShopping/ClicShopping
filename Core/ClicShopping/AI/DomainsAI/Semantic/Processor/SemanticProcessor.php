@@ -8,6 +8,7 @@
 
 namespace ClicShopping\AI\DomainsAI\Semantic\Processor;
 
+use ClicShopping\AI\Security\SecurityLogger;
 
 /**
  * SemanticProcessor Class
@@ -27,6 +28,7 @@ namespace ClicShopping\AI\DomainsAI\Semantic\Processor;
  */
 class SemanticProcessor
 {
+  private SecurityLogger $logger;
   private bool $debug;
   
   /**
@@ -45,6 +47,7 @@ class SemanticProcessor
    */
   public function __construct(bool $debug = false)
   {
+    $this->logger = new SecurityLogger();
     $this->debug = $debug;
     
     

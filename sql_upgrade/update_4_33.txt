@@ -27,125 +27,6 @@ UPDATE clic_cron SET cycle='month' WHERE code IN('gdpr','marketplace');
 
 ALTER TABLE clic_orders_total ADD COLUMN IF NOT EXISTS total_sign TINYINT NOT NULL DEFAULT 1  COMMENT 'Sign for grand-total recompute - +1 charge, -1 credit/discount' AFTER sort_order;
 
-===========
- SELECT COUNT(*) FROM clic_products_cockpit_ai_tracking_impressions WHERE session_hash IS NULL;  -- doit rendre 0
-  ALTER TABLE clic_products_cockpit_ai_tracking_impressions
-    MODIFY COLUMN session_hash BINARY(32) NOT NULL
-    COMMENT 'SHA-256 hash of session ID (32 bytes, upgraded from MD5 16 bytes on 2026-04-28)';
-
-===========
-DELETE FROM clic_configuration WHERE configuration_key = 'USE_CATALOG_RESET_CACHE';
-
-===========
-ALTER TABLE clic_products COMMENT = 'PRODUCT CATALOG - one row per sellable product. Authoritative source for the CURRENT SELLING PRICE (products_price), stock on hand (products_quantity), model/SKU/EAN and active status.
-   The product NAME is not here, it is in products_description; the price actually sold and the quantities sold are in orders_products. Use it for catalogue questions (price of a product, stock, active products), never for
-   sales figures.';
-   ALTER TABLE clic_products_description COMMENT = 'PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), not in products
-   - join it to products for any question that names a product. Prices and stock are in products, quantities sold in orders_products.';
-   ALTER TABLE clic_products_to_categories COMMENT = 'LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a
-   category. It carries no price, no stock and no sales figure.';
-   ALTER TABLE clic_return_orders COMMENT = 'RETURNS / RMA - one row per product return request, joined to the original order (order_id) and product (product_id). Use it for return volume, reasons and refunds. A return is
-   NOT a sale: the sale itself stays in orders and orders_products, and a return never appears there.';
-   ALTER TABLE clic_products_groups COMMENT = 'CUSTOMER-GROUP PRICING - one row per product and customer group, carrying the price that group pays (customers_group_price) and its visibility flags. This is B2B / group
-   pricing, not a promotion (specials) and not the price actually sold (orders_products).';
-   ALTER TABLE clic_products_attributes COMMENT = 'PRODUCT VARIANTS - one row per product and option value (size, colour), with the price adjustment applied on top of the base price (options_values_price with price_prefix +
-   or -). Use it for questions about variants and option surcharges; the base price stays in products.';
-   ALTER TABLE clic_specials COMMENT = 'DISCOUNT CAMPAIGN - one row per product on promotion, with the promotional price (specials_new_products_price) and its validity window. It overrides the catalogue price of products
-   while active. It is not the price actually sold, which is in orders_products.';
-   ALTER TABLE clic_reviews COMMENT = 'CUSTOMER REVIEWS - one row per review of a product, with its rating (reviews_rating) and its author. Use it for satisfaction, average rating and review volume. The review text itself is
-   in reviews_description, the computed sentiment in reviews_sentiment.';
-   ALTER TABLE clic_products_favorites COMMENT = 'ADMIN MERCHANDISING PICKS - products the shop chooses to highlight, with a scheduling window (scheduled_date, expires_date). Despite the name this is NOT a customer wishlist:
-   no customer is referenced here. Per-customer suggestions live in products_recommendations.';
-   ALTER TABLE clic_products_featured COMMENT = 'ADMIN MERCHANDISING - products the shop puts forward, with a scheduling window (scheduled_date, expires_date). Like products_favorites this is an editorial selection made by
-   the shop, not customer behaviour and not a sales figure.';
-   ALTER TABLE clic_products_recommendations COMMENT = 'PER-CUSTOMER RECOMMENDATIONS produced by the system - one row per customer and recommended product, with a score and a grouping tag. Unlike products_favorites and
-   products_featured, which are admin picks, these are targeted at one customer (customers_id).';
-
-   #remove wishlist:
-    ALTER TABLE clic_products_favorites MODIFY products_favorites_id int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique identifier for each admin pick';
-     ALTER TABLE clic_products_favorites MODIFY products_id int(11) NOT NULL DEFAULT 0 COMMENT 'FK to products table - product picked by the shop, no customer involved';
-     ALTER TABLE clic_products_favorites MODIFY products_favorites_date_added datetime NULL COMMENT 'Timestamp when the shop picked this product';
-     ALTER TABLE clic_products_favorites MODIFY scheduled_date datetime NULL COMMENT 'Future date when the pick starts being displayed - null for immediate';
-     ALTER TABLE clic_products_favorites MODIFY expires_date datetime NULL COMMENT 'Date when the pick stops being displayed - null for no expiration';
-     ALTER TABLE clic_products_favorites MODIFY status tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Pick status - 0: inactive, 1: active';
-
-# add comment
-ALTER TABLE clic_reviews_sentiment_history COMMENT = 'AUDIT TRAIL of product review sentiment - one snapshot per analysis run, never overwritten. The CURRENT sentiment of a product is in reviews_sentiment; use this table only to follow how a sentiment CHANGED over time.';
-ALTER TABLE clic_reviews_sentiment COMMENT = 'CURRENT sentiment state of a product, one row per analysis. The percentages (positive_pct, neutral_pct, negative_pct, rating_stddev) are computed deterministically from star ratings, not by the LLM. The prose and the LLM analysis are in reviews_sentiment_description, the historical snapshots in reviews_sentiment_history.';
-ALTER TABLE clic_reviews_sentiment_description COMMENT = 'Per-language output of the review sentiment analysis: prose description, structured LLM analysis (analysis_json), and the critic verdict. Metrics are not here, they are in reviews_sentiment.';
-ALTER TABLE clic_reviews_description COMMENT = 'The TEXT of a product review, per language. The rating, the author and the approval status are in reviews - join on reviews_id. Never count reviews here.';
-ALTER TABLE clic_reviews_vote COMMENT = 'Helpfulness votes cast on a product review, one row per vote. This is engagement, NOT a rating: the star rating of a review is in reviews.';
-ALTER TABLE clic_feedback_order_reviews COMMENT = 'Rating of an ORDER and of the shop experience, one row per order feedback - NOT a product review (those are in reviews). Use it for satisfaction about the purchase, never for the opinion on an article.';
-ALTER TABLE clic_feedback_order_reviews_description COMMENT = 'The TEXT of an order feedback, per language. The rating and the status are in feedback_order_reviews.';
-ALTER TABLE clic_orders_pages_manager COMMENT = 'Frozen COPY of the terms and conditions the customer accepted on a given order, one row per order. It is legal evidence attached to a sale, not a catalogue page: the editable pages live in pages_manager.';
-ALTER TABLE clic_seo COMMENT = 'Site-wide SEO CONFIGURATION, one row per language: default title, keywords, description and footer of the shop pages. It contains no product, category or sales data - never join it to answer a catalogue or analytics question.';
-ALTER TABLE clic_orders_products_attributes COMMENT = 'Option values chosen by the customer on ONE ordered line (size, colour) with the price delta applied. Sold quantities and prices are in orders_products; the catalogue definition of the options is in products_options.';
-ALTER TABLE clic_orders_products_download COMMENT = 'Downloadable files delivered with an ordered line, with the download quota. Not a catalogue table: the file attached to an attribute is in products_attributes_download.';
-ALTER TABLE clic_orders_status_history COMMENT = 'TIMELINE of an order: one row per status change, with the tracking number, who changed it and whether the customer was notified. Use it for delays and order follow-up, never for amounts.';
-ALTER TABLE clic_orders_status_tracking COMMENT = 'Per-language label and URL template of a carrier tracking link. Lookup table: join it for the carrier name, never count rows in it.';
-ALTER TABLE clic_suppliers COMMENT = 'Supplier identity and contact details, one row per supplier. Purchase prices are not here: the cost of a product is products_cost in products.';
-ALTER TABLE clic_suppliers_info COMMENT = 'Per-language website URL of a supplier, with click tracking. The supplier identity is in suppliers.';
-ALTER TABLE clic_manufacturers COMMENT = 'Manufacturer (brand) identity, one row per brand. The products of a brand reference it by manufacturers_id in products.';
-ALTER TABLE clic_manufacturers_info COMMENT = 'Per-language URL, description and SEO fields of a manufacturer, with click tracking. The brand identity is in manufacturers.';
-ALTER TABLE clic_products_options COMMENT = 'CATALOGUE definition of a product option (the name of the axis: size, colour), per language. What a customer actually chose on a sale is in orders_products_attributes.';
-ALTER TABLE clic_products_options_values COMMENT = 'Per-language value of a product option (red, XL). The option it belongs to is in products_options.';
-ALTER TABLE clic_products_attributes_download COMMENT = 'Downloadable file attached to a product attribute, with the download quota. What was actually delivered on a sale is in orders_products_download.';
-ALTER TABLE clic_products_discount_quantity COMMENT = 'Quantity price breaks of a product, per customer group and supplier. It is a pricing RULE, not a sale: quantities actually sold are in orders_products.';
-ALTER TABLE clic_products_images COMMENT = 'Additional images of a product beyond the main one, with their display order. The main image is products_image in products.';
-ALTER TABLE clic_products_notifications COMMENT = 'Customers who asked to be warned when a product is back in stock. It is an intent, NOT a sale and NOT a wishlist.';
-ALTER TABLE clic_products_quantity_unit COMMENT = 'Per-language label of a quantity unit (piece, kg, litre). Lookup table: join it for the unit name.';
-ALTER TABLE clic_products_recommendations_to_categories COMMENT = 'Mapping of a recommended product to the categories where the recommendation is shown. The recommendation itself is in products_recommendations.';
-ALTER TABLE clic_products_extra_fields COMMENT = 'Definition of the custom product fields of this install (name, type, order, per language and customer group). It holds field DEFINITIONS, not their values.';
-ALTER TABLE clic_return_orders_history COMMENT = 'TIMELINE of a return (RMA): one row per status change, with the comment and who made it. The return itself is in return_orders.';
-ALTER TABLE clic_return_orders_action COMMENT = 'Per-language label of a return action (repair, exchange, refund). Lookup table: join it for the label, never count returns here - the returns are in return_orders.';
-ALTER TABLE clic_return_orders_reason COMMENT = 'Per-language label of a return reason (damaged, wrong size). Lookup table: join it for the label, never count returns here - the returns are in return_orders.';
-ALTER TABLE clic_return_orders_status COMMENT = 'Per-language label of a return status. Lookup table: join it for the label, never count returns here - the returns are in return_orders.';
-ALTER TABLE clic_banners_history COMMENT = 'Daily impressions and clicks of an advertising banner. It measures banner display, NOT product views and NOT sales.';
-ALTER TABLE clic_blog_categories COMMENT = 'Blog category tree (image, parent, order, customer group). Editorial content only - it has nothing to do with the product categories in categories.';
-ALTER TABLE clic_blog_categories_description COMMENT = 'Per-language name, description and SEO tags of a blog category. Editorial content, not a product category.';
-ALTER TABLE clic_blog_content COMMENT = 'Blog article: publication status, dates, author and audience. The title and the body are in blog_content_description. Editorial content, never a product.';
-ALTER TABLE clic_blog_content_description COMMENT = 'Per-language title, body, URL and SEO tags of a blog article, with its view counter. Editorial content, never a product description.';
-ALTER TABLE clic_pages_manager COMMENT = 'CMS page of the shop (terms, legal notice, help): type, status, dates and audience. The title and the HTML body are in pages_manager_description. The copy accepted on an order is in orders_pages_manager.';
-ALTER TABLE clic_pages_manager_description COMMENT = 'Per-language title, HTML body and SEO tags of a CMS page. This is where the text of the terms and conditions is read.';
-ALTER TABLE clic_contact_customers COMMENT = 'Message sent through the contact form: department, sender, subject and enquiry. Pre-sales contact, not tied to an order - after-sales requests are in customers_support.';
-ALTER TABLE clic_contact_customers_follow COMMENT = 'Administrator replies to a contact form message, one row per reply. The original message is in contact_customers.';
-ALTER TABLE clic_customers_gdpr COMMENT = 'GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data, never used for sales or marketing figures.';
-ALTER TABLE clic_discount_coupons COMMENT = 'DEFINITION of a discount coupon: amount or rate, validity window, usage limits and eligibility. A coupon actually used on an order appears in the order totals, not here.';
-ALTER TABLE clic_dynamic_pricing_rules COMMENT = 'DEFINITION of the dynamic pricing rules: condition, type, value, priority and target customer group. It holds rules, not prices: the selling price of a product is products_price in products.';
-ALTER TABLE clic_groups_to_categories COMMENT = 'Discount granted to a customer group on a whole category. It is a pricing RULE, not a sale.';
-ALTER TABLE clic_information_email_customers COMMENT = 'Configuration of the reminder email delays (90, 60, 30, 15 and 7 days). Settings only, no customer and no sales data.';
-ALTER TABLE clic_address_book COMMENT = 'Postal addresses of the customers, including the company identifiers for B2B. The customer identity is in customers; the address used on a sale is copied into orders.';
-ALTER TABLE clic_customers_support COMMENT = 'Customer support tickets. Personal data (name/email/phone) is encrypted at rest. See Apps/Customers/CustomersSupport.';
-ALTER TABLE clic_customers_support_follow COMMENT = 'Conversation thread linked to a customers_support ticket. One row per reply (admin or - future - customer).';
-ALTER TABLE clic_web_search_product_price_tracking_history COMMENT = 'MARKET price watch: prices observed on external web sources for a product name, with the source, the search query and the date. These are COMPETITOR prices, NOT the price of the shop - the selling price is products_price in products, and the price actually sold is in orders_products. Use it only to compare the shop with the market.';
-
-ALTER TABLE clic_dynamic_pricing_history COMMENT = 'APPLIED dynamic pricing history: one row per price computed by a rule, with the base price, the resulting price, the rule applied and the source. It is OUR OWN price history - the current selling price is products_price in products, the price actually sold is in orders_products, and competitor prices are in web_search_product_price_tracking_history. Use it to follow how a price MOVED and which rule moved it.';
-ALTER TABLE clic_products_cooccurrence COMMENT = 'CO-PURCHASE affinity between two products, with a score: how often product_id and related_id are bought together. Derived from the order history, it answers cross-sell and bundle questions - it holds no price, no quantity and no revenue, those are in orders_products.';
-ALTER TABLE clic_whos_online COMMENT = 'LIVE AUDIENCE: one row per visitor currently browsing, refreshed on each click - entry time, last click, last page seen, referrer and user agent. It is real-time traffic, NOT a sale and NOT a cart: purchases are in orders, live carts in customers_basket. Rows disappear when the session ends, so it answers only questions about NOW.';
-ALTER TABLE clic_products_cockpit_ai_tracking_impressions COMMENT = 'PRODUCT IMPRESSIONS: one row each time a product is displayed to a visitor, with the page, the module, its position and a weight. It measures EXPOSURE (how often a product was shown, by which module), never a sale - quantities sold are in orders_products. Use it for merchandising performance and visibility questions.';
-ALTER TABLE clic_seo_serp_reports COMMENT = 'SEO AUDIT REPORT of one entity (product, category, page): the search-engine result data for a query, the SEO content before and after, the proposed changes and the scores. It answers SEO questions - ranking, keyword, optimisation gain. It holds no price, no stock and no sales figure.';
-
-ALTER TABLE clic_products_featured COMMENT = 'ADMIN MERCHANDISING - editorial selection of the products the shop puts forward on its storefront, one row per product, with the scheduling window that opens and closes the exposure (scheduled_date, expires_date) and the customer group that sees it.';
-ALTER TABLE clic_products_cockpit_ai_tracking_impressions COMMENT = 'PRODUCT IMPRESSIONS - one row each time a product is displayed to a visitor, with the page, the module, the position and a weight. It measures EXPOSURE: how often a product was shown and by which module. Use it for merchandising visibility questions.';
-ALTER TABLE clic_products_description COMMENT = 'PRODUCT NAMES and marketing texts, one row per product and per language (language_id). The name a user types when naming a product is here (products_name), together with the description, the summary, the SEO tags and the shipping delay messages.';
-ALTER TABLE clic_products_attributes COMMENT = 'PRODUCT VARIANTS - one row per product and option value (size, colour), each carrying its own surcharge in options_values_price, signed by price_prefix (+ or -). Use it for questions about variants and option surcharges.';
-ALTER TABLE clic_products_options COMMENT = 'CATALOGUE definition of a product option - the name of the axis a customer can choose (size, colour), one row per option and per language.';
-ALTER TABLE clic_products_attributes_download COMMENT = 'Downloadable file attached to a product attribute: its filename and the download quota (maximum count and availability window).';
-ALTER TABLE clic_seo_serp_reports COMMENT = 'SEO AUDIT REPORT of one entity (product, category, page): the search-engine result data for a query, the SEO content before and after, the proposed changes and the scores. It answers SEO questions - ranking, keyword, optimisation gain.';
-ALTER TABLE clic_banners_history COMMENT = 'Impressions and clicks of an advertising banner, one row per banner and per date. It measures the display of the banner itself.';
-ALTER TABLE clic_orders_pages_manager COMMENT = 'Frozen COPY of the terms and conditions a customer accepted on a given order, one row per order. Legal evidence kept verbatim as it was at the moment of acceptance.';
-ALTER TABLE clic_products_notifications COMMENT = 'Customers who asked to be warned when a product comes back in stock, one row per customer and product. It records a request to be notified.';
-ALTER TABLE clic_seo COMMENT = 'Site-wide SEO CONFIGURATION, one row per language: default title, keywords, description and footer used on the shop pages. Settings only.';
-ALTER TABLE clic_information_email_customers COMMENT = 'Configuration of the reminder e-mail schedule of a customer: one flag per delay step (90, 60, 30, 15 and 7) after the last activity. Settings only.';
-ALTER TABLE clic_orders_products_attributes COMMENT = 'Option values chosen by the customer on ONE ordered line (size, colour), frozen as they were at the moment of the order, with the adjustment applied to that line (options_values_price, signed by price_prefix).';
-ALTER TABLE clic_suppliers COMMENT = 'Supplier identity and contact details, one row per supplier: company name, account manager, telephone, e-mail, postal address, country and internal notes.';
-ALTER TABLE clic_whos_online COMMENT = 'LIVE AUDIENCE - one row per visitor currently browsing, refreshed on each click: entry time, last click, last page seen, referrer and user agent. Rows disappear when the session ends, so it answers only questions about the present moment.';
-ALTER TABLE clic_address_book COMMENT = 'Postal addresses of the customers, one or more rows per customer, including the company identifiers used for B2B.';
-ALTER TABLE clic_contact_customers COMMENT = 'Message sent through the contact form of the shop, one row per message: department, sender, subject and enquiry.';
-ALTER TABLE clic_customers_gdpr COMMENT = 'GDPR consent record of a customer: opt-out of IP address storage, with its date. Compliance data.';
-ALTER TABLE clic_groups_to_categories COMMENT = 'Discount rate, in percent, granted to a customer group on a whole category - one row per group and category. It is a catalogue rule.';
-ALTER TABLE clic_products_to_categories COMMENT = 'LINK TABLE between products and categories - one row per product/category pair, a product may belong to several categories. Use it to scope a catalogue question to a category.';
-
 ===============================
 ALTER TABLE clic_orders_status
   ADD COLUMN IF NOT EXISTS orders_status_definition varchar(512) NOT NULL DEFAULT ''
@@ -156,11 +37,6 @@ ALTER TABLE clic_orders_status_invoice
   ADD COLUMN IF NOT EXISTS orders_status_invoice_definition varchar(512) NOT NULL DEFAULT ''
   COMMENT 'Business meaning of this invoice status written by the merchant - what it applies to. Authoritative source for interpreting orders.orders_status_invoice; never infer a meaning from the id'
   AFTER orders_status_invoice_name;
-
-ALTER TABLE clic_orders_status_tracking
-  ADD COLUMN IF NOT EXISTS orders_status_tracking_definition varchar(512) NOT NULL DEFAULT ''
-  COMMENT 'Business meaning of this carrier entry written by the merchant - what it applies to. This table lists carriers not order states'
-  AFTER orders_status_tracking_link;
 
 -- --------------------------------------------------------------------------
 -- 2. Commentaire de TABLE sur orders_status — elle n'en avait aucun.
@@ -401,7 +277,6 @@ INSERT FROM `clic_administrator_menu` WHERE `clic_administrator_menu_description
 DELETE FROM `clic_administrator_menu_description` WHERE `clic_administrator_menu_description`.`id` = 23 AND `clic_administrator_menu_description`.`language_id` = 1;
 DELETE FROM `clic_administrator_menu_description` WHERE `clic_administrator_menu_description`.`id` = 23 AND `clic_administrator_menu_description`.`language_id` = 2;
 
-
 ========================
 -- English
 INSERT INTO clic_configuration VALUES(null, 'Specific delivery out of stock (other than by default)', 'DISPLAY_SHIPPING_DELAY_OUT_OF_STOCK', '10', 'Specific delivery out of stock (other than by default)', 9, 10, '2008-06-23 23:42:37', '2008-06-23 00:00:00',  NULL, NULL);
@@ -427,136 +302,6 @@ INSERT INTO clic_configuration VALUES(null, 'Fenêtre d\'historique du stock (jo
 
 =================
 CREATE TABLE IF NOT EXISTS clic_rag_rate_limit ( id INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary key - one row per accepted question', identifier VARCHAR(255) NOT NULL COMMENT 'Caller key, stored in clear so an excess stays attributable: admin:<id>, mcp:<id>, system:<job>', timestamp INT(11) NOT NULL COMMENT 'Unix timestamp of the accepted question - drives the sliding window', ip VARCHAR(45) DEFAULT NULL COMMENT 'IP address of the caller - IPv4 or IPv6 format', PRIMARY KEY (id), KEY idx_identifier_timestamp (identifier, timestamp), KEY idx_timestamp (timestamp) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Sliding window rate limit of the AI chatbot, keyed by channel and user';
-
-=================
-ALTER TABLE clic_mcp_alerts
-  ADD COLUMN IF NOT EXISTS mcp_id int(11) NOT NULL DEFAULT 0
-  COMMENT 'MCP account the alert belongs to - 0 for an App level alert'
-  AFTER id;
-
-ALTER TABLE clic_mcp_alerts
-  ADD INDEX IF NOT EXISTS idx_mcp_id (mcp_id);
-
-=================
-INSERT INTO clic_configuration
-  (configuration_title, configuration_key, configuration_value, configuration_description,
-   configuration_group_id, sort_order, last_modified, date_added, use_function, set_function)
-SELECT 'Notifications d''alerte par e-mail',
-       'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_STATUS',
-       'False',
-       'Mettre True pour prévenir l''administrateur par e-mail lorsqu''un compte MCP est refusé sur son quota, ou lorsque l''agent de surveillance lève un avertissement. Le compte doit aussi porter sa propre case Notification d''alerte. Recommandé : True en production, False sur une installation de test.',
-       6, 0, NULL, NOW(), NULL, 'clic_cfg_set_boolean_value(array(\'True\', \'False\'))'
- WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
-                    WHERE configuration_key = 'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_STATUS');
-
-INSERT INTO clic_configuration
-  (configuration_title, configuration_key, configuration_value, configuration_description,
-   configuration_group_id, sort_order, last_modified, date_added, use_function, set_function)
-SELECT 'Destinataire des alertes',
-       'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_EMAIL',
-       '',
-       'Adresse e-mail qui reçoit les alertes MCP. Laisser vide pour utiliser l''adresse du propriétaire de la boutique. Une seule adresse ; passer par une liste de diffusion si plusieurs personnes doivent être prévenues.',
-       6, 0, NULL, NOW(), NULL, NULL
- WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
-                    WHERE configuration_key = 'CLICSHOPPING_APP_MCP_MC_ALERT_NOTIFICATION_EMAIL');
-
-SELECT configuration_key, configuration_value
-  FROM clic_configuration
- WHERE configuration_key LIKE 'CLICSHOPPING_APP_MCP_MC_%'
- ORDER BY configuration_key;          -- attendu : 11 lignes (9 + les 2 nouvelles)
-
-
--- =============================================================================
--- CFG-2 — constantes de l'App de domaine Apps/AI/Ecommerce (2026-08-31)
--- Documentation : ce fichier n'est PAS exécuté. Le script applicable est
--- sql/2026_08_31_cfg2_ecommerce_config_keys.sql
--- =============================================================================
--- =============================================================================
--- CFG-2 — constantes de l'App de domaine `Apps/AI/Ecommerce`
--- NON EXÉCUTÉ : l'écriture live est une action du mainteneur.
---
--- Le préfixe de tables de cet install est `clic_`. Sur un autre install,
--- remplacer `clic_` par la valeur de db_table_prefix (Conf/global.php).
---
--- Quatre gestes, dans cet ordre — le report AVANT toute suppression.
--- Idempotent : rejouable sans effet supplémentaire.
--- =============================================================================
-
--- 1. REPORT du secret d'authentification, ACP et UCP.
---    Le 2026-05-26 la clé a été renommée `*_SHARED_KEY_RETAIL` -> `*_API_KEY_*_RETAIL`
---    sur les deux protocoles, sans migration : sur un install antérieur, la
---    nouvelle clé naît vide et les deux points d'entrée répondent 401 sur tout
---    (`$expectedHeader === ''`, ACP.php:117 / UCP.php:135).
---    Ne recopie QUE si l'ancienne porte une valeur et la nouvelle est vide :
---    une clé déjà ressaisie par le marchand n'est jamais écrasée.
-
-UPDATE clic_configuration AS n
-  JOIN clic_configuration AS o
-    ON o.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_ACP_SHARED_KEY_RETAIL'
-  SET n.configuration_value = o.configuration_value,
-      n.last_modified = NOW()
-  WHERE n.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_ACP_API_KEY_OPENAI_RETAIL'
-    AND TRIM(o.configuration_value) <> ''
-    AND TRIM(n.configuration_value) = '';
-
-UPDATE clic_configuration AS n
-  JOIN clic_configuration AS o
-    ON o.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL'
-  SET n.configuration_value = o.configuration_value,
-      n.last_modified = NOW()
-  WHERE n.configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_API_KEY_GOOGLE_RETAIL'
-    AND TRIM(o.configuration_value) <> ''
-    AND TRIM(n.configuration_value) = '';
-
--- 2. SUPPRESSION des lignes sans source ni lecteur.
---    `*_SHARED_KEY_RETAIL` : reportées par le geste 1.
---    `CAI_CACHE_TLL` : orthographe divergente ET sans lecteur — les classes du
---      Cockpit portent cinq TTL distincts (5 min à 7 jours), un réglage unique
---      ne peut pas les couvrir. Param et fichiers de langue retirés.
---    `CAI_EMBEDDING_FORMAT_VERSION` : la version du format est un contrat de
---      code (`EmbeddingService::EMBEDDING_FORMAT_VERSION`), pas un réglage.
---    `EC_SEO_SERPAPI_STATUS` : Param retiré volontairement par b0bc5b86
---      (« remove SerpAPI/SERP from SEO analysis entirely »), ligne oubliée.
-
-DELETE FROM clic_configuration
-  WHERE configuration_key IN (
-    'CLICSHOPPING_APP_ECOMMERCE_ACP_SHARED_KEY_RETAIL',
-    'CLICSHOPPING_APP_ECOMMERCE_UCP_SHARED_KEY_RETAIL',
-    'CLICSHOPPING_APP_ECOMMERCE_CAI_CACHE_TLL',
-    'CLICSHOPPING_APP_ECOMMERCE_CAI_EMBEDDING_FORMAT_VERSION',
-    'CLICSHOPPING_APP_ECOMMERCE_EC_SEO_SERPAPI_STATUS'
-  );
-
--- 3. CRÉATION des deux constantes lues mais jamais installables.
---    `UCP.php:151` et `GptSessionManager.php:21` les lisent sous `\defined()` :
---    inertes, jamais réglables. Les valeurs reprennent exactement les replis
---    du code, la bascule est donc sans effet de bord.
-
--- `idx_configuration_key` n'est PAS unique (SHOW INDEX) : `ON DUPLICATE KEY
---    UPDATE` serait inerte ici et un rejeu créerait des doublons. D'où NOT EXISTS.
-
-INSERT INTO clic_configuration
-  (configuration_key, configuration_value, configuration_group_id, configuration_title, configuration_description, date_added)
-SELECT 'CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT', '100', 6,
-       'Plafond de débit (requêtes par minute)',
-       'Nombre maximal de requêtes UCP autorisées par minute, compté par clé d''API, ou par adresse IP pour le catalogue public en lecture seule. Au-delà de ce plafond, le point d''entrée répond 429.',
-       NOW()
-  WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
-                     WHERE configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT');
-
-INSERT INTO clic_configuration
-  (configuration_key, configuration_value, configuration_group_id, configuration_title, configuration_description, date_added)
-SELECT 'CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT', '86400', 6,
-       'Durée de vie d''une session (secondes)',
-       'Durée de vie d''une session de commande UCP avant expiration (par défaut : 86400, soit un jour).',
-       NOW()
-  WHERE NOT EXISTS (SELECT 1 FROM clic_configuration
-                     WHERE configuration_key = 'CLICSHOPPING_APP_ECOMMERCE_UCP_SESSION_TIMEOUT');
-
--- 4. CONTRÔLE — doit rendre 0 ligne pour les cinq supprimées, 2 pour les créées.
--- SELECT configuration_key, configuration_value FROM clic_configuration
---   WHERE configuration_key LIKE 'CLICSHOPPING_APP_ECOMMERCE%' ORDER BY configuration_key;
-
 =================
 -- APCU
 
@@ -607,7 +352,7 @@ SELECT m.id, 'Informations Redis', 2 FROM clic_administrator_menu m
                      WHERE d.id = m.id AND d.language_id = 2);
 
 
-// Cronjob
+## Cronjob
 INSERT INTO clic_cron (code, description, cycle, action, status, date_added)
 SELECT 'ai_data_retention',
        'Delete AI agent journals older than the configured retention window. The measurement corpus and the objective queue have their own windows (CLICSHOPPING_APP_CHATGPT_ASY_DATA_RETENTION_CORPUS_DAYS, ..._OBJECTIVES_DAYS, 90 by default, 0 = kept for ever)',
@@ -617,55 +362,15 @@ SELECT 'ai_data_retention',
        NOW()
 WHERE NOT EXISTS (SELECT 1 FROM clic_cron WHERE code = 'ai_data_retention');
 
-// AIACT-2 — persist the executed SQL and the validation gate verdict on the AI interaction log.
-// Without them a signalled answer cannot be corrected: one sees what was asked and what was
-// returned, never what the system did to get there.
-ALTER TABLE clic_rag_interactions
-  ADD COLUMN IF NOT EXISTS sql_query TEXT DEFAULT NULL
-    COMMENT 'SQL actually executed for this interaction, as the response exposed it - null when the path ran no SQL'
-    AFTER intent_type,
-  ADD COLUMN IF NOT EXISTS validation_action VARCHAR(16) DEFAULT NULL
-    COMMENT 'Validation gate verdict on the delivered answer: pass, annotate or regenerate'
-    AFTER sql_query,
-  ADD COLUMN IF NOT EXISTS validation_score DECIMAL(4,3) DEFAULT NULL
-    COMMENT 'Normalised 0-1 quality score the verdict was taken on - null when no score was available'
-    AFTER validation_action,
-  ADD INDEX IF NOT EXISTS idx_validation_action (validation_action);
-
-
-// AIACT-3 — the feedback findings journal. Two surfaces consulted at different moments must read
-// the SAME analysis, so the findings are stored with their cross keys instead of recomputed.
-CREATE TABLE IF NOT EXISTS clic_rag_feedback_journal (
-  journal_id INT NOT NULL AUTO_INCREMENT COMMENT 'Primary key - unique finding identifier',
-  generated_at DATETIME NOT NULL COMMENT 'When the report that produced this finding was run - all findings of one run share it',
-  period_days INT NOT NULL COMMENT 'Window in days the finding was measured on',
-  code VARCHAR(48) NOT NULL COMMENT 'Finding code, never prose - the wording belongs to the rendering surface',
-  severity VARCHAR(16) NOT NULL COMMENT 'critical, high, medium or low',
-  population INT NOT NULL COMMENT 'What the figures were measured on - a figure without its population cannot be opposed',
-  agent_used VARCHAR(50) DEFAULT NULL COMMENT 'Cross key: agent the finding points at, null when it covers the whole window',
-  intent_type VARCHAR(50) DEFAULT NULL COMMENT 'Cross key: intent the finding points at, null when it covers the whole window',
-  figures TEXT DEFAULT NULL COMMENT 'JSON figures of the finding, read by the surface that renders it',
-  PRIMARY KEY (journal_id),
-  KEY idx_generated_at (generated_at),
-  KEY idx_code (code),
-  KEY idx_agent_used (agent_used),
-  KEY idx_intent_type (intent_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-//IP
-//english
+##IP
+##english
 INSERT INTO clic_configuration VALUES(null, 'Do you want to block outgoing calls to private networks ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuses every outgoing HTTP call whose destination resolves to a loopback, link-local or private address (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Leave it on false when this shop calls its own internal services - a self-hosted AI model, an internal ERP - otherwise they become unreachable.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
-//french
+##french
 INSERT INTO clic_configuration VALUES(null, 'Voulez-vous bloquer les appels sortants vers les réseaux privés ?', 'HTTP_BLOCK_PRIVATE_NETWORK', 'false', 'Refuse tout appel HTTP sortant dont la destination résout vers une adresse de boucle locale, de lien local ou privée (127.0.0.0/8, 10/8, 172.16/12, 192.168/16, 169.254/16, ::1, fc00::/7). Laissez false si cette boutique appelle ses propres services internes - un modèle IA auto-hébergé, un ERP interne - sinon ils deviennent injoignables.', 1, 25, NULL, '2026-09-21 00:00:00', NULL, 'clic_cfg_set_boolean_value(array(\'true\', \'false\'))');
 
-//Add currency
+##Add currency
 ALTER TABLE `clic_countries` ADD `country_currency_code` VARCHAR(256) NULL DEFAULT NULL COMMENT 'Country local currency code - ISO 4217, e.g. EUR, CAD, USD - null when unknown' AFTER `status`, ADD INDEX `idx_countries_currency` (`country_currency_code`);
-//Seed existing installs: unit_test/2026_09_27/geodb1_country_currency_update.sql (236 UPDATE from ICU, keeps values already set)
+##Seed existing installs: unit_test/2026_09_27/geodb1_country_currency_update.sql (236 UPDATE from ICU, keeps values already set)
 
-//SEC-PWD — admin password reset by single-use emailed link (only the SHA-256 of the token is stored)
+##SEC-PWD — admin password reset by single-use emailed link (only the SHA-256 of the token is stored)
 ALTER TABLE `clic_administrators` ADD `password_reset_key` CHAR(64) NULL DEFAULT NULL COMMENT 'SHA-256 hash of the emailed password reset token - never the token itself' AFTER `email_verification_expiry`, ADD `password_reset_date` DATETIME NULL DEFAULT NULL COMMENT 'When the password reset was requested - the link expires after it' AFTER `password_reset_key`;
-
-//ANALYTIC-COSTHIST1 — cost basis frozen on the order line (margins no longer recomputed at today's cost)
-ALTER TABLE `clic_orders_products` ADD COLUMN IF NOT EXISTS `products_unit_cost` DECIMAL(15,4) NULL DEFAULT NULL COMMENT 'Cost basis per unit at time of order - products_cost plus products_handling, frozen when the line is written; NULL when the product had no cost or the line predates this column' AFTER `products_quantity`;
-//Existing lines stay NULL: their margin falls back to the current catalogue cost (never backfilled - that would invent history)

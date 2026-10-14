@@ -1,0 +1,2 @@
+cfg_ecommerce_cockpit_ai_cache_tll_title = Cache TTL (seconds)
+cfg_ecommerce_cockpit_ai_cache_tll_description = Time-to-live for catalog normalization cache (default: 1 hour)

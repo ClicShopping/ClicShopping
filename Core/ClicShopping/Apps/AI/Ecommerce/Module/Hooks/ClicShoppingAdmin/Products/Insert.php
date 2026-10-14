@@ -75,9 +75,7 @@ class Insert implements HooksInterface
       'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
     ];
 
-    if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
-      return false;
-    }
+    CLICSHOPPING::checkAppsIsActivated($requiredConstants);
 
     if (!Gpt::checkGptStatus()) {
       return false;
@@ -139,7 +137,7 @@ class Insert implements HooksInterface
             $products_status = $item['products_status'];
             $products_ordered = $item['products_ordered'];
             $products_quantity = $item['products_quantity']; //product stock
-            $products_stock_reorder_level = \defined('STOCK_REORDER_LEVEL') ? (int)STOCK_REORDER_LEVEL : 0; // store-wide reorder level
+            $products_stock_reorder_level = (int)STOCK_REORDER_LEVEL; //alert stock  fixfor all  products
             $products_quantity_alert = $item['products_quantity_alert']; // alert stock fix
             $manufacturer_name = HTML::sanitize($_POST['manufacturers_name']);
             $products_description = $item['products_description'];
@@ -272,12 +270,8 @@ class Insert implements HooksInterface
             //********************
 
             if ($embedding_enabled) {
-              // Identity block repeated on EVERY chunk: without it only chunk 0 names the product
-              // and the following chunks are unattributable — and unreachable by name.
-              $identity_header = $this->app->getDef('text_product_name') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_name) . "\n"
-                . $this->app->getDef('text_product_id') . ': ' . $products_id;
-
-              $embedding_data = $identity_header . "\n";
+              $embedding_data = $this->app->getDef('text_product_name') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_name) . "\n";
+              $embedding_data .= $this->app->getDef('text_product_id') . ': ' . $products_id . "\n";
 
               if (!empty($products_model)) {
                 $embedding_data .= $this->app->getDef('text_product_model') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_model) . "\n";
@@ -318,7 +312,7 @@ class Insert implements HooksInterface
               }
 
               if (!empty($products_stock_reorder_level)) {
-                $embedding_data .= $this->app->getDef('text_product_stock_reorder') . ': ' . $products_stock_reorder_level . "\n";
+                $embedding_data .= $this->app->getDef('text_product_stock_reorder') . ': ' . HTMLOverrideCommon::cleanHtmlForEmbedding($products_stock_reorder_level) . "\n";
               }
 
               if (!empty($products_quantity)) {
@@ -381,7 +375,7 @@ class Insert implements HooksInterface
 
               try {
                 // Generate embeddings
-                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data, null, $identity_header);
+                $embeddedDocuments = NewVector::createEmbedding(null, $embedding_data);
 
                 if (!empty($embeddedDocuments)) {
                   // Prepare base metadata

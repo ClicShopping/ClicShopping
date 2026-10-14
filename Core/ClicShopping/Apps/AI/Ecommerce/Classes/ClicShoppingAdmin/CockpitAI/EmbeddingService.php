@@ -9,6 +9,7 @@
 namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI;
 
 use ClicShopping\AI\DomainsAI\Shared\Embedding\NewVector;
+use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\OM\Registry;
 
 /**
@@ -35,13 +36,15 @@ use ClicShopping\OM\Registry;
 class EmbeddingService
 {
   private const TABLE_NAME = 'products_cockpit_ai_embedding'; // Table name without prefix
-  public const EMBEDDING_FORMAT_VERSION = '2.0';
+  private const EMBEDDING_FORMAT_VERSION = '1.0';
   
+  private MultiDBRAGManager $ragManager;
   private bool $debug;
   private mixed $db;
 
   public function __construct()
   {
+    $this->ragManager = new MultiDBRAGManager();
     $this->debug = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG') && CLICSHOPPING_APP_ECOMMERCE_CAI_DEBUG === 'True';
     $this->db = Registry::get('Db');
 
@@ -50,7 +53,7 @@ class EmbeddingService
   /**
    * Store embedding with metadata in clic_products_cockpit_ai_embedding  table
    *
-   * Generates content from metadata, creates embedding via NewVector,
+   * Generates content from metadata, creates embedding via MultiDBRAGManager,
    * and persists with full metadata JSON.
    *
    * Requirements 15.1-15.9:
@@ -145,11 +148,6 @@ class EmbeddingService
           'quadrant' => $metadata['scores']['quadrant'] ?? 'Q_intermediate',
         ],
 
-        // Per-factor detail: generateContent() reads it, and it is the only trace of WHY a
-        // score landed where it did.
-        'factors_x' => $source['factors_x'] ?? $source['scores']['factors_x'] ?? [],
-        'factors_y' => $source['factors_y'] ?? $source['scores']['factors_y'] ?? [],
-
         'seo' => [
           'score' => (int)($source['seo']['score'] ?? 0),
           'status' => $metadata['seo']['status'] ?? 'NOT_ANALYZED',
@@ -161,10 +159,6 @@ class EmbeddingService
           'conversion_rate' => (float)($source['commercial_metrics']['conversion_rate'] ?? 0.0),
           'returns' => (int)($source['commercial_metrics']['returns'] ?? 0),
         ],
-
-        // Velocity block, read by the dashboard. ReportBuilder only emits it when the
-        // collector produced a value: a key absent here reads as 'no data', not as zero.
-        'inventory_metrics' => $source['inventory_metrics'] ?? $metadata['inventory_metrics'] ?? null,
 
         'feature_flags' => [
           'promo_active' => (bool)($source['feature_flags']['promo_active'] ?? false),
@@ -197,10 +191,10 @@ class EmbeddingService
         ],
 
         // Catalog normalization context (Requirement 7.1-7.5)
-        'catalog_normalization' => $source['catalog_normalization'] ?? $metadata['catalog_normalization'] ?? [],
+        'catalog_normalization' => $metadata['catalog_normalization'] ?? [],
 
         // Thresholds used (Requirement 8.1-8.5)
-        'thresholds' => $source['thresholds'] ?? $metadata['thresholds'] ?? ['T_high' => 70, 'T_low' => 30],
+        'thresholds' => $metadata['thresholds'] ?? ['T_high' => 70, 'T_low' => 30],
 
         // Technical metadata (Requirement 16.10)
         'technical' => [
@@ -211,7 +205,7 @@ class EmbeddingService
 
         // Product identification
         'entity_id' => $productId,
-        'product_name' => $source['product_name'] ?? $metadata['product_name'] ?? 'Unknown',
+        'product_name' => $metadata['product_name'] ?? 'Unknown',
       ];
 
 
@@ -277,9 +271,14 @@ class EmbeddingService
    */
   public function generateContent(array $metadata): string
   {
+    // Normalisation de l'accès aux données (gestion du niveau 'metadata')
     $src = isset($metadata['metadata']) ? $metadata['metadata'] : $metadata;
-    $src['entity_id'] ??= $metadata['entity_id'] ?? 0;
-    $src['product_name'] ??= $metadata['product_name'] ?? null;
+
+    // Préparation des variables pour le template
+    $flags = $src['feature_flags'] ?? [];
+    $history = $src['history'] ?? [];
+    $scores = $src['scores'] ?? [];
+    $metrics = $src['commercial_metrics'] ?? [];
 
     $template = <<<TEMPLATE
 Template v1.0 format (Requirement 17):
@@ -308,8 +307,27 @@ History and Trends:
 Active Recommendations: {actions_count}
 TEMPLATE;
 
-    // interpolateTemplate() reads the NESTED metadata: never hand it a flattened map.
-    return $this->interpolateTemplate($template, $src);
+    // Data mapping for interpolation
+    $data = [
+      'id' => $src['entity_id'] ?? 0,
+      'name' => $src['product_name'] ?? 'Unknown',
+      'score_x' => number_format((float)($scores['score_x'] ?? 0), 2),
+      'score_y' => number_format((float)($scores['score_y'] ?? 0), 2),
+      'quadrant' => $scores['quadrant'] ?? 'N / A',
+      'views' => $metrics['views_30d'] ?? 0,
+      'orders' => $metrics['orders'] ?? 0,
+      'conversion' => $metrics['conversion_rate'] ?? 0,
+      'promo' => ($flags['promo_active'] ?? false) ? 'YES' : 'NO',
+      'featured' => ($flags['feature'] ?? false) ? 'YES' : 'NO',
+      'favorites' => ($flags['favorites'] ?? false) ? 'YES' : 'NO', // CRITICAL for stability
+      'analysis_num' => $history['analysis_number'] ?? 1,
+      'delta_x' => $history['delta_x'] ?? 0,
+      'delta_y' => $history['delta_y'] ?? 0,
+      'trend' => $history['trend'] ?? 'stable',
+      'actions_count'=> isset($src['actions']) ? count($src['actions']): 0
+    ];
+
+    return $this->interpolateTemplate($template, $data);
   }
 
   /**
@@ -383,7 +401,7 @@ TEMPLATE;
       '{actions_count}' => $actionsCount,
     ];
 
-    return strtr($template, array_map('strval', $replacements));
+    return str_replace(array_keys($replacements), array_values($replacements), $template);
   }
 
   /**
@@ -531,5 +549,24 @@ TEMPLATE;
       if ($this->debug) error_log("[CockpitAI] getLatestEmbedding failed: " . $e->getMessage());
     }
     return [];
+  }
+
+  /**
+   * Get human-readable quadrant label
+   *
+   * @param string $quadrant Quadrant code (Q1, Q2, Q3, Q4, Q_intermediate)
+   * @return string Quadrant label
+   */
+  private function getQuadrantLabel(string $quadrant): string
+  {
+    $labels = [
+      'Q1' => 'Scaling',
+      'Q2' => 'Acquisition',
+      'Q3' => 'Rework/Kill',
+      'Q4' => 'Optimization',
+      'Q_intermediate' => 'Monitoring',
+    ];
+
+    return $labels[$quadrant] ?? 'Unknown';
   }
 }

@@ -39,8 +39,6 @@
    */
   class SeoOptimizationAgent implements AgentInterface
   {
-    public const ACTOR_ID = 'seo_optimization_agent';
-
     /**
      * Unique runtime identifier for this agent instance.
      */
@@ -71,7 +69,7 @@
      */
     public function __construct()
     {
-      $this->actorId = self::ACTOR_ID;
+      $this->actorId = 'seo_optimization_agent_' . uniqid();
 
       $this->debug = defined('CLICSHOPPING_APP_CHATGPT_CH_DEBUG')
         && CLICSHOPPING_APP_CHATGPT_CH_DEBUG === 'True';

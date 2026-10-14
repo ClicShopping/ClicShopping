@@ -48,19 +48,6 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\SubFactor
  */
 class CommercialScoreAxis implements ScoringAxisInterface
 {
-  /** Conversion rate, in percent, worth a full mark. Until the parameter is installed. */
-  public const DEFAULT_TARGET_CONVERSION_RATE = 3.0;
-
-  /** Target conversion rate as a ratio, never zero: it is a divisor. */
-  private static function targetConversionRate(): float
-  {
-    $pct = \defined('CLICSHOPPING_APP_ECOMMERCE_CAI_TARGET_CONVERSION_RATE')
-      ? (float)CLICSHOPPING_APP_ECOMMERCE_CAI_TARGET_CONVERSION_RATE
-      : self::DEFAULT_TARGET_CONVERSION_RATE;
-
-    return max(0.0001, $pct / 100);
-  }
-
   private array $weights = [
     'views'          => 2.0,
     'orders'         => 3.0,
@@ -107,12 +94,8 @@ class CommercialScoreAxis implements ScoringAxisInterface
 
     // conversion: ratio [0..1] — sqrt transform: improvement at low end is more valuable
     // (going from 0% to 1% conversion is far more impactful than 9% to 10%)
-    // A conversion rate lives in [0 ; 0,05], never in [0 ; 1]: scored raw against a perfect 100 %
-    // it can never leave the floor. Measured against the target rate, it discriminates over the
-    // range a shop actually has.
-    $convRate  = isset($product['conversion_rate']) ? (float) $product['conversion_rate'] : null;
-    $convScore = $convRate === null ? null : min(1.0, $convRate / self::targetConversionRate());
-    $factors['conversion'] = new RatioFactor($convScore, transform: 'sqrt');
+    $convRate = isset($product['conversion_rate']) ? (float) $product['conversion_rate'] : null;
+    $factors['conversion'] = new RatioFactor($convRate, transform: 'sqrt');
 
     // returns: inverted return rate — fewer returns = higher score
     // sqrt transform applied on the inverted value for the same reason
@@ -125,10 +108,14 @@ class CommercialScoreAxis implements ScoringAxisInterface
     $specialsActive = isset($product['specials_active']) ? (bool) $product['specials_active'] : null;
     $factors['specials'] = new BooleanFactor($specialsActive);
 
-    // view_tracking: clic_products.products_view is a char(1) holding '1' / '0', written as an
-    // int and read as = 1 everywhere else. It has never held 'Y'.
-    $productsView = isset($product['products_view']) ? ((int)$product['products_view'] === 1) : null;
+    // view_tracking: products_view = 'Y' means the product is tracked for views
+    $productsView = isset($product['products_view']) ? ($product['products_view'] === 'Y') : null;
     $factors['view_tracking'] = new BooleanFactor($productsView);
+
+
+
+
+
 
     // favorites: product added to clic_products_favorites (dedicated listing page)
     // Boolean — product is featured in the favorites listing (status=1)

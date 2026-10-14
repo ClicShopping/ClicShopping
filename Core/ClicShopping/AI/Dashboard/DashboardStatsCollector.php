@@ -9,7 +9,6 @@
 namespace ClicShopping\AI\Dashboard;
 
 
-use ClicShopping\AI\Gouvernance\Security\SecurityJournal;
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\CLICSHOPPING;
@@ -296,9 +295,13 @@ class DashboardStatsCollector
             $detectionRate = $totalEvents > 0 ? round(($detectedThreats / $totalEvents) * 100, 2) : 0;
             $blockRate = $detectedThreats > 0 ? round(($blockedCount / $detectedThreats) * 100, 2) : 0;
             
-            // Exposure, not health: 0 = nothing detected, 100 = journal full of blocked criticals.
-            // Single source in the governance layer - a second formula here is a second truth.
-            $exposure = (new SecurityJournal())->exposure($days);
+            // Calculate health score (0-100)
+            $healthScore = $this->calculateSecurityHealthScore(
+                $detectionRate,
+                $blockRate,
+                (int)($overallResults[0]['critical_count'] ?? 0),
+                $totalEvents
+            );
             
             return [
                 'period_days' => $days,
@@ -312,9 +315,8 @@ class DashboardStatsCollector
                 'avg_detection_time_ms' => round($overallResults[0]['avg_detection_time'] ?? 0, 2),
                 'detection_rate' => $detectionRate,
                 'block_rate' => $blockRate,
-                'exposure_level' => $exposure['level'],
-                'exposure_status' => $exposure['status'],
-                'coverage' => $exposure['coverage'],
+                'health_score' => $healthScore,
+                'health_status' => $this->getHealthStatus($healthScore),
                 'threat_types' => $threatTypes,
                 'detection_methods' => $detectionMethods,
                 'languages' => $languages,
@@ -343,9 +345,8 @@ class DashboardStatsCollector
             'avg_detection_time_ms' => 0,
             'detection_rate' => 0,
             'block_rate' => 0,
-            'exposure_level' => 0,
-            'exposure_status' => 'unknown',
-            'coverage' => ['layers' => [], 'events' => 0, 'last_event' => null, 'silent' => true],
+            'health_score' => 0,
+            'health_status' => 'unknown',
             'threat_types' => [],
             'detection_methods' => [],
             'languages' => [],
@@ -353,7 +354,35 @@ class DashboardStatsCollector
         ];
     }
     
+    private function calculateSecurityHealthScore(
+        float $detectionRate,
+        float $blockRate,
+        int $criticalCount,
+        int $totalEvents
+    ): float {
+        // Detection score (40% weight)
+        $detectionScore = min(100, $detectionRate);
+
+        // Block rate score (40% weight) - inverted for false positives
+        $blockScore = min(100, $blockRate);
+
+        // Critical threat penalty (20% weight)
+        $criticalPenalty = $totalEvents > 0 ? ($criticalCount / $totalEvents) * 100 : 0;
+        $criticalScore = max(0, 100 - ($criticalPenalty * 10));
+
+        // Weighted average
+        $healthScore = ($detectionScore * 0.4) + ($blockScore * 0.2) + ($criticalScore * 0.4);
+
+        return round($healthScore, 2);
+    }
     
+    private function getHealthStatus(float $score): string
+    {
+        if ($score >= 90) return 'excellent';
+        if ($score >= 75) return 'good';
+        if ($score >= 60) return 'fair';
+        return 'poor';
+    }
     
     /**
      * Statistiques des CoreAI
@@ -390,11 +419,29 @@ class DashboardStatsCollector
                 $total_usage += $usage_count;
             }
 
-            // No web_search line here on purpose: web search is a KIND OF REQUEST, handled by
-            // the orchestrator, not a component of its own. Its calls are already counted under
-            // agent_type = 'orchestrator'; adding them from rag_interactions counted them twice
-            // and mixed two populations in one total. The kinds of request are the subject of the
-            // source distribution — see Dashboard::getSourceStats().
+            // 🔧 ADD WEBSEARCH AGENT DATA (2025-12-28)
+            // WebSearch queries don't have agent_type, they use intent_type='web_search'
+            // We need to add them separately from rag_interactions
+            $websearchResults = DoctrineOrm::select("
+                SELECT 
+                    COUNT(DISTINCT i.interaction_id) as usage_count,
+                    AVG(s.confidence_score) as avg_confidence
+                FROM {$this->prefix}rag_interactions i
+                LEFT JOIN {$this->prefix}rag_statistics s ON i.interaction_id = s.interaction_id
+                WHERE i.date_added >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                    AND i.intent_type = 'web_search'
+            ", [$days]);
+
+            if (!empty($websearchResults) && ($websearchResults[0]['usage_count'] ?? 0) > 0) {
+                $websearch_usage = $websearchResults[0]['usage_count'] ?? 0;
+                $agents[] = [
+                    'name' => 'web_search',
+                    'usage_count' => $websearch_usage,
+                    'avg_confidence' => round($websearchResults[0]['avg_confidence'] ?? 0, 2),
+                    'success_rate' => 85.0 // Valeur par défaut
+                ];
+                $total_usage += $websearch_usage;
+            }
 
             // Calculate percentages
             foreach ($agents as &$agent) {

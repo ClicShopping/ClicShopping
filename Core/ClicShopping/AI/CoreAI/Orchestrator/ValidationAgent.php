@@ -11,6 +11,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAbstention\AgentAbstentionManager;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\FeedbackManager;
 use ClicShopping\AI\InterfacesAI\AgentInterface;
+use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\OM\CLICSHOPPING;
@@ -38,6 +39,7 @@ class ValidationAgent implements AgentInterface
   }
 
   private SecurityLogger $securityLogger;
+  private DbSecurity $dbSecurity;
   private mixed $db;
   private bool $debug;
   private array $schemaCache = [];
@@ -62,6 +64,7 @@ class ValidationAgent implements AgentInterface
   public function __construct(string $userId = 'system')
   {
     $this->securityLogger = new SecurityLogger();
+    $this->dbSecurity = new DbSecurity();
     $this->db = Registry::get('Db');
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
     $this->abstentionManager = new AgentAbstentionManager();
@@ -296,18 +299,41 @@ class ValidationAgent implements AgentInterface
   }
 
   /**
-   * Detect if input is SQL query or natural language.
-   *
-   * ⛔ Never on the first word alone: SHOW, DESCRIBE and UPDATE open English sentences too.
-   * The pipeline only generates reads, so the same bound as
-   * SqlQueryProcessor::looksLikeSqlStatement() decides: it opens on SELECT or WITH.
+   * Detect if input is SQL query or natural language
    *
    * @param string $input Text to analyze
    * @return bool True if SQL, false if natural language
    */
   private function isSqlQuery(string $input): bool
   {
-    return preg_match('/^(SELECT|WITH)\b/i', ltrim($input, " \t\n\r\0\x0B(;")) === 1;
+    $input = trim($input);
+    
+    if (empty($input)) {
+      return false;
+    }
+    
+    $sqlKeywords = [
+      'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 
+      'ALTER', 'TRUNCATE', 'REPLACE', 'SHOW', 'DESCRIBE', 'EXPLAIN'
+    ];
+    
+    $firstWord = strtoupper(explode(' ', $input)[0]);
+    
+    if (in_array($firstWord, $sqlKeywords, true)) {
+      return true;
+    }
+    
+    if (preg_match('/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TRUNCATE)\s+/i', $input)) {
+      return true;
+    }
+    
+    if (preg_match('/\b(FROM|WHERE|JOIN|GROUP BY|ORDER BY|HAVING|LIMIT)\b/i', $input)) {
+      if (preg_match('/\b(SELECT|INSERT|UPDATE|DELETE)\b/i', $input)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   /**

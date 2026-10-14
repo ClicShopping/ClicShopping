@@ -19,7 +19,7 @@ namespace ClicShopping\AI\InterfacesAI;
  * - Query-context relation analysis
  *
  * This interface is distinct from HybridQueryProcessorInterface which is used
- * for hybrid query processing components (QueryClassifier).
+ * for hybrid query processing components (QueryClassifier, QuerySplitter, etc.).
  *
  * Requirements:
  * - REQ-8: Query Processing Extraction

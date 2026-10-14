@@ -14,7 +14,6 @@ MERCHANDISING STATES — whatever the source language, map each catalog-state co
 - The shop's own curated selection of products put forward on the storefront — the products the shop has picked out, i.e. products spoken of as "selected", as "in the selection", or as "the selection" of products → "featured selection"
 - Admin-curated affection picks (the shop's beloved/heart picks — a curated list, NOT "best-selling", NOT "popular": it is not a sales ranking) → "favorites selection"
 - Products suggested to a customer by the recommendation system → "recommended products"
-- A product's descriptive and technical DETAIL SHEET asked as a whole — its attributes, components, materials, dimensions, capacities and measured values — → "specifications" (NOT "features", NOT "characteristics"); a question naming ONE field (price, stock, weight, SKU) keeps that field's own term
 ⚠️ DEFAULT SELECTION RULE: a bare reference to the shop's selection of products, carrying no further qualifier, IS a clear state reference — it denotes the curated storefront selection → "featured selection". It becomes "favorites selection" ONLY when the text carries an explicit affection marker (beloved, heart, cherished), and "on promotion" ONLY when it carries an explicit price or discount marker. Never leave a bare selection reference as a plain adjective ("selected products", "the product selection"): that loses the catalog state.
 ⚠️ Map to a state ONLY when the source text clearly names that catalog state. Vague or unintelligible wording (e.g. "the thing with the stuff") is NOT a state reference: translate it literally and keep it vague — never resolve vagueness into a merchandising state. A bare selection reference is NOT vague wording: it is covered by the DEFAULT SELECTION RULE above.
 
@@ -67,8 +66,13 @@ unified_analyzer_examples_basic_analytics = BASIC ANALYTICS EXAMPLES (ALL ARE AN
 
 COUNT Operations
 ✅ "number of products" → **analytics** (COUNT products)
+✅ "nombre de produits" → **analytics** (COUNT products)
+✅ "nbr de produits" → **analytics** (COUNT products)
 ✅ "number of categories" → **analytics** (COUNT categories)
+✅ "nombre de catégories" → **analytics** (COUNT categories)
+✅ "nbr de catégories" → **analytics** (COUNT categories)
 ✅ "how many orders" → **analytics** (COUNT orders)
+✅ "combien de commandes" → **analytics** (COUNT orders)
 ✅ "how many products" → **analytics** (COUNT products)
 ✅ "how many categories" → **analytics** (COUNT categories)
 ✅ "how many orders today" → **analytics** (COUNT with date filter)
@@ -78,14 +82,20 @@ COUNT Operations
 
 SORTING Operations
 ✅ "cheapest products" → **analytics** (ORDER BY price ASC)
+✅ "produits le moins cher" → **analytics** (ORDER BY price ASC)
 ✅ "most expensive products" → **analytics** (ORDER BY price DESC)
+✅ "produits le plus cher" → **analytics** (ORDER BY price DESC)
 ✅ "top 5 best-selling products" → **analytics** (ORDER BY sales DESC LIMIT 5)
 ✅ "worst performing products" → **analytics** (ORDER BY performance ASC)
 ✅ "best semesters for revenue and their ranking" → **analytics** (ORDER BY revenue DESC with RANK)
+✅ "meilleurs semestres de vente et leur classement" → **analytics** (ORDER BY sales DESC with RANK)
 ✅ "products ranked by price" → **analytics** (ORDER BY price with RANK)
+✅ "produits classés par prix" → **analytics** (ORDER BY price with RANK)
 
 AGGREGATION Operations
 ✅ "total revenue this month" → **analytics** (SUM with date filter)
+✅ "revenue par categorie" → **analytics** (SUM GROUP BY category)
+✅ "chiffre d'affaires par categorie" → **analytics** (SUM GROUP BY category)
 ✅ "average order value" → **analytics** (AVG calculation)
 ✅ "maximum stock level" → **analytics** (MAX operation)
 ✅ "minimum price" → **analytics** (MIN operation)
@@ -101,17 +111,17 @@ COMMON MISTAKES TO AVOID
 ❌ WRONG: Classifying "number of products" as "semantic"
 ✅ CORRECT: Classifying "number of products" as "analytics"
 
+❌ WRONG: Classifying "nombre de produits" as "semantic"
+✅ CORRECT: Classifying "nombre de produits" as "analytics"
 
+❌ WRONG: Classifying "nbr de produits" as "semantic"
+✅ CORRECT: Classifying "nbr de produits" as "analytics"
 
 ❌ WRONG: Classifying "cheapest products" as "semantic"
 ✅ CORRECT: Classifying "cheapest products" as "analytics"
 
-
-unified_analyzer_examples_routing_characteristics = ROUTING EXAMPLES:
-- "how many orders and how many units sold per category" → multiple_metrics: true, multiple_grains: true (orders live at the ORDER level, one row per order; units at the PRODUCT-LINE level, one row per order line), has_ranking: false, has_aggregations: true
-- "revenue and margin per category" → multiple_metrics: true, multiple_grains: false (both revenue and margin roll up from product lines to category — one level), has_ranking: false, has_aggregations: true
-- "top 3 categories by revenue" → multiple_metrics: false, multiple_grains: false, has_ranking: true, has_aggregations: true
-- "how many orders in 2025" → multiple_metrics: false, multiple_grains: false, has_ranking: false, has_aggregations: false
+❌ WRONG: Classifying "revenue par categorie" as "semantic"
+✅ CORRECT: Classifying "revenue par categorie" as "analytics"
 
 unified_analyzer_examples_final_instructions = ⚠️ **CORRECT OUTPUT EXAMPLE**:
-{"language":"en","translated_query":"number of categories","intent_type":"analytics","entity_type":["category"],"filters":{},"time_constraint":"none","status_keywords":[],"sub_queries":[],"multiple_metrics":false,"multiple_grains":false,"has_ranking":false,"has_aggregations":false,"confidence":0.9,"ambiguity_note":"","is_multi_temporal":false,"temporal_periods":[],"temporal_connectors":[],"base_metric":null,"time_range":null}
+{"language":"en","translated_query":"number of categories","intent_type":"analytics","entity_type":["category"],"filters":{},"time_constraint":"none","status_keywords":[],"sub_queries":[],"confidence":0.9,"ambiguity_note":"","is_multi_temporal":false,"temporal_periods":[],"temporal_connectors":[],"base_metric":null,"time_range":null}

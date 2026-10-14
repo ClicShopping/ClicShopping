@@ -211,7 +211,7 @@ class CorrectionMemory
       return ['entity_id' => null, 'entity_type' => null];
     }
 
-    return EntityRegistry::getInstance()->extractEntityFromRows($results);
+    return EntityRegistry::getInstance()->extractEntityFromRow($results[0]);
   }
 
   /**

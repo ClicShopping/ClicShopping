@@ -34,7 +34,6 @@ use ClicShopping\Apps\AI\Ecommerce\Classes\Shop\UCP\GptRetailersUCP as Retailers
 use ClicShopping\AI\Security\RateLimit;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\SimpleLogger;
-use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
 
 class UCP extends \ClicShopping\OM\Domains\PagesAbstract
 {
@@ -123,7 +122,7 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
 
     $expectedSecret = '';
 
-    // Bearer auth — skipped for the public read-only catalog
+    // Simple auth (shared key) — skipped for the public read-only catalog
     if (!$skipAuth) {
       try {
         if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
@@ -149,7 +148,7 @@ class UCP extends \ClicShopping\OM\Domains\PagesAbstract
 
     // Rate limiting (per API key or IP — applies to the public catalog too)
     $identifier = $expectedSecret !== '' ? $expectedSecret : ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-    $maxRequests = EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT');
+    $maxRequests = \defined('CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT') ? (int)CLICSHOPPING_APP_ECOMMERCE_UCP_RATE_LIMIT : 100;
     $rateLimiter = new RateLimit('ucp', $maxRequests, 60);
     if (!$rateLimiter->checkLimit($identifier)) {
       $errorResponse('RATE_LIMIT_EXCEEDED', 'Too many requests', [], 429);

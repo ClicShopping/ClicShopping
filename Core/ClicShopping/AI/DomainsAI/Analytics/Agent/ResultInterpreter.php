@@ -9,13 +9,11 @@
 namespace ClicShopping\AI\DomainsAI\Analytics\Agent;
 
 use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\Language;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\Hash;
 use ClicShopping\AI\Security\InputValidator;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\Infrastructure\Cache\Cache;
-use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
 use ClicShopping\AI\Config\DomainConfig;
 use ClicShopping\AI\DomainsAI\Analytics\Agent\EmptyResultFormatter;
 
@@ -32,6 +30,7 @@ class ResultInterpreter
   private mixed $chat;
   private Cache $cache;
   private SecurityLogger $securityLogger;
+  private mixed $app;
   private mixed $language;
   private int $maxRowsForInterpretation;
   private bool $enablePromptCache;
@@ -45,16 +44,17 @@ class ResultInterpreter
    * @param mixed $chat Chat interface for AI generation
    * @param Cache $cache Cache instance
    * @param SecurityLogger $securityLogger Security logger instance
+   * @param mixed $app Application instance for definitions
    * @param int $maxRowsForInterpretation Maximum rows to send to AI
    * @param bool $enablePromptCache Enable prompt caching
    * @param bool $debug Enable debug mode
    */
-  public function __construct(mixed $chat, Cache $cache, SecurityLogger $securityLogger, int $maxRowsForInterpretation, bool $enablePromptCache = true, bool $debug = false) {
+  public function __construct(mixed $chat, Cache $cache, SecurityLogger $securityLogger, mixed $app, int $maxRowsForInterpretation, bool $enablePromptCache = true, bool $debug = false) {
     $this->chat = $chat;
     $this->cache = $cache;
     $this->securityLogger = $securityLogger;
+    $this->app = $app;
     $this->language = Registry::get('Language');
-    $this->language->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
     $this->maxRowsForInterpretation = $maxRowsForInterpretation;
     $this->enablePromptCache = $enablePromptCache;
     $this->debug = $debug;
@@ -74,11 +74,9 @@ class ResultInterpreter
    * @param array $results The results of the SQL query
    * @param string $sqlQuery Optional SQL query for empty result formatting
    * @param string $queryType Optional query type (analytics, semantic, hybrid)
-   * @param bool $asksAction The plan read the question as asking what to DO: only then are domain actions served
-   * @param array<int, string> $nonAdditive Plan metrics whose rows never add up across the breakdown
    * @return string|array Natural language interpretation or empty result array
    */
-  public function interpretResults(string $question, array $results, string $sqlQuery = '', string $queryType = 'analytics', bool $asksAction = false, array $nonAdditive = []): string|array
+  public function interpretResults(string $question, array $results, string $sqlQuery = '', string $queryType = 'analytics'): string|array
   {
     // Check for empty results and delegate to EmptyResultFormatter
     if ($this->isEmptyResult($results)) {
@@ -100,7 +98,7 @@ class ResultInterpreter
       return CLICSHOPPING::getDef('text_error_context_sql_number_request', $array);
     }
 
-    $cleanResults = $this->labelSplitValues($this->sanitizeResultsForPrompt($results));
+    $cleanResults = $this->sanitizeResultsForPrompt($results);
     $safeQuestion = InputValidator::validateParameter($question, 'string');
 
     if ($safeQuestion !== $question) {
@@ -111,7 +109,7 @@ class ResultInterpreter
       $question = $safeQuestion;
     }
 
-    $interpretCacheKey = "interpret_" . $this->cache->generateCacheKey($question . json_encode($cleanResults) . md5($sqlQuery) . implode(',', $nonAdditive));
+    $interpretCacheKey = "interpret_" . $this->cache->generateCacheKey($question . json_encode($cleanResults) . md5($sqlQuery));
 
     // Check the cache with expiration logic
     if ($this->enablePromptCache && isset($this->promptCache[$interpretCacheKey])) {
@@ -146,13 +144,7 @@ class ResultInterpreter
       'baseCurrency' => \defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : ''
     ];
 
-    $skeleton = $this->language->getDef('text_interpret_results');
-    // Actions are served only when the plan says the question asks what to do; a prompt clause cannot gate them.
-    $skeleton = str_replace('{{interpret_actions}}', $asksAction ? $this->language->getDef('text_interpret_results_actions') : '', $skeleton);
-    // A plan fact, not a prose rule: a general "never sum" clause left the sums in place.
-    $skeleton = str_replace('{{interpret_non_additive}}', $nonAdditive === [] ? '' : $this->language->getDef('text_interpret_results_non_additive', ['metrics' => implode(', ', $nonAdditive)]), $skeleton);
-    $skeleton = PromptPlaceholders::resolve($skeleton, (string)CLICSHOPPING::getConfig('db_table_prefix'), (int)$this->language->getId(), $results);
-    $prompt = Language::parseDefinition($skeleton, $array);
+    $prompt = $this->language->getDef('text_interpret_results', $array);
 
     // The interpretation prompt above is English (internal), but the restitution must be
     // returned in the APPLICATION language (null). Loaded from the agnostic Agents/ layer
@@ -199,12 +191,12 @@ class ResultInterpreter
       return true;
     }
     
-    // A single all-NULL row is an aggregate over no row; a zero is an answer, never emptiness.
+    // Check if all values are null or zero (single row with no meaningful data)
     if (\count($results) === 1) {
       $firstRow = reset($results);
       if (\is_array($firstRow)) {
         foreach ($firstRow as $value) {
-          if ($value !== null && $value !== '') {
+          if ($value !== null && $value !== 0 && $value !== '0' && $value !== '') {
             return false;
           }
         }
@@ -226,59 +218,38 @@ class ResultInterpreter
   }
 
   /**
-   * Prepares results for inclusion in a prompt: decrypts GDPR-encrypted cells, flattens arrays
-   * and objects. Values stay raw - escaping is a rendering concern (AI_SECURITY.md §3bis).
+   * Sanitizes results for inclusion in a prompt
+   * Handles nested arrays, objects, and various data types
+   * Implements error handling and logging
+   * 
+   * 🔧 FIX 2026-01-11: Added decryption for GDPR-encrypted fields (customers_name, etc.)
    *
    * @param array $results Results to sanitize
    * @return array Sanitized results
    */
-  /**
-   * Replace a split column's raw codes with the labels the result table shows.
-   *
-   * Same declaration as the table split: `text_table_split_reason_<col>` turns it on and
-   * `text_table_split_<col>_<value>` names each value, so the prose and the table agree.
-   *
-   * @param array $results Sanitized rows
-   * @return array Rows, split values labelled where a label is declared
-   */
-  private function labelSplitValues(array $results): array
-  {
-    foreach ($results as $rowKey => $row) {
-      if (!\is_array($row)) {
-        continue;
-      }
-
-      foreach ($row as $column => $value) {
-        $reason = 'text_table_split_reason_' . $column;
-        $label = 'text_table_split_' . $column . '_' . $value;
-
-        if ($this->language->getDef($reason) !== $reason && $this->language->getDef($label) !== $label) {
-          $results[$rowKey][$column] = $this->language->getDef($label);
-        }
-      }
-    }
-
-    return $results;
-  }
-
   public function sanitizeResultsForPrompt(array $results): array
   {
     $cleanedResults = [];
 
     foreach ($results as $rowKey => $row) {
       if (!\is_array($row)) {
-        $cleanedResults[$rowKey] = Hash::displayDecryptedDataText((string) $row);
+        // Simple encoding for scalar values - decrypt first
+        $decrypted = Hash::displayDecryptedDataText((string) $row);
+        $cleanedResults[$rowKey] = htmlspecialchars($decrypted, ENT_QUOTES, 'UTF-8');
         continue;
       }
 
       $cleanedRow = [];
       foreach ($row as $key => $value) {
+        // Clean each cell value
         if (\is_array($value)) {
           $cleanedRow[$key] = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         } elseif (\is_object($value)) {
           $cleanedRow[$key] = '[object]';
         } else {
-          $cleanedRow[$key] = Hash::displayDecryptedDataText((string) $value);
+          // 🔧 FIX: Decrypt GDPR-encrypted fields before sending to LLM
+          $decrypted = Hash::displayDecryptedDataText((string) $value);
+          $cleanedRow[$key] = htmlspecialchars($decrypted, ENT_QUOTES, 'UTF-8');
         }
       }
       $cleanedResults[$rowKey] = $cleanedRow;

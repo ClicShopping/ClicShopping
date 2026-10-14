@@ -20,16 +20,13 @@ Core/ClicShopping/AI/
 │   │   └── Validator/   ✅ Business logic validators (added May 2026)
 │   └── WebSearch/
 │       └── Providers/   ✅ Built-in agnostic providers Mode A/B/C/E (added May 2026)
-├── Gouvernance/         ✅ Evidence for audit — figures with their population, never prose
-│   └── Security/        ✅ `SecurityJournal`: exposure scale, coverage, journal maintenance
-├── Audit/               ⬜ Empty — reserved
 ├── Handler/             ✅ Error, fallback, query handling
 ├── Helper/              ✅ Utilities
 ├── Infrastructure/      ✅ Technical infrastructure
 ├── InterfacesAI/        ✅ Contracts (AgentInterface, ActorInterface, CriticInterface, …)
 ├── LoadBalancing/       ✅ Load balancing
 ├── Rag/                 ✅ RAG Manager
-├── RegistryAI/          ✅ Actor, Critic, WebSearch, PromptPlaceholder and SchemaGraph registries
+├── RegistryAI/          ✅ Actor, Critic and WebSearch engine registries
 └── Security/            ✅ Guardrails and security
 ```
 

@@ -27,6 +27,11 @@ class AnalyticsFormatter extends AbstractFormatter
   private $language;
   
   /**
+   * @var string Current language code
+   */
+  private string $languageCode;
+  
+  /**
    * Constructor
    * 
    * @param bool $debug Enable debug mode
@@ -38,6 +43,7 @@ class AnalyticsFormatter extends AbstractFormatter
     
     // Initialize language
     $this->language = Registry::get('Language');
+    $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
     DomainConfig::loadAgnosticLanguageFile('rag_formatters', null);
@@ -77,6 +83,7 @@ class AnalyticsFormatter extends AbstractFormatter
     }
 
     $output = "<div class='analytics-results'>";
+    $output .= "<h4>" . $this->language->getDef('text_rag_analytics_results_for') . " " . htmlspecialchars($question) . "</h4>";
 
     // Display source attribution
     if (isset($results['source_attribution'])) {
@@ -154,10 +161,12 @@ class AnalyticsFormatter extends AbstractFormatter
    */
   private function formatMultipleResults(array $results): array
   {
+    $originalQuery = $results['question'] ?? $results['query'] ?? 'Unknown request';
     $multipleResults = $results['multiple_results'] ?? [];
     $queryCount = count($multipleResults);
 
     $output = "<div class='analytics-results multiple-queries'>";
+    $output .= "<h4>" . $this->language->getDef('text_rag_analytics_results_for') . " " . htmlspecialchars($originalQuery) . "</h4>";
     $output .= "<div class='alert alert-info'>";
     $output .= "<strong>" . $this->language->getDef('text_rag_analytics_note') . "</strong> " . str_replace('{count}', $queryCount, $this->language->getDef('text_rag_analytics_note_multiple_queries'));
     $output .= "</div>";
@@ -255,7 +264,13 @@ class AnalyticsFormatter extends AbstractFormatter
 
   private function formatSqlQuery(string $sql): string
   {
-    return $this->renderSqlToggle($this->prettySql($sql));
+    $formatted = $this->prettySql($sql);
+    $escaped = htmlspecialchars($formatted, ENT_NOQUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+    return "<div class='col-md-12 row sql-query'>
+            <strong>" . $this->language->getDef('text_rag_analytics_sql_query') . "</strong>
+            <pre>{$escaped}</pre>
+          </div>";
   }
 
   private function formatDataTable(array $data): string
@@ -264,9 +279,15 @@ class AnalyticsFormatter extends AbstractFormatter
       return '';
     }
 
-    return "<div class='results-table'><h5>" . $this->language->getDef('text_rag_analytics_data') . "</h5>"
-      . $this->renderDataTable($data, 'table table-bordered table-striped')
-      . "</div>";
+    $output = "<div class='results-table'>";
+    $output .= "<h5>" . $this->language->getDef('text_rag_analytics_data') . "</h5>";
+    
+    // Use inherited method from AbstractFormatter
+    $output .= $this->generateTable($data, 'table table-bordered table-striped');
+    
+    $output .= "</div>";
+
+    return $output;
   }
 
   private function formatGuardrailsMetrics(array $guardrails): string

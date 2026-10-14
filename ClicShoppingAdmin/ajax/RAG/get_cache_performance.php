@@ -127,37 +127,46 @@ try {
   // ============================================================================
   // 4. CACHE SIZE BY TYPE
   // ============================================================================
-  // Sizes are in KB: an AI cache file weighs a few kilobytes, and a MB scale rounds it to zero.
-  // Types are the directories actually present, plus the cache files sitting at the root.
+  // Get file cache sizes from actual Rag cache folders
   $cacheDir = CLICSHOPPING::BASE_DIR . 'Work/Cache/Rag/';
   $cacheSizeData = [
     'labels' => [],
     'sizes' => [],
     'file_counts' => []
   ];
-
-  $addCacheEntry = static function (string $label, array $files) use (&$cacheSizeData): void {
-    $totalSize = 0;
-
-    foreach ($files as $file) {
-      if (is_file($file)) {
-        $totalSize += filesize($file);
+  
+  $cacheTypes = [
+    'Embeddings' => $cacheDir . 'Embeddings/',
+    'Semantic' => $cacheDir . 'Semantic/',
+    'SQL' => $cacheDir . 'SQL/',
+    'Intent' => $cacheDir . 'Intent/',
+    'Translation' => $cacheDir . 'Translation/',
+    'Classification' => $cacheDir . 'Classification/',
+    'Context' => $cacheDir . 'Context/',
+    'Ambiguity' => $cacheDir . 'Ambiguity/',
+    'SchemaQuery' => $cacheDir . 'SchemaQuery/',
+    'Hybrid' => $cacheDir . 'Hybrid/',
+    'Security' => $cacheDir . 'Security/'
+  ];
+  
+  foreach ($cacheTypes as $label => $dir) {
+    if (is_dir($dir)) {
+      $files = glob($dir . '*.cache');
+      $fileCount = count($files);
+      $totalSize = 0;
+      
+      foreach ($files as $file) {
+        if (file_exists($file)) {
+          $totalSize += filesize($file);
+        }
       }
+      
+      $cacheSizeData['labels'][] = $label;
+      $cacheSizeData['sizes'][] = round($totalSize / 1024 / 1024, 2); // MB
+      $cacheSizeData['file_counts'][] = $fileCount;
     }
-
-    $cacheSizeData['labels'][] = $label;
-    $cacheSizeData['sizes'][] = round($totalSize / 1024, 1);
-    $cacheSizeData['file_counts'][] = count($files);
-  };
-
-  foreach (glob($cacheDir . '*', GLOB_ONLYDIR) ?: [] as $dir) {
-    $addCacheEntry(basename($dir), glob($dir . '/*.cache') ?: []);
   }
-
-  foreach (glob($cacheDir . '*.cache') ?: [] as $rootFile) {
-    $addCacheEntry(basename($rootFile, '.cache'), [$rootFile]);
-  }
-
+  
   // ============================================================================
   // RETURN RESPONSE
   // ============================================================================

@@ -1,4 +1,4 @@
-text_rag_language_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse. Écrivez chaque nombre avec le séparateur de milliers et le séparateur décimal propres à cette langue, et placez le symbole monétaire là où cette langue le place ; la VALEUR ne change jamais, seule son écriture change.
+text_rag_language_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse.
 text_rag_grounding_contract = INSTRUCTIONS CRITIQUES:
     1. Fournissez une réponse claire et concise basée UNIQUEMENT sur les informations fournies ci-dessus.
     2. NE PAS inventer, supposer ou ajouter des informations qui ne sont pas explicitement indiquées dans les informations fournies.
@@ -8,9 +8,9 @@ text_rag_grounding_contract = INSTRUCTIONS CRITIQUES:
 EXIGENCES DE CITATION DES SOURCES:
     6. Vous DEVEZ citer le document source pour chaque affirmation que vous faites en utilisant le nom EXACT du document indiqué dans le contexte.
     7. Utilisez le format: 'Selon [nom exact du document], ...' ou 'D'après [nom exact du document], ...'
-    8. Chaque bloc d'information commence par un en-tête '--- nom ---' : citez ce nom, jamais une référence générique comme 'Document 1' ou 'Document 2'. Quand l'en-tête n'est que le générique '--- Document ---', citez à la place l'entité que le bloc décrit, telle que son propre contenu la nomme.
-    9. Un fait énoncé dans l'information n'est JAMAIS retenu parce que son bloc ne porte pas de nom : donnez le fait et citez ce que le contenu nomme. Seule une affirmation que l'information n'énonce pas est écartée.
-    10. Chaque déclaration factuelle doit référencer sa source par le nom que lui donne son en-tête ou son contenu.
+    8. NE PAS utiliser de références génériques comme 'Document 1' ou 'Document 2' - utilisez le nom réel du document indiqué dans l'en-tête '--- Nom du Document ---'.
+    9. Si aucune source ne peut être citée pour une affirmation, NE FAITES PAS cette affirmation.
+    10. Chaque déclaration factuelle doit référencer son document source par son nom réel.
 text_rag_llm_fallback_instruction = IMPORTANT: Vous DEVEZ répondre en français uniquement. N'utilisez aucune autre langue dans votre réponse.
 INSTRUCTIONS:
     1. Répondez à la question en utilisant vos connaissances générales et vos données d'entraînement.
@@ -18,5 +18,4 @@ INSTRUCTIONS:
     3. Si vous n'êtes pas certain d'une partie de la réponse, indiquez votre niveau de confiance.
     4. N'inventez pas d'informations - si vous ne savez vraiment pas, dites-le.
     5. Gardez votre réponse ciblée et pertinente à la question posée.
-text_rag_translate_response = Traduisez le texte suivant en {{language}}. Conservez toutes les balises HTML, la mise en forme, les codes et les noms propres inchangés. Un nombre conserve sa VALEUR inchangée mais prend le séparateur de milliers et le séparateur décimal de la langue cible. Renvoyez UNIQUEMENT le texte traduit, sans rien ajouter avant ou après.
-text_rag_source_language_markers = the|is|are|of|and|for|with|from|this|that|these|not|was|were|will|has|have|been|its|their|which|when|what|excluding|including
+text_rag_translate_response = Traduisez le texte suivant en {{language}}. Conservez toutes les balises HTML, la mise en forme, les nombres, les codes et les noms propres inchangés. Renvoyez UNIQUEMENT le texte traduit, sans rien ajouter avant ou après.

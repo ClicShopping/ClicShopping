@@ -21,9 +21,6 @@
 ✗ Building SQL from an LLM answer without SqlSecurityValidator
 ✗ Putting prompt text in a class — prompts are .txt definitions (see AI_ARCHITECTURE.md §5.3)
 ✗ Logging a raw user query with its personal data into the application log
-✗ Escaping or stripping a prompt on its way OUT to the LLM (see §3bis)
-✗ Constructing a `RateLimit` (or any guard) without calling it — an unwired guard reads as a
-  protection in review and in the docs
 ```
 
 ## 2. The validation pipeline — `AI/Security/SecurityOrchestrator.php`
@@ -44,6 +41,10 @@ VERDICT  blocked when is_malicious AND threat_score >= threat_threshold
 **Pure LLM Mode**: the LLM is the primary defense; the pattern fallback is optional and disabled by
 default. Processing is always in English internally, whatever the user's language.
 
+⚠️ **The pipeline is fail-OPEN when the LLM is unavailable**: `validateQuery()` returns
+"not blocked" with `detection_method = llm_error`. That is a deliberate availability choice, not an
+oversight — but it means an LLM outage removes the defense. Never widen that path, and never treat
+a `llm_error` verdict as a clean bill of health.
 
 ## 3. The other layers
 
@@ -53,7 +54,7 @@ default. Processing is always in English internally, whatever the user's languag
 | `LlmGuardrails`                                           | the guardrail rules themselves                                        |
 | `LlmResponseEvaluator`                                    | judges what comes BACK from the LLM, not only what goes in            |
 | `DbSecurity`                                              | the database surface an AI query may touch                            |
-| `RateLimit`                                               | per-user quota, enforced ONLY at `AnalyticsAgent::executeQuery`       |
+| `RateLimit`                                               | per-user quotas on the AI path, distinct from `OM/RateLimiter`        |
 | `SecurityLogger`                                          | the security channel — layer performance, obfuscation, fallback usage |
 | `SecurityAlerter`                                         | escalation when the logger records a real threat                      |
 | `SqlSecurityValidator` (`DomainsAI/Analytics/Validator/`) | the generated SQL, before execution                                   |
@@ -72,8 +73,5 @@ This is what keeps the system from modifying itself unsupervised.
 ## To be covered
 
 Gaps listed so they are visible: the exact threat taxonomy and thresholds, the MCP permission
-surface (`McpPermissions`), what `DbSecurity` actually forbids, and PII handling in embeddings.
-
-Retention of the security tables is **partly** covered: `SecurityJournal::purgeNonSecurityEvents()`
-removes lifecycle traces and records the removal, and `expires_at` is written at insert. What is
-still missing is who enforces that expiry and what an archived row becomes.
+surface (`McpPermissions`), what `DbSecurity` actually forbids, PII handling in embeddings, and the
+retention of the security tables.

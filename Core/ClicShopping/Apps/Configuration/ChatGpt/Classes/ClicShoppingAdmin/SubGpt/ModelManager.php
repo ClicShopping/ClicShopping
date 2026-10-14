@@ -42,11 +42,17 @@ class ModelManager
    */
   public const REASONING_TOKEN_HEADROOM = 1024;
 
-  /** Reasoning efforts every reasoning model accepts: what an unmeasured one gets. */
-  private const SHARED_REASONING_EFFORTS = ['low', 'medium', 'high'];
+  /**
+   * gpt-5 members whose OWN default is not to reason: with no reasoning_effort sent they spend 0
+   * reasoning tokens and accept a temperature, like a standard chat model.
+   */
+  private const NON_REASONING_GPT5_MODELS = ['gpt-5.4-mini'];
 
-  /** Models already reported as unmeasured in this process (one alert each). */
-  private static array $unmeasuredAlerted = [];
+  /** Models the API enumerates as taking 'none' (and 'xhigh'), but NOT 'minimal'. */
+  private const REASONING_EFFORT_NONE_MODELS = ['gpt-5.4-mini', 'gpt-5.6-luna'];
+
+  /** Models the API enumerates as taking 'minimal', but NOT 'none'. */
+  private const REASONING_EFFORT_MINIMAL_MODELS = ['gpt-5-mini', 'gpt-5'];
 
   /**
    * Retrieves the default model.
@@ -149,8 +155,6 @@ class ModelManager
 			      n.ai_model_ai_capable,
                               n.ai_model_token_input_price, 
 			      n.ai_model_token_output_price,
-                              n.ai_model_reasoning_efforts,
-                              n.ai_model_reasons_by_default,
                               p.ai_model_provider_code
                        from :table_ai_models_name n
                        inner join :table_ai_models_provider p on p.ai_model_provider_id = n.ai_model_provider_id
@@ -174,8 +178,6 @@ class ModelManager
           'ai_capable' => (int)$r['ai_model_ai_capable'],
           'input_price' => (float)$r['ai_model_token_input_price'],
           'output_price' => (float)$r['ai_model_token_output_price'],
-          'reasoning_efforts' => $r['ai_model_reasoning_efforts'],
-          'reasons_by_default' => $r['ai_model_reasons_by_default'] === null ? null : (int)$r['ai_model_reasons_by_default'],
         ];
       }
     } catch (\Throwable $e) {
@@ -333,47 +335,28 @@ class ModelManager
    */
   public static function usesCompletionTokenBudget(string $model): bool
   {
-    return str_starts_with($model, 'gpt-4.1') || str_starts_with($model, 'gpt-5')
-        || str_starts_with($model, 'gpt-6');
+    return str_starts_with($model, 'gpt-4.1') || str_starts_with($model, 'gpt-5');
   }
 
   /**
    * Can this model reason before answering (whether or not it will on a given call)?
    *
    * @param string $model Model name
-   * @return bool True for the gpt-5, gpt-6 and o-series families
+   * @return bool True for the gpt-5 and o-series families
    */
   public static function isReasoningCapableModel(string $model): bool
   {
     return str_starts_with($model, 'gpt-5')
-        || str_starts_with($model, 'gpt-6')
         || str_starts_with($model, 'o1')
         || str_starts_with($model, 'o3')
         || str_starts_with($model, 'o4');
   }
 
   /**
-   * The catalogue row of a model, or null when it is not catalogued.
-   *
-   * @param string $model Model name
-   * @return array<string,mixed>|null
-   */
-  private static function catalogRow(string $model): ?array
-  {
-    foreach (self::loadCatalog() as $m) {
-      if ($m['id'] === $model) {
-        return $m;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Reasoning-effort values this model accepts, read from the catalogue
-   * (ai_model_reasoning_efforts), which holds what the provider enumerated — never a guess.
-   * An unmeasured model gets only the tiers every reasoning model shares, and is reported: it
-   * degrades instead of failing, but loses 'none', the low-latency tier.
+   * Reasoning-effort values this model accepts, as enumerated BY THE API itself (an invalid value
+   * makes it list them). The families disagree on the cheapest tier: gpt-5.4/5.6 offer 'none' and
+   * refuse 'minimal', gpt-5-mini the exact opposite. An unmeasured model gets only the tiers all
+   * of them share, so an unknown addition degrades instead of failing.
    *
    * @param string $model Model name
    * @return array<int, string> Accepted values, empty when the model takes no reasoning effort
@@ -384,21 +367,11 @@ class ModelManager
       return [];
     }
 
-    $declared = self::catalogRow($model)['reasoning_efforts'] ?? null;
-
-    if (is_string($declared)) {
-      return array_values(array_filter(
-        array_map('trim', explode(',', strtolower($declared))),
-        static fn(string $effort): bool => $effort !== ''
-      ));
-    }
-
-    if (!isset(self::$unmeasuredAlerted[$model])) {
-      self::$unmeasuredAlerted[$model] = true;
-      error_log("[INFO : ALERT] ModelManager: reasoning efforts of '{$model}' are not catalogued - sent low|medium|high only, 'none' is lost. Fill ai_model_reasoning_efforts.");
-    }
-
-    return self::SHARED_REASONING_EFFORTS;
+    return match (true) {
+      in_array($model, self::REASONING_EFFORT_NONE_MODELS, true) => ['none', 'low', 'medium', 'high', 'xhigh'],
+      in_array($model, self::REASONING_EFFORT_MINIMAL_MODELS, true) => ['minimal', 'low', 'medium', 'high'],
+      default => ['low', 'medium', 'high'],
+    };
   }
 
   /**
@@ -448,9 +421,7 @@ class ModelManager
       ? strtolower(trim((string)CLICSHOPPING_APP_CHATGPT_CH_VERBOSITY))
       : '';
 
-    $takesVerbosity = str_starts_with($model, 'gpt-5') || str_starts_with($model, 'gpt-6');
-
-    if (!$takesVerbosity || !in_array($configured, ['low', 'medium', 'high'], true)) {
+    if (!str_starts_with($model, 'gpt-5') || !in_array($configured, ['low', 'medium', 'high'], true)) {
       return null;
     }
 
@@ -460,8 +431,9 @@ class ModelManager
   /**
    * Will THIS call actually spend hidden reasoning tokens?
    *
-   * Not a fixed model property: it follows the effective effort, else the model's own default
-   * (ai_model_reasons_by_default). Drives both the token headroom and the temperature rule.
+   * Not a fixed model property: it follows the effective effort. Measured 2026-08-02 —
+   * gpt-5.6-luna reasons on its own default but spends 0 at effort 'none', and gpt-5.4-mini
+   * defaults to no reasoning at all. Drives both the token headroom and the temperature rule.
    *
    * @param string $model Model name
    * @return bool True when the call reasons before answering
@@ -478,8 +450,8 @@ class ModelManager
       return $effort !== 'none';
     }
 
-    // No effort sent: the model falls back to its own default; unmeasured counts as reasoning.
-    return (self::catalogRow($model)['reasons_by_default'] ?? 1) !== 0;
+    // No effort sent: the model falls back to its own default.
+    return !in_array($model, self::NON_REASONING_GPT5_MODELS, true);
   }
 
   /**
@@ -653,63 +625,20 @@ class ModelManager
    * Map Anthropic model names between internal and API formats
    *
    * @param string $model Internal model name (e.g., 'anth-sonnet')
-   * @return string API model name (e.g., 'claude-opus-5')
+   * @return string API model name (e.g., 'claude-3-5-sonnet-20241022')
    */
   public static function mapAnthropicModelName(string $model): string
   {
-    // Legacy aliases only; a real catalog name passes through untouched.
+    // Note: Deprecation warning in comment only (as per task requirements)
+    // This method is maintained for backward compatibility
+    // LLPhant's AnthropicConfig handles model name mapping internally
+    
     $mapping = [
-      'anth-sonnet' => 'claude-sonnet-5',
-      'anth-opus' => 'claude-opus-5',
-      'anth-haiku' => 'claude-haiku-4-5'
+      'anth-sonnet' => 'claude-sonnet-4-6',
+      'anth-opus' => 'claude-opus-4-8',
+      'anth-haiku' => 'claude-haiku-4-5-20251001'
     ];
 
     return $mapping[$model] ?? $model;
-  }
-
-  /**
-   * Does this Anthropic model reject the sampling parameters?
-   *
-   * temperature / top_p / top_k and the legacy max_tokens_to_sample are a 400 from Claude Opus 4.7
-   * onward; depth is steered by output_config.effort instead.
-   *
-   * @param string $model Anthropic technical model name
-   * @return bool True when sampling options must be dropped before the call
-   */
-  public static function anthropicRejectsSampling(string $model): bool
-  {
-    $array_llm = ['claude-opus-5', 'claude-opus-4-7', 'claude-opus-4-8', 'claude-sonnet-5', 'claude-fable-', 'claude-mythos-'];
-    
-    foreach ($array_llm as $prefix) {
-      if (str_starts_with($model, $prefix)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Rewrite Anthropic generation options into what the target model accepts.
-   *
-   * Single chokepoint for the Anthropic wire format, mirroring normalizeGenerationOptions() for
-   * OpenAI. Anything the model still accepts is passed through.
-   *
-   * @param string $model Anthropic technical model name
-   * @param array<string, mixed> $options Generation options
-   * @return array<string, mixed> Options safe to send for this model
-   */
-  public static function normalizeAnthropicOptions(string $model, array $options): array
-  {
-    if (!self::anthropicRejectsSampling($model)) {
-      return $options;
-    }
-
-    return array_diff_key($options, [
-      'temperature' => null,
-      'top_p' => null,
-      'top_k' => null,
-      'max_tokens_to_sample' => null,
-    ]);
   }
 }

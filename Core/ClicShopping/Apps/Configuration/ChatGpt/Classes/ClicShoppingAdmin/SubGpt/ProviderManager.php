@@ -18,7 +18,6 @@ use LLPhant\LmStudioConfig;
 use LLPhant\MistralAIConfig;
 use LLPhant\GeminiOpenAIConfig;
 use LLPhant\OpenAIConfig;
-use ClicShopping\AI\Security\OutboundPolicy;
 use LLPhant\OllamaConfig;
 use LLPhant\AnthropicConfig;
 use LLPhant\Chat\AnthropicChat;
@@ -43,9 +42,6 @@ use function is_null;
  */
 class ProviderManager
 {
-  /** Endpoint of the provider whose LLPhant config exposes no url, for the outbound policy. */
-  private const ANTHROPIC_ENDPOINT = 'https://api.anthropic.com';
-
   /**
    * Initializes and returns an instance of OpenAIChat configured with the given parameters.
    * 
@@ -85,8 +81,6 @@ class ProviderManager
     if ($usingDbKey) {
       self::applyOpenAiOrganisation($config, $credential['organisation'] ?? null);
     }
-
-    OutboundPolicy::assertAllowed((string)$config->url, 'llm');
 
     $chat = new OpenAIChat($config);
 
@@ -140,8 +134,6 @@ class ProviderManager
   {
     $config = new OllamaConfig();
     $config->model = $model;
-    OutboundPolicy::assertAllowed($config->url, 'llm');
-
     $chat = new OllamaChat($config);
 
     return CountingChat::wrap($chat);
@@ -187,17 +179,23 @@ class ProviderManager
       $config->modelOptions['temperature'] = (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE;
     }
 
-    // LM Studio reasoning models need a large <think> + answer budget, independent of the shared
-    // chat cap (which is a short cloud-answer limit). Default 8000, kept within context; a dedicated
-    // override may set a different value but is still ceiled at 8000.
-    $lmStudioMax = defined('CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN')
-      ? (int)CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN
-      : 8000;
-    $config->modelOptions['max_tokens'] = min($lmStudioMax, 8000);
+    // LM Studio models need more tokens to allow reasoning with <think> tags
+    // Use dedicated config if available, otherwise use higher default
+    if (defined('CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN')) {
+      $config->modelOptions['max_tokens'] = (int)CLICSHOPPING_APP_CHATGPT_LMSTUDIO_MAX_TOKEN;
+    } elseif (defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN')) {
+      // For LM Studio, multiply by 3 to allow reasoning space
+      // Example: 350 tokens → 1050 tokens for <think> + answer
+      $baseTokens = (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN;
+      $config->modelOptions['max_tokens'] = $baseTokens * 3;
+      
+      error_log("🔧 LM Studio: Using {$config->modelOptions['max_tokens']} tokens (base: $baseTokens × 3 for reasoning)");
+    } else {
+      // Default: 1000 tokens for LM Studio (allows reasoning)
+      $config->modelOptions['max_tokens'] = 1000;
+    }
 
     // Créer et retourner l'instance de LmStudioChat avec la config
-    OutboundPolicy::assertAllowed((string)$config->url, 'llm');
-
     return CountingChat::wrap(new LmStudioChat($config));
   }
 
@@ -208,7 +206,7 @@ class ProviderManager
    * The provider interface is used for new code and parallel execution.
    *
    * @param string $model The real Anthropic technical model name from the catalog
-   * (e.g. 'claude-opus-5'); legacy 'anth-*' aliases are still resolved for backward compatibility.
+   * (e.g. 'claude-sonnet-4-6'); legacy 'anth-*' aliases are still resolved for backward compatibility.
    * @param int|null $maxtoken The maximum number of tokens the model can output.
    *                           Defaults to the configured max token if not provided.
    * @param array|null $modelOptions Additional configuration options for the model.
@@ -220,25 +218,19 @@ class ProviderManager
 
     $api_key = ModelManager::getProviderApiKey('anthropic')['api_key'];
 
-    if (is_null($maxtoken) || $maxtoken <= 0) {
-      $maxtoken = (int)(defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 2500);
-    }
-
     if ($api_key !== '') {
       if (is_null($modelOptions)) {
         $modelOptions = [
           'temperature' => (float) CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE,
           'top_p' => (float) CLICSHOPPING_APP_CHATGPT_CH_TOP_P,
+          'max_tokens_to_sample' => (int) CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN,
+          'stop_sequences' => ['\n']
         ];
       }
 
       // $model is the real technical name from the catalog (option A). mapAnthropicModelName()
       // is a passthrough for real names and still resolves any legacy anth-* alias.
       $apiModel = ModelManager::mapAnthropicModelName($model);
-      $modelOptions = ModelManager::normalizeAnthropicOptions($apiModel, $modelOptions);
-
-      // AnthropicConfig carries no url: LLPhant's AnthropicChat holds the endpoint itself.
-      OutboundPolicy::assertAllowed(self::ANTHROPIC_ENDPOINT, 'llm');
 
       $result = new AnthropicChat(
         new AnthropicConfig($apiModel, $maxtoken, $modelOptions, $api_key)
@@ -300,8 +292,6 @@ class ProviderManager
     }
 
     try {
-      OutboundPolicy::assertAllowed((string)$config->url, 'llm');
-
       return CountingChat::wrap(new MistralAIChat($config));
     } catch (\Exception $e) {
       throw new \Exception('Error creating MistralAIChat instance: ' . $e->getMessage());
@@ -343,8 +333,6 @@ class ProviderManager
     }
 
     try {
-      OutboundPolicy::assertAllowed((string)$config->url, 'llm');
-
       return CountingChat::wrap(new OpenAIChat($config));
     } catch (\Exception $e) {
       throw new \Exception('Error creating Gemini chat instance: ' . $e->getMessage());

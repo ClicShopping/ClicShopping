@@ -32,6 +32,7 @@ class ResponseProcessor
   private SecurityLogger $securityLogger;
   private bool $debug;
   private $language;
+  private string $languageCode;
 
   /**
    * Constructor
@@ -45,6 +46,7 @@ class ResponseProcessor
 
     // Initialize language support
     $this->language = Registry::get('Language');
+    $this->languageCode = $this->language->get('code');
 
     DomainConfig::loadAgnosticLanguageFile('rag_response_processor');
     DomainConfig::loadLanguageFile('rag_response_processor');

@@ -116,9 +116,7 @@
         'CLICSHOPPING_APP_CHATGPT_RA_STATUS',
       ];
 
-      if (!CLICSHOPPING::checkAppsIsActivated($requiredConstants)) {
-        return false;
-      }
+      CLICSHOPPING::checkAppsIsActivated($requiredConstants);
 
       if (!Gpt::checkGptStatus()) {
         return false;
@@ -318,7 +316,9 @@
 
         // Invalidate the dashboard widget cache so the new analysis is
         // visible immediately on the admin home / product page widget
-        // rather than waiting for the TTL to elapse.
+        // rather than waiting for the TTL to elapse.  The cache class
+        // does not support namespace-wide clear, hence the targeted
+        // key-by-key wipe inside DashboardData::clearCache().
         try {
           (new \ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\CockpitAI\DashboardData())->clearCache();
         } catch (\Throwable $e) {
@@ -438,25 +438,22 @@
      * @return array              Analysis_Report (same shape as executeAnalysis())
      * @throws \Exception         If a critical step fails (Steps 1 or 3)
      */
-    public function executeAnalysisCron(int $productId, int $languageId, string $cronUserId = 'cron', bool $productChanged = false): array
+    public function executeAnalysisCron(int $productId, int $languageId, string $cronUserId = 'cron'): array
     {
       $startTime = microtime(true);
 
       // --- LOGIQUE DE VERSIONING : Détection du rafraîchissement ---
-      // Db::get() implode les VALEURS de $order : la clé seule y perd son nom, d'où order by desc » et une erreur de syntaxe à chaque produit du cron.
-      $QlastEmbedding = $this->db->get('products_cockpit_ai_embedding', 'date_modified', ['entity_id' => $productId], 'date_modified desc', 1);
+      $QlastEmbedding = $this->db->get('products_cockpit_ai_embedding ', 'date_added', ['product_id' => $productId], ['date_added' => 'desc'], 1);
 
       $QlastLogFlag = $this->db->get('products_cockpit_ai_action_log', 'date_created', [
         'product_id' => $productId,
         'action_type' => 'system_update_flag'
-      ], 'date_created desc', 1);
+      ], ['date_created' => 'desc'], 1);
 
-      // The caller knows why it picked this product; the flag below only sees admin edits
-      // on favorites, specials and featured.
-      $forceRefresh = $productChanged;
-      if (!$forceRefresh && $QlastEmbedding->check() && $QlastLogFlag->check()) {
+      $forceRefresh = false;
+      if ($QlastEmbedding->check() && $QlastLogFlag->check()) {
         // Si le flag de modification est plus récent que la dernière analyse, on force l'IA
-        if (strtotime($QlastLogFlag->value('date_created')) > strtotime($QlastEmbedding->value('date_modified'))) {
+        if (strtotime($QlastLogFlag->value('date_created')) > strtotime($QlastEmbedding->value('date_added'))) {
           $forceRefresh = true;
         }
       }
@@ -481,19 +478,19 @@
       ]);
 
       try {
-        // Step 1: Data Collection (CRITICAL)
+        // ── Step 1: Data Collection (CRITICAL) ────────────────────────────
         $ctx = $this->runner->run(1, 'data_collection', function () use ($productId, $languageId): array {
           return $this->dataCollector->collect($productId, $languageId);
         }, $ctx, critical: true);
 
         $ctx['product_data'] = $ctx['data_collection'];
 
-        // Step 2: Catalog Normalization
+        // ── Step 2: Catalog Normalization ─────────────────────────────────
         $ctx = $this->runner->run(2, 'catalog_normalization', function (): object {
           return $this->scoringEngine->computeCatalogNormalization();
         }, $ctx, critical: false);
 
-        //Step 3: Scoring Calculation (CRITICAL)
+        // ── Step 3: Scoring Calculation (CRITICAL) ────────────────────────
         $ctx = $this->runner->run(3, 'scoring_calculation', function (array $context): array {
           $velocityMax = max(1.0, (float)($context['product_data']['stock_velocity'] ?? 1.0));
 
@@ -510,22 +507,22 @@
           return $this->scoringEngine->computeScores($context['product_data'], $scoringContext);
         }, $ctx, critical: true);
 
-        // Step 4: SEO Analysis (conditional)
+        // ── Step 4: SEO Analysis (conditional) ───────────────────────────
         $ctx = $this->runner->run(4, 'seo_analysis', function (array $context) use ($productId, $languageId): array {
           return $this->seoInvoker->invoke($productId, $languageId, $context['product_data']);
         }, $ctx, critical: false);
 
-        // Step 5: RAG Context Retrieval
+        // ── Step 5: RAG Context Retrieval ─────────────────────────────────
         $ctx = $this->runner->run(5, 'rag_context_retrieval', function () use ($productId, $languageId): array {
           return $this->embeddingService->getHistoricalContext($productId, $languageId, 3);
         }, $ctx, critical: false);
 
-        //Step 6: LLM Analysis Generation
+        // ── Step 6: LLM Analysis Generation ──────────────────────────────
         $ctx = $this->runner->run(6, 'llm_analysis_generation', function (array $context): array {
           return $this->generateLLMAnalysis($context);
         }, $ctx, critical: false);
 
-        // Step 7: Rules Engine Execution
+        // ── Step 7: Rules Engine Execution ────────────────────────────────
         $ctx = $this->runner->run(7, 'rules_engine_execution', function (array $context): array {
           $scores  = $context['scoring_calculation'];
           $product = $context['product_data'];
@@ -552,16 +549,40 @@
           );
         }, $ctx, critical: false);
 
-        // Step 8: Embedding Persistence
+
+
+        // ── Step 8: Embedding Persistence ─────────────────────────────────
         $ctx = $this->runner->run(8, 'embedding_persistence', function (array $context) use ($productId, $languageId): ?int {
-          $metadata = $this->reportBuilder->buildMetadata(
-            $context,
-            $this->embeddingService->getEmbeddingFormatVersion()
-          );
-          return $this->embeddingService->storeEmbedding($metadata, $productId, $languageId);
+          $rawScores = $context['scoring_calculation'] ?? [];
+
+          // On construit manuellement SANS passer par buildMetadata pour éviter l'erreur de log
+          $finalMetadata = [
+            'version'                  => $this->embeddingService->getEmbeddingFormatVersion(),
+            'embedding_format_version' => $this->embeddingService->getEmbeddingFormatVersion(),
+            'schema'                   => 'cockpit_ai_v1',
+            'entity_id'                => (int)$productId,
+            'scores' => [
+              'score_x'   => (float)($rawScores['score_x'] ?? 0),
+              'score_y'   => (float)($rawScores['score_y'] ?? 0),
+              'factors_x' => $rawScores['factors_x'] ?? [],
+              'factors_y' => $rawScores['factors_y'] ?? [],
+              'quadrant'  => $rawScores['quadrant'] ?? 'Q_intermediate'
+            ],
+            'factors_x'         => $rawScores['factors_x'] ?? [], // Doublon racine
+            'factors_y'         => $rawScores['factors_y'] ?? [], // Doublon racine
+            'analysis'          => $context['llm_analysis_generation'] ?? [],
+            'inventory_metrics' => $context['product_data'] ?? [],
+            'seo'               => $context['seo_analysis'] ?? [],
+            'strategy'          => $context['strategy_preferences'] ?? [],
+            'commercial_metrics'=> $context['commercial_analysis'] ?? [],
+            'actions'           => $context['rules_engine_actions'] ?? [],
+          ];
+
+          // On appelle directement le service
+          return $this->embeddingService->storeEmbedding($finalMetadata, $productId, $languageId);
         }, $ctx, critical: false);
 
-        // Step 9: Rapport & Auto-Pilote
+// ── Step 9: Rapport & Auto-Pilote (REQ-EXE-01) ────────────────────
         $report = $this->reportBuilder->buildReport($ctx);
 
         // Activation réelle de l'exécution automatique pour le CRON
@@ -596,17 +617,12 @@
     /**
      * Méthode de nettoyage logique (Flag) appelée par les Hooks
      * Ne supprime rien (Versioning), mais demande un refresh au prochain passage.
-     *
-     * @param int $productId Produit dont la fiche vient de changer
-     * @param string $subtype Opération à l'origine du drapeau : insert | update | delete
      */
-    public function clearCockpitCache(int $productId, string $subtype = 'update'): void
+    public function clearCockpitCache(int $productId): void
     {
-      // language_id reste NULL : le drapeau porte une modification de fiche, pas une langue.
       $this->db->save('products_cockpit_ai_action_log', [
         'product_id' => (int)$productId,
         'action_type' => 'system_update_flag',
-        'action_subtype' => \in_array($subtype, ['insert', 'update', 'delete'], true) ? $subtype : 'update',
         'status' => 'executed',
         'validation_reason' => 'Data change detected. Requesting fresh AI analysis.',
         'date_created' => 'now()'

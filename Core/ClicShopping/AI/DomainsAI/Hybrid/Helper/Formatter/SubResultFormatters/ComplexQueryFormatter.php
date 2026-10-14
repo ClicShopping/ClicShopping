@@ -35,6 +35,11 @@ class ComplexQueryFormatter extends AbstractFormatter
   private $language;
   
   /**
+   * @var string Current language code
+   */
+  private string $languageCode;
+  
+  /**
    * Constructor
    * 
    * @param bool $debug Enable debug mode
@@ -46,6 +51,7 @@ class ComplexQueryFormatter extends AbstractFormatter
     
     // Initialize language
     $this->language = Registry::get('Language');
+    $this->languageCode = $this->language->get('code');
     
     // Load language definitions (null = use current user language)
     Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -76,6 +82,7 @@ class ComplexQueryFormatter extends AbstractFormatter
     $question = $results['question'] ?? $results['query'] ?? 'Unknown request';
 
     $output = "<div class='complex-query-results'>";
+    $output .= '<h4>' . $this->language->getDef('text_rag_complex_query_results_for', ['query' => $question]) .'</h4>';
 
     // Display mixed source attribution (🔀 Mixed)
     if (isset($results['source_attribution'])) {

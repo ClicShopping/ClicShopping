@@ -17,6 +17,7 @@
 namespace ClicShopping\AI\CoreAI\Orchestrator\SubAbstention;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\OM\CLICSHOPPING;
 
 class AgentAbstentionIntegration
 {
@@ -29,6 +30,11 @@ class AgentAbstentionIntegration
      * @var \ClicShopping\OM\Db Database instance
      */
     private $db;
+
+    /**
+     * @var string Database table prefix
+     */
+    private string $tablePrefix;
 
     /**
      * @var bool Debug mode
@@ -44,6 +50,7 @@ class AgentAbstentionIntegration
     {
         $this->abstentionManager = new AgentAbstentionManager();
         $this->db = Registry::get('Db');
+        $this->tablePrefix = CLICSHOPPING::getConfig('db_table_prefix');
         $this->debug = $debug;
     }
 

@@ -23,7 +23,6 @@ use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\LMStudioProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\MistralProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\Common\GeminiProvider;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
-use ClicShopping\AI\Security\OutboundPolicy;
 
 /**
  * Class LLMProviderFactory
@@ -35,7 +34,7 @@ use ClicShopping\AI\Security\OutboundPolicy;
  * <code>
  * $factory = LLMProviderFactory::getInstance();
  * $provider = $factory->create('openai');
- * $provider = $factory->create('anthropic', ['model' => 'claude-opus-5']);
+ * $provider = $factory->create('anthropic', ['model' => 'claude-3-opus']);
  * </code>
  */
 class LLMProviderFactory
@@ -93,10 +92,6 @@ class LLMProviderFactory
 
     // Load configuration for this provider
     $config = $this->loadConfig($providerName, $overrides);
-
-    // The deployment policy decides before the client exists, so no provider can be built
-    // towards a destination the operator forbade.
-    OutboundPolicy::assertAllowed((string)($config['api_url'] ?? ''), 'llm');
 
     // Instantiate provider with configuration
     return new $providerClass($config);
@@ -203,7 +198,7 @@ class LLMProviderFactory
 
       case 'anthropic':
         $config['api_key'] = defined('CLICSHOPPING_APP_CHATGPT_ANTHROPIC_API_KEY') ? CLICSHOPPING_APP_CHATGPT_ANTHROPIC_API_KEY : '';
-        $config['model'] = defined('CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL') ? CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL : 'claude-opus-5';
+        $config['model'] = defined('CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL') ? CLICSHOPPING_APP_CHATGPT_ANTHROPIC_MODEL : 'claude-sonnet-4-6';
         $config['temperature'] = defined('CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE') ? (float)CLICSHOPPING_APP_CHATGPT_CH_TEMPERATURE : 0.7;
         $config['max_tokens'] = defined('CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN') ? (int)CLICSHOPPING_APP_CHATGPT_CH_MAX_TOKEN : 4000;
         $config['api_url'] = 'https://api.anthropic.com/v1/messages';

@@ -54,10 +54,9 @@ class ResultFormatter
     $failed = $aggregated['failed_panes'] ?? [];
 
     if (!empty($answers)) {
-      $notices = $this->failureNotices($failed);
-      $notices[] = $this->joinWithFooters($answers, $aggregated['text_footers'] ?? []);
+      $notice = $this->missingPartsNotice($failed);
 
-      return implode("\n\n", $notices);
+      return $notice === '' ? implode("\n\n", $answers) : $notice . "\n\n" . implode("\n\n", $answers);
     }
 
     // Nothing answered: the failure messages ARE the answer — never render 0 character (4novodecies).
@@ -71,81 +70,6 @@ class ResultFormatter
   }
 
   /**
-   * The top notices naming the panes that did not answer, by kind.
-   *
-   * @param array $failed Failed panes (ResultSynthesizer `failed_panes`)
-   * @return list<string> Non-empty notices, clarification first
-   */
-  private function failureNotices(array $failed): array
-  {
-    $clarification = array_filter($failed, static fn(array $p): bool => !empty($p['clarification_needed']));
-    $unreliable = array_filter($failed, static fn(array $p): bool => !empty($p['coherence_rejected']));
-    $notMeasured = array_filter($failed, static fn(array $p): bool => empty($p['coherence_rejected']) && empty($p['clarification_needed']));
-
-    return array_values(array_filter([
-      $this->partsNotice($clarification, 'text_clarification_report_notice'),
-      $this->partsNotice($notMeasured, 'text_partial_report_notice'),
-      $this->partsNotice($unreliable, 'text_unreliable_report_notice'),
-    ]));
-  }
-
-  /**
-   * Split a pane's text from the footer notices its agent appended (period, scope, basis).
-   *
-   * Kept apart so joinWithFooters() can state a footer shared by every pane once, at the foot.
-   *
-   * @param mixed $text Pane text as produced by the agent
-   * @param array $result Step result carrying the notices it appended
-   * @return array{0: mixed, 1: list<string>} Text without its footers, and the footers in order
-   */
-  public function detachFooters(mixed $text, array $result): array
-  {
-    $footers = [];
-
-    foreach (['analysis_period_notice', 'analysis_scope_notice', 'metric_basis'] as $key) {
-      $notice = $result[$key] ?? '';
-
-      if (is_string($text) && is_string($notice) && $notice !== '' && str_contains($text, $notice)) {
-        $text = str_replace($notice, '', $text);
-        $footers[] = $notice;
-      }
-    }
-
-    if ($footers !== []) {
-      $text = trim((string)preg_replace("/\n{3,}/", "\n\n", $text));
-    }
-
-    return [$text, $footers];
-  }
-
-  /**
-   * Join the panes, stating once at the foot every footer notice they all share.
-   *
-   * A footer only some panes carry stays under its own pane: it qualifies those figures only.
-   *
-   * @param array $answers Pane texts, footers detached (detachFooters())
-   * @param array $footers Footer notices per pane, keyed like $answers
-   * @return string Joined panes followed by the shared footers
-   */
-  private function joinWithFooters(array $answers, array $footers): string
-  {
-    if ($answers === []) {
-      return '';
-    }
-
-    $perPane = array_map(static fn($key): array => $footers[$key] ?? [], array_keys($answers));
-    $shared = array_values(array_intersect(...$perPane));
-
-    $panes = [];
-
-    foreach ($answers as $key => $answer) {
-      $panes[] = implode("\n\n", [$answer, ...array_diff($footers[$key] ?? [], $shared)]);
-    }
-
-    return implode("\n\n", [...$panes, ...$shared]);
-  }
-
-  /**
    * Announce, ONCE and at the top, which parts of the question were not measured.
    *
    * A partial report is more useful than no report — the panes that answered were measured and
@@ -153,86 +77,35 @@ class ResultFormatter
    * the failure message read as an apology under its own results, and nothing said which half was
    * missing. The run stays in `rag_interactions` for the audit either way.
    *
-   * @param array $panes Panes to announce (not measured, or withheld as unreliable)
-   * @param string $labelKey Notice label; both use the {{missing_count}}/{{missing}} placeholders
-   * @return string Localised notice, or '' when there is nothing to announce
+   * @param array $failed Panes that did not answer
+   * @return string Localised notice, or '' when every pane answered
    */
-  private function partsNotice(array $panes, string $labelKey): string
+  private function missingPartsNotice(array $failed): string
   {
-    if (empty($panes)) {
+    if (empty($failed)) {
       return '';
     }
 
-    $notice = CLICSHOPPING::getDef($labelKey);
+    $notice = CLICSHOPPING::getDef('text_partial_report_notice');
 
-    if ($notice === '' || $notice === $labelKey) {
+    if ($notice === '' || $notice === 'text_partial_report_notice') {
       return '';
     }
 
     $subjects = array_filter(array_map(static function (array $pane): string {
       return trim((string)($pane['question'] ?? ''));
-    }, $panes));
+    }, $failed));
 
-    // No sub-question text to quote: say how many parts are concerned rather than nothing at all.
+    // No sub-question text to quote: say how many parts are missing rather than nothing at all.
     $missing = empty($subjects)
-      ? (string)count($panes)
+      ? (string)count($failed)
       : implode(' · ', array_unique($subjects));
 
     return str_replace(
       ['{{missing_count}}', '{{missing}}'],
-      [(string)count($panes), $missing],
+      [(string)count($failed), $missing],
       $notice
     );
-  }
-
-  /**
-   * Derive the attribution banner from the DISTINCT contributing sources, never the attribution
-   * count: N analytics sub-queries all read the same "Analytics Database" — that is ONE source,
-   * not "multiple sources". One distinct source → its own attribution; two or more → the combined
-   * banner listing the distinct sources. Document names of EVERY sub-query are kept: the reader
-   * must see each document the answer comes from.
-   *
-   * @param array $attributions Source attributions collected across sub-queries
-   * @return array A single attribution, or the combined banner
-   */
-  private function mergeSourceAttributions(array $attributions): array
-  {
-    $attributions = array_values(array_filter($attributions, 'is_array'));
-
-    if ($attributions === []) {
-      return [];
-    }
-
-    $sourceTypes = array_values(array_unique(array_filter(array_column($attributions, 'source_type'))));
-    $documentNames = array_values(array_unique(array_filter(
-      array_merge(...array_map(static fn(array $a): array => (array)($a['document_names'] ?? []), $attributions)),
-      'is_string'
-    )));
-
-    if (count($sourceTypes) <= 1) {
-      $merged = $attributions[0];
-
-      if ($documentNames !== []) {
-        $merged['document_names'] = $documentNames;
-        $merged['document_count'] = array_sum(array_map(static fn(array $a): int => (int)($a['document_count'] ?? 0), $attributions));
-      }
-
-      return $merged;
-    }
-
-    $details = CLICSHOPPING::getDef('text_source_combined_multiple');
-    if ($details === '' || $details === 'text_source_combined_multiple') {
-      $details = 'Information combined from multiple sources';
-    }
-
-    return array_filter([
-      'source_type' => 'Hybrid',
-      'source_icon' => '🔀',
-      'source_details' => $details,
-      'sources' => $sourceTypes,
-      'source_count' => count($sourceTypes),
-      'document_names' => $documentNames,
-    ], static fn($v): bool => $v !== []);
   }
 
   /**
@@ -364,13 +237,6 @@ class ResultFormatter
       $aggregated['semantic_results']
     );
 
-    // A pane that did not answer is named at the top here too, never dropped in silence.
-    $notices = $this->failureNotices($aggregated['failed_panes'] ?? []);
-
-    if ($notices !== []) {
-      $finalResult['text_response'] = implode("\n\n", [...$notices, $finalResult['text_response']]);
-    }
-
     // Add entity metadata if present
     if (!empty($entityMetadata['entity_id'])) {
       $finalResult['entity_id'] = $entityMetadata['entity_id'];
@@ -405,7 +271,18 @@ class ResultFormatter
     // Build merged source attribution if available
     $sourceAttribution = null;
     if (!empty($aggregated['source_attributions'])) {
-      $sourceAttribution = $this->mergeSourceAttributions($aggregated['source_attributions']);
+      if (count($aggregated['source_attributions']) === 1) {
+        $sourceAttribution = $aggregated['source_attributions'][0];
+      } else {
+        $sourceTypes = array_unique(array_column($aggregated['source_attributions'], 'source_type'));
+        $sourceAttribution = [
+          'source_type' => 'Hybrid',
+          'source_icon' => '🔀',
+          'source_details' => 'Information combined from multiple sources',
+          'sources' => $sourceTypes,
+          'source_count' => count($aggregated['source_attributions']),
+        ];
+      }
     }
 
     $finalResult = [
@@ -494,7 +371,20 @@ class ResultFormatter
     // that preserves information about all data sources used. This is required for
     // validation and provides transparency to users about where data originated.
     if (!empty($aggregated['source_attributions'])) {
-      $finalResult['source_attribution'] = $this->mergeSourceAttributions($aggregated['source_attributions']);
+      if (count($aggregated['source_attributions']) === 1) {
+        // Single source - use as-is
+        $finalResult['source_attribution'] = $aggregated['source_attributions'][0];
+      } else {
+        // Multiple sources - create merged attribution with all source types
+        $sourceTypes = array_unique(array_column($aggregated['source_attributions'], 'source_type'));
+        $finalResult['source_attribution'] = [
+          'source_type' => 'Hybrid',
+          'source_icon' => '🔀',
+          'source_details' => 'Information combined from multiple sources',
+          'sources' => $sourceTypes,
+          'source_count' => count($aggregated['source_attributions']),
+        ];
+      }
     }
 
     // Add analytics-specific fields if present
@@ -515,8 +405,8 @@ class ResultFormatter
     if (!empty($aggregated['semantic_results'])) {
       $firstSemantic = $aggregated['semantic_results'][0];
 
-      // N retrievals: keep the joined answer, the first alone would drop the other documents.
-      if (count($aggregated['semantic_results']) === 1 && !empty($firstSemantic['response'])) {
+
+      if (isset($firstSemantic['response']) && !empty($firstSemantic['response'])) {
         $finalResult['response'] = $firstSemantic['response'];
       }
 
@@ -704,8 +594,6 @@ class ResultFormatter
     // so a hybrid query like "price + last 3 orders" renders BOTH tables (§R maillon C).
     if ($hasAnalyticsStep) {
       $combined['analytics_components'] = [];
-      $interps = [];
-      $footers = [];
 
       foreach ($analyticsResults as $analytics) {
         $analyticsRows = $analytics['results'] ?? [];
@@ -747,13 +635,15 @@ class ResultFormatter
           ];
         }
 
+        // Concatenate each analytics interpretation into the text response
         $interp = $analytics['interpretation'] ?? ($analytics['text_response'] ?? '');
         if (!empty($interp)) {
-          [$interps[], $footers[]] = $this->detachFooters($interp, $analytics);
+          if (!empty($combined['text_response'])) {
+            $combined['text_response'] .= "\n\n";
+          }
+          $combined['text_response'] .= $interp;
         }
       }
-
-      $combined['text_response'] = $this->joinWithFooters($interps, $footers);
 
       // Backward compatibility: expose the first analytics as analytics_component (singular).
       // The loop above runs at least once ($hasAnalyticsStep), so offset 0 always exists.
@@ -777,7 +667,6 @@ class ResultFormatter
         'response' => $firstSemantic['response'] ?? '',
         'text_response' => $firstSemantic['text_response'] ?? '',
         'sources' => $firstSemantic['sources'] ?? [],
-        'source_attribution' => $firstSemantic['source_attribution'] ?? [],
         'audit_metadata' => $firstSemantic['audit_metadata'] ?? [],
       ];
 
@@ -887,8 +776,25 @@ class ResultFormatter
         }
       }
 
-      if ($normalized !== []) {
-        $finalResult['source_attribution'] = $this->mergeSourceAttributions($normalized);
+      if (count($normalized) === 1) {
+        $finalResult['source_attribution'] = $normalized[0];
+        return $finalResult;
+      }
+
+      if (count($normalized) > 1) {
+        $sourceTypes = array_filter(array_map(function ($attr) {
+          return is_array($attr) ? ($attr['source_type'] ?? null) : null;
+        }, $normalized));
+
+        $finalResult['source_attribution'] = [
+          'source_type' => 'Hybrid',
+          'source_icon' => 'i',
+          'source_details' => 'Combined from multiple sources',
+          'sources' => array_values(array_unique($sourceTypes)),
+          'source_count' => count($normalized),
+          'fallback' => true,
+        ];
+
         return $finalResult;
       }
     }
@@ -974,7 +880,10 @@ class ResultFormatter
       if ($this->debug) {
         error_log("[ResultSynthesizer] ✅ Setting primaryType to 'clarification_needed' (only clarification results present)");
       }
-    } elseif ((!empty($aggregated['failed_panes']) || !empty($aggregated['error_results'])) &&
+    }
+    // Nothing but errors: terminal, like a clarification. Left as 'mixed' it failed the final
+    // validation ("Mixed result missing data and sources") and its message was replaced.
+    elseif (!empty($aggregated['error_results']) &&
             empty($aggregated['analytics_results']) &&
             empty($aggregated['semantic_results']) &&
             empty($aggregated['web_results'])) {

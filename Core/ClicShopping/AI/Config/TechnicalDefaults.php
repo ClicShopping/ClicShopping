@@ -41,30 +41,10 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_RESULTS_PER_STORE' => 5,
     'CLICSHOPPING_APP_CHATGPT_RA_RERANKING_OUTPUT' => 5,
 
-
-    // Hard ceiling on analytics steps (one schema window per step). A latency/budget bound, not a
-    // policy: ExecutionModeMatrix decides whether to decompose at all; this only caps how far.
-    'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 5,
-
-    // Window an analytic question is measured over when it states none. 0 disables the default
-    // and the period is asked for instead; the answer always names the window it used.
-    'CLICSHOPPING_APP_CHATGPT_RA_DEFAULT_ANALYSIS_DAYS' => 30,
-
-    // Periods a series statistic (standard deviation, seasonal coefficient) needs; below it the
-    // statistic is withheld and the user is told how many periods the window holds.
-    'CLICSHOPPING_APP_CHATGPT_RA_STATS_MIN_PERIODS' => 12,
-
-    // How many past turns feed the contextual reference resolver ("its price", "this product")
-    'CLICSHOPPING_APP_CHATGPT_RA_REFERENCE_HISTORY_TURNS' => 5,
-
-    // Cache TTL, in seconds. A null WARMUP_TTL means "follow CACHE_TTL".
+    'CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN' => 500,
+    'CLICSHOPPING_APP_CHATGPT_RA_MAX_ANALYTICS_STEPS' => 3,
+    // Cache TTL, in seconds
     'CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL' => 3600,
-    'CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL' => null,
-
-    // SerpAPI HTTP timeout, in seconds. Cold calls measured 2026-09-21: google_shopping 7.5-53.6 s,
-    // google up to 51 s - a cold call must not be reported as an API failure. Hybrid runs the
-    // engines sequentially, so this value must stay well under RA_MAX_EXECUTION_TIME.
-    'CLICSHOPPING_APP_CHATGPT_WEB_SERPAPI_TIMEOUT' => 60,
 
     // Fallback
     'CLICSHOPPING_APP_CHATGPT_RA_ENABLE_WEB_FALLBACK' => 'True',
@@ -88,12 +68,6 @@ class TechnicalDefaults
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_LOG_BLOCKED_ONLY' => true,
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_RESPONSE_VALIDATION' => true,
 
-    // Char ceiling of the result handed to the critic; the original is logged on truncation.
-    'CLICSHOPPING_APP_CHATGPT_RA_CRITIC_RESULT_MAX_CHARS' => 8000,
-
-    // Char ceiling of the answer sent to the embedding model, so a runaway answer is not paid in full.
-    'CLICSHOPPING_APP_CHATGPT_RA_EMBED_RESPONSE_MAX_CHARS' => 32000,
-
     // Security, alerting
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_ALERT_THRESHOLD' => 10,
     'CLICSHOPPING_APP_CHATGPT_RA_SECURITY_HIGH_THREAT_THRESHOLD' => 20,
@@ -111,18 +85,10 @@ class TechnicalDefaults
     // Query execution timeout: must stay >= the HybridQueryProcessor cold-cache timeout
     'CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME' => 120,
 
-    // Chatbot rate limit, per channel and account. The cap must stay ABOVE what one sequential
-    // browser tab can reach in the window (window / median latency), or it cuts real work.
-    'CLICSHOPPING_APP_CHATGPT_RA_RATE_LIMIT_WINDOW' => 900,
-    'CLICSHOPPING_APP_CHATGPT_RA_MAX_REQUEST_PER_WINDOW' => 30,
-
     // Hybrid query decomposition — null means "use the default provider / the default debug flag"
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_STATUS' => 'True',
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_LLM_PROVIDER' => null,
     'CLICSHOPPING_APP_CHATGPT_RA_HYBRID_DECOMPOSITION_DEBUG' => null,
-
-    // Analytics SQL built from the validated plan (PlanSqlCompiler); 'False' sends every plan to the model.
-    'CLICSHOPPING_APP_CHATGPT_RA_PLAN_COMPILER_STATUS' => 'True',
   ];
 
   /**

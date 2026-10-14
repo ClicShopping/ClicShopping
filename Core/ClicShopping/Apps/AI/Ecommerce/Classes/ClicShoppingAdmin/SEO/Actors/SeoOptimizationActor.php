@@ -40,8 +40,6 @@ use ClicShopping\AI\Security\SecurityLogger;
  */
 class SeoOptimizationActor implements ActorInterface
 {
-  public const ACTOR_ID = 'seo_optimization_actor';
-
   /**
    * Unique runtime identifier for this actor instance.
    * Used by the orchestrator for correlation and tracing.
@@ -85,7 +83,7 @@ class SeoOptimizationActor implements ActorInterface
     ?SeoOptimizationAgent $agent = null
   )
   {
-    $this->actorId = self::ACTOR_ID;
+    $this->actorId = 'seo_optimization_actor_' . uniqid();
     $this->debug = $debug;
     $this->agent = $agent ?? new SeoOptimizationAgent();
     $this->securityLogger = new SecurityLogger();

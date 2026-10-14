@@ -29,6 +29,7 @@ seo_language_recommendations_keywords text null comment(Recommendations page key
 
 --
 primary seo_id language_id
+idx_seo_seo_id seo_id
 ##
 engine innodb
 character_set utf8mb4

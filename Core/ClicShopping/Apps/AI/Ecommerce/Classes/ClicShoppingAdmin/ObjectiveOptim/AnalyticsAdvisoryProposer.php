@@ -11,7 +11,6 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ObjectiveOpti
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\LocalObjective;
 use ClicShopping\AI\CoreAI\Orchestrator\SubAutonomous\ObjectiveProposal;
 use ClicShopping\AI\InterfacesAI\ObjectiveProposerInterface;
-use ClicShopping\OM\Hash;
 use ClicShopping\OM\Registry;
 
 /**
@@ -34,13 +33,13 @@ class AnalyticsAdvisoryProposer implements ObjectiveProposerInterface
 
   public function measureBaseline(LocalObjective $objective): array
   {
-    return ['execution_time_ms' => $this->timeQuery(self::query($objective))];
+    return ['execution_time_ms' => $this->timeQuery($objective->getSuccessCriteria()['query'] ?? '')];
   }
 
   public function propose(LocalObjective $objective, array $baseline): ?ObjectiveProposal
   {
     $criteria = $objective->getSuccessCriteria();
-    $query = self::query($objective);
+    $query = (string)($criteria['query'] ?? '');
     $maxMs = (float)($criteria['max_execution_time_ms'] ?? 0.0);
     $measured = (float)($baseline['execution_time_ms'] ?? 0.0);
 
@@ -71,7 +70,7 @@ class AnalyticsAdvisoryProposer implements ObjectiveProposerInterface
   public function measureResult(LocalObjective $objective): array
   {
     // Advisory v1 mutates nothing, so this re-measures the same query (≈ baseline).
-    return ['execution_time_ms' => $this->timeQuery(self::query($objective))];
+    return ['execution_time_ms' => $this->timeQuery($objective->getSuccessCriteria()['query'] ?? '')];
   }
 
   public function evaluateSuccess(array $baseline, array $result, array $successCriteria): bool
@@ -119,16 +118,5 @@ class AnalyticsAdvisoryProposer implements ObjectiveProposerInterface
       }
       return PHP_FLOAT_MAX;
     }
-  }
-
-  /**
-   * The objective's query, stored encrypted (rows written before that are read as they are).
-   *
-   * @param LocalObjective $objective
-   * @return string
-   */
-  private static function query(LocalObjective $objective): string
-  {
-    return Hash::displayDecryptedDataText((string)($objective->getSuccessCriteria()['query'] ?? ''));
   }
 }

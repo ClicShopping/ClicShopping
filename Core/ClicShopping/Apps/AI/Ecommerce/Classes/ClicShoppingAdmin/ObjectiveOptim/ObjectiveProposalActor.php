@@ -24,8 +24,6 @@ use ClicShopping\AI\RegistryAI\ActorRegistry;
  */
 class ObjectiveProposalActor implements ActorInterface
 {
-  public const ACTOR_ID = 'objective_proposal_actor';
-
   public const ACTION_TYPE = 'objective_proposal_eval';
   public const OUTPUT_TYPE = 'objective_proposal';
 
@@ -34,7 +32,7 @@ class ObjectiveProposalActor implements ActorInterface
 
   public function __construct(bool $debug = false, ?ActorRegistry $registry = null)
   {
-    $this->actorId = self::ACTOR_ID;
+    $this->actorId = 'objective_proposal_actor_' . uniqid();
     $this->debug = $debug;
     if ($registry !== null) {
       $registry->registerActor($this);

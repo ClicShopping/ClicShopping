@@ -26,7 +26,6 @@ use ClicShopping\AI\Security\LlmGuardrails;
 use ClicShopping\AI\Security\LlmResponseEvaluator;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ChatCritic\ChatCriticSeam;
 use ClicShopping\AI\CoreAI\Orchestrator\SubActorCritic\Context;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 // ============================================
 // INITIALIZATION
@@ -55,7 +54,7 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     // 1. CONFIGURE TIMEOUT
     // ============================================
     $enableTimeout = true;
-    $maxExecutionTime = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME');
+    $maxExecutionTime = defined('CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME') ? CLICSHOPPING_APP_CHATGPT_RA_MAX_EXECUTION_TIME : 120; // Default to 120 seconds if constant not defined
 
     RequestValidator::configureTimeout($maxExecutionTime, $enableTimeout);
     $queryStartTime = microtime(true);
@@ -63,7 +62,6 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     // ============================================
     // 2. VALIDATE REQUEST
     // ============================================
-    Gpt::openLlmRequest();
     $validation = RequestValidator::validateRequest($_POST);
 
     if (!$validation['valid']) {
@@ -106,19 +104,7 @@ if (defined('CLICSHOPPING_APP_CHATGPT_RA_STATUS') && CLICSHOPPING_APP_CHATGPT_RA
     // ============================================
     // 6. PROCESS QUERY
     // ============================================
-    $aiResponse = QueryProcessor::process($userQuery, $userId, $languageId, $statsTracker, 'admin');
-
-    // Refusal is rendered verbatim by chat_send.js, so it carries the translated label.
-    if (($aiResponse['type'] ?? null) === 'rate_limited') {
-      if (ob_get_length()) ob_clean();
-      echo json_encode([
-        'success' => false,
-        'error' => $aiResponse['text_response'],
-        'error_code' => 'RATE_LIMITED',
-        'interaction_id' => null
-      ], JSON_UNESCAPED_UNICODE);
-      exit;
-    }
+    $aiResponse = QueryProcessor::process($userQuery, $userId, $languageId, $statsTracker);
 
     // Check timeout
     if ($enableTimeout && RequestValidator::checkTimeout($queryStartTime, $maxExecutionTime)) {

@@ -8,7 +8,6 @@
 
 namespace ClicShopping\AI\DomainsAI\Analytics\Helper;
 
-use ClicShopping\AI\Security\DbSecurity;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 
@@ -33,6 +32,7 @@ class AnalyticsErrorHandler
   private mixed $correctionAgent;
   private mixed $queryExecutor;
   private array $correctionLog = [];
+  private bool $debug;
   
   /**
    * Constructor
@@ -40,15 +40,18 @@ class AnalyticsErrorHandler
    * @param mixed $db Database connection
    * @param mixed $correctionAgent Correction agent for intelligent fixes
    * @param mixed $queryExecutor Query executor for deduplication
+   * @param bool $debug Debug mode flag
    */
   public function __construct(
     $db,
     $correctionAgent,
-    $queryExecutor
+    $queryExecutor,
+    bool $debug = false
   ) {
     $this->db = $db;
     $this->correctionAgent = $correctionAgent;
     $this->queryExecutor = $queryExecutor;
+    $this->debug = $debug;
 
     // Load shared user-facing labels once (interface language) for all methods
     Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
@@ -105,13 +108,6 @@ class AnalyticsErrorHandler
         'learned_from_history' => $correctionResult['learned_from_history'] ?? false,
       ];
 
-      // A correction is generated SQL: same read-only rule as DoctrineOrm::select*().
-      $violation = DbSecurity::readOnlyViolation($correctedQuery) ?? DbSecurity::deniedTableViolation($correctedQuery);
-
-      if ($violation !== null) {
-        throw new \RuntimeException('Corrected query refused, read-only (' . $violation . ')');
-      }
-
       // Attempt to execute corrected query
       $query = $this->db->prepare($correctedQuery);
 
@@ -148,8 +144,7 @@ class AnalyticsErrorHandler
         ];
       }
 
-      $this->correctionAgent->confirmCorrection($correctionResult);
-
+      // Success!
       return [
         'success' => true,
         'data' => [

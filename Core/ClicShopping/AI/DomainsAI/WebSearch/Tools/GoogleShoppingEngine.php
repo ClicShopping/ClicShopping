@@ -9,7 +9,7 @@
 namespace ClicShopping\AI\DomainsAI\WebSearch\Tools;
 
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\SerpApiClient;
-use ClicShopping\AI\InterfacesAI\BatchableWebSearchInterface;
+use ClicShopping\AI\DomainsAI\WebSearch\Logger\WebSearchLogger;
 use ClicShopping\AI\InterfacesAI\WebSearchInterface;
 
 /**
@@ -22,12 +22,13 @@ use ClicShopping\AI\InterfacesAI\WebSearchInterface;
  *
  * @package ClicShopping\AI\DomainsAI\WebSearch\Executor
  */
-class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInterface
+class GoogleShoppingEngine implements WebSearchInterface
 {
   private const ENGINE_NAME = 'google_shopping';
   private const DEFAULT_MAX_RESULTS = 20;
 
   private SerpApiClient $client;
+  private WebSearchLogger $logger;
   private bool $debug;
 
   /**
@@ -39,6 +40,7 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
     $this->client = new SerpApiClient($apiKey, $this->debug);
+    $this->logger = new WebSearchLogger();
   }
 
   /**
@@ -62,8 +64,7 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
    * @param string $query The search query string
    * @param array $options Optional parameters including:
    *                       - max_results: Maximum number of results (default: 20)
-   *                       - location_params: Array with gl, hl (geolocation, language); its
-   *                         `currency` is the expected currency of the region, not a search parameter
+   *                       - location_params: Array with gl, hl, currency (geolocation, language, currency)
    * @return array Unified result structure with shopping_results
    */
   public function search(string $query, array $options = []): array
@@ -89,7 +90,7 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
       // Handle search failure
       if ($data === false) {
         return $this->buildErrorResponse(
-          $this->client->lastError(),
+          'SerpAPI request failed',
           $query,
           $startTime
         );
@@ -123,51 +124,7 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
   }
 
   /**
-   * Declare this engine's single call so the executor can run it alongside the others.
-   *
-   * @param string $query Search query
-   * @param array $options Options array
-   * @return array<string,array> One request, keyed by the engine name
-   */
-  public function prepareBatchRequests(string $query, array $options = []): array
-  {
-    if (!$this->validateConfig()) {
-      return [];
-    }
-
-    $request = $this->client->buildHttpRequest(self::ENGINE_NAME, $query, $this->buildSearchParams($options));
-
-    return $request === false ? [] : [self::ENGINE_NAME => $request];
-  }
-
-  /**
-   * Build the usual result structure from the response to the declared call.
-   *
-   * @param array<string,string|false> $responses Raw body keyed as prepareBatchRequests()
-   * @param string $query Search query
-   * @param array $options Unused, the parsing needs no option
-   * @return array Same structure search() returns
-   */
-  public function buildResultFromBatch(array $responses, string $query, array $options = []): array
-  {
-    $startTime = microtime(true);
-    $data = $this->client->decodeResponse(self::ENGINE_NAME, $responses[self::ENGINE_NAME] ?? false);
-
-    if ($data === false) {
-      return $this->buildErrorResponse($this->client->lastError(), $query, $startTime);
-    }
-
-    $result = $this->buildResultFromData($data);
-    $result['metadata']['engine'] = self::ENGINE_NAME;
-
-    return $result;
-  }
-
-  /**
    * Build search parameters from options
-   *
-   * `google_shopping` takes no `currency`: `gl` alone decides the currency of the offers, and a
-   * `currency` sent here is dropped by SerpAPI without being echoed back.
    *
    * @param array $options Options array
    * @return array Parameters for SerpAPI
@@ -190,6 +147,10 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
 
       if (!empty($locationParams['hl'])) {
         $params['hl'] = $locationParams['hl']; // Language
+      }
+
+      if (!empty($locationParams['currency'])) {
+        $params['currency'] = $locationParams['currency']; // Currency code (EUR, USD, GBP, etc.)
       }
     }
 
@@ -277,14 +238,46 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
   }
 
   /**
-   * Build unified result structure from SerpAPI data
+   * Build SerpAPI URL for parallel execution
    *
-   * Public because it is the extraction seam the tests feed with a recorded response.
+   * @param string $query The search query string
+   * @param array $options Optional parameters
+   * @return string Complete SerpAPI URL with query parameters
+   */
+  public function buildSerpApiUrl(string $query, array $options = []): string
+  {
+    $params = $this->buildSearchParams($options);
+    return $this->client->buildUrl(self::ENGINE_NAME, $query, $params);
+  }
+
+  /**
+   * Parse SerpAPI JSON response
+   *
+   * @param string $jsonResponse Raw JSON response from SerpAPI
+   * @return array Parsed result structure
+   */
+  public function parseResponse(string $jsonResponse): array
+  {
+    $data = $this->client->parseResponse($jsonResponse);
+
+    if ($data === false) {
+      return $this->buildErrorResponse(
+        'Failed to parse SerpAPI response',
+        '',
+        0
+      );
+    }
+
+    return $this->buildResultFromData($data);
+  }
+
+  /**
+   * Build unified result structure from SerpAPI data
    *
    * @param array $data Decoded SerpAPI response
    * @return array Unified result structure
    */
-  public function buildResultFromData(array $data): array
+  private function buildResultFromData(array $data): array
   {
     // Extract shopping_results array
     $shoppingResults = [];
@@ -336,8 +329,6 @@ class GoogleShoppingEngine implements WebSearchInterface, BatchableWebSearchInte
       'extracted_price' => $extractedPrice,
       'old_price' => $result['old_price'] ?? null,
       'extracted_old_price' => $extractedOldPrice,
-      // Kept so a caller can tell '$17.50/mo' from a cash price: the row carries an instalment plan.
-      'installment' => $result['installment'] ?? null,
       'source' => $result['source'] ?? '',
       'product_link' => $result['link'] ?? '',
       'thumbnail' => $result['thumbnail'] ?? '',

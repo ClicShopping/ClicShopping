@@ -11,11 +11,6 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubG
 use ClicShopping\AI\Helper\ClarificationHelper;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
 use ClicShopping\AI\Security\SecurityOrchestrator;
-use ClicShopping\AI\Config\TechnicalDefaults;
-use ClicShopping\AI\Security\SecurityLogger;
-use ClicShopping\OM\CLICSHOPPING;
-use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Registry;
 
 /**
  * RequestValidator
@@ -26,7 +21,6 @@ use ClicShopping\OM\Registry;
  * Responsibilities:
  * - Input validation (empty, length, ambiguity)
  * - Security checks (prompt injection detection)
- * - Rate limiting at the single production entry point
  * - Timeout configuration
  * - Request sanitization
  */
@@ -40,8 +34,6 @@ class RequestValidator
    */
   public static function validateRequest(array $input): array
   {
-    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
-
     // Extract query from JSON or POST
     $rawInput = file_get_contents('php://input');
     $jsonInput = json_decode($rawInput, true);
@@ -63,7 +55,7 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => CLICSHOPPING::getDef('text_error_query_empty'),
+          'error' => 'Veuillez entrer une question',
           'error_code' => 'EMPTY_QUERY',
           'interaction_id' => null,
           'validation_error' => true
@@ -80,7 +72,7 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => CLICSHOPPING::getDef('text_error_query_too_long', ['max' => $maxLength]),
+          'error' => "Votre question est trop longue (max {$maxLength} caractères)",
           'error_code' => 'QUERY_TOO_LONG',
           'interaction_id' => null,
           'validation_error' => true,
@@ -144,9 +136,6 @@ class RequestValidator
     $securityCheck = SecurityOrchestrator::validateQuery($query, null);
     
     if ($securityCheck['blocked']) {
-      // No verdict is not a threat: say which one it was.
-      $unavailable = in_array($securityCheck['detection_method'], ['llm_error', 'error'], true);
-
       error_log('🛡️ SECURITY: Blocked malicious query');
       error_log('   - Threat Type: ' . $securityCheck['threat_type']);
       error_log('   - Threat Score: ' . $securityCheck['threat_score']);
@@ -157,8 +146,8 @@ class RequestValidator
         'valid' => false,
         'error' => [
           'success' => false,
-          'error' => CLICSHOPPING::getDef($unavailable ? 'text_error_security_check_unavailable' : 'text_error_prompt_blocked_security'),
-          'error_code' => $unavailable ? 'SECURITY_CHECK_UNAVAILABLE' : 'SECURITY_THREAT_DETECTED',
+          'error' => 'Cette requête a été bloquée pour des raisons de sécurité. Veuillez reformuler votre question.',
+          'error_code' => 'SECURITY_THREAT_DETECTED',
           'threat_type' => $securityCheck['threat_type'],
           'threat_score' => $securityCheck['threat_score'],
           'detection_method' => $securityCheck['detection_method'],
@@ -196,13 +185,9 @@ class RequestValidator
     }
     
     set_time_limit($seconds);
-
-    Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
-    // Resolved here, not in the handler: it runs after a fatal, where the Registry may be gone.
-    $timeoutMessage = CLICSHOPPING::getDef('text_error_query_timeout');
-
+    
     // Register shutdown function to handle timeout gracefully
-    register_shutdown_function(function() use ($seconds, $timeoutMessage) {
+    register_shutdown_function(function() use ($seconds) {
       $error = error_get_last();
       if ($error && ($error['type'] === E_ERROR || $error['type'] === E_USER_ERROR)) {
         if (str_contains($error['message'], 'Maximum execution time')) {
@@ -213,7 +198,7 @@ class RequestValidator
           header('Content-Type: application/json; charset=UTF-8');
           echo json_encode([
             'success' => false,
-            'error' => $timeoutMessage,
+            'error' => 'La requête prend trop de temps, veuillez réessayer',
             'error_code' => 'QUERY_TIMEOUT',
             'timeout_seconds' => $seconds,
             'interaction_id' => null,
@@ -250,73 +235,5 @@ class RequestValidator
     }
     
     return false;
-  }
-
-  /**
-   * Sliding window rate limit of the chatbot, counted in the database.
-   *
-   * @param string $channel Caller channel: admin, mcp or system
-   * @param int $userId Caller id inside that channel
-   * @return bool True if the request is within the limit
-   */
-  public static function checkRateLimit(string $channel, int $userId): bool
-  {
-    $window = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_RATE_LIMIT_WINDOW');
-    $maxRequests = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_MAX_REQUEST_PER_WINDOW');
-
-    // Stored in clear, never hashed: an excess must stay attributable to a channel and an account.
-    $identifier = $channel . ':' . $userId;
-    $securityLogger = new SecurityLogger();
-
-    try {
-      $db = Registry::get('Db');
-      $windowStart = time() - $window;
-
-      // Prepared DELETE, never Db::delete(): that helper only builds equality conditions.
-      $QpurgeExpired = $db->prepare('delete
-                                     from :table_rag_rate_limit
-                                     where timestamp < :timestamp
-                                    ');
-      $QpurgeExpired->bindValue(':timestamp', $windowStart);
-      $QpurgeExpired->execute();
-
-      $Qcount = $db->prepare('select count(id) as count
-                              from :table_rag_rate_limit
-                              where identifier = :identifier
-                              and timestamp >= :timestamp
-                             ');
-      $Qcount->bindValue(':identifier', $identifier);
-      $Qcount->bindValue(':timestamp', $windowStart);
-      $Qcount->execute();
-
-      $attempts = $Qcount->valueInt('count') ?? 0;
-
-      if ($attempts >= $maxRequests) {
-        $securityLogger->logSecurityEvent('Chatbot rate limit exceeded', 'warning', [
-          'identifier' => $identifier,
-          'attempts' => $attempts,
-          'max_requests' => $maxRequests,
-          'window_seconds' => $window
-        ]);
-
-        return false;
-      }
-
-      $db->save('rag_rate_limit', [
-        'identifier' => $identifier,
-        'timestamp' => time(),
-        'ip' => HTTP::getIpAddress()
-      ]);
-
-      return true;
-    } catch (\Exception $e) {
-      // Fail-open so a database incident never closes the chat - but never in silence.
-      $securityLogger->logSecurityEvent('Chatbot rate limit check failed (DB error)', 'error', [
-        'identifier' => $identifier,
-        'error' => $e->getMessage()
-      ]);
-
-      return true;
-    }
   }
 }

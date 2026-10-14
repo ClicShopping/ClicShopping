@@ -298,30 +298,14 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
       // Agnostic translation prompt (English layer); {{language}} = target language name.
       DomainConfig::loadAgnosticLanguageFile('rag_language', 'en');
-      $prompt = CLICSHOPPING::getDef('text_rag_translate_response', [
-        'language' => $targetName . ' (ISO 639-1: ' . $targetCode . ')',
-      ]);
+      $prompt = CLICSHOPPING::getDef('text_rag_translate_response', ['language' => $targetName]);
       if ($prompt === '' || $prompt === 'text_rag_translate_response') {
-        self::logSecurityEvent('restitution: the translation prompt is missing, the answer stays in English', 'warning');
-
         return $text;
       }
 
-      $maxTokens = Gpt::maxToken();
-
-      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, $maxTokens, 0.0);
-
-      if (self::keptSourceLanguage($translated, $text)) {
-        $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, $maxTokens, 0.3);
-
-        if (self::keptSourceLanguage($translated, $text)) {
-          self::logSecurityEvent('restitution: the answer stayed in English after a second attempt', 'warning');
-        }
-      }
+      $translated = Gpt::getGptResponse($prompt . "\n\n" . $text, 600);
 
       if (!is_string($translated) || trim($translated) === '') {
-        self::logSecurityEvent('restitution: the model returned nothing, the answer stays in English', 'warning');
-
         return $text;
       }
 
@@ -331,40 +315,6 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
       return $text;
     }
-  }
-
-  /**
-   * Did the restitution give back the pipeline's source language instead of translating?
-   *
-   * Two shapes, and the second is the one an identity check misses: a verbatim echo, and a
-   * REWRITTEN English, which differs from its source character for character. Function words
-   * only - a proper noun, a code or a figure carried over never trips it.
-   *
-   * @param mixed $translated What the model returned
-   * @param string $source The English text it was given
-   * @return bool True when the answer is still in the source language
-   */
-  private static function keptSourceLanguage(mixed $translated, string $source): bool
-  {
-    if (!is_string($translated) || trim($translated) === '') {
-      return false;
-    }
-
-    if (trim($translated) === trim($source)) {
-      return true;
-    }
-
-    $markers = CLICSHOPPING::getDef('text_rag_source_language_markers');
-
-    if ($markers === '' || $markers === 'text_rag_source_language_markers') {
-      return false;
-    }
-
-    $words = preg_split('/[^\p{L}]+/u', mb_strtolower($translated), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-    $present = array_intersect(explode('|', $markers), array_unique($words));
-
-    // Three distinct function words is prose, not a borrowed name.
-    return count($present) >= 3;
   }
 
   /**
@@ -856,6 +806,8 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
     string|null $interactionId = null
   ): array
   {
+    // Start timing for statistics
+    $startTime = microtime(true);
     $finalMinScore = null;
     $finalLimit = null;
     
@@ -946,6 +898,22 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
         self::logSecurityEvent("SemanticAgent::search() found " . count($formattedResults) . " results", 'info');
       }
 
+      // Calculate response time
+      $endTime = microtime(true);
+      $responseTime = (int)round(($endTime - $startTime) * 1000);
+
+      // Record statistics    
+      self::recordSearchStatistics(
+        $query,
+        $responseTime,
+        true,
+        count($formattedResults),
+        $languageId,
+        $interactionId,
+        $finalMinScore,
+        $finalLimit
+      );
+
       return [
         'success' => true,
         'results' => $formattedResults,
@@ -955,6 +923,22 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
 
     } catch (\Exception $e) {
       self::logApplicationError("Error in SemanticAgent::search(): " . $e->getMessage());
+
+      // Calculate response time even on error
+      $endTime = microtime(true);
+      $responseTime = (int)round(($endTime - $startTime) * 1000);
+
+      // Record statistics for failed search
+      self::recordSearchStatistics(
+        $query,
+        $responseTime,
+        false,
+        0,
+        $languageId,
+        $interactionId,
+        $finalMinScore,
+        $finalLimit
+      );
 
       return [
         'success' => false,
@@ -992,6 +976,84 @@ class SemanticAgent implements ConfigurableComponent, QueryTypeDomainInterface, 
     }
     
     return ['min_score' => null, 'limit' => null, 'tables' => []];
+  }
+
+  /**
+   * Record search statistics to rag_statistics table
+   * 
+   * 
+   * @param string $query Search query
+   * @param int $responseTime Response time in milliseconds
+   * @param bool $success Whether the search was successful
+   * @param int $resultsCount Number of results found
+   * @param int|null $languageId Language ID
+   * @param string|null $interactionId Interaction ID
+   * @return void
+   */
+  private static function recordSearchStatistics(
+    string $query,
+    int $responseTime,
+    bool $success,
+    int $resultsCount,
+    ?int $languageId,
+    ?string $interactionId,
+    ?float $minScore,
+    ?int $limit
+  ): void
+  {
+    try {
+      // Get database connection
+      $db = Registry::get('Db');
+      $prefix = CLICSHOPPING::getConfig('db_table_prefix');
+      
+      // Get user ID and session ID
+      $userId = 1; // Default user ID
+      $sessionId = session_id();
+      
+      // Get language ID if not provided
+      if ($languageId === null && Registry::exists('Language')) {
+        $languageId = Registry::get('Language')->getId();
+      }
+      
+      // Build metadata
+      $metadata = json_encode([
+        'source' => 'documents',
+        'query' => $query,
+        'results_count' => $resultsCount,
+        'min_score' => $minScore,
+        'limit' => $limit
+      ]);
+      
+      // Insert statistics
+      $sql = "INSERT INTO {$prefix}rag_statistics 
+              (query_type, success, response_time, response_time_ms, metadata, 
+               interaction_id, user_id, session_id, language_id, date_added, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+      
+      $stmt = $db->prepare($sql);
+      $stmt->execute([
+        'semantic',
+        $success ? 1 : 0,
+        $responseTime,
+        $responseTime,
+        $metadata,
+        $interactionId,
+        $userId,
+        $sessionId,
+        $languageId
+      ]);
+      
+      if (defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True') {
+        self::logSecurityEvent(
+          "Statistics recorded: query_type=semantic, success={$success}, response_time={$responseTime}ms, results={$resultsCount}",
+          'info'
+        );
+      }
+      
+    } catch (\Exception $e) {
+      // Log error but don't throw - statistics recording should not break the search
+      error_log("SemanticAgent::recordSearchStatistics() error: " . $e->getMessage());
+    }
   }
 
   /**

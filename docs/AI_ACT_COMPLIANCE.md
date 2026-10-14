@@ -19,23 +19,6 @@ It is not an AI model and does not train foundation models. It acts as an interf
 
 ---
 
-# Responsible Person (Deployer)
-
-The system owner, its declared autonomy level and the authority of each agent are declared in
-[AI_GOVERNANCE_DECLARATION.md](AI_GOVERNANCE_DECLARATION.md).
-
-Each installation must name the natural or legal person accountable for the AI system.
-
-That name is **configuration, never a hardcoded value and never the shop name**: it is held by
-`CLICSHOPPING_APP_CHATGPT_CH_AI_ACT_RESPONSIBLE`, set in *ChatGpt / Configure / ChatGpt*
-(`Module/ClicShoppingAdmin/Config/CH/Params/ai_act_responsible.php`).
-
-It is **mandatory**. While it is empty, the back-office dashboard raises a blocking-red alert
-(`Module/ClicShoppingAdmin/Dashboard/CheckAPI.php`), because an unnamed deployer cannot satisfy
-Regulation (EU) 2024/1689.
-
----
-
 # Scope
 
 This document applies to AI-assisted features available within ClicShopping AI, including but not limited to:
@@ -87,18 +70,13 @@ ClicShopping AI provides content suggestions and does not guarantee:
 
 The final decision remains under the responsibility of the user.
 
-The system also hands back to the user on its own: an ambiguous question returns as a clarification
-with options, and a question it cannot answer reliably is declared as such — naming what could not
-be measured — rather than answered with a figure it cannot vouch for. That channel is narrow by
-design today and widens with the development objectives in progress.
-
 ---
 
 # Transparency
 
 Users interact intentionally with AI-assisted features.
 
-AI functionality is accessed through dedicated interfaces and actions initiated by the user, or by a scheduled task the administrator enabled (see § *Human Oversight*).
+AI functionality is accessed through dedicated interfaces and actions initiated by the user.
 
 Generated content should be identified within the interface as AI-generated whenever applicable.
 

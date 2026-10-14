@@ -15,7 +15,7 @@ text_ĥeading_remove_cache = Remove Cache
 # Main Metrics
 metric_total_requests = Total Requests
 metric_since_startup = since startup
-metric_error_rate = Error rate (user requests)
+metric_error_rate = Error Rate
 metric_errors_count = errors
 metric_response_time = Response Time
 metric_average = average
@@ -73,14 +73,14 @@ security_low_scores = Low scores
 # Agents
 agents_total_usage = Total Usage
 agents_avg_success_rate = Average Success Rate
-agents_all = All components
-agents_most_used = Most Used Component
-agents_main = Main component
-agents_performance = Performance by Component
+agents_all = All agents
+agents_most_used = Most Used Agent
+agents_main = Main agent
+agents_performance = Performance by Agent
 agents_usage = Usage
 agents_success_rate = Success Rate
 agents_avg_confidence = Average Confidence
-agents_usage_distribution = Component Usage Distribution
+agents_usage_distribution = Agent Usage Distribution
 
 # Reasoning Modes
 reasoning_modes_title = Reasoning Modes Statistics
@@ -101,8 +101,8 @@ chart_performance_evolution = Performance Evolution
 chart_severity_distribution = Severity Distribution
 chart_request_types = Request Types Distribution
 chart_security_scores = Security Scores
-chart_agents_performance = Component Performance
-chart_agents_usage = Component Usage Distribution
+chart_agents_performance = Agent Performance
+chart_agents_usage = Agent Usage Distribution
 chart_reasoning_modes = Reasoning Modes Usage
 chart_no_data = No data available
 
@@ -301,15 +301,15 @@ latency_auto_collect = Latency metrics will be collected automatically during ne
 # Performance Evolution
 perf_evolution = 📈 Performance Evolution
 perf_severity_distribution = Distribution of Severities
-perf_agent_distribution = Component Usage Distribution
-perf_agent_performance = 📊 Performance by Component
-perf_agent_name = Component
+perf_agent_distribution = Agent Usage Distribution
+perf_agent_performance = 📊 Performance by Agent
+perf_agent_name = Agent
 perf_agent_usage = Usage
 perf_agent_percentage = %
 perf_agent_success_rate = Success Rate
 perf_agent_avg_confidence = Average Confidence
 perf_no_agent_data = No agent data available
-perf_agent_data_info = Component statistics will appear here once requests have been processed.
+perf_agent_data_info = Agent statistics will appear here once requests have been processed.
 
 # Tabs
 tab_general = General
@@ -336,7 +336,6 @@ alert_acknowledged_at = Acknowledged at
 alert_acknowledge = Acknowledge
 alert_acknowledge_tooltip = Mark this alert as acknowledged
 alert_acknowledged_success = Alert acknowledged successfully
-alert_action_failed = The alert action failed
 alert_resolve = Resolve
 alert_resolve_tooltip = Resolve and remove this alert
 alert_resolved_success = Alert resolved successfully
@@ -354,7 +353,6 @@ trend_increasing = ↗ Increasing
 trend_decreasing = ↘ Decreasing
 trend_stable = → Stable
 trend_insufficient_data = Insufficient data for trends. Collection in progress...
-trend_window_explanation = Movement over the last {days} days compared with the {days} days before them. The General tab counts every request since the start, so its figures are cumulative and do not match these.
 
 # Recommendations
 recommendation_title = Recommendations
@@ -431,6 +429,7 @@ latency_rec_speedup = Fast-lane is {factor}x faster! Keep optimizing it.
 latency_rec_normal = Performance is normal. Keep monitoring.
 
 # AI Analysis
+ai_analysis_title = 🤖 AI Analysis
 
 # Modal Reset Stats
 modal_reset_stats_title = ⚠️ Reset all statistics
@@ -530,6 +529,9 @@ tab7_recommendations = Recommendations
 
 # Tab 11 - Feedback Analysis
 tab11_title = ⭐ Feedback Analysis
+tab11_analyze_negative = 🔍 Analyze Negative
+tab11_analyze_positive = ✨ Analyze Positive
+tab11_analyze_complete = 📊 Complete Analysis
 tab11_no_feedback = No feedback recorded
 tab11_feedback_will_appear = Feedbacks will appear here once users have submitted their feedback.
 tab11_recent_feedbacks = 📝 Recent Feedbacks
@@ -672,6 +674,7 @@ cache_reset_resetting = Resetting...
 # Additional UI elements
 tab6_global_metrics = Global Metrics
 tab11_metrics_summary = Metrics Summary
+tab11_analysis_in_progress = Analysis in progress...
 
 
 # Source Breakdown
@@ -863,79 +866,3 @@ tab_cache = Cache
 # Data Scientist: entry point to the Adaptive Weighting dashboard (was orphaned)
 button_adaptive_weighting = ⚖️ Adaptive Weighting
 text_adaptive_weighting_help = Actor-Critic adaptive weight tuning & metrics
-security_report_button = Report
-security_clear_button = Clear noise
-security_report_title = Security journal report
-security_report_generated = Generated on {{date}} — window: last {{days}} days
-security_report_population = Population: {{total}} events, of which {{noise}} lifecycle traces and {{security}} security events, {{real_threats}} real threat(s), {{blocked}} blocked
-security_report_noise_title = The journal is mostly not made of security events
-security_report_noise_body = {{noise}} of {{total}} events ({{percent}}%) are component lifecycle traces ({{types}}), not security decisions. They are the denominator of every rate on this screen, so detection and block rates are diluted by events that could never be a threat.
-security_report_none_threat_type_title = The "threats detected" counter counts non-threats
-security_report_none_threat_type_body = {{counted}} event(s) are counted as detected threats, but only {{real}} carry a threat type other than "none". The {{rate}}% detection rate therefore measures events that explicitly recorded the absence of a threat.
-security_report_score_population_title = The average threat score describes another population
-security_report_score_population_body = Only {{with_score}} of {{total}} events carry a threat score; the average ignores the others silently and is displayed next to the full count.
-security_report_limits = What this report cannot say: it only covers the last {{days}} days and the {{security}} security event(s) actually written to the journal. An attack that no layer recorded leaves no trace here, so this report proves what was logged, never what happened.
-security_clear_confirm = Delete the component lifecycle traces from the security journal? Events carrying a threat, a decision or a block are kept.
-security_clear_done = {{deleted}} lifecycle trace(s) removed. The deletion is recorded on the security channel.
-security_clear_failed = The security journal could not be cleaned.
-security_report_failed = The security report could not be generated.
-security_report_detections_label = What was actually detected — whole journal, not just the window
-security_report_no_detection = No detection over this window: nothing was flagged, so there is nothing to review.
-security_report_detections_title = {{count}} detection(s), {{blocked}} blocked — review each reason
-security_report_detections_body = The journal recorded {{count}} detection(s) over {{reasons}} distinct reason(s), and {{blocked}} of them were blocked. A detection that was never blocked is one of two things and only a human can tell them apart: a false positive whose rule must be tuned, or a real threat that went through.
-security_report_detections_action = For each reason below: replay one of its queries. If the rule still fires on a legitimate question, tune the rule — do not silence the event. If it no longer fires, the rule was already corrected and the rows are history: nothing to do beyond noting the date.
-security_report_noise_action = Remove the write at its source, then use "Clear noise" once. Purging without removing the writer means purging again next week — a component lifecycle trace belongs to the application log, never to the security journal.
-security_report_none_threat_type_action = Stop counting "none" as a detection: the detection rate must count threat types other than "none", otherwise recording the absence of a threat raises the very figure meant to reveal threats.
-security_report_score_population_action = Display the average next to the count it was computed on, or leave it empty: an average over 8 rows shown beside a total of thousands is read as describing the total.
-security_report_limits_label = What this report cannot prove
-security_report_exposure_title = Exposure: {{status}} — {{level}}/100 on a safe-to-danger scale
-security_report_exposure_body = {{real_threats}} real threat(s), {{critical}} critical, {{blocked}} blocked over the window. The scale runs in ONE direction: 0 means nothing was detected, 100 means the journal is full of blocked criticals. It replaces the health score, which awarded points for being attacked and therefore read backwards.
-security_report_exposure_action = Read this figure with the coverage line, never alone: an idle detector reports the same 0 as a calm platform. Rising exposure means investigate the detections below; exposure at 0 with a live journal is the state you want.
-security_report_silent_journal_title = The journal recorded nothing over {{days}} days — the zero proves nothing
-security_report_silent_journal_body = No security event was written over the window. An exposure of 0 is then unreadable: a detector that no longer runs and a platform nobody attacks produce exactly the same figure.
-security_report_silent_journal_action = Send one query through the chat and check that a `query_allowed` row appears. If none does, the security layers are no longer journaling and every figure on this screen describes nothing.
-security_report_false_positives_title = {{detections}} pattern detection(s) on {{queries}} query/queries the LLM layer cleared
-security_report_false_positives_body = The pattern layer flagged these queries while the semantic layer answered "none" on the same query hash. Both verdicts are already in the journal, so the disagreement is established without a single new LLM call — and it gives the same answer on every read.
-security_report_false_positives_action = A disagreement is not a threat, it is a rule to tune: the pattern layer fires where the layer that reads meaning sees nothing. Fix the pattern, never silence the event. Where the LLM verdict is MISSING rather than "none", that is the only case worth a deferred LLM judgement.
-security_report_coverage_label = Coverage
-security_exposure = Security exposure
-security_exposure_safe = Safe — nothing detected
-security_exposure_low = Low — a few detections
-security_exposure_watch = Watch — detections to review
-security_exposure_danger = Danger — threats detected and blocked
-security_exposure_unknown = Unknown — the journal could not be read
-security_coverage_line = Coverage: {{events}} security event(s) over {{days}} days, layers: {{layers}}. Exposure at 0 only means something if this line is not empty.
-feedback_report_button = Findings
-feedback_report_title = Feedback journal report
-feedback_report_generated = Generated on {{date}} — window: last {{days}} days. Both dashboards read this same run.
-feedback_report_scope = Scope: agent {{agent}}, intent {{intent}}
-feedback_report_no_finding = No finding over this window: every report reaches its interaction, carries its trace and agrees with the gate.
-feedback_report_limits = What this report cannot say: it only covers the last {{days}} days and the reports actually submitted. A user who was dissatisfied and said nothing leaves no trace here, so this report describes what was reported, never what was experienced.
-feedback_report_failed = The feedback report could not be generated.
-feedback_report_recompute = Run the analysis again
-feedback_report_run_fresh = Analysis just produced
-feedback_report_run_stored = Stored run, reused for up to 24 hours
-feedback_report_samples = Rows to open
-feedback_report_unstable_notice = <strong>Partial analysis: this window lacks the volume required.</strong> It holds {{total}} report(s) over {{days}} days; {{threshold}} are needed before a SHARE means anything — at this volume "100 %" describes a single row, and one more report would drop it to 50 %. Findings that grade on a share are therefore set aside: showing them would add nothing but noise. What remains below COUNTS ROWS and does not depend on volume: an answer with no SQL is one, even alone. This box clears, and the full analysis appears, as soon as the window reaches {{threshold}} reports.
-feedback_report_unjoinable_feedback_title = {{unjoinable}} report(s) reach no interaction
-feedback_report_unjoinable_feedback_body = {{unjoinable}} of {{total}} reports carry a token that matches no row in the interaction log. Nothing says what was asked, what was answered or which agent ran, so these reports cannot be acted on at all.
-feedback_report_unjoinable_feedback_action = Do this: take the tokens listed below and look for their trace — <code>SELECT * FROM rag_interactions WHERE client_interaction_id = '&lt;token&gt;'</code>. If it returns nothing, the token written before persistence is not the one handed to the browser: the defect is there, in the code that submits the report. The {{unjoinable}} already-orphaned reports are lost; they only date the breakage.
-feedback_report_blind_trace_title = {{without_sql}} report(s) on an answer the system cannot show
-feedback_report_blind_trace_body = Of {{sql_bearing}} reported answers built from SQL, {{without_sql}} carry no SQL and {{without_verdict}} no gate verdict. A human is being asked to correct a query nothing recorded.
-feedback_report_blind_trace_action = Look at: the rows below, columns <code>sql_query</code> and <code>validation_action</code> of <code>rag_interactions</code>. Nothing to repair on existing rows — those columns fill from now on. Do this: ask an analytics question again, then check the new row carries them. If {{without_sql}} does not fall while new reports arrive, writing the trace is broken, not the history.
-feedback_report_negative_concentration_title = {{negatives}} of {{reported}} complaints land on one path: agent {{agent}}, intent {{intent}}
-feedback_report_negative_concentration_body = Of the {{reported}} negative report(s) in this window, {{negatives}} ({{share}} %) concern the agent {{agent}} handling an {{intent}} intent. Such a concentration points at a defect on ONE path rather than general dissatisfaction — provided the population is large enough for the share to mean anything.
-feedback_report_negative_concentration_action = Read the SQL of that path's interactions before touching anything else: <code>SELECT question, sql_query, validation_action FROM rag_interactions WHERE agent_used = '{{agent}}' AND intent_type = '{{intent}}'</code>, crossed with the window's negative reports. The rest of the platform is not what was reported.
-feedback_report_silent_comment_title = {{silent}} negative report(s) with no words attached
-feedback_report_silent_comment_body = {{silent}} of {{negatives}} negative reports carry no text. They say something was wrong and nothing else, so they weigh on every rate without being usable.
-feedback_report_silent_comment_action = Do this: nothing on those {{silent}} rows — a wordless report cannot be diagnosed. Judge rates on the reports that carry text, and if the silent share stays high, add a one-click reason to the feedback form: the form is what gets fixed, not the answer.
-feedback_report_verdict_disagreement_title = {{disagreements}} answer(s) the gate passed and the reader rejected
-feedback_report_verdict_disagreement_body = On {{with_verdict}} reported answers carrying a verdict, {{disagreements}} were marked "pass" by the validation gate and reported as wrong by the user. The machine critic and its reader disagree on those.
-feedback_report_verdict_disagreement_action = The pair to read FIRST: the gate marked these answers "pass", the reader rejected them. Do this: for each row below, compare <code>question</code> against <code>sql_query</code> — if the SQL answers a different question than the one asked, the defect sits upstream of the gate; if it answers it and the answer still displeases, it is the gate's threshold that needs revisiting, not generation.
-feedback_report_thin_population_title = {{total}} report(s) over {{days}} days — too few for a rate
-feedback_report_thin_population_body = The window carries {{total}} reports, below the {{threshold}} under which a percentage describes two or three rows. Every share above is exact and none of them is representative.
-feedback_report_thin_population_action = Do this before anything else: read the findings below ONE REPORT AT A TIME, never as rates — on {{total}} reports a percentage describes two or three rows. This warning clears itself past {{threshold}} reports in the window.
-
-feedback_report_withheld = {{withheld}} finding(s) set aside at this volume. They come back on their own past {{threshold}} reports in the window — nothing is lost, the journal recorded them.
-
-cost_coverage_line = On {{rows}} priced request(s) since {{since}} — earlier rows carry no model and are left unpriced. Not counted: embeddings (~1%) and the deferred post-answer call (0–4%).

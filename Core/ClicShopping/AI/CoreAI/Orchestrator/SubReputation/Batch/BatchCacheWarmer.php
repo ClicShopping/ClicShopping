@@ -10,6 +10,7 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubReputation\Batch;
 
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationCache;
+use ClicShopping\AI\CoreAI\Orchestrator\SubReputation\ReputationStore;
 
 /**
  * BatchCacheWarmer
@@ -23,6 +24,7 @@ class BatchCacheWarmer
 {
   private $db;
   private $cache;
+  private $store;
   private int $batchSize;
 
   /**
@@ -34,6 +36,7 @@ class BatchCacheWarmer
   {
     $this->db = Registry::get('Db');
     $this->cache = new ReputationCache();
+    $this->store = new ReputationStore();
     $this->batchSize = $batchSize;
   }
 

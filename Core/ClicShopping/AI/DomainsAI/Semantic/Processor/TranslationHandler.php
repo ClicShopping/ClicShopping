@@ -14,6 +14,7 @@ use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\AI\Infrastructure\Cache\TranslationCache;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
+use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * TranslationHandler
@@ -124,16 +125,20 @@ class TranslationHandler
       error_log("Calling Gpt::getGptResponse()...");
       
       // Temperature 0.0: this is a normalisation, not a piece of writing.
-      // Seeded by CH/Params/translation_max_token.php: read under defined(), never declared in
-       $maxTokens = \defined('CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN')
-        ? (int)CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN
-        : 500;
+      $maxTokens = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_CH_TRANSLATION_MAX_TOKEN');
       $translation = Gpt::getGptResponse($prompt, $maxTokens, 0.0);
 
       // A hit ceiling truncates the normalised input mid-sentence and it travels downstream as
-      // the question. The ceiling is reported at the chokepoint; here it is kept as STATE, which
-      // the callers read to decide what to do with a truncated query.
+      // the question — a wrong answer to a question nobody asked. `completion == budget` is the
+      // signature; never let it pass unreported.
       self::$lastTruncated = ((int)(Gpt::getLastTokenUsage()['completion_tokens'] ?? 0)) >= $maxTokens;
+
+      if (self::$lastTruncated) {
+        self::$logger->logSecurityEvent(
+          sprintf('Input normalisation hit its %d-token ceiling — the query was truncated', $maxTokens),
+          'warning'
+        );
+      }
 
       // 🔍 DIAGNOSTIC: Log résultat GPT
       if ($translation === false) {

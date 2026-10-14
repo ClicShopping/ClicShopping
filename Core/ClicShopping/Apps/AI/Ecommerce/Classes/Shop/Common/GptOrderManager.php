@@ -12,7 +12,6 @@ namespace ClicShopping\Apps\AI\Ecommerce\Classes\Shop\Common;
 use ClicShopping\Apps\Orders\Orders\Classes\Shop\Order;
 use ClicShopping\OM\Registry;
 use ClicShopping\OM\SimpleLogger;
-use ClicShopping\Apps\Orders\Orders\Classes\Common\OrderLineCost;
 
 /**
  * Class GptOrderManager
@@ -691,8 +690,7 @@ class GptOrderManager
         'products_price' => (float)$item['price'],
         'final_price' => (float)$item['unit_price'],
         'products_tax' => $this->calculateTax($item),
-        'products_quantity' => (int)$item['quantity'],
-        'products_unit_cost' => OrderLineCost::unitCost((int)$item['id'])
+        'products_quantity' => (int)$item['quantity']
       ];
 
       $this->db->save('orders_products', $sql_data_array);

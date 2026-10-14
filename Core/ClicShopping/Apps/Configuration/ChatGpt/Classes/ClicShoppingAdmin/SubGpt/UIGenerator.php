@@ -11,7 +11,6 @@ namespace ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\SubG
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 
 use function defined;
@@ -119,23 +118,18 @@ class UIGenerator
       $httpServer = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin');
       $httpPath = CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin');
 
-      $lang = '?language=' . rawurlencode(Registry::get('Language')->getCode());
-
-      $recordUrl = $httpServer . $httpPath . 'ajax/RAG/record_feedback.php' . $lang;
-      $ajaxUrl   = $httpServer . $httpPath . 'ajax/ChatGpt/chatGpt.php' . $lang;
+      $recordUrl = $httpServer . $httpPath . 'ajax/RAG/record_feedback.php';
+      $ajaxUrl   = $httpServer . $httpPath . 'ajax/ChatGpt/chatGpt.php';
 
       $userId     = (int)(AdministratorAdmin::getUserAdminId() ?? 0);
       $languageId = (int)($_SESSION['languages_id'] ?? 1);
 
-      $resetContextUrl = $httpServer . $httpPath . 'ajax/RAG/reset_context.php' . $lang;
+      $resetContextUrl = $httpServer . $httpPath . 'ajax/RAG/reset_context.php';
       $maxLength = 1000;
-
-      Registry::get('Language')->loadDefinitions('ClicShoppingAdmin/ai_response_labels');
 
       $i18n = [
         'loading_analyzing' => CLICSHOPPING::getDef('text_chat_loading_analyzing'),
         'loading_request' => CLICSHOPPING::getDef('text_chat_loading_request'),
-        'ai_disclaimer' => CLICSHOPPING::getDef('text_chat_ai_disclaimer'),
         'validation_empty' => CLICSHOPPING::getDef('text_chat_validation_empty'),
         'validation_too_long' => CLICSHOPPING::getDef('text_chat_validation_too_long', ['maxLength' => $maxLength]),
         'error_prefix' => CLICSHOPPING::getDef('text_chat_error_prefix'),
@@ -177,9 +171,7 @@ class UIGenerator
         'clarification_status_received' => CLICSHOPPING::getDef('text_chat_clarification_status_received'),
         'clarification_error_invalid_response' => CLICSHOPPING::getDef('text_chat_clarification_error_invalid_response'),
         'clarification_response_prefix' => CLICSHOPPING::getDef('text_chat_clarification_response_prefix'),
-        'clarification_retry' => CLICSHOPPING::getDef('text_chat_clarification_retry'),
-        'feedback_correction_label' => CLICSHOPPING::getDef('text_chat_feedback_correction_label'),
-        'feedback_correction_placeholder' => CLICSHOPPING::getDef('text_chat_feedback_correction_placeholder')
+        'clarification_retry' => CLICSHOPPING::getDef('text_chat_clarification_retry')
       ];
 
       $config = [
@@ -217,5 +209,45 @@ class UIGenerator
     }
 
     return $output . $menu . $script;
+  }
+
+  /**
+   * Generates and returns the parameters and script configuration for integrating a ChatGPT model into CKEditor.
+   *
+   * @return string|bool Returns the generated script as a string if successful, otherwise, returns false.
+   */
+  public static function gptCkeditorParameters(): string|bool
+  {
+    // The browser talks to ClicShopping, never to a provider: the model, its provider, the API
+    // key and the wire format are all resolved server-side by the Gpt facade. Nothing here is
+    // OpenAI-specific, so switching the catalogued model to another provider needs no edit.
+    $url = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin')
+         . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin')
+         . 'ajax/ChatGpt/chatGptCkeditor.php';
+
+    $script = '<script>
+ let apiGptUrl = "' . $url . '";
+ let titleGpt = "' . CLICSHOPPING::getDef('text_chat_title') . '";
+</script>';
+
+    $script .= '<script>
+ function callChatGpt(prompt, callback) {
+   fetch(apiGptUrl, {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json"
+     },
+     body: JSON.stringify({message: prompt})
+   })
+   .then(response => response.json())
+   .then(data => callback(data))
+   .catch(error => console.error("Erreur GPT :", error));
+ }
+</script>';
+
+    $script .= '<!--start wysiwig preloader--><style>.blur {filter: blur(1px);opacity: 0.4;}</style><!--end wysiwzg preloader-->';
+    $script .= '<script src="' . CLICSHOPPING::link('Shop/ext/javascript/cKeditor/dialogs/chatgpt.js') . '"></script>';
+
+    return $script;
   }
 }

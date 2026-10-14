@@ -9,15 +9,12 @@
 namespace ClicShopping\Apps\AI\Ecommerce;
 
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EntityConfig;
-use ClicShopping\Apps\AI\Ecommerce\Config\EcommerceDefaults;
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\EventAxis;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\MetricCatalog;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\HybridPreFilter;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\ProductHelper;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\AnalyticsPatterns;
 use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Patterns\EntityKeywords;
 use ClicShopping\OM\Domains\AbstractDomainApp;
-use ClicShopping\Apps\AI\Ecommerce\Classes\ClicShoppingAdmin\Analytics\StockResultEnricher;
 
 /**
  * Ecommerce Domain App for ClicShopping AI
@@ -201,127 +198,6 @@ class Ecommerce extends AbstractDomainApp
   public function getMetricCatalog(): array
   {
     return MetricCatalog::all();
-  }
-
-  /**
-   * Signed event axis of this domain and its projections, compiled by PlanSqlCompiler.
-   *
-   * @return array{axis: array, projections: array}
-   */
-  public function getEventAxis(): array
-  {
-    return ['axis' => EventAxis::axis(), 'projections' => EventAxis::projections(), 'hierarchy' => EventAxis::hierarchy()];
-  }
-
-  /**
-   * Dimensions of this domain carried at order grain (one value per order), so an order-level
-   * metric broken down by them is not fanned out by order lines.
-   *
-   * @return array<int, string>
-   */
-  public function getOrderSideDimensions(): array
-  {
-    return MetricCatalog::orderSideDimensions();
-  }
-
-  /**
-   * Dimensions read under another one once the plan filters them on a value: a named category
-   * is its sub-tree, read by path, not a top-level row.
-   *
-   * @return array<string, string> Dimension => its reading under such a filter
-   */
-  public function getFilteredDimensionReadings(): array
-  {
-    return MetricCatalog::filteredDimensionReadings();
-  }
-
-  /**
-   * Rows of this domain that no aggregated amount may read (column => values).
-   *
-   * @return array<string, array<int, string>>
-   */
-  public function getForbiddenAggregateSources(): array
-  {
-    return MetricCatalog::forbiddenAggregateSources();
-  }
-
-  /**
-   * Key columns per metric grain (grain => columns), so the result is never broken down by a
-   * grain the plan did not ask for.
-   *
-   * @return array<string, array<int, string>>
-   */
-  public function getGrainKeys(): array
-  {
-    return MetricCatalog::grainKeys();
-  }
-
-  /**
-   * Columns every analytics result table opens with, in this order, when present.
-   *
-   * @return array<int, string>
-   */
-  public function getLeadColumns(): array
-  {
-    return MetricCatalog::leadColumns();
-  }
-
-  /**
-   * Label keys shown in place of an empty value of a dimension column (column => key).
-   *
-   * @return array<string, string>
-   */
-  public function getNoneLabels(): array
-  {
-    return MetricCatalog::noneLabels();
-  }
-
-  /**
-   * Named row-level expressions the metric expressions of this domain read (term => expression).
-   *
-   * @return array<string, string>
-   */
-  public function getMetricTerms(): array
-  {
-    return MetricCatalog::terms();
-  }
-
-  /**
-   * How much sensitive personal data one analytics answer may list, and when the cumulated
-   * volume served to one user escalates the trace.
-   *
-   * @return array{cap: int, escalation_rows: int, window_hours: int}
-   */
-  public function getSensitiveDataPolicy(): array
-  {
-    return [
-      'cap' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SENSITIVE_LIST_CAP'),
-      'escalation_rows' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SENSITIVE_ESCALATION_ROWS'),
-      'window_hours' => EcommerceDefaults::int('CLICSHOPPING_APP_ECOMMERCE_EC_SENSITIVE_WINDOW_HOURS'),
-    ];
-  }
-
-  /**
-   * Columns of this domain that select a population by value.
-   *
-   * @return array<int, string>
-   */
-  public function getPopulationPinColumns(): array
-  {
-    return MetricCatalog::populationPinColumns();
-  }
-
-  /**
-   * Result enrichers applied to the analytics rows after execution, before interpretation.
-   * Each one decides from the row shape whether it applies.
-   *
-   * @return array<int, \ClicShopping\AI\InterfacesAI\AnalyticsResultEnricherInterface>
-   */
-  public function getAnalyticsResultEnrichers(): array
-  {
-    return [
-      new StockResultEnricher(),
-    ];
   }
 
   /**

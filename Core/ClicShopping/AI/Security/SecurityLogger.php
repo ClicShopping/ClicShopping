@@ -20,12 +20,15 @@ use ClicShopping\AI\Infrastructure\Metrics\SecurityStatistics;
  * Class SecurityLogger
  * Provides comprehensive security event logging with database integration
  * Supports multiple log levels, formats, and database persistence
+ * 
+ * Requirements: 8.1, 8.2, 8.3
  */
 class SecurityLogger
 {
     private mixed $logFile;
     private mixed $maxLogSize;
     private mixed $logRotations;
+    private mixed $logLevel;
     private mixed $db;
     private mixed $stats;
     
@@ -58,6 +61,7 @@ class SecurityLogger
         $this->logFile = Cache::getLogFilePath();
         $this->maxLogSize = $maxLogSize;
         $this->logRotations = $logRotations;
+        $this->logLevel = $logLevel;
         $this->bufferEnabled = $bufferEnabled;
         
         // Cache numeric level for performance
@@ -436,7 +440,6 @@ class SecurityLogger
         'grounding_failed', 'query_allowed', 'query_blocked',
         'security_fallback', 'layer_performance', 'test_event',
         'obfuscation_detected', 'websearch_facade_initialized',
-        'security_log_purged',
     ];
 
     private const ALLOWED_DETECTION_METHODS = [

@@ -9,13 +9,17 @@
 namespace ClicShopping\AI\CoreAI\Planning;
 
 use ClicShopping\OM\Registry;
+use ClicShopping\AI\Rag\MultiDBRAGManager;
 use ClicShopping\AI\Security\SecurityLogger;
+use ClicShopping\AI\DomainsAI\Analytics\Agent\AnalyticsAgent;
 use ClicShopping\AI\Infrastructure\Monitoring\MetricsCollector;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\AnalyticsExecutor;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\ResultSynthesizer;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\SemanticExecutor;
 use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\StepExecutor;
+use ClicShopping\AI\CoreAI\Planning\SubPlanExecutor\ToolExecutor;
 use ClicShopping\AI\Infrastructure\Metrics\CalculatorTool;
+use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
 use ClicShopping\AI\DomainsAI\WebSearch\WebSearchFacade;
 use ClicShopping\AI\DomainsAI\WebSearch\Helper\Formatter\WebSearchFormatter;
 use ClicShopping\AI\RegistryAI\WebSearchEngineRegistry;
@@ -29,22 +33,28 @@ class PlanExecutor
 {
   private SecurityLogger $securityLogger;
   private TaskPlanner $planner;
+  private ?AnalyticsAgent $analyticsAgent = null;
+  private ?MultiDBRAGManager $ragManager = null;
   private bool $debug;
   private string $userId;
   private int $languageId;
+  private mixed $language;
   private mixed $conversationMemory = null;
 
   // Configuration
   private int $maxRetries = 2;
+  private bool $enableParallelExecution = false; // For future implementation
 
   private ?CalculatorTool $calculatorTool = null;
   private mixed $webSearchFacade;
+  private mixed $cacheManager;
   private mixed $collector;
 
   // 🆕 Refactored components
   private StepExecutor $stepExecutor;
   private AnalyticsExecutor $analyticsExecutor;
   private SemanticExecutor $semanticExecutor;
+  private ToolExecutor $toolExecutor;
   private ResultSynthesizer $resultSynthesizer;
 
   /**
@@ -56,6 +66,7 @@ class PlanExecutor
    */
   public function __construct(TaskPlanner $planner, string $userId = 'system', int $languageId = 1)
   {
+    $this->language = Registry::get('Language');
     $this->languageId = $languageId;
     $this->planner = $planner;
     $this->userId = $userId;
@@ -76,9 +87,50 @@ class PlanExecutor
     }
 
 
-    // Same source as the web search engines; never log any part of the key.
-    $hasValidKey = defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI')
-      && trim((string)CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI) !== '';
+    // Direct SerpApi verification (without Gpt dependency)
+    if ($this->debug) {
+      error_log("[INFO] PlanExecutor: Direct SerpApi verification...");
+    }
+
+    $serpApiKey = "";
+
+    // 1. Environment variable
+    $envKey = getenv('SERP_API_KEY');
+    if (!empty($envKey)) {
+      $serpApiKey = $envKey;
+      if ($this->debug) {
+        error_log("[INFO] PlanExecutor: Key found in environment variable");
+      }
+    }
+    // 2. ClicShopping constant
+    elseif (defined('CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI')) {
+      $constKey = CLICSHOPPING_APP_CHATGPT_CH_API_KEY_SERPAPI;
+      if (!empty($constKey)) {
+        $serpApiKey = $constKey;
+        if ($this->debug) {
+          error_log("[INFO] PlanExecutor: Key found in constant");
+        }
+      }
+    }
+
+    if (!empty($serpApiKey)) {
+      if ($this->debug) {
+        error_log("[INFO] SERPAPI Key loaded: " . substr($serpApiKey, 0, 10) . "...");
+      }
+      // Set environment variable for WebSearchTool
+      putenv('SERP_API_KEY=' . $serpApiKey);
+      if ($this->debug) {
+        error_log("[INFO] PlanExecutor: putenv('SERP_API_KEY') set");
+      }
+
+      $hasValidKey = true;
+    } else {
+      if ($this->debug) {
+        error_log("[error] SERPAPI Key not loaded - no source found");
+      }
+      
+      $hasValidKey = false;
+    }
 
     if ($hasValidKey) {
       try {
@@ -100,6 +152,10 @@ class PlanExecutor
         }
       }
     } else {
+      if ($this->debug) {
+        error_log("[INFO] SerpApi not configured - Web search disabled");
+      }
+
       $this->webSearchFacade = null;
 
       if ($this->debug) {
@@ -108,11 +164,13 @@ class PlanExecutor
     }
 
     $this->collector = new MetricsCollector();
+    $this->cacheManager = new SearchCacheManager();
 
     // 🆕 Initialize refactored components
     $this->stepExecutor = new StepExecutor($this->debug);
     $this->analyticsExecutor = new AnalyticsExecutor($this->userId, $this->languageId, $this->debug);
     $this->semanticExecutor = new SemanticExecutor($this->userId, $this->languageId, $this->debug);
+    $this->toolExecutor = new ToolExecutor($this->debug);
     $this->resultSynthesizer = new ResultSynthesizer($this->debug);
 
     if ($this->debug) {
@@ -391,14 +449,6 @@ class PlanExecutor
         'previous_results' => $plan->getAllStepResults(),
         'query' => $plan->getQuery(),
       ];
-
-      // Anaphora in a sub-query ("the orders of this product") points at the entity the previous
-      // half just produced. Built here so every executor gets it, not only the semantic one.
-      $lastEntity = $this->readLastEntity();
-
-      if ($lastEntity !== null) {
-        $context['last_entity'] = $lastEntity;
-      }
       
       //  Log plan intent to understand what's being passed
       if ($this->debug) {
@@ -559,6 +609,32 @@ class PlanExecutor
   private function executeSemanticSearch(TaskStep $step, array $context): array
   {
     $query = $step->getMeta('sub_query', $step->getDescription());
+
+    // Add last_entity to context for semantic query enrichment
+    if ($this->conversationMemory !== null) {
+      try {
+        $lastEntity = $this->conversationMemory->getLastEntity();
+        if ($lastEntity !== null) {
+          $context['last_entity'] = $lastEntity;
+          
+          if ($this->debug) {
+            $entityName = $lastEntity['name'] ?? ($lastEntity['id'] ?? 'unknown');
+            $this->securityLogger->logSecurityEvent(
+              "Added last_entity to semantic search context: {$entityName}",
+              'info'
+            );
+          }
+        }
+      } catch (\Exception $e) {
+        // Don't fail on context enrichment errors - just log and continue
+        if ($this->debug) {
+          $this->securityLogger->logSecurityEvent(
+            "Error adding last_entity to semantic search context: " . $e->getMessage(),
+            'warning'
+          );
+        }
+      }
+    }
 
     if ($this->debug) {
       $this->securityLogger->logSecurityEvent(
@@ -1073,36 +1149,8 @@ class PlanExecutor
   }
 
   /**
-   * Read the last entity stored in conversation memory
-   *
-   * @return array|null Entity metadata, or null when unavailable
-   */
-  private function readLastEntity(): ?array
-  {
-    if ($this->conversationMemory === null) {
-      return null;
-    }
-
-    try {
-      $lastEntity = $this->conversationMemory->getLastEntity();
-
-      return is_array($lastEntity) && !empty($lastEntity) ? $lastEntity : null;
-    } catch (\Exception $e) {
-      // Context enrichment is never fatal to a step.
-      if ($this->debug) {
-        $this->securityLogger->logSecurityEvent(
-          "Error reading last_entity: " . $e->getMessage(),
-          'warning'
-        );
-      }
-
-      return null;
-    }
-  }
-
-  /**
    * Get the last failed step
-   *
+   * 
    * @param ExecutionPlan $plan Execution plan
    * @return TaskStep|null Last failed step, or null
    */
@@ -1118,5 +1166,16 @@ class PlanExecutor
     }
 
     return $failedStep;
+  }
+
+  /**
+   * Enable/disable parallel execution
+   * 
+   * @param bool $enable Enable parallel execution
+   * @return void
+   */
+  public function setEnableParallelExecution(bool $enable): void
+  {
+    $this->enableParallelExecution = $enable;
   }
 }

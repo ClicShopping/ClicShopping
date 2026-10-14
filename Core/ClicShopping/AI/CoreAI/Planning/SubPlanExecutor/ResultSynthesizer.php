@@ -12,8 +12,6 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Registry;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\AI\CoreAI\Planning\ExecutionPlan;
-use ClicShopping\AI\CoreAI\Planning\CoherenceGuard;
-use ClicShopping\AI\DomainsAI\DomainRegistry;
 use ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator\ResultValidator;
 
 /**
@@ -90,21 +88,17 @@ class ResultSynthesizer
 
     // Get all step results
     $stepResults = $plan->getAllStepResults();
-
-    $panes = array_filter($stepResults, 'is_array');
-    $clarifications = array_filter($panes, static fn(array $p): bool => ($p['type'] ?? '') === 'clarification_needed');
-
-    if ($clarifications !== [] && count($clarifications) === count($panes)) {
-      $stepResult = reset($clarifications);
-
-      return $this->formatter->ensureSourceAttribution([
-        'type' => 'clarification_needed',
-        'clarification_needed' => true,
-        'text_response' => $stepResult['message'] ?? '',
-        'ambiguity_type' => $stepResult['ambiguity_type'] ?? null,
-        'query' => $stepResult['query'] ?? '',
-        'data' => [],
-      ]);
+    foreach ($stepResults as $stepResult) {
+      if (is_array($stepResult) && ($stepResult['type'] ?? '') === 'clarification_needed') {
+        return $this->formatter->ensureSourceAttribution([
+          'type' => 'clarification_needed',
+          'clarification_needed' => true,
+          'text_response' => $stepResult['message'] ?? '',
+          'ambiguity_type' => $stepResult['ambiguity_type'] ?? null,
+          'query' => $stepResult['query'] ?? '',
+          'data' => [],
+        ]);
+      }
     }
 
     $validatedResults = $this->validateStepResults($stepResults);
@@ -426,59 +420,6 @@ class ResultSynthesizer
         continue;
       }
 
-      if ($type === 'clarification_needed') {
-        $ask = trim((string)($result['message'] ?? $result['text_response'] ?? ''));
-
-        $aggregated['failed_panes'][] = [
-          'step_id' => $stepId,
-          'question' => $ask,
-          'message' => $ask,
-          'error' => 'clarification:' . (string)($result['ambiguity_type'] ?? 'unknown'),
-          'clarification_needed' => true,
-        ];
-
-        $this->logger->logSecurityEvent(
-          "Step {$stepId} asked for a precision: " . ($result['ambiguity_type'] ?? 'unknown'),
-          'info'
-        );
-
-        continue;
-      }
-
-      // coherence stage: a calculable-but-untrustworthy analytics figure is WITHHELD, not
-      // rendered as if reliable. It travels as a failed pane so the existing top-notice + audit
-      // path handles it; the detailed reason is journaled (governance role).
-      if ($type === 'analytics' || $type === 'analytics_response') {
-        $verdict = CoherenceGuard::inspectAnalyticsPane($result, $this->eventAxis());
-
-        if ($verdict !== null) {
-          $reason = CLICSHOPPING::getDef($verdict['reason_key']);
-          if ($reason === '' || $reason === $verdict['reason_key']) {
-            $reason = $verdict['reason_key'];
-          }
-
-          $aggregated['failed_panes'][] = [
-            'step_id' => $stepId,
-            'question' => trim((string)($result['question'] ?? '')),
-            'message' => $reason,
-            'error' => 'coherence:' . $verdict['reason_key'],
-            'coherence_rejected' => true,
-          ];
-
-          $this->logger->logSecurityEvent(
-            "Coherence guard withheld step {$stepId}: {$verdict['reason_key']}",
-            'warning',
-            [
-              'reason_key' => $verdict['reason_key'],
-              'column' => $verdict['column'] ?? null,
-              'sql_query' => (string)($result['sql_query'] ?? ''),
-            ]
-          );
-
-          continue;
-        }
-      }
-
       // Track successful step
       $successfulSteps[] = $stepId;
 
@@ -505,7 +446,7 @@ class ResultSynthesizer
       }
 
       // Aggregate text responses (dedupe identical content)
-      $addTextResponse = function (mixed $text, array $footers = []) use (&$aggregated, &$textResponseHashes): void {
+      $addTextResponse = function (mixed $text) use (&$aggregated, &$textResponseHashes): void {
         if (is_array($text)) {
           $parts = [];
           array_walk_recursive($text, static function ($value) use (&$parts): void {
@@ -529,19 +470,18 @@ class ResultSynthesizer
         $textResponseHashes[$hash] = true;
 
         if ($this->isEmptyResultsNotice($normalized)) {
-          $aggregated['empty_notices'][] = implode("\n\n", [$text, ...$footers]);
+          $aggregated['empty_notices'][] = $text;
           return;
         }
 
         $aggregated['text_responses'][] = $text;
-        $aggregated['text_footers'][array_key_last($aggregated['text_responses'])] = $footers;
       };
 
       if (isset($result['text_response']) && !empty($result['text_response'])) {
-        $addTextResponse(...$this->formatter->detachFooters($result['text_response'], $result));
+        $addTextResponse($result['text_response']);
       } elseif (isset($result['interpretation']) && !empty($result['interpretation'])) {
         // Also collect 'interpretation' field for analytics results
-        $addTextResponse(...$this->formatter->detachFooters($result['interpretation'], $result));
+        $addTextResponse($result['interpretation']);
       } elseif (isset($result['result']['interpretation']) && !empty($result['result']['interpretation'])) {
         $addTextResponse($result['result']['interpretation']);
       }
@@ -980,17 +920,5 @@ class ResultSynthesizer
   public function getValidationMetrics(): array
   {
     return $this->validator->getValidationMetrics();
-  }
-
-  /**
-   * The active domain's event axis, or [] when none is declared (the axis checks then stay silent).
-   *
-   * @return array
-   */
-  private function eventAxis(): array
-  {
-    $domainApp = DomainRegistry::getInstance()->getActiveApp();
-
-    return $domainApp !== null && method_exists($domainApp, 'getEventAxis') ? (array)($domainApp->getEventAxis()['axis'] ?? []) : [];
   }
 }

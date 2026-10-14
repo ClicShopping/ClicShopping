@@ -15,6 +15,7 @@ namespace ClicShopping\AI\Infrastructure\Metrics;
 
 use ClicShopping\AI\Infrastructure\Orm\DoctrineOrm;
 use ClicShopping\OM\CLICSHOPPING;
+use ClicShopping\OM\Registry;
 
 /**
  * ActorMetricsCollector Class
@@ -29,6 +30,7 @@ use ClicShopping\OM\CLICSHOPPING;
  */
 class ActorMetricsCollector
 {
+  private $db;
   private string $prefix;
   private bool $debug;
   
@@ -41,6 +43,7 @@ class ActorMetricsCollector
   
   public function __construct()
   {
+    $this->db = Registry::get('Db');
     $this->prefix = CLICSHOPPING::getConfig('db_table_prefix');
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && 
                    CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
@@ -196,15 +199,13 @@ class ActorMetricsCollector
           AND executed_at > DATE_SUB(NOW(), INTERVAL ? DAY)
       ";
       
-      $result = DoctrineOrm::selectOne($sql, [$actorId, $days]);
+      $result = DoctrineOrm::query($sql, [$actorId, $days])->fetch();
       
       if (!$result || $result['total_executions'] == 0) {
         return $this->getEmptyMetrics();
       }
       
       $successRate = $result['successful_executions'] / $result['total_executions'];
-      // quality_score is nullable: an unrecorded quality stays null, never a zero.
-      $quality = $result['avg_quality_score'] !== null ? (float)$result['avg_quality_score'] : null;
       
       return [
         'actor_id' => $actorId,
@@ -216,10 +217,10 @@ class ActorMetricsCollector
         'avg_execution_time_ms' => round($result['avg_execution_time_ms'], 2),
         'min_execution_time_ms' => round($result['min_execution_time_ms'], 2),
         'max_execution_time_ms' => round($result['max_execution_time_ms'], 2),
-        'avg_quality_score' => $quality !== null ? round($quality, 4) : null,
-        'min_quality_score' => $quality !== null ? round((float)$result['min_quality_score'], 4) : null,
-        'max_quality_score' => $quality !== null ? round((float)$result['max_quality_score'], 4) : null,
-        'performance_score' => $this->calculatePerformanceScore($successRate, $quality),
+        'avg_quality_score' => round($result['avg_quality_score'], 4),
+        'min_quality_score' => round($result['min_quality_score'], 4),
+        'max_quality_score' => round($result['max_quality_score'], 4),
+        'performance_score' => $this->calculatePerformanceScore($successRate, $result['avg_quality_score']),
         'by_action_type' => $this->getMetricsByActionType($actorId, $days)
       ];
       
@@ -253,7 +254,7 @@ class ActorMetricsCollector
         ORDER BY count DESC
       ";
       
-      $results = DoctrineOrm::select($sql, [$actorId, $days]);
+      $results = DoctrineOrm::query($sql, [$actorId, $days])->fetchAll();
       
       $byType = [];
       foreach ($results as $row) {
@@ -264,7 +265,7 @@ class ActorMetricsCollector
           'success_count' => (int)$row['success_count'],
           'success_rate' => round($successRate * 100, 2),
           'avg_execution_time_ms' => round($row['avg_time_ms'], 2),
-          'avg_quality_score' => $row['avg_quality'] !== null ? round((float)$row['avg_quality'], 4) : null
+          'avg_quality_score' => round($row['avg_quality'], 4)
         ];
       }
       
@@ -280,15 +281,11 @@ class ActorMetricsCollector
    * Calculates overall performance score
    * 
    * @param float $successRate Success rate (0.0-1.0)
-   * @param float|null $qualityScore Average quality score (0.0-1.0), null when none was recorded
+   * @param float $qualityScore Average quality score (0.0-1.0)
    * @return float Performance score (0.0-1.0)
    */
-  private function calculatePerformanceScore(float $successRate, ?float $qualityScore): float
+  private function calculatePerformanceScore(float $successRate, float $qualityScore): float
   {
-    if ($qualityScore === null) {
-      return round($successRate, 4);
-    }
-
     // Weighted combination: success rate (60%) + quality (40%)
     return round(($successRate * 0.6) + ($qualityScore * 0.4), 4);
   }
@@ -308,7 +305,7 @@ class ActorMetricsCollector
         WHERE executed_at > DATE_SUB(NOW(), INTERVAL ? DAY)
       ";
       
-      $actors = DoctrineOrm::select($sql, [$days]);
+      $actors = DoctrineOrm::query($sql, [$days])->fetchAll();
       
       $allMetrics = [];
       foreach ($actors as $actor) {
@@ -341,7 +338,7 @@ class ActorMetricsCollector
           AND executed_at > DATE_SUB(NOW(), INTERVAL ? HOUR)
       ";
       
-      $result = DoctrineOrm::selectOne($sql, [$actorId, $hours]);
+      $result = DoctrineOrm::query($sql, [$actorId, $hours])->fetch();
       
       if (!$result || !$result['total_time_ms']) {
         return 0.0;

@@ -83,8 +83,7 @@
       },
       "ClicShoppingAdmin/Reviews": {
         "DeleteAll": "Module\\Hooks\\ClicShoppingAdmin\\Reviews\\DeleteAll",
-        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Reviews\\Update",
-        "SetFlag": "Module\\Hooks\\ClicShoppingAdmin\\Reviews\\SetFlag"
+        "Update": "Module\\Hooks\\ClicShoppingAdmin\\Reviews\\Update"
       },
       "ClicShoppingAdmin/ReviewsSentiment": {
         "Update": "Module\\Hooks\\ClicShoppingAdmin\\ReviewsSentiment\\Update",
@@ -99,6 +98,9 @@
       },
       "Shop/Reviews": {
         "SaveEntry": "Module\\Hooks\\Shop\\Reviews\\SaveEntry"
+      },
+      "Shop/ReviewsWrite": {
+        "Process": "Module\\Hooks\\Shop\\ReviewsWrite\\Process"
       },
       "ClicShoppingAdmin/Recommendations": {
       },

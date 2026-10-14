@@ -11,7 +11,6 @@ declare(strict_types=1);
 namespace ClicShopping\AI\DomainsAI\Analytics\Planning;
 
 use ClicShopping\AI\Config\DomainConfig;
-use ClicShopping\AI\DomainsAI\Analytics\Validator\MetricExpressionFilter;
 use ClicShopping\AI\Infrastructure\Prompt\PromptPlaceholders;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
 use ClicShopping\OM\CLICSHOPPING;
@@ -30,60 +29,28 @@ use ClicShopping\Sites\Common\HTMLOverrideCommon;
 class AnalysisPlanner
 {
   private const DAILY_SHAPE_MAX_DAYS = 31;
-  private const COMPARE_CONVENTIONS = [
-    PeriodResolver::COMPARE_PREVIOUS_YEAR => 'text_analysis_plan_compare_calendar_year',
-    PeriodResolver::COMPARE_PREVIOUS_YEAR_COMPARABLE_DAYS => 'text_analysis_plan_compare_comparable_days',
-  ];
 
   private AnalysisPlanValidator $validator;
   private int $languageId;
-  /** @var array<string, array<int, string>> Companion columns per metric, as the catalogue declares them */
-  private array $companions = [];
-  /** @var array<string, string> Declared formula per metric, as the catalogue and its terms give it */
-  private array $formulas = [];
-  /** @var array<int, string> Metrics that are a ratio of sums */
-  private array $ratios = [];
   private bool $definitionsLoaded = false;
 
   /**
-   * @param array<string, array{grain: string, type: string, definition: string, companions?: array<int, string>}> $catalog Domain metric catalogue
+   * @param array<string, array{grain: string, type: string, definition: string}> $catalog Domain metric catalogue
    * @param int $languageId Language ID, needed to resolve the prompt's dynamic placeholders
-   * @param array<int, string> $orderSideDimensions Dimensions the domain declares at order grain
-   * @param array<string, string> $terms Named row-level expressions the catalogue formulas read
-   * @param array<string, string> $filteredDimensionReadings Dimension => its reading under a filter on one of its values
-   * @param string $factGrain Grain of the domain's dated fact (event axis), '' when none is declared
    */
-  public function __construct(array $catalog, int $languageId, array $orderSideDimensions = [], array $terms = [], array $filteredDimensionReadings = [], string $factGrain = '')
+  public function __construct(array $catalog, int $languageId)
   {
-    $this->validator = new AnalysisPlanValidator($catalog, $orderSideDimensions, $filteredDimensionReadings, $factGrain);
+    $this->validator = new AnalysisPlanValidator($catalog);
     $this->languageId = $languageId;
-
-    foreach ($catalog as $name => $metric) {
-      if (!empty($metric['companions'])) {
-        $this->companions[$name] = $metric['companions'];
-      }
-
-      $formula = MetricExpressionFilter::describe($name, $catalog, $terms);
-
-      if ($formula !== '') {
-        $this->formulas[$name] = $formula;
-      }
-
-      if (($metric['aggregation'] ?? '') === MetricAggregation::RATIO_OF_SUMS) {
-        $this->ratios[] = $name;
-      }
-    }
   }
 
   /**
    * Ask the model for a plan, then validate it.
    *
    * @param string $englishQuestion Question already normalised to English
-   * @param string $widerRequest The whole request this question is one part of, already English.
-   *                             Empty when the question stands alone.
-   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, act: bool, raw: string}
+   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, raw: string}
    */
-  public function plan(string $englishQuestion, string $widerRequest = ''): array
+  public function plan(string $englishQuestion): array
   {
     $skeleton = $this->resolvePromptSkeleton();
 
@@ -93,12 +60,11 @@ class AnalysisPlanner
         'unsatisfiable' => [],
         'errors' => ['the analysis plan prompt still carries an unresolved placeholder'],
         'no_metric_proposed' => false,
-        'act' => false,
         'raw' => '',
       ];
     }
 
-    $prompt = $this->assemblePrompt($skeleton, $englishQuestion, $widerRequest);
+    $prompt = $this->assemblePrompt($skeleton, $englishQuestion);
 
     $raw = (string)Gpt::getGptResponse($prompt, $this->responseMaxTokens($englishQuestion), 0.0);
 
@@ -127,14 +93,13 @@ class AnalysisPlanner
    *
    * @param string $skeleton Resolved skeleton, from resolvePromptSkeleton()
    * @param string $englishQuestion Question already normalised to English
-   * @param string $widerRequest The whole request this question is a part of; empty when it stands alone
    * @return string Prompt ready to be sent to the model
    */
-  protected function assemblePrompt(string $skeleton, string $englishQuestion, string $widerRequest = ''): string
+  protected function assemblePrompt(string $skeleton, string $englishQuestion): string
   {
     return str_replace(
-      ['{{today}}', '{{wider_request}}', '{{question}}', '{{examples}}'],
-      [date('Y-m-d'), trim($widerRequest), $englishQuestion, $this->examples()],
+      ['{{question}}', '{{examples}}'],
+      [$englishQuestion, $this->examples()],
       $skeleton
     );
   }
@@ -144,7 +109,7 @@ class AnalysisPlanner
    * testable without an LLM call.
    *
    * @param string $raw Raw model answer
-   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool, act: bool}
+   * @return array{plan: array|null, unsatisfiable: array, errors: array<int, string>, no_metric_proposed: bool}
    */
   public function parsePlan(string $raw): array
   {
@@ -156,12 +121,10 @@ class AnalysisPlanner
         'unsatisfiable' => [],
         'errors' => ['the plan answer is not JSON: ' . json_last_error_msg()],
         'no_metric_proposed' => false,
-        'act' => false,
       ];
     }
 
-    // Read beside the plan, not inside it: a question asking what to do may aggregate no metric.
-    return $this->validator->validate($decoded) + ['act' => ($decoded['act'] ?? false) === true];
+    return $this->validator->validate($decoded);
   }
 
   /**
@@ -179,13 +142,8 @@ class AnalysisPlanner
     $this->loadDefinitions();
 
     $metrics = [];
-    $hasCompanions = false;
 
     foreach ($plan['metrics'] as $metric) {
-      // Listed by the binding plan, or the generator drops them as an added metric.
-      $companions = $this->companions[$metric['name']] ?? [];
-      $hasCompanions = $hasCompanions || $companions !== [];
-
       $metrics[] = $this->getDef('text_analysis_plan_metric_line', [
         'name' => $metric['name'],
         'grain' => $metric['grain'],
@@ -195,39 +153,19 @@ class AnalysisPlanner
             ? 'text_analysis_plan_variation_points'
             : 'text_analysis_plan_variation_percent'
         ),
-      ]) . ($companions === [] ? '' : ' | ' . $this->getDef('text_analysis_plan_metric_companions', [
-        'companions' => implode(', ', $companions),
-      ])) . (isset($this->formulas[$metric['name']]) ? ' | ' . $this->getDef(
-        match (true) {
-          isset($metric['series_unit']) => 'text_analysis_plan_metric_series_formula',
-          in_array($metric['name'], $this->ratios, true) => 'text_analysis_plan_metric_ratio_formula',
-          default => 'text_analysis_plan_metric_formula',
-        },
-        ['formula' => $this->formulas[$metric['name']], 'unit' => (string)($metric['series_unit'] ?? '')]
-      ) : '');
+      ]);
     }
 
-    $windows = isset($plan['periods']['current']['from'], $plan['periods']['current']['to'])
-      ? $this->getDef('text_analysis_plan_window_current', [
-          'from' => $plan['periods']['current']['from'],
-          'to' => $plan['periods']['current']['to'],
-        ])
-      : (($plan['periods']['all_time'] ?? false) === true
-        ? $this->getDef('text_analysis_plan_window_all_time', ['to' => (string)($plan['periods']['current']['to'] ?? '')])
-        : '');
+    $windows = $this->getDef('text_analysis_plan_window_current', [
+      'from' => $plan['periods']['current']['from'],
+      'to' => $plan['periods']['current']['to'],
+    ]);
 
     if (isset($plan['periods']['previous'])) {
       $windows .= "\n" . $this->getDef('text_analysis_plan_window_previous', [
         'from' => $plan['periods']['previous']['from'],
         'to' => $plan['periods']['previous']['to'],
       ]);
-
-      // Calendar YoY and comparable-days YoY are two metrics, never one: the block says which.
-      $convention = self::COMPARE_CONVENTIONS[$plan['periods']['compare'] ?? ''] ?? null;
-
-      if ($convention !== null) {
-        $windows .= "\n" . $this->getDef($convention);
-      }
     }
 
     if (($plan['periods']['time_grain'] ?? 'window') === 'day') {
@@ -235,18 +173,12 @@ class AnalysisPlanner
       $shape = $days <= self::DAILY_SHAPE_MAX_DAYS ? 'daily' : 'monthly';
 
       $windows .= "\n" . $this->getDef('text_analysis_plan_time_grain', ['days' => (string)$days])
-        . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days])
-        . ($hasCompanions ? "\n" . $this->getDef('text_analysis_plan_time_grain_companions') : '')
-        . (!empty($plan['dimensions'])
-          ? "\n" . $this->getDef('text_analysis_plan_time_grain_split', ['dimensions' => implode(', ', $plan['dimensions'])])
-          : '');
+        . "\n" . $this->getDef('text_analysis_plan_time_grain_shape_' . $shape, ['days' => (string)$days]);
     }
 
-    $windows = ltrim($windows, "\n");
-
     $block = $this->getDef('text_analysis_plan_header') . "\n"
-      . implode("\n", $metrics)
-      . ($windows === '' ? '' : "\n" . $windows);
+      . implode("\n", $metrics) . "\n"
+      . $windows;
 
     $rankingLines = [];
 
@@ -266,38 +198,6 @@ class AnalysisPlanner
     if (!empty($plan['dimensions'])) {
       $block .= "\n" . $this->getDef('text_analysis_plan_dimensions_line', [
         'dimensions' => implode(', ', $plan['dimensions']),
-      ]);
-    }
-
-    // A filter the plan elected is a restriction the generator must honour; unrendered, the plan
-    // carried it nowhere. It says WHICH criterion applies, never how the stored value is spelled.
-    $filters = [];
-
-    foreach ($plan['filters'] ?? [] as $column => $value) {
-      if (is_scalar($value) && (string)$value !== '') {
-        $filters[] = $column . ' = ' . $value;
-      }
-    }
-
-    if ($filters !== []) {
-      $block .= "\n" . $this->getDef('text_analysis_plan_filters_line', [
-        'filters' => implode(', ', $filters),
-      ]);
-    }
-
-    // Metrics dropped for a grain conflict were requested by the question but cannot be computed
-    // at this breakdown: name them so the generator OMITS them instead of fanning them out.
-    $excluded = [];
-
-    foreach ($plan['unsatisfiable'] ?? [] as $item) {
-      if (($item['kind'] ?? '') === 'grain_conflict' && ($item['label'] ?? '') !== '') {
-        $excluded[] = $item['label'];
-      }
-    }
-
-    if ($excluded !== []) {
-      $block .= "\n" . $this->getDef('text_analysis_plan_excluded_line', [
-        'metrics' => implode(', ', $excluded),
       ]);
     }
 

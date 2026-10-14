@@ -22,7 +22,7 @@ use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerSemanticSearch
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerWebSearch;
 use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\SubTaskPlannerStandard;
 use ClicShopping\AI\DomainsAI\Semantic\Agent\SemanticAgent;
-use ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\HybridQueryDecomposer;
+
 
 /**
  * Refactored TaskPlanner - Modular architecture with SubTaskPlanners
@@ -285,26 +285,6 @@ class TaskPlanner
     }
 
     /**
-     * Cut a query into one sub-query per distinct intent (Pure LLM, cached by the decomposer).
-     *
-     * @param string $query User query
-     * @param array $intent Intent carrying the allowed `sub_types`
-     * @return array Sub-queries `{type, text}`; a single entry when nothing is to be cut
-     */
-    private function decomposeQuery(string $query, array $intent): array
-    {
-        $decomposer = new HybridQueryDecomposer(
-            $this->debug,
-            $this->securityLogger
-        );
-
-        return $decomposer->decompose($query, $intent, [
-            'translated_query' => $intent['translated_query'] ?? null,
-            'resolved_query' => $intent['resolved_query'] ?? null,
-        ]);
-    }
-
-    /**
      * SubTaskPlanner selector: Chooses appropriate planner
      * 
      * @param array &$intent Intent classification result (passed by reference to preserve modifications)
@@ -314,9 +294,8 @@ class TaskPlanner
     private function selectSubTaskPlanner(array &$intent, string $query): object
     {
         $intentType = $intent['type'] ?? 'analytics';
+        $confidence = $intent['confidence'] ?? 0.5;
 
-        // The CUT decides which splitter serves, not the classification: `intent_type` and
-        // `sub_queries` come from two independent LLM calls that nothing reconciles.
         $analyticsPlanner = $this->subTaskPlanners['analytics'] ?? null;
         $analysisCut = is_array($intent['sub_queries'] ?? null) ? $intent['sub_queries'] : [];
 
@@ -351,8 +330,19 @@ class TaskPlanner
                 ]
             );
             
-            $subQueries = $this->decomposeQuery($query, $intent);
-
+            // Decompose query into sub-queries using Pure LLM approach
+            $decomposer = new \ClicShopping\AI\CoreAI\Planning\SubTaskPlanning\HybridQueryDecomposer(
+                $this->debug,
+                $this->securityLogger
+            );
+            
+            $context = [
+                'translated_query' => $intent['translated_query'] ?? null,
+                'resolved_query' => $intent['resolved_query'] ?? null,
+            ];
+	    
+            $subQueries = $decomposer->decompose($query, $intent, $context);
+            
             // Store sub-queries in intent for plan creation
             $intent['sub_queries'] = $subQueries;
             
@@ -391,20 +381,6 @@ class TaskPlanner
         // For semantic queries, use semantic planner directly
         // Note: Intent type can be 'semantic' or 'semantic_search'
         if ($intentType === 'semantic' || $intentType === 'semantic_search') {
-            // The cut, not the type, decides: a question over N documents gets one retrieval each.
-            $subQueries = $this->decomposeQuery($query, ['type' => 'semantic', 'sub_types' => ['semantic']] + $intent);
-
-            if (count($subQueries) >= 2) {
-                $intent['sub_queries'] = $subQueries;
-                $this->securityLogger->logSecurityEvent(
-                    "SEMANTIC CUT - " . count($subQueries) . " document requests, one retrieval each",
-                    'info',
-                    ['query' => substr($query, 0, 100), 'sub_queries' => $subQueries]
-                );
-
-                return $this->subTaskPlanners['standard'];
-            }
-
             if ($this->debug) {
                 $this->securityLogger->logSecurityEvent(
                     "Routing to semantic_search planner for intent type: {$intentType}",
@@ -595,9 +571,7 @@ class TaskPlanner
             }
         }
 
-        // topologicalSort() pushes a step AFTER its dependencies: $sorted is already in
-        // execution order. Reversing it would run a dependent step before the one it needs.
-        return $sorted;
+        return array_reverse($sorted);
     }
 
     /**

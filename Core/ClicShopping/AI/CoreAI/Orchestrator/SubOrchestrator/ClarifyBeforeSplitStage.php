@@ -31,7 +31,6 @@ namespace ClicShopping\AI\CoreAI\Orchestrator\SubOrchestrator;
 use ClicShopping\AI\DomainsAI\Analytics\Helper\Detection\AmbiguousQueryDetector;
 use ClicShopping\AI\DomainsAI\Semantic\Processor\EnglishQueryNormalizer;
 use ClicShopping\AI\DomainsAI\Shared\Helper\AgentResponseHelper;
-use ClicShopping\AI\DomainsAI\Analytics\Planning\DefaultAnalysisWindow;
 use ClicShopping\AI\InterfacesAI\OrchestrationStageInterface;
 use ClicShopping\AI\Security\SecurityLogger;
 use ClicShopping\Apps\Configuration\ChatGpt\Classes\ClicShoppingAdmin\Gpt;
@@ -134,9 +133,7 @@ class ClarifyBeforeSplitStage implements OrchestrationStageInterface
       }
 
       // The detector reads English: a French half scores no keyword and comes back unambiguous.
-      $analysis = DefaultAnalysisWindow::demoteTimeAmbiguity(
-        $this->detector()->detectAmbiguity(EnglishQueryNormalizer::normalize(trim($text)))
-      );
+      $analysis = $this->detector()->detectAmbiguity(EnglishQueryNormalizer::normalize(trim($text)));
 
       if (($analysis['is_ambiguous'] ?? false) !== true || ($analysis['recommendation'] ?? '') !== 'clarify') {
         return null;

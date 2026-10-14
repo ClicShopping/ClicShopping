@@ -194,27 +194,6 @@ class AiModelsAdmin
   }
 
   /**
-   * Reasoning capabilities posted by the model form, as catalogue columns.
-   * An empty field stays NULL (unmeasured): never turned into a guess.
-   *
-   * @param array<string,mixed> $post Posted form values
-   * @return array{ai_model_reasoning_efforts:?string, ai_model_reasons_by_default:?int}
-   */
-  public static function capabilityFields(array $post): array
-  {
-    $efforts = array_filter(
-      array_map('trim', explode(',', strtolower((string)($post['ai_model_reasoning_efforts'] ?? '')))),
-      static fn(string $effort): bool => preg_match('/^[a-z]+$/', $effort) === 1
-    );
-    $default = (string)($post['ai_model_reasons_by_default'] ?? '');
-
-    return [
-      'ai_model_reasoning_efforts' => $efforts === [] ? null : implode(',', array_unique($efforts)),
-      'ai_model_reasons_by_default' => in_array($default, ['0', '1'], true) ? (int)$default : null,
-    ];
-  }
-
-  /**
    * Inserts a model row and returns its new id. When the row carries default/fallback = 1,
    * uniqueness is enforced afterwards via setDefault()/setFallback()/setLlmRecommended().
    *

@@ -9,7 +9,6 @@ namespace ClicShopping\AI\Infrastructure\Cache;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\AI\Rag\MultiDBRAGManager;
-use ClicShopping\AI\Config\TechnicalDefaults;
 use ClicShopping\AI\Infrastructure\Schema\SchemaRetriever;
 use ClicShopping\AI\DomainsAI\WebSearch\Cache\SearchCacheManager;
 
@@ -88,11 +87,15 @@ class RagWarmupManager
 
   private function resolveTtl(): int
   {
-    // A null warm-up TTL means "follow the general cache TTL".
-    $ttl = TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL')
-      ?? TechnicalDefaults::get('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL');
+    if (defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL')) {
+      return max(60, (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_WARMUP_TTL);
+    }
 
-    return max(60, (int)$ttl);
+    if (defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL')) {
+      return max(60, (int)CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL);
+    }
+
+    return 3600;
   }
 
   private function isWarmupExpired(): bool

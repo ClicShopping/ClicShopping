@@ -17,9 +17,10 @@ use ClicShopping\OM\Registry;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheKeyGenerator;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStorage;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFileStorage;
+use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheCleanup;
+use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheStatistics;
 use ClicShopping\AI\Infrastructure\Cache\SubQueryCache\CacheFreshnessValidator;
 use ClicShopping\AI\Infrastructure\Cache\RagCache;
-use ClicShopping\AI\Config\TechnicalDefaults;
 
 /**
  * Query Cache System
@@ -38,6 +39,8 @@ class QueryCache
   private ?CacheFileStorage $fileStorage = null;
   private ?RagCache $ragCache = null;
 
+  private CacheCleanup $cleanup;
+  private CacheStatistics $statistics;
   private CacheFreshnessValidator $freshness;
   private mixed $db = null;
   
@@ -46,7 +49,7 @@ class QueryCache
     $this->enabled = !defined('CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER') || CLICSHOPPING_APP_CHATGPT_RA_CACHE_RAG_MANAGER === 'True';
     $this->debug = defined('CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER') && CLICSHOPPING_APP_CHATGPT_RA_DEBUG_RAG_MANAGER === 'True';
 
-    $this->defaultTTL = TechnicalDefaults::int('CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL');
+    $this->defaultTTL = CLICSHOPPING_APP_CHATGPT_RA_CACHE_TTL;
 
     try {
       $this->db = Registry::get("Db");
@@ -58,6 +61,8 @@ class QueryCache
       $this->db = null;
     }
 
+    $this->cleanup = new CacheCleanup($this->maxCacheSize, $this->debug);
+    $this->statistics = new CacheStatistics();
     $this->freshness = new CacheFreshnessValidator($this->debug);
 
     if (!$this->enabled) {
@@ -76,27 +81,48 @@ class QueryCache
 
   /**
    * Determine which cache backend to use
-   * Priority: memory backend (as RagCache resolves it) > Database > File
-   *
+   * Priority: Memcached > Redis > Database > File
+   * 
    * @return void
    */
   private function determineBackend(): void
   {
-    if ((defined('USE_MEMCACHED') && USE_MEMCACHED === 'True') || (defined('USE_REDIS') && USE_REDIS === 'True')) {
+    if (defined('USE_MEMCACHED') && USE_MEMCACHED === 'True') {
+      $this->backend = 'memcached';
       $this->ragCache = new RagCache(true);
-
-      // The label is read from RagCache, which does the I/O: never guess it from the switches.
-      $this->backend = $this->ragCache->getStats()['backend'];
-
-      if ($this->backend === 'none') {
+      
+      $stats = $this->ragCache->getStats();
+      if ($stats['backend'] === 'none') {
         if ($this->debug) {
           error_log("QueryCache: RagCache initialization failed, falling back to database");
         }
         $this->ragCache = null;
         $this->backend = 'database';
         $this->dbStorage = new CacheStorage($this->debug);
-      } elseif ($this->debug) {
-        error_log("QueryCache: Using {$this->backend} backend via RagCache");
+      } else {
+        if ($this->debug) {
+          error_log("QueryCache: Using Memcached backend via RagCache");
+        }
+      }
+      return;
+    }
+
+    if (defined('USE_REDIS') && USE_REDIS === 'True') {
+      $this->backend = 'redis';
+      $this->ragCache = new RagCache(true);
+      
+      $stats = $this->ragCache->getStats();
+      if ($stats['backend'] === 'none') {
+        if ($this->debug) {
+          error_log("QueryCache: RagCache initialization failed, falling back to database");
+        }
+        $this->ragCache = null;
+        $this->backend = 'database';
+        $this->dbStorage = new CacheStorage($this->debug);
+      } else {
+        if ($this->debug) {
+          error_log("QueryCache: Using Redis backend via RagCache");
+        }
       }
       return;
     }
@@ -616,5 +642,24 @@ class QueryCache
 // Not used
 //****************************
 
+
+  /**
+   * Increment hit counter
+   *
+   * @param string $cacheKey Cache key
+   * @return void
+   */
+  private function incrementHitCount(string $cacheKey): void
+  {
+    try {
+      $this->db->query("
+        UPDATE :table_rag_query_cache
+        SET hit_count = hit_count + 1
+        WHERE cache_key = '{$cacheKey}'
+      ");
+    } catch (\Exception $e) {
+      error_log("QueryCache: Error incrementing hit count: " . $e->getMessage());
+    }
+  }
 
 }
