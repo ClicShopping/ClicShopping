@@ -28,27 +28,31 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_GET['Update'])) {
       $set = $_GET['set'] ?? '';
 
-      foreach ($_POST['configuration'] as $key => $value) {
-        if ((\is_array($value)) && (!empty($value))) {
+      $configuration = $_POST['configuration'] ?? [];
+
+      if (\is_array($configuration)) {
+        foreach ($configuration as $key => $value) {
           $key = HTML::sanitize($key);
-          $value = HTML::sanitize($value);
 
-          $pages = '';
-          $count = \count($value);
+          if (\is_array($value)) {
+            $pages = '';
 
-          for ($i = 0; $i < $count; $i++) {
-            $pages = "$pages$value[$i]";
+            foreach ($value as $item) {
+              $pages .= HTML::sanitize(\is_scalar($item) ? (string)$item : '');
+            }
 
-            $CLICSHOPPING_Db->save('configuration', ['configuration_value' => $pages], ['configuration_key' => $key]);
+            $configuration_value = $pages;
+          } else {
+            $configuration_value = $value;
           }
-        } else {
-          $CLICSHOPPING_Db->save('configuration', ['configuration_value' => $value], ['configuration_key' => $key]);
+
+          $CLICSHOPPING_Db->save('configuration', ['configuration_value' => $configuration_value], ['configuration_key' => $key]);
         }
       }
 
       Cache::clear('configuration');
 
-      $this->app->redirect('Modules&set=' . $set . '&module=' . $_GET['module']);
+      $this->app->redirect('Modules&set=' . $set . '&module=' . ($_GET['module'] ?? ''));
     }
   }
 }
