@@ -696,11 +696,6 @@ class ProductsAdmin
     $this->image->saveGalleryImage($id);
     (new ProductDescriptionSaver())->save($id, $action);
 
-    if (isset($_POST['clone_categories_id_to'])) {
-      $categories_id = $_POST['clone_categories_id_to'];
-      (new ProductCloner())->prepareClone($id, $categories_id);
-    }
-
     $this->hooks->call('Products', 'Save', ['products_id' => $id]);
   }
 

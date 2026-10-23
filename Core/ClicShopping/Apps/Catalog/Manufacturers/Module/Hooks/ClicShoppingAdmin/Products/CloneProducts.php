@@ -35,42 +35,41 @@ class CloneProducts implements HooksInterface
     $this->app = Registry::get('Manufacturers');
   }
 
-
   /**
-   * Executes the method logic to handle updates related to product manufacturers.
+   * Copies this App's columns from the source product onto its clone (ProductCloner, one call per clone).
    *
-   * If the application constant `CLICSHOPPING_APP_MANUFACTURERS_CM_STATUS` is either undefined or set to 'False',
-   * the method returns false and no further action is taken. Otherwise, if valid update and cloning parameters
-   * (`Update` and `clone_categories_id_to`) are set, it processes a database operation to associate
-   * a new manufacturer ID with a cloned product.
-   *
-   * @return mixed Returns false if the application status constant is not defined or disabled;
-   *              otherwise, executes the database logic without returning a value.
+   * @param array $parameters ['clone_products_id' => int, 'source_products_id' => int]
+   * @return mixed
    */
-
   public function execute(array $parameters): mixed
   {
     if (!\defined('CLICSHOPPING_APP_MANUFACTURERS_CM_STATUS') || CLICSHOPPING_APP_MANUFACTURERS_CM_STATUS == 'False') {
       return false;
     }
 
-    if (isset($_GET['Update'], $_POST['clone_categories_id_to'])) {
-      $clone_products_id = $parameters['products_id'] ?? null;
-      $products_id = HTML::sanitize( $_GET['pID']);
+    $cloneProductsId = (int)($parameters['clone_products_id'] ?? 0);
+    $sourceProductsId = (int)($parameters['source_products_id'] ?? 0);
 
-      $Qproducts = $this->app->db->prepare('select *
-                                            from :table_products
-                                            where products_id = :products_id
-                                           ');
-      $Qproducts->bindInt(':products_id', $products_id);
-
-      $Qproducts->execute();
-
-      $sql_array = ['manufacturers_id' => (int)HTML::sanitize($_POST['manufacturers_id'])];
-      $insert_array = ['products_id' => HTML::sanitize($clone_products_id)];
-
-      $this->app->db->save('products', $sql_array, $insert_array);
+    if ($cloneProductsId < 1 || $sourceProductsId < 1) {
+      return false;
     }
+
+    $Qproducts = $this->app->db->prepare('select manufacturers_id
+                                          from :table_products
+                                          where products_id = :products_id
+                                         ');
+    $Qproducts->bindInt(':products_id', $sourceProductsId);
+    $Qproducts->execute();
+
+    if ($Qproducts->fetch() === false) {
+      return false;
+    }
+
+    $sql_array = [
+      'manufacturers_id' => $Qproducts->valueInt('manufacturers_id')
+    ];
+
+    $this->app->db->save('products', $sql_array, ['products_id' => $cloneProductsId]);
 
     return true;
   }

@@ -34,9 +34,10 @@ class CloneProducts implements HooksInterface
   }
 
   /**
-   * Executes the logic for handling the suppliers' application state and cloning product information.
+   * Copies this App's columns from the source product onto its clone (ProductCloner, one call per clone).
    *
-   * @return mixed Returns false if the suppliers' application status is disabled or undefined. Otherwise, no explicit return value is provided.
+   * @param array $parameters ['clone_products_id' => int, 'source_products_id' => int]
+   * @return mixed
    */
   public function execute(array $parameters): mixed
   {
@@ -44,23 +45,30 @@ class CloneProducts implements HooksInterface
       return false;
     }
 
-    if (isset($_GET['Update'], $_POST['clone_categories_id_to'])) {
-      $clone_products_id = $parameters['products_id'] ?? null;
+    $cloneProductsId = (int)($parameters['clone_products_id'] ?? 0);
+    $sourceProductsId = (int)($parameters['source_products_id'] ?? 0);
 
-      $Qproducts = $this->app->db->prepare('select *
-                                            from :table_products
-                                            where products_id = :products_id
-                                           ');
-      $Qproducts->bindInt(':products_id', $_GET['pID']);
-
-      $Qproducts->execute();
-
-      $sql_array = ['manufacturers_id' => (int)$Qproducts->valueInt('manufacturers_id')];
-      $insert_array = ['products_id' => $clone_products_id];
-
-      $this->app->db->save('products', $sql_array, $insert_array);
+    if ($cloneProductsId < 1 || $sourceProductsId < 1) {
+      return false;
     }
-    
+
+    $Qproducts = $this->app->db->prepare('select suppliers_id
+                                          from :table_products
+                                          where products_id = :products_id
+                                         ');
+    $Qproducts->bindInt(':products_id', $sourceProductsId);
+    $Qproducts->execute();
+
+    if ($Qproducts->fetch() === false) {
+      return false;
+    }
+
+    $sql_array = [
+      'suppliers_id' => $Qproducts->valueInt('suppliers_id')
+    ];
+
+    $this->app->db->save('products', $sql_array, ['products_id' => $cloneProductsId]);
+
     return true;
   }
 }

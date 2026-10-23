@@ -32,25 +32,6 @@ class ProductCloner
   }
 
   /**
-   * Prepares the cloning of products into other categories.
-   *
-   * @param int $id The ID of the product to be cloned.
-   * @param int $categories_id The ID of the category or categories where the product will be cloned.
-   *
-   * @return void
-   */
-  public function prepareClone(int $id, int $categories_id): void
-  {
-    $new_category = $categories_id;
-
-    if (is_array($new_category) && isset($new_category)) {
-      foreach ($new_category as $value_id) {
-        $this->cloneToCategory($id, $value_id);
-      }
-    }
-  }
-
-  /**
    * Clones a product into a specified category or multiple categories, including associated data such as attributes,
    * images, and descriptions. This ensures that the product is replicated in the desired category with all its
    * properties preserved.
@@ -318,7 +299,7 @@ class ProductCloner
         }
       } // end while
 
-      $this->hooks->call('Products', 'CloneProducts', ['clone_products_id' => $clone_products_id]);
+      $this->hooks->call('Products', 'CloneProducts', ['clone_products_id' => (int)$clone_products_id, 'source_products_id' => $id]);
     } //End for
   }
 }

@@ -1161,25 +1161,33 @@ class ProductsCommon extends Prod
    * @param int|null $id The ID of the product. If null, the method will use the current ID.
    * @return string An empty string if the product is available both in-store and online.
    */
-  public function getProductsWebAndShop( int|null $id = null): string
-  {
-    if (is_null($id)) {
-      $id = $this->getID();
+    public function getProductsWebAndShop(int|null $id = null): string
+    {
+        if ($id === null) {
+            $id = $this->getID();
+        }
+
+        $Qproducts = $this->db->get('products', [
+            'products_only_shop',
+            'products_only_online'
+        ], [
+            'products_status' => 1,
+            'products_id' => (int)$id
+        ]);
+
+        if ($Qproducts->rowCount() === 0) {
+            return '';
+        }
+
+        $products_only_shop = (int)$Qproducts->value('products_only_shop');
+        $products_only_online = (int)$Qproducts->value('products_only_online');
+
+        if ($products_only_shop === 1 || $products_only_online === 1) {
+            return '1';
+        }
+
+        return '';
     }
-
-    $array = [
-      'products_status' => 1,
-      'products_id' => (int)$id
-    ];
-
-    $Qproducts = $this->db->get('products', ['products_only_shop', 'products_only_online'], $array);
-
-    if ($Qproducts->value('products_only_shop') != 1 && $Qproducts->value('products_only_online') != 1) {
-      $products_web = '';
-    }
-
-    return $products_web;
-  }
 
   /**
    * Retrieves the "products_volume" value for a specific product from the database.
@@ -2879,14 +2887,14 @@ class ProductsCommon extends Prod
         $new_discount_price = ($products_price - ($products_price * ($discount_customer[$i] / 100)));
         $_SESSION['ProductsID'] = $id;
       }
-}
+    }
 
     if (!is_null($new_discount_price)) {
       return $new_discount_price;
     } else {
       return false;
     }
-}
+  }
 
   /**
    * Calculates the total discount for a product based on its quantity in the shopping cart.
@@ -2928,14 +2936,11 @@ class ProductsCommon extends Prod
 
         $discount = ($products_price - $new_discount_price) * $qty;
       }
-}
+    }
 
     return $discount;
   }
 
-  /*
-  * Return table heading with sorting capabilities
-  */
   /**
    * Constructs a sortable heading link for products, allowing for dynamic sorting and filtering based on user inputs.
    *
