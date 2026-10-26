@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '2dd025be6d4fab7a4036b14e3e31b3e8e86011d4',
+        'reference' => '3aed89b3c968cd44a4ac7f6cdabaa6672eea1368',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '2dd025be6d4fab7a4036b14e3e31b3e8e86011d4',
+            'reference' => '3aed89b3c968cd44a4ac7f6cdabaa6672eea1368',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -128,9 +128,9 @@
             'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
-            'pretty_version' => '7.16.0',
-            'version' => '7.16.0.0',
-            'reference' => 'ffb62ec787050ae4fa9449cdd6b80335db69bda2',
+            'pretty_version' => '7.16.1',
+            'version' => '7.16.1.0',
+            'reference' => '81755d989b3007ca7f88a069857553cd08e7dc2e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../guzzlehttp/guzzle',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '1d3860eceb9c8a3c76ade46a8ef7896a63802048',
+            'reference' => 'e8f028bf983890e7ac18437f9b6f481e82233c4d',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(
@@ -586,9 +586,9 @@
             'dev_requirement' => false,
         ),
         'theodo-group/llphant' => array(
-            'pretty_version' => '1.0.7',
-            'version' => '1.0.7.0',
-            'reference' => '5e0f3f39620ee9fcc0826f3385ecaf829c9a371c',
+            'pretty_version' => '1.0.8',
+            'version' => '1.0.8.0',
+            'reference' => '6305ae46ec98de352e2321e3ca26743f13fc7c11',
             'type' => 'library',
             'install_path' => __DIR__ . '/../theodo-group/llphant',
             'aliases' => array(),

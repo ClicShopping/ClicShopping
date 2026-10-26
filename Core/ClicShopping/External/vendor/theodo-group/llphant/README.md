@@ -1,5 +1,7 @@
 # LLPhant - The PHP library for Gen AI and Vector Databases
 
+[![Plumb score](https://plumbphp.dev/badges/theodo-group/llphant/composite.svg)](https://plumbphp.dev/theodo-group/llphant)
+
 <div align="center">
     <img src="docs/assets/llphant-logo.png" alt="LLPhant" style="border-radius: 50%; padding-bottom: 20px"/>
 </div>
@@ -7,7 +9,7 @@
 We designed this framework to be as simple as possible, while still providing you with the tools you need to build powerful apps.
 It is compatible with Symfony and Laravel.
 
-We are working to expand the support of different LLMs. Right now, we are supporting [OpenAI](https://openai.com/blog/openai-api), [Anthropic](https://www.anthropic.com/), [Mistral](https://mistral.ai/), [Ollama](https://ollama.ai/), [llmman](https://github.com/llmmanorg/llmman), [LM Studio](https://lmstudio.ai/), [Atlas Cloud](https://www.atlascloud.ai/docs), [Heabsy](https://heabsy.com/platform) and services compatible with the OpenAI API such as [LocalAI](https://localai.io/).
+We are working to expand the support of different LLMs. Right now, we are supporting [OpenAI](https://openai.com/blog/openai-api), [Anthropic](https://www.anthropic.com/), [Mistral](https://mistral.ai/), [Ollama](https://ollama.ai/), [llmman](https://github.com/llmmanorg/llmman), [LM Studio](https://lmstudio.ai/), [Atlas Cloud](https://www.atlascloud.ai/docs), [Heabsy](https://heabsy.com/platform), [Gisoo](https://gisoo.pro/docs) and services compatible with the OpenAI API such as [LocalAI](https://localai.io/).
 Ollama that can be used to run LLM locally such as [Llama 2](https://llama.meta.com/).
 
 ## 🚀 New: JevClassifier with typed Score classification
@@ -31,6 +33,7 @@ key explicitly through ``new JevConfig(apiKey: '...')``.
 See the full Jev API reference: [https://docs.typesafe.ai/api](https://docs.typesafe.ai/api)
 and the LLPhant Jev guide in [docs/jev-classifier.rst](docs/jev-classifier.rst).
 
+_(Note that the subset of LLPhant code that handles Jev has been extracted to the independent library [Jev-PHP](https://github.com/f-lombardo/jev-php))_
 
 ## Similar projects
 

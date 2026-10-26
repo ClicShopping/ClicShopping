@@ -1,4 +1,4 @@
-JevClassifier
+Jev Classifier
 =============
 
 The ``JevClassifier`` provides typed classification over a state (usually text)
@@ -127,3 +127,9 @@ probabilities.
    :format: html
 
 .. include:: footer.rst
+
+Jev-PHP
+_______
+
+Note that the subset of LLPhant code that handles Jev has been extracted to the independent library
+`Jev-PHP <https://github.com/f-lombardo/jev-php>`_.
