@@ -63,7 +63,7 @@ class ChatJsAdminSeo
                     $('#seo_default_title_h_' + idSeoDefaultTitleH).val(data);
                   },
                     error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                   });
                 });
@@ -122,7 +122,7 @@ class ChatJsAdminSeo
                 $('#seo_default_title_tag_' + idSeoDefaultLanguageTitle).val(data);
               },
               error: function(xhr, status, error) {
-                console.log(xhr.responseText);
+                if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
               }
             });
           });
@@ -184,7 +184,7 @@ class ChatJsAdminSeo
                     $('#seo_defaut_language_description_' + idSeoDefaultDescription).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -244,7 +244,7 @@ class ChatJsAdminSeo
                     $('#seo_defaut_language_keywords_' + IdSeoDefautLanguageKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -303,7 +303,7 @@ class ChatJsAdminSeo
                     $('#seo_defaut_language_footer_' + IdSeoDefautLanguageFooter).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -364,7 +364,7 @@ class ChatJsAdminSeo
                     $('#seo_product_description_title_tag_' + idSeoProductDescriptionTitle).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -427,7 +427,7 @@ class ChatJsAdminSeo
                       $('#seo_product_description_' + idSeoProductDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
                     });
                 });
@@ -487,7 +487,7 @@ class ChatJsAdminSeo
                     $('#seo_product_description_keywords_' + IdSeoProductDescriptionKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                  });
               });
@@ -550,7 +550,7 @@ class ChatJsAdminSeo
                     $('#seo_product_new_title_tag_' + idSeoProductNewTitle).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -613,7 +613,7 @@ class ChatJsAdminSeo
                       $('#seo_product_new_description_' + idSeoProductNewDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
                   });
                 });
@@ -674,7 +674,7 @@ class ChatJsAdminSeo
                   $('#seo_product_new_keywords_' + IdSeoproductNewKeywords).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
               });
             });
@@ -737,7 +737,7 @@ class ChatJsAdminSeo
                     $('#seo_special_title_tag_' + idSeoSpecialTitle).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -803,7 +803,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
               $('#seo_special_description_' + idSeoSpecialDescription).val(data);
             },
             error: function(xhr, status, error) {
-              console.log(xhr.responseText);
+              if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
             }
           });
         });
@@ -867,7 +867,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#seo_special_keywords_' + IdSeoSpecialKeywords).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
 });
             });
@@ -923,7 +923,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#seo_review_title_tag_' + idSeoReviewTitle).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
 });
             });
@@ -989,7 +989,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#seo_review_description_' + idSeoReviewDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });
@@ -1053,7 +1053,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#seo_review_keywords_' + IdSeoReviewKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -1109,7 +1109,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#seo_favorite_title_tag_' + IdSeoFavoriteTitle).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
               });
             });
@@ -1174,7 +1174,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#seo_favorite_description_' + idSeoFavoritesDescription).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -1239,7 +1239,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#seo_favorite_keywords_' + IdSeoFavoriteKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -1305,7 +1305,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#seo_featured_title_tag_' + IdSeoFeaturedTitle).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -1371,7 +1371,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#seo_featured_description_' + idSeoFeaturedDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
                   });
                 });
@@ -1435,7 +1435,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#seo_featured_keywords_' + IdSeoFeaturedKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -1499,7 +1499,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#categories_head_title_tag_' + idCategoriesHeadTitleTag).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
               });
             });
@@ -1563,7 +1563,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#categories_head_desc_tag_' + idCategoriesSeoDescription).val(data);
                   },
                     error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                   });
                 });
@@ -1627,7 +1627,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#categories_head_keywords_tag_' + idCategoriesSeoKeywords).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
               });
             });
@@ -1692,7 +1692,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#manufacturer_seo_title_' + idManufacturerSeoTitle).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -1756,7 +1756,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#manufacturer_seo_description_' + idManufacturerSeoDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });
@@ -1819,7 +1819,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#manufacturer_seo_keyword_' + idManufacturerSeoKeywords).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
 });
             });
@@ -1884,7 +1884,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#page_manager_head_title_tag_' + idPageManagerSeoTitle).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -1948,7 +1948,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#page_manager_head_desc_tag_' + idPageManagerSeoDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });
@@ -2011,7 +2011,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#page_manager_head_keywords_tag_' + idPageManagerSeoKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -2077,7 +2077,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#products_head_title_tag_' + idProductsHeadTitleTag).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
                 });
               });
@@ -2146,7 +2146,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#SummaryDescription_' + idproductsSummaryDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });
@@ -2212,7 +2212,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#products_head_desc_tag_' + idproductsSeoDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });
@@ -2275,7 +2275,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#products_head_keywords_tag_' + idProductsSeoKeywords).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -2341,7 +2341,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                     $('#products_head_tag_' + idProductsSeoTag).val(data);
                   },
                   error: function(xhr, status, error) {
-                    console.log(xhr.responseText);
+                    if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                   }
 });
               });
@@ -2405,7 +2405,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                   $('#seo_recommendations_title_tag_' + idSeoRecommendationsLanguageTitle).val(data);
                 },
                 error: function(xhr, status, error) {
-                  console.log(xhr.responseText);
+                  if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                 }
 });
             });
@@ -2468,7 +2468,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#seo_recommendations_description_tag_' + idSeoRecommendationsDescription).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });
@@ -2540,7 +2540,7 @@ $('[id^=\"seo_special_description\"]').each(function(index) {
                       $('#seo_recommendations_keywords_tag_' + IdSeoRecommendationsKeywords).val(data);
                     },
                     error: function(xhr, status, error) {
-                      console.log(xhr.responseText);
+                      if (xhr.status === 403) { alert(xhr.responseText); } else { console.log(xhr.responseText); }
                     }
 });
                 });

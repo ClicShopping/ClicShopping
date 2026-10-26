@@ -15,6 +15,7 @@ use ClicShopping\OM\Registry;
 use ClicShopping\Apps\Configuration\Administrators\Classes\ClicShoppingAdmin\AdministratorAdmin;
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\ClicShoppingAdmin\TemplateEmailAdmin;
 use ClicShopping\Apps\Orders\Orders\Classes\ClicShoppingAdmin\OrderAdmin;
+use ClicShopping\Apps\Orders\Orders\Classes\Common\OrdersStatus;
 
 class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
@@ -144,18 +145,40 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
           $this->app->db->save('orders', $data_array, ['orders_id' => $this->oID]);
 
           $customer_notified = isset($this->notify) ? 1 : 0;
+          $restock = $this->status === OrdersStatus::CANCELLED && isset($_POST['restock']);
+          $restocked = null;
 
-          $data_array = [
-            'orders_id' => $this->oID,
-            'orders_status_id' => $this->status,
-            'orders_status_invoice_id' => $this->statusInvoice,
-            'admin_user_name' => AdministratorAdmin::getUserAdmin(),
-            'date_added' => 'now()',
-            'customer_notified' => (int)$customer_notified,
-            'comments' => $this->comments,
-          ];
+          // Restock and its marker commit together, or a later pass restocks again.
+          $this->app->db->beginTransaction();
 
-          $this->app->db->save('orders_status_history', $data_array);
+          try {
+            if ($restock) {
+              $restocked = OrderAdmin::restockOrder($this->oID);
+            }
+
+            $data_array = [
+              'orders_id' => $this->oID,
+              'orders_status_id' => $this->status,
+              'orders_status_invoice_id' => $this->statusInvoice,
+              'admin_user_name' => AdministratorAdmin::getUserAdmin(),
+              'date_added' => 'now()',
+              'customer_notified' => (int)$customer_notified,
+              'comments' => $this->comments,
+              'orders_restocked' => $restocked === null ? 0 : 1,
+            ];
+
+            $this->app->db->save('orders_status_history', $data_array);
+
+            $this->app->db->commit();
+          } catch (\Throwable $e) {
+            $this->app->db->rollBack();
+
+            throw $e;
+          }
+
+          if ($restock) {
+            OrderAdmin::reportRestock($restocked);
+          }
 
           $order_updated = true;
         }

@@ -568,6 +568,25 @@ $Qcustomers->execute();
                   </div>
                 </div>
               </div>
+              <?php if (\defined('STOCK_CHECK') && STOCK_CHECK == 'true') { ?>
+              <div class="mt-1"></div>
+              <div class="col-md-12" id="StatusRestock">
+                <div class="form-group row">
+                  <label for="restock"
+                         class="col-5 col-form-label"><strong><?php echo $CLICSHOPPING_Orders->getDef('entry_restock_on_cancel'); ?></strong></label>
+                  <div class="col-md-5">
+                    <ul class="list-group-slider list-group-flush">
+                      <li class="list-group-item-slider">
+                        <label class="switch">
+                          <?php echo HTML::checkboxField('restock', '', false, 'class="success"'); ?>
+                          <span class="slider"></span>
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <?php } ?>
             </div>
           </div>
           <div class="mt-1"></div>

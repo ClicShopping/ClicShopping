@@ -25,15 +25,12 @@ button_insert = Insert
 button_reset = Reset
 button_update = Update
 button_archive = See Archives
-button_archive_batch = Archive last 30 d.
 button_archive_consult = Consult
 button_history = History
 button_invoice = Invoice
 button_packingslip = Packingslip
 button_archive_batch = Archive
 
-dialog_uninstall_title = Uninstall
-dialog_uninstall_body = Do you want to install this App ?
 dialog_uninstall_title = Uninstall Module?
 dialog_uninstall_body = Are you sure you want to uninstall this module?
 
@@ -132,9 +129,12 @@ entry_city = city
 entry_country_id = Country
 entry_zone_id = Zone
 
-text_info_heading_delete_order = Delete Order
 text_info_delete_intro = Are you sure you want to delete this order?
 text_info_restock_product_quantity = Restock product quantity
+entry_restock_on_cancel = Restock the order products if the status is set to Cancelled
+success_order_restocked = Success: the order products have been put back into stock.
+warning_order_restock_refused = Warning: products not restocked - stock management (STOCK_CHECK) is off or this order was already restocked.
+warning_order_restock_missing_products = Warning: {{count}} order line(s) not restocked - the product no longer exists in the catalog.
 text_date_order_created = Date Created:
 text_date_order_last_modified = Last Modified:
 text_info_payment_method = Payment Method:
@@ -206,7 +206,6 @@ email_text_comments_update = The comments for your order are :
 
 error_order_does_not_exist = Error: Order does not exist : N° {{order_id}}
 success_order_updated = Success: Order has been successfully updated.
-warning_order_not_updated = Warning: Nothing to change. The order was not updated.
 
 entry_order_siret = Registration Code (ex: RCS):
 entry_tva_intracom = N&deg; of VAT intracom:
@@ -225,8 +224,6 @@ button_packingslip_batch = Packingslip print
 orders_batch_heading = Batch orders print
 button_orders_batch =  Orders print
 
-success_order_updated = Your request have been made with success
-warning_order_not_updated = Becarefull : order not updated
 alert_invoice_locked_title = Order locked – invoice validated
 alert_invoice_locked_body = In accordance with Article L441-9 of the French Commercial Code, a validated invoice is immutable. Set the invoice status back to "Pending" to modify the order.
 alert_invoice_locked_tab2 = Order lines are read-only because the invoice has been validated.
@@ -247,7 +244,6 @@ error_product_delete_failed = Delete failed.
 
 text_info_product_updated = Quantity or price updated
 warning_order_stock_not_updated = Stock not updated
-error_order_invoice_locked = Invoice locked
 warning_order_not_updated = Order not updated
 text_info_product_added = Product added
 text_info_product_deleted = Product deleted

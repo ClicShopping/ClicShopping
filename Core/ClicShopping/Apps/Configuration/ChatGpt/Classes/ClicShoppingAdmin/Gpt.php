@@ -170,7 +170,7 @@ class Gpt
   /**
    * Get model-specific API parameters based on the model name
    *
-   * @param string $model The model name (e.g., 'gpt-4o', 'gpt-4.1-mini', 'gpt-5')
+   * @param string $model The model name (e.g., 'gpt-4o', 'gpt-6-luna', 'gpt-5')
    * @param int $maxtoken The maximum number of tokens
    * @return array The model-specific parameters
    */
@@ -226,7 +226,7 @@ class Gpt
    * Map Anthropic model names between internal and API formats
    *
    * @param string $model Internal model name (e.g., 'anth-sonnet')
-   * @return string API model name (e.g., 'claude-3-5-sonnet-20241022')
+   * @return string API model name (e.g., 'claude-opus-5')
    */
   public static function mapAnthropicModelName(string $model): string
   {
@@ -334,7 +334,7 @@ class Gpt
    * Call LLM with model-specific handling and integrated components
    *
    * @param string $prompt The prompt text to send to the model
-   * @param string $model The model name (e.g., 'gpt-4o', 'gpt-4.1-mini', 'anth-sonnet')
+   * @param string $model The model name (e.g., 'gpt-4o', 'gpt-6-luna', 'anth-sonnet')
    * @param int|null $maxtoken Maximum tokens for response
    * @param float|null $temperature Temperature for response generation
    * @param int|null $max Maximum number of responses

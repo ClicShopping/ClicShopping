@@ -94,11 +94,12 @@ class HTMLOverrideCommon extends HTML
          return '';
      }
 
-     // Pre-process: Convert common encoded characters
-     $html = str_replace(['&nbsp;', '&amp;', '&quot;', '&lt;', '&gt;'], [' ', '&', '"', '<', '>'], $html);
+     // Entities are decoded only AFTER the tags are stripped: a decoded "&lt;" would open a fake tag.
+     $html = str_replace(["\r\n", "\r", '&nbsp;'], ["\n", "\n", ' '], $html);
 
-     // Preserve meaningful line breaks before stripping tags
-     $html = str_replace(['</p>', '</div>', '</h1>', '</h2>', '</h3>', '</h4>', '</h5>', '</h6>', '<br>', '<br/>', '<hr>'], "\n", $html);
+     // A block end becomes a blank line, so the paragraph boundary reaches the chunker.
+     $html = str_replace(['</p>', '</div>', '</h1>', '</h2>', '</h3>', '</h4>', '</h5>', '</h6>', '<hr>'], "\n\n", $html);
+     $html = str_replace(['<br>', '<br/>', '<br />'], "\n", $html);
 
      // Strip all non-content elements while preserving meaningful structure
      $clean = preg_replace([
@@ -108,8 +109,8 @@ class HTMLOverrideCommon extends HTML
          '/<img[^>]*alt=["\']([^"\']*)["\'][^>]*>/i',
          // Replace links with their text content
          '/<a\b[^>]*>(.*?)<\/a>/i',
-         // Remove all remaining HTML tags
-         '/<[^>]*>/'
+         // Remove all remaining HTML tags; a "<" that cannot open a tag ("3 < 5") is text
+         '/<[\/!?a-zA-Z][^>]*>/'
      ], [
          '',
          '$1',
@@ -117,17 +118,18 @@ class HTMLOverrideCommon extends HTML
          ' '
      ], $html);
 
-     // Convert HTML entities and clean text
+     // Convert HTML entities, then strip the tags the decoding revealed ("&lt;b&gt;")
      $clean = html_entity_decode($clean, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+     $clean = preg_replace('/<[\/!?a-zA-Z][^>]*>/', ' ', $clean);
      $clean = self::removeInvisibleCharacters($clean);
 
-     // Normalize whitespace while preserving meaningful breaks
-     $clean = preg_replace('/\s*\n\s*/', "\n", $clean);
-     $clean = preg_replace('/[ \t]+/', ' ', $clean);
-     $clean = preg_replace('/\n{3,}/', "\n\n", $clean);
+     // Drop control and private-use characters only: symbols (€, °, +) and combining marks are text
+     $clean = preg_replace('/[^\p{L}\p{M}\p{N}\p{P}\p{S}\s]/u', '', $clean);
 
-     // Keep only valid text characters while preserving structure
-     $clean = preg_replace('/[^\p{L}\p{N}\p{P}\s]/u', '', $clean);
+     // Normalize whitespace, keeping one blank line between blocks
+     $clean = preg_replace('/[^\S\n]+/u', ' ', $clean);
+     $clean = preg_replace('/ ?\n ?/', "\n", $clean);
+     $clean = preg_replace('/\n{3,}/', "\n\n", $clean);
 
      return trim($clean);
  }

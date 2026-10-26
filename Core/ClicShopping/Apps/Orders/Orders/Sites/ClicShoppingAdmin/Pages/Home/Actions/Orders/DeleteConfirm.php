@@ -36,7 +36,11 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
           $restock = false;
         }
 
-        OrderAdmin::removeOrder($this->oID, $restock);
+        $restocked = OrderAdmin::removeOrder($this->oID, $restock);
+
+        if ($restock) {
+          OrderAdmin::reportRestock($restocked);
+        }
       } else {
         $CLICSHOPPING_MessageStack->add($this->app->getDef('warning_order_not_updated'), 'warning');
       }

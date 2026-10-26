@@ -227,11 +227,13 @@ class OrderAdmin
    * @param int $order_id The ID of the order to be removed.
    * @param bool $restock Indicates whether to restock the products from the order.
    *                      If true, the order's product quantities will be added back
-   *                      to the available inventory.
-   * @return void
+   *                      to the available inventory (see restockOrder()).
+   * @return int|null The restockOrder() result; null when nothing was restocked.
    */
-  public static function removeOrder(int $order_id, bool $restock = false): void
+  public static function removeOrder(int $order_id, bool $restock = false): ?int
   {
+    $restocked = null;
+
     $CLICSHOPPING_Db = Registry::get('Db');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
 
@@ -247,48 +249,7 @@ class OrderAdmin
     try {
       // Read before any delete: the restock quantities come from orders_products.
       if ($restock) {
-        $Qproducts = $CLICSHOPPING_Db->get('orders_products', [
-          'products_id',
-          'products_quantity'
-        ], [
-            'orders_id' => $order_id
-          ]
-        );
-
-        $products_ids = [];
-
-        while ($Qproducts->fetch()) {
-          $product_id = $Qproducts->valueInt('products_id');
-          $products_ids[] = $product_id;
-
-          $Qupdate = $CLICSHOPPING_Db->prepare('update :table_products
-                                                  set products_quantity = products_quantity + :qty,
-                                                      products_ordered = products_ordered - :qty
-                                                  where products_id = :products_id
-                                                 ');
-          $Qupdate->bindInt(':qty', $Qproducts->valueInt('products_quantity'));
-          $Qupdate->bindInt(':products_id', $product_id);
-          $Qupdate->execute();
-        }
-
-        // Delete products_groups for ALL products in the order (not just the last one)
-        if (!empty($products_ids)) {
-          // Build parameterized delete with named placeholders
-          $conditions = [];
-          $params = [];
-          foreach ($products_ids as $idx => $pid) {
-            $placeholder = ':pid_' . $idx;
-            $conditions[] = 'products_id = ' . $placeholder;
-            $params[$placeholder] = (int)$pid;
-          }
-          $where_clause = implode(' OR ', $conditions);
-          $delete_sql = 'delete from :table_products_groups where ' . $where_clause;
-          $Qdelete = $CLICSHOPPING_Db->prepare($delete_sql);
-          foreach ($params as $name => $value) {
-            $Qdelete->bindInt($name, $value);
-          }
-          $Qdelete->execute();
-        }
+        $restocked = self::restockOrder($order_id);
       }
 
       // Children FIRST, header LAST: the reverse order left orphans whenever a later delete
@@ -315,6 +276,82 @@ class OrderAdmin
 
     // After commit: an observer must never react to a removal that could still roll back.
     $CLICSHOPPING_Hooks->call('OrderAdmin', 'removeOrder');
+
+    return $restocked;
+  }
+
+  /**
+   * Puts an order's quantities back into stock: products_quantity + qty, products_ordered - qty.
+   * Shared by order removal and cancellation; runs only when STOCK_CHECK is on, and once per order
+   * (the cancellation that restocked carries orders_status_history.orders_restocked = 1).
+   *
+   * @param int $order_id
+   * @return int|null Lines left out because their product no longer exists; null when nothing was restocked.
+   */
+  public static function restockOrder(int $order_id): ?int
+  {
+    $CLICSHOPPING_Db = Registry::get('Db');
+
+    if (!\defined('STOCK_CHECK') || STOCK_CHECK != 'true') {
+      return null;
+    }
+
+    $Qcheck = $CLICSHOPPING_Db->prepare('select orders_status_history_id
+                                         from :table_orders_status_history
+                                         where orders_id = :orders_id
+                                         and orders_restocked = 1
+                                         limit 1
+                                        ');
+    $Qcheck->bindInt(':orders_id', $order_id);
+    $Qcheck->execute();
+
+    if ($Qcheck->fetch() !== false) {
+      return null;
+    }
+
+    $Qproducts = $CLICSHOPPING_Db->get('orders_products', ['products_id', 'products_quantity'], ['orders_id' => $order_id]);
+
+    $missing = 0;
+
+    while ($Qproducts->fetch()) {
+      $Qupdate = $CLICSHOPPING_Db->prepare('update :table_products
+                                              set products_quantity = products_quantity + :qty,
+                                                  products_ordered = products_ordered - :qty
+                                              where products_id = :products_id
+                                             ');
+      $Qupdate->bindInt(':qty', $Qproducts->valueInt('products_quantity'));
+      $Qupdate->bindInt(':products_id', $Qproducts->valueInt('products_id'));
+      $Qupdate->execute();
+
+      if ($Qupdate->rowCount() === 0) {
+        $missing++;
+      }
+    }
+
+    return $missing;
+  }
+
+  /**
+   * Tells the administrator what restockOrder() did.
+   *
+   * @param int|null $restocked The restockOrder() result.
+   * @return void
+   */
+  public static function reportRestock(?int $restocked): void
+  {
+    $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
+    $CLICSHOPPING_Orders = Registry::get('Orders');
+
+    if ($restocked === null) {
+      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Orders->getDef('warning_order_restock_refused'), 'warning');
+      return;
+    }
+
+    $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Orders->getDef('success_order_restocked'), 'success');
+
+    if ($restocked > 0) {
+      $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Orders->getDef('warning_order_restock_missing_products', ['count' => $restocked]), 'warning');
+    }
   }
 
   /**

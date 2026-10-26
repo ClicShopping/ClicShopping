@@ -31,11 +31,11 @@ class CloneProducts implements HooksInterface
     $this->app = Registry::get('Weight');
   }
 
-
   /**
-   * Executes the method logic for handling product weight class updates based on the provided parameters.
+   * Copies this App's columns from the source product onto its clone (ProductCloner, one call per clone).
    *
-   * @return mixed Returns false if the application weight module is not active or defined.
+   * @param array $parameters ['clone_products_id' => int, 'source_products_id' => int]
+   * @return mixed
    */
   public function execute(array $parameters): mixed
   {
@@ -43,22 +43,29 @@ class CloneProducts implements HooksInterface
       return false;
     }
 
-    if (isset($_GET['Update'], $_POST['clone_categories_id_to'], $_GET['pID'])) {
-       $clone_products_id = $parameters['products_id'] ?? null;
+    $cloneProductsId = (int)($parameters['clone_products_id'] ?? 0);
+    $sourceProductsId = (int)($parameters['source_products_id'] ?? 0);
 
-      $Qproducts = $this->app->db->prepare('select *
-                                              from :table_products
-                                              where products_id = :products_id
-                                             ');
-      $Qproducts->bindInt(':products_id', $_GET['pID']);
-
-      $Qproducts->execute();
-
-      $sql_array = ['products_weight_class_id' => (int)$Qproducts->valueInt('products_weight_class_id')];
-      $insert_array = ['products_id' => $clone_products_id];
-
-      $this->app->db->save('products', $sql_array, $insert_array);
+    if ($cloneProductsId < 1 || $sourceProductsId < 1) {
+      return false;
     }
+
+    $Qproducts = $this->app->db->prepare('select products_weight_class_id
+                                          from :table_products
+                                          where products_id = :products_id
+                                         ');
+    $Qproducts->bindInt(':products_id', $sourceProductsId);
+    $Qproducts->execute();
+
+    if ($Qproducts->fetch() === false) {
+      return false;
+    }
+
+    $sql_array = [
+      'products_weight_class_id' => $Qproducts->valueInt('products_weight_class_id')
+    ];
+
+    $this->app->db->save('products', $sql_array, ['products_id' => $cloneProductsId]);
 
     return true;
   }

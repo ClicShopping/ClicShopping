@@ -17,6 +17,7 @@ use ClicShopping\OM\Interfaces\OrderTotalAdminRecalculable;
 
 use ClicShopping\Sites\Shop\Tax;
 use ClicShopping\Apps\Orders\Orders\Classes\Common\OrderLineCost;
+use ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin\EInvoiceService;
 
 class UpdateOrder
 {
@@ -27,13 +28,12 @@ class UpdateOrder
   // -------------------------------------------------------------------------
 
   /**
-   * Checks whether an order is locked for editing because it has been
-   * validated as an invoice.
+   * Checks whether an order's product lines are locked for editing.
    *
-   * An order is considered locked when its invoice status is >= 1
-   * (validated, cancelled, credit-note). Once locked no product line may
-   * be added, modified or deleted unless the operator explicitly resets the
-   * invoice status to 0 ("pending") — French law art. L441-9 C.com.
+   * Locked once an invoice exists (invoice status >= EInvoiceService::STATUS_INVOICE:
+   * invoice, cancelled, credit note, refund) — French law art. L441-9 C.com.
+   * The order status never locks: an order not yet invoiced can still be adjusted.
+   * An unknown order is not locked.
    *
    * @param int $order_id
    * @return bool
@@ -42,19 +42,13 @@ class UpdateOrder
   {
     $CLICSHOPPING_db = Registry::get('Db');
 
-    $result = false;
-
-    $Qlock = $CLICSHOPPING_db->get('orders', 'orders_status_invoice, orders_status', ['orders_id' => $order_id]);
+    $Qlock = $CLICSHOPPING_db->get('orders', 'orders_status_invoice', ['orders_id' => $order_id]);
 
     if (!$Qlock->fetch()) {
-      $result = false;
+      return false;
     }
 
-    if ($Qlock->valueInt('orders_status_invoice') == 2 || $Qlock->valueInt('orders_status') == 3) {
-      $result = true;
-     }
-
-    return $result;
+    return $Qlock->valueInt('orders_status_invoice') >= EInvoiceService::STATUS_INVOICE;
   }
 
   /**
@@ -235,7 +229,7 @@ class UpdateOrder
    */
   private static function recalculateContractModules(mixed $db, int $order_id, array $meta, OrderTotalRecalcContext $context, array &$recomputed = []): float
   {
-    if (!defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === null) {
+    if (!defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === '') {
       return 0.0;
     }
 

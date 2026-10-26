@@ -23,7 +23,7 @@ class ModulesAdmin
    */
   public static function misplacedOrderTotalModules(): array
   {
-    if (!\defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === null) {
+    if (!\defined('MODULE_ORDER_TOTAL_INSTALLED') || MODULE_ORDER_TOTAL_INSTALLED === '') {
       return [];
     }
 
