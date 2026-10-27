@@ -15,10 +15,6 @@ class WO extends \ClicShopping\Apps\Tools\WhosOnline\Module\ClicShoppingAdmin\Co
 
   public bool $is_uninstallable = true;
   public int|null $sort_order = 400;
-  public $title;
-  public string $short_title;
-  public string $introduction;
-  public $is_installed;
 
   /**
    * Initializes the module by setting its title, short title, introduction,
@@ -57,11 +53,11 @@ class WO extends \ClicShopping\Apps\Tools\WhosOnline\Module\ClicShoppingAdmin\Co
    * Uninstalls the module by removing its entry from the list of installed modules
    * and updating the configuration accordingly.
    *
-   * @return void
+   * @return int The number of configuration rows deleted.
    */
   public function uninstall()
   {
-    parent::uninstall();
+    $deleted = parent::uninstall();
 
     $installed = explode(';', MODULE_MODULES_WHOS_ONLINE_INSTALLED);
     $installed_pos = array_search($this->app->vendor . '\\' . $this->app->code . '\\' . $this->code, $installed, true);
@@ -71,5 +67,7 @@ class WO extends \ClicShopping\Apps\Tools\WhosOnline\Module\ClicShoppingAdmin\Co
 
       $this->app->saveCfgParam('MODULE_MODULES_WHOS_ONLINE_INSTALLED', implode(';', $installed));
     }
+
+    return $deleted;
   }
 }

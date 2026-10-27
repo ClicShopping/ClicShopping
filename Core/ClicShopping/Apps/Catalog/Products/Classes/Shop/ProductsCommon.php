@@ -566,16 +566,12 @@ class ProductsCommon extends Prod
   /**
    * Retrieve the product image for the specified product ID.
    * @param int|null $id The product ID to retrieve the image for. If null, retrieves the default or previously set product ID.
-   * @return string|false Returns the product image as a string if successful, or false if the image could not be set.
+   * @return string The product image, empty when the product has none.
    */
-  public function getProductsImage( int|null $id = null)
+  public function getProductsImage( int|null $id = null): string
   {
-    if (is_null($this->setProductsImage($id))) {
-      return false;
-    } else {
-      return $this->setProductsImage($id);
-    }
-}
+    return $this->setProductsImage($id);
+  }
 
   /**
    * Sets the medium image of a product.
@@ -594,16 +590,12 @@ class ProductsCommon extends Prod
   /**
    * Retrieves and sets the medium-sized product image.
    * @param int|null $id The ID of the product.
-   * @return string|false Returns the medium-sized product image as a string or false on failure.
+   * @return string The medium-sized product image, empty when the product has none.
    */
-  public function getProductsImageMedium( int|null $id = null)
+  public function getProductsImageMedium( int|null $id = null): string
   {
-    if (is_null($this->setProductsImageMedium($id))) {
-      return false;
-    } else {
-      return $this->setProductsImageMedium($id);
-    }
-}
+    return $this->setProductsImageMedium($id);
+  }
 
   /**
    * Retrieve the availability date of a product
@@ -738,9 +730,6 @@ class ProductsCommon extends Prod
       $id = $this->getID();
     }
 
-    $delete_word = HTML::sanitize($delete_word);
-    $products_short_description_number = HTML::sanitize($products_short_description_number);
-
     // Only the read is memoized: the trimming below depends on the caller's two extra arguments.
     $description_summary = $this->memo('summary:' . $id . ':' . $this->language->getId(), function () use ($id): string {
       $Qproducts = $this->db->prepare('select pd.products_description_summary
@@ -761,7 +750,7 @@ class ProductsCommon extends Prod
     });
 
     if ($products_short_description_number > 0) {
-      $short_description = substr($description_summary, (int)$delete_word, (int)$products_short_description_number);
+      $short_description = substr($description_summary, $delete_word, $products_short_description_number);
       $description_summary = HTML::breakString(HTML::outputProtected($short_description), $products_short_description_number, '-<br />') . ((strlen($description_summary) >= $products_short_description_number - 1) ? ' ...' : '');
     } else {
       $description_summary = '';
@@ -775,7 +764,7 @@ class ProductsCommon extends Prod
    *
    * @param int|null $id The ID of the product. If null, it will use the current product ID.
    * @param string $separator The separator used to format the dimensions, default is ' x '.
-   * @return string The formatted dimensions of the product including their unit type, or false if dimensions are not available.
+   * @return string The formatted dimensions of the product including their unit type, empty if dimensions are not available.
    */
   public function getProductsDimension( int|null $id = null, string $separator = ' x '): string
   {
@@ -807,7 +796,7 @@ class ProductsCommon extends Prod
       ($products_dimension_height == 0 || empty($products_dimension_height)) ||
       ($products_dimension_depth == 0 || empty($products_dimension_depth))
     ) {
-      return false;
+      return '';
     } else {
       $products_dimension = HTML::outputProtected($products_dimension_width . $separator . $products_dimension_height . $separator . $products_dimension_depth . ' ' . $products_type);
     }
@@ -1073,10 +1062,15 @@ class ProductsCommon extends Prod
    * Retrieves the "products_shipping_delay_out_of_stock" value for a specific product from the database.
    * If the value is empty, a default value is returned.
    *
+   * @param int|null $id The product ID. If null, the current product ID is used.
    * @return string The shipping delay information for out-of-stock products.
    */
-  public function getProductsShippingDelayOutOfStock(): string
+  public function getProductsShippingDelayOutOfStock(?int $id = null): string
   {
+    if (is_null($id)) {
+      $id = $this->getID();
+    }
+
     $language_id = $this->language->getId();
 
     $Qproducts = $this->db->prepare('select pd.products_shipping_delay_out_of_stock
@@ -1088,13 +1082,13 @@ class ProductsCommon extends Prod
                                         and pd.language_id = :language_id
                                        ');
 
-    $Qproducts->bindInt(':products_id', $this->getID());
+    $Qproducts->bindInt(':products_id', (int)$id);
     $Qproducts->bindInt(':language_id', (int)$language_id);
     $Qproducts->execute();
 
     $products_shipping_delay_out_of_stock = $Qproducts->value('products_shipping_delay_out_of_stock');
 
-    if (empty($products['products_shipping_delay_out_of_stock'])) {
+    if (empty($products_shipping_delay_out_of_stock)) {
       $products_shipping_delay_out_of_stock = HTML::outputProtected(\defined('DISPLAY_SHIPPING_DELAY_OUT_OF_STOCK') ? DISPLAY_SHIPPING_DELAY_OUT_OF_STOCK : '');
     }
 
@@ -1687,7 +1681,7 @@ class ProductsCommon extends Prod
    * Sets the minimum quantity of a product required to place an order based on various conditions.
    *
    * @param int|null $id The ID of the product. If null, the method will use the current product ID.
-   * @return ?string|?int The minimum order quantity display value or an empty string if conditions are not met.
+   * @return int|string The minimum order quantity display value or an empty string if conditions are not met.
    */
   private function setProductsMinimumQuantityToTakeAnOrder($id = null)
   {
@@ -2185,7 +2179,7 @@ class ProductsCommon extends Prod
   /**
    * Retrieves the calculated price for a specific item or entity.
    *
-   * @param mixed|null $id The ID of the entity for which the calculated price is required. If null, a default value may be used.
+   * @param int|null $id The ID of the entity for which the calculated price is required. If null, a default value may be used.
    * @return mixed The calculated price value.
    */
   public function getCalculPrice(?int $id = null)
@@ -2362,7 +2356,9 @@ class ProductsCommon extends Prod
 
       return $result;
     }
-}
+
+    return null;
+  }
 
   /**
    * Retrieves the special price for a specific product by delegating to the setProductsSpecialPrice method.
@@ -2400,13 +2396,13 @@ class ProductsCommon extends Prod
   }
 
   /**
-   * Retrieves the list of manufacturers' names after initializing or setting them.
+   * Retrieves the name of the manufacturer requested in the URL.
    *
-   * @return array An array containing the manufacturers' names.
+   * @return string The name of the manufacturer.
    */
-  public function getManufacturersName(): array
+  public function getManufacturersName(): string
   {
-    $this->setManufacturersName();
+    return $this->setManufacturersName();
   }
 
   /**
@@ -2415,7 +2411,7 @@ class ProductsCommon extends Prod
    * @param int $id The ID of the manufacturer whose description needs to be retrieved.
    * @return string The "manufacturer_description" for the specified manufacturer.
    */
-  private function setManufacturersDescription($id): string
+  private function setManufacturersDescription(int $id): string
   {
     $language_id = $this->language->getId();
 
@@ -2424,7 +2420,7 @@ class ProductsCommon extends Prod
                                            where manufacturers_id = :manufacturers_id
                                            and languages_id = :languages_id
                                          ');
-    $Qmanufacturers->bindInt(':manufacturers_id', (int)$id);
+    $Qmanufacturers->bindInt(':manufacturers_id', $id);
     $Qmanufacturers->bindInt(':languages_id', (int)$language_id);
 
     $Qmanufacturers->execute();
@@ -2439,9 +2435,7 @@ class ProductsCommon extends Prod
    */
   public function getManufacturersDescription(): string
   {
-    $id = HTML::sanitize($_GET['manufacturersId']);
-
-    return $this->setManufacturersDescription($id);
+    return $this->setManufacturersDescription((int)$_GET['manufacturersId']);
   }
 
   /**
@@ -2557,7 +2551,7 @@ class ProductsCommon extends Prod
 
       return $ticker;
     } else {
-      return  '';
+      return false;
     }
   }
 
@@ -2618,7 +2612,7 @@ class ProductsCommon extends Prod
 
       return $ticker;
     } else {
-      return  '';
+      return false;
     }
   }
 
@@ -2687,7 +2681,7 @@ class ProductsCommon extends Prod
 
       return $ticker;
     } else {
-      return  '';
+      return false;
     }
   }
 
@@ -2726,7 +2720,7 @@ class ProductsCommon extends Prod
 
       return $ticker;
     } else {
-      return  '';
+      return false;
     }
   }
 
@@ -2770,7 +2764,7 @@ class ProductsCommon extends Prod
 
       return $ticker;
     } else {
-      return  '';
+      return false;
     }
   }
 
@@ -2788,7 +2782,7 @@ class ProductsCommon extends Prod
   /**
    * Retrieves the featured ticker information for a specific product.
    *
-   * @param ?int|null $id The ID of the product. If null, the method may use a default or current ID.
+   * @param int|null $id The ID of the product. If null, the method may use a default or current ID.
    * @return mixed The result of setting the featured ticker for the product.
    */
   public function getProductsTickerFeatured(?int $id = null)
@@ -2817,9 +2811,9 @@ class ProductsCommon extends Prod
    * Calculates and sets the save money value for a customer based on special price and standard price.
    *
    * @param int|string $id The ID of the product or a unique product identifier.
-   * @return float|null The amount of money saved, or null if calculation cannot be performed.
+   * @return float The amount of money saved, 0 if calculation cannot be performed.
    */
-  private function setProductsSaveMoneyCustomer(int|string $id): ?float
+  private function setProductsSaveMoneyCustomer(int|string $id): float
   {
     $savemoney = 0;
 
@@ -2918,6 +2912,9 @@ class ProductsCommon extends Prod
 
     $QprodutsQuantityDiscount->execute();
 
+    $discount_quantity = [];
+    $discount_customer = [];
+
     while ($QprodutsQuantityDiscount->fetch()) {
       $discount_quantity[] = $QprodutsQuantityDiscount->valueInt('discount_quantity');
       $discount_customer[] = $QprodutsQuantityDiscount->valueDecimal('discount_customer');
@@ -2986,13 +2983,11 @@ class ProductsCommon extends Prod
   /**
    * Retrieves the weight class ID associated with a specific product.
    *
-   * @param mixed $id The ID of the product, which will be sanitized before use.
-   * @return mixed The weight class ID of the specified product.
+   * @param int $id The ID of the product.
+   * @return int|null The weight class ID of the specified product.
    */
   public function getWeightClassIdByProducts(int $id): ?int
   {
-    $id = HTML::sanitize($id);
-
     return $this->setWeightClassIdByProducts($id);
   }
 
@@ -3024,8 +3019,6 @@ class ProductsCommon extends Prod
    */
   public function getSymbolWeightByProducts(int $weight_class_id): mixed
   {
-    $weight_class_id = HTML::sanitize($weight_class_id);
-
     return $this->setSymbolWeightByProducts($weight_class_id);
   }
   
