@@ -2431,12 +2431,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "5a6a29a8eb7efbfca408ef929bf076748ac1bf9e"
+                "reference": "5c4f62cd657fb51cc53ad01b503cb0c1d44a7367"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/5a6a29a8eb7efbfca408ef929bf076748ac1bf9e",
-                "reference": "5a6a29a8eb7efbfca408ef929bf076748ac1bf9e",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/5c4f62cd657fb51cc53ad01b503cb0c1d44a7367",
+                "reference": "5c4f62cd657fb51cc53ad01b503cb0c1d44a7367",
                 "shasum": ""
             },
             "conflict": {
@@ -3116,7 +3116,7 @@
                 "phpoffice/common": "<0.2.9",
                 "phpoffice/math": "<=0.2",
                 "phpoffice/phpexcel": "<=1.8.2",
-                "phpoffice/phpspreadsheet": "<=1.30.5|>=2,<=2.1.17|>=2.2,<=2.4.6|>=3,<=3.10.6|>=4,<=5.8",
+                "phpoffice/phpspreadsheet": "<=1.30.6|>=2,<=2.1.18|>=2.2,<=2.4.7|>=3,<=3.10.7|>=4,<=5.9",
                 "phppgadmin/phppgadmin": "<=7.13",
                 "phpseclib/phpseclib": "<3.0.57|>=4,<4.0.1",
                 "phpservermon/phpservermon": "<3.6",
@@ -3379,7 +3379,7 @@
                 "thorsten/phpmyfaq": "<4.2.0.0-alpha",
                 "tikiwiki/tiki-manager": "<=17.1",
                 "timber/timber": ">=0.16.6,<1.23.1|>=1.24,<1.24.1|>=2,<2.1",
-                "tinymce/tinymce": "<7.9.3|>=8,<8.5.1",
+                "tinymce/tinymce": "<7.9.3|==7.9.3|>=8,<8.9.3",
                 "tinymighty/wiki-seo": "<1.2.2",
                 "titon/framework": "<9.9.99",
                 "tltneon/lgsl": "<7",
@@ -3555,7 +3555,7 @@
                 "zoujingli/thinkadmin": "<=6.1.53",
                 "zumba/json-serializer": "<3.2.3"
             },
-            "time": "2026-10-27T14:00:31+00:00",
+            "time": "2026-10-27T23:31:16+00:00",
             "default-branch": true,
             "type": "metapackage",
             "notification-url": "https://packagist.org/downloads/",
@@ -3761,17 +3761,17 @@
         },
         {
             "name": "stripe/stripe-php",
-            "version": "v21.3.2",
-            "version_normalized": "21.3.2.0",
+            "version": "v21.3.3",
+            "version_normalized": "21.3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stripe/stripe-php.git",
-                "reference": "0d8b075e1a97d15c5324353a5277d0ea686ea525"
+                "reference": "3d52008ffeab02763b02462802393f3d4da2aa51"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/0d8b075e1a97d15c5324353a5277d0ea686ea525",
-                "reference": "0d8b075e1a97d15c5324353a5277d0ea686ea525",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/3d52008ffeab02763b02462802393f3d4da2aa51",
+                "reference": "3d52008ffeab02763b02462802393f3d4da2aa51",
                 "shasum": ""
             },
             "require": {
@@ -3785,7 +3785,7 @@
                 "phpstan/phpstan": "^1.2",
                 "phpunit/phpunit": "^8.0 || ^9.0"
             },
-            "time": "2026-09-09T20:40:43+00:00",
+            "time": "2026-10-27T19:47:35+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -3820,7 +3820,7 @@
             ],
             "support": {
                 "issues": "https://github.com/stripe/stripe-php/issues",
-                "source": "https://github.com/stripe/stripe-php/tree/v21.3.2"
+                "source": "https://github.com/stripe/stripe-php/tree/v21.3.3"
             },
             "install-path": "../stripe/stripe-php"
         },
@@ -4619,17 +4619,17 @@
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "v1.43.0",
-            "version_normalized": "1.43.0.0",
+            "version": "v1.43.3",
+            "version_normalized": "1.43.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "5cac8f4db97208823aa353f59a01faad2da52c75"
+                "reference": "5a8f33c87aeecffce24e721b5064fab05f4becf8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/5cac8f4db97208823aa353f59a01faad2da52c75",
-                "reference": "5cac8f4db97208823aa353f59a01faad2da52c75",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/5a8f33c87aeecffce24e721b5064fab05f4becf8",
+                "reference": "5a8f33c87aeecffce24e721b5064fab05f4becf8",
                 "shasum": ""
             },
             "require": {
@@ -4638,7 +4638,7 @@
             "suggest": {
                 "ext-intl": "For best performance"
             },
-            "time": "2026-09-25T15:46:47+00:00",
+            "time": "2026-10-15T09:18:53+00:00",
             "type": "library",
             "extra": {
                 "thanks": {
@@ -4680,7 +4680,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.43.0"
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.43.3"
             },
             "funding": [
                 {
@@ -4792,17 +4792,17 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.43.0",
-            "version_normalized": "1.43.0.0",
+            "version": "v1.43.3",
+            "version_normalized": "1.43.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72"
+                "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
-                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/122889ed24dc000165bcbfd77ec412f15cbdfc6a",
+                "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a",
                 "shasum": ""
             },
             "require": {
@@ -4815,7 +4815,7 @@
             "suggest": {
                 "ext-mbstring": "For best performance"
             },
-            "time": "2026-09-24T15:19:04+00:00",
+            "time": "2026-10-28T09:35:49+00:00",
             "type": "library",
             "extra": {
                 "thanks": {
@@ -4856,7 +4856,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.3"
             },
             "funding": [
                 {
