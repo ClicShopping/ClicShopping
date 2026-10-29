@@ -16,11 +16,9 @@ API.
 
 ## Requirements
 
-PHP 7.2.0 and later.
+PHP 7.4.0 and later.
 
-Note that per our [language version support policy](https://docs.stripe.com/sdks/versioning?lang=php#stripe-sdk-language-version-support-policy), support for PHP 7.2 and 7.3 will be removed soon, so upgrade your runtime if you're able to.
-
-Additional PHP versions will be dropped in future major versions, so upgrade to supported versions if possible.
+Per our [language version support policy](https://docs.stripe.com/sdks/versioning?lang=php#stripe-sdk-language-version-support-policy), additional PHP versions will be dropped in future major versions, so upgrade to supported versions if possible.
 
 ## Composer
 
@@ -132,6 +130,10 @@ end up there instead of `error_log`:
 ```php
 \Stripe\Stripe::setLogger($logger);
 ```
+
+### Suppressing Stripe notices
+
+The SDK may print notices from Stripe that it receives in the `Stripe-Notice` header. These notices are always printed when the SDK runs in an agent environment. For API calls to test accounts or sandboxes, notices are also printed when the SDK runs outside an agent environment. To suppress notices when the SDK runs outside an agent environment, set the `STRIPE_SUPPRESS_NOTICES` environment variable to `true` before running your integration.
 
 ### Accessing response data
 
