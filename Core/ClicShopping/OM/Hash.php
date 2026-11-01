@@ -31,7 +31,6 @@ class Hash
 {
   private static ?string $key = null;
   private static $cipher = 'aes-256-cbc'; // Algorithme de chiffremen
-  private const EMAIL_PREFIX = 'ENC::'; // Préfixe pour identifier un email chiffré
 
   /**
    * Key used before 2026-07-27: the secret was read under a name the installer never writes and
@@ -174,7 +173,7 @@ class Hash
       switch ($type) {
         case 'phpass':
           if (!class_exists('PasswordHash', false)) {
-            include_once(BASE_DIR . 'external/PasswordHash.php');
+            include_once(CLICSHOPPING::BASE_DIR . 'External/PasswordHash.php');
           }
 
           $hasher = new PasswordHash(10, true);
@@ -223,7 +222,7 @@ class Hash
       $algo = PASSWORD_ARGON2ID;
     }
 
-    if (!is_int($algo)) {
+    if (!in_array($algo, password_algos(), true)) {
       trigger_error('ClicShopping\OM\Hash::needsRehash() Algorithm "' . $algo . '" not supported.');
     }
 
@@ -418,7 +417,7 @@ class Hash
       $strong = false;
       $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length(self::$cipher), $strong);
 
-      if ($iv === false || $strong === false) {
+      if ($strong === false) {
         throw new Exception('IV generation failed or is not cryptographically strong');
       }
 
@@ -451,18 +450,33 @@ class Hash
 
     [$encrypted, $iv] = $parts;
 
-    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::encryptionKey(), 0, $iv);
-
-    if ($decrypted === false) {
-      // Rows stored before the key was fixed: read them, never re-encrypt with that key.
-      $decrypted = openssl_decrypt($encrypted, self::$cipher, self::LEGACY_EMPTY_KEY, 0, $iv);
-    }
+    $decrypted = self::decryptWithKnownKeys($encrypted, $iv);
 
     if ($decrypted === false) {
       throw new Exception('Erreur lors du déchiffrement des données');
     }
 
     return $decrypted;
+  }
+
+  /**
+   * Decrypts with the current key, then the legacy one (read-only, never re-encrypt with it).
+   *
+   * @param string $encrypted The ciphertext as returned by openssl_encrypt().
+   * @param string $iv The initialization vector.
+   * @return string|false The plaintext, or false when no known key yields valid UTF-8 text.
+   */
+  private static function decryptWithKnownKeys(string $encrypted, string $iv): string|false
+  {
+    foreach ([self::encryptionKey(), self::LEGACY_EMPTY_KEY] as $key) {
+      $decrypted = openssl_decrypt($encrypted, self::$cipher, $key, 0, $iv);
+      // CBC has no MAC: a wrong key can pass the padding check and return random bytes.
+      if ($decrypted !== false && mb_check_encoding($decrypted, 'UTF-8')) {
+        return $decrypted;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -514,7 +528,7 @@ class Hash
     $strong = false;
     $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length(self::$cipher), $strong);
 
-    if ($iv === false || $strong === false) {
+    if ($strong === false) {
       throw new Exception('IV generation failed or is not cryptographically strong');
     }
 
@@ -548,12 +562,7 @@ class Hash
     $iv = str_pad(substr($data, 0, $ivLength), $ivLength, "\0");
     $encrypted = substr($data, $ivLength);
     
-    $decrypted = openssl_decrypt($encrypted, self::$cipher, self::encryptionKey(), 0, $iv);
-
-    if ($decrypted === false) {
-      // Same legacy read path as decryptDatatext(): addresses stored with the empty key.
-      $decrypted = openssl_decrypt($encrypted, self::$cipher, self::LEGACY_EMPTY_KEY, 0, $iv);
-    }
+    $decrypted = self::decryptWithKnownKeys($encrypted, $iv);
 
     // If decryption failed, return the original value
     return $decrypted !== false ? $decrypted : $encryptedEmail;
