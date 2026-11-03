@@ -39,7 +39,7 @@ class securityCheck_download_directory
   {
     $CLICSHOPPING_Template = Registry::get('TemplateAdmin');
 
-    if (DOWNLOAD_ENABLED != 'true') {
+    if (!\defined('DOWNLOAD_ENABLED') || DOWNLOAD_ENABLED != 'true') {
       return true;
     }
 

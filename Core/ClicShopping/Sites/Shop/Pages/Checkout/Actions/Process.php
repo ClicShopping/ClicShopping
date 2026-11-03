@@ -52,7 +52,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Checkout&Shipping');
     }
 
-    if ((!is_null(MODULE_PAYMENT_INSTALLED)) && (!isset($_SESSION['payment']))) {
+    if (\defined('MODULE_PAYMENT_INSTALLED') && !is_null(MODULE_PAYMENT_INSTALLED) && !isset($_SESSION['payment'])) {
       CLICSHOPPING::redirect(null, 'Checkout&Billing');
     }
 

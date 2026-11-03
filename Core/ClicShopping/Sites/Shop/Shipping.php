@@ -277,7 +277,7 @@ class Shipping
   {
     $count = 0;
 
-    $modules_array = explode(';', MODULE_SHIPPING_INSTALLED);
+    $modules_array = explode(';', \defined('MODULE_SHIPPING_INSTALLED') ? MODULE_SHIPPING_INSTALLED : '');
 
     for ($i = 0, $n = count($modules_array); $i < $n; $i++) {
       $m = $modules_array[$i];

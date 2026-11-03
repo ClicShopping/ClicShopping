@@ -65,10 +65,8 @@ if (isset($order_id) && is_numeric($order_id) && ($order_id > 0)) {
 }
 
 // ── Invoice lock guard ──────────────────────────────────────────────────────
-// An order whose invoice status is >= 1 (validated / cancelled / credit-note)
-// must NOT be edited: French law (art. L441-9 C.com.) prohibits modifying a
-// validated invoice. The admin can only unlock it by reverting the invoice
-// status to 0 (pending) on the Status tab before making any changes.
+// Product lines are locked once an invoice exists (UpdateOrder::isInvoiceLocked()):
+// French law (art. L441-9 C.com.) prohibits modifying a validated invoice.
 $order_is_invoice_locked = isset($oID) ? UpdateOrderService::isInvoiceLocked((int)$oID) : false;
 
 // orders_invoice status Dropdown
@@ -508,7 +506,7 @@ $Qcustomers->execute();
         <!-- //###########################################//-->
         <div class="tab-pane" id="tab3">
           <div class="mainTitle"><?php echo $CLICSHOPPING_Orders->getDef('table_heading_comments'); ?></div>
-          <?php echo HTML::form('status', $CLICSHOPPING_Orders->link('Orders&Update&oID=' . $oID)); ?>
+          <?php echo HTML::form('status', $CLICSHOPPING_Orders->link('Orders&Update&oID=' . $oID), 'post', '', ['tokenize' => true]); ?>
           <div class="adminformTitle" id="StatusOrder">
             <div class="row">
               <div class="col-md-12" id="orderComment">

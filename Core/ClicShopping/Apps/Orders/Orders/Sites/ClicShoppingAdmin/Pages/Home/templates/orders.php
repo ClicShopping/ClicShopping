@@ -425,15 +425,6 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
         $Qhistory->bindInt(':orders_id', $Qorders->valueInt('orders_id'));
         $Qhistory->execute();
 
-// Selectionne la couleur selon le groupe client au moment de la commande
-        if ($Qorders->valueInt('customers_group_id') != 0) {
-          $Qcolor = $CLICSHOPPING_Orders->db->prepare('select color_bar
-                                                         from :table_customers_groups
-                                                         where customers_group_id = :customers_group_id
-                                                        ');
-          $Qcolor->bindInt(':customers_group_id', $Qorders->valueInt('customers_group_id'));
-          $Qcolor->execute();
-        }
         ?>
         <th scope="row"><?php echo $Qorders->valueInt('orders_id'); ?></th>
         <td><?php echo Hash::displayDecryptedDataText($Qorders->value('customers_name')) . '&nbsp;(' . Hash::displayDecryptedDataText($Qorders->value('customers_company')) . ')'; ?></td>
@@ -474,6 +465,13 @@ if (isset($_GET['oID']) && is_numeric($_GET['oID']) && ($_GET['oID'] > 0)) {
 // Permettre l'affichage couleurs du groupe B2B auquel le client ce trouvait au moment de la commande
         if (MODE_B2B_B2C == 'True') {
           if ($Qorders->valueInt('customers_group_id') != 0) {
+// Selectionne la couleur selon le groupe client au moment de la commande
+            $Qcolor = $CLICSHOPPING_Orders->db->prepare('select color_bar
+                                                           from :table_customers_groups
+                                                           where customers_group_id = :customers_group_id
+                                                          ');
+            $Qcolor->bindInt(':customers_group_id', $Qorders->valueInt('customers_group_id'));
+            $Qcolor->execute();
             ?>
             <td class="text-center">
               <table width="15" cellspacing="0" cellpadding="0" border="0">

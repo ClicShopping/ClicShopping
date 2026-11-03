@@ -19,7 +19,7 @@ namespace ClicShopping\Apps\Orders\Orders\Classes\Common;
  * Companion to {@see \ClicShopping\Apps\Configuration\CompliancePolicyRules\Classes\ClicShoppingAdmin\EInvoiceService} which exposes the equivalent
  * invoice-status constants (table :table_orders_status_invoice).
  *
- * The ids are those of install/Db/clicshopping_en.sql; the row's
+ * The ids are those of install/Db/Domain/Ecommerce/clicshopping_en.sql; the row's
  * orders_status_definition is what states their business meaning.
  */
 final class OrdersStatus

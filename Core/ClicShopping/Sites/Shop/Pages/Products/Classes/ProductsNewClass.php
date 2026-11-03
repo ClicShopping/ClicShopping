@@ -21,13 +21,11 @@ class ProductsNewClass
   public static function getCountColumnList(): array
   {
 // create column list
-    $define_list = [
-      'MODULE_PRODUCTS_NEW_LIST_DATE_ADDED' => MODULE_PRODUCTS_NEW_LIST_DATE_ADDED,
-      'MODULE_PRODUCTS_NEW_LIST_PRICE' => MODULE_PRODUCTS_NEW_LIST_PRICE,
-      'MODULE_PRODUCTS_NEW_LIST_MODEL' => MODULE_PRODUCTS_NEW_LIST_MODEL,
-      'MODULE_PRODUCTS_NEW_LIST_WEIGHT' => MODULE_PRODUCTS_NEW_LIST_WEIGHT,
-      'MODULE_PRODUCTS_NEW_LIST_QUANTITY' => MODULE_PRODUCTS_NEW_LIST_QUANTITY,
-    ];
+    $define_list = [];
+
+    foreach (['MODULE_PRODUCTS_NEW_LIST_DATE_ADDED', 'MODULE_PRODUCTS_NEW_LIST_PRICE', 'MODULE_PRODUCTS_NEW_LIST_MODEL', 'MODULE_PRODUCTS_NEW_LIST_WEIGHT', 'MODULE_PRODUCTS_NEW_LIST_QUANTITY'] as $key) {
+      $define_list[$key] = \defined($key) ? \constant($key) : 0;
+    }
 
     asort($define_list);
 

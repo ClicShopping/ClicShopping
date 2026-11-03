@@ -345,7 +345,7 @@ class ProductsListing
         }
       }
     } else {
-      $sort_col = substr($requested_sort, 0, 1);
+      $sort_col = (int)substr($requested_sort, 0, 1);
       $sort_order = substr($requested_sort, 1);
 
       switch ($column_list[$sort_col - 1]) {

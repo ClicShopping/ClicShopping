@@ -29,6 +29,12 @@ class DeleteConfirm extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
     $CLICSHOPPING_Hooks = Registry::get('Hooks');
     if (isset($_GET['DeleteConfirm'], $_GET['oID'])) {
+      if (!isset($_POST['formid']) || !\is_string($_POST['formid']) || empty($_SESSION['sessiontoken']) || !hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
+        $CLICSHOPPING_MessageStack->add($this->app->getDef('error_form_token'), 'error');
+        $this->app->redirect('Orders');
+        return;
+      }
+
       if ($this->oID != 0) {
         if (isset($_POST['restock'])) {
           $restock = true;

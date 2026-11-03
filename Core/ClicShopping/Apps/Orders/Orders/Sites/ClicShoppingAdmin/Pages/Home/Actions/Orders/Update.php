@@ -130,6 +130,12 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
     if (isset($_GET['Update'])) {
+      if (!isset($_POST['formid']) || !\is_string($_POST['formid']) || empty($_SESSION['sessiontoken']) || !hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
+        $CLICSHOPPING_MessageStack->add($this->app->getDef('error_form_token'), 'error');
+        $this->app->redirect('Edit&oID=' . $this->oID);
+        return;
+      }
+
       $order_updated = false;
 
       if ($this->oID != 0) {

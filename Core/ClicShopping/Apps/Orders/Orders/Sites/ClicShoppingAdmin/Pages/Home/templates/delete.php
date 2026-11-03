@@ -38,7 +38,7 @@ $order_id = HTML::sanitize($_GET['oID']);
   <div class="mt-1"></div>
   <div class="col-md-12 mainTitle">
     <strong><?php echo $CLICSHOPPING_Orders->getDef('text_info_heading_delete_order'); ?></strong></div>
-  <?php echo HTML::form('orders', $CLICSHOPPING_Orders->link('Orders&DeleteConfirm&oID=' . (int)$order_id)); ?>
+  <?php echo HTML::form('orders', $CLICSHOPPING_Orders->link('Orders&DeleteConfirm&oID=' . (int)$order_id), 'post', '', ['tokenize' => true]); ?>
   <div class="adminformTitle">
     <div class="row">
       <div class="mt-1"></div>

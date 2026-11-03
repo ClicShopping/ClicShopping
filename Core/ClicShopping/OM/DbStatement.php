@@ -243,7 +243,7 @@ class DbStatement extends \PDOStatement
         $this->result = parent::fetchAll($fetch_style);
       }
 
-      if (isset($this->cache) && ($this->result !== false)) {
+      if (isset($this->cache)) {
         $this->cache_data = $this->result;
       }
     }

@@ -407,7 +407,7 @@ class Payment
   {
     $count = 0;
 
-    $modules_array = explode(';', MODULE_PAYMENT_INSTALLED);
+    $modules_array = explode(';', \defined('MODULE_PAYMENT_INSTALLED') ? MODULE_PAYMENT_INSTALLED : '');
 
     for ($i = 0, $n = count($modules_array); $i < $n; $i++) {
       $m = $modules_array[$i];

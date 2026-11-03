@@ -693,6 +693,7 @@ class Db extends PDO
         if ((mb_strtoupper($next) == 'DROP T') ||
           (mb_strtoupper($next) == 'CREATE') ||
           (mb_strtoupper($next) == 'INSERT') ||
+          (mb_strtoupper($next) == 'UPDATE') ||
           (mb_strtoupper($next) == 'ALTER') ||
           (mb_strtoupper($next) == 'SET FO')) {
           $next = '';
@@ -706,6 +707,8 @@ class Db extends PDO
               $sql_query = 'CREATE TABLE ' . $table_prefix . substr($sql_query, 13);
             } elseif (mb_strtoupper(substr($sql_query, 0, 11)) == 'INSERT INTO') {
               $sql_query = 'INSERT INTO ' . $table_prefix . substr($sql_query, 12);
+            } elseif (mb_strtoupper(substr($sql_query, 0, 7)) == 'UPDATE ') {
+              $sql_query = 'UPDATE ' . $table_prefix . substr($sql_query, 7);
             } elseif (mb_strtoupper(substr($sql_query, 0, 12)) == 'CREATE INDEX') {
               $sql_query = substr($sql_query, 0, stripos($sql_query, ' on ')) .
                 ' on ' .
