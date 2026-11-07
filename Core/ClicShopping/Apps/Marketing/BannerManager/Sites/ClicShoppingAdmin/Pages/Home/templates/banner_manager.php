@@ -202,7 +202,7 @@ echo $CLICSHOPPING_Wysiwyg::getWysiwyg();
           $QcustomersGroup->bindInt(':customers_group_id', $Qbanner->valueInt('customers_group_id'));
           $QcustomersGroup->execute();
 
-          $customers_group = $QcustomersGroup->fetch();
+          $customers_group = $QcustomersGroup->fetch() ?: [];
 
           if ($Qbanner->valueInt('customers_group_id') == 99) {
             $customers_group['customers_group_name'] = $CLICSHOPPING_BannerManager->getDef('text_all_groups');

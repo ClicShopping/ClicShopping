@@ -11,7 +11,7 @@ namespace ClicShopping\OM\Module\Hooks\ClicShoppingAdmin\Login;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Configuration\TemplateEmail\Classes\ClicShoppingAdmin\TemplateEmailAdmin;
@@ -40,7 +40,7 @@ class ErrorProcess
 
       $ip = HTTP::getIpAddress();
 
-      if (Is::IpAddress($ip)) {
+      if (IsValid::IpAddress($ip)) {
         $host = HTML::outputProtected((string)@gethostbyaddr($ip));
         $referer = HTML::outputProtected($_SERVER['HTTP_REFERER'] ?? '');
         $details = file_get_contents("https://ipinfo.io/{$ip}/geo");

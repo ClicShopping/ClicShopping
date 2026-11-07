@@ -220,7 +220,7 @@ if (isset($_GET['search'])) {
         $QcustColl->bindInt(':customers_group_id', $Qcustomers->valueInt('customers_group_id'));
         $QcustColl->execute();
 
-        $cust_ret = $QcustColl->fetch();
+        $cust_ret = $QcustColl->fetch() ?: [];
 
         if ($QcustColl->valueInt('customers_group_id') == 0) {
           $cust_ret['customers_group_name'] = $CLICSHOPPING_Customers->getDef('visitor_name');

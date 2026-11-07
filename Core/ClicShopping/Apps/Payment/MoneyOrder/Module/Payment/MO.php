@@ -22,6 +22,8 @@ use ClicShopping\OM\Interfaces\PaymentInterface;
  */
 class MO implements PaymentInterface
 {
+  public $order_status;
+
   public string $code;
   public $title;
   public $description;

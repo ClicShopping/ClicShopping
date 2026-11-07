@@ -16,6 +16,8 @@ use ClicShopping\Apps\Configuration\Langues\Classes\ClicShoppingAdmin\LanguageAd
 
 class Insert implements HooksInterface
 {
+  public $lang;
+
   public mixed $app;
   protected $insert_language_id;
 

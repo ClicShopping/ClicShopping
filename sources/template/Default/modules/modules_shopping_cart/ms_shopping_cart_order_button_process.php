@@ -44,7 +44,7 @@ class ms_shopping_cart_order_button_process
       if (\is_array($CLICSHOPPING_NavigationHistory)) {
         $back = \count($CLICSHOPPING_NavigationHistory->path) - 2;
       } else {
-        $back = null;
+        $back = -1;
       }
 
       $text_position = MODULE_SHOPPING_CART_ORDER_BUTTON_PROCESS_POSITION;

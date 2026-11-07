@@ -59,5 +59,6 @@ class OrderInvoice extends \ClicShopping\OM\Domains\PagesActionsAbstract
     }
 
     OrderPdfRenderer::invoice((int)$oID, $CLICSHOPPING_Order, OrderPdfRenderer::CONTEXT_SHOP);
+    exit;
   }
 }

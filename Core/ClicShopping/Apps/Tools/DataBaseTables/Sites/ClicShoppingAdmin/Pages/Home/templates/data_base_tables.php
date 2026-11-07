@@ -214,7 +214,7 @@ switch ($action) {
       $table_data[] = [
         $Qstatus->valueProtected('Name'),
         $Qstatus->valueProtected('Rows'),
-        round(($Qstatus->value('Data_length') + $Qstatus->value('Index_length')) / 1024 / 1024, 2) . 'M',
+        round(($Qstatus->valueInt('Data_length') + $Qstatus->valueInt('Index_length')) / 1024 / 1024, 2) . 'M',
         $Qstatus->valueProtected('Engine'),
         $Qstatus->valueProtected('Collation'),
         HTML::checkboxField('id[]', $Qstatus->value('Name'))

@@ -207,7 +207,7 @@ class RecommendationsShop
    *
    * @return mixed
    */
-  public function saveRecommendations(int $products_id, float $reviewRate = 0, string $review): void
+  public function saveRecommendations(int $products_id, float $reviewRate, string $review): void
   {
     // Clamp review rate to valid range
     if ($reviewRate < 0 || $reviewRate > 5) {

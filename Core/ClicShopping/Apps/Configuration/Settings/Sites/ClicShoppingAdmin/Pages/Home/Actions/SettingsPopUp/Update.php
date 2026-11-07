@@ -9,7 +9,7 @@
 namespace ClicShopping\Apps\Configuration\Settings\Sites\ClicShoppingAdmin\Pages\Home\Actions\SettingsPopUp;
 
 use ClicShopping\OM\Cache;
-use ClicShopping\OM\Hash;
+use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\Registry;
 
@@ -27,37 +27,26 @@ class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
    */
   public function execute()
   {
+    $configuration_value = $_POST['configuration_value'] ?? '';
+
     if (isset($_POST['configuration'])) {
       foreach ($_POST['configuration'] as $value) {
         $configuration_value = $value;
       }
-    } else {
-      $configuration_value = $_POST['configuration_value'] ?? '';
     }
 
     $cID = HTML::sanitize($_GET['cID']);
     $gID = HTML::sanitize($_GET['gID']);
 
-    // --- Récupération de la config actuelle ---
-    $Qconf = $this->app->db->prepare('select set_function 
-                                      from :table_configuration 
-                                      where configuration_id = :cID
-                                      ');
-    $Qconf->bindInt(':cID', (int)$cID);
-    $Qconf->execute();
-
-    // --- Détection si champ password ---
-    if (!empty($Qconf->value('set_function')) && str_contains($Qconf->value('set_function'), 'password')) {
-      $configuration_value = Hash::encryptDatatext($configuration_value);
+    if (!isset($_POST['formid']) || !\is_string($_POST['formid']) || empty($_SESSION['sessiontoken']) || !hash_equals($_SESSION['sessiontoken'], $_POST['formid'])) {
+      Registry::get('MessageStack')->add(CLICSHOPPING::getDef('no_access_warning'), 'warning');
+      $this->app->redirect('Settings&gID=' . $gID);
     }
 
-    $this->app->db->save('configuration', [
-      'configuration_value' => $configuration_value,
-      'last_modified' => 'now()'
-    ], [
-        'configuration_id' => (int)$cID
-      ]
-    );
+    if (!$this->app->saveValue((int)$cID, (int)$gID, $configuration_value)) {
+      Registry::get('MessageStack')->add(CLICSHOPPING::getDef('no_access_warning'), 'warning');
+      $this->app->redirect('Settings&gID=' . $gID);
+    }
 
     Cache::clear('configuration');
 

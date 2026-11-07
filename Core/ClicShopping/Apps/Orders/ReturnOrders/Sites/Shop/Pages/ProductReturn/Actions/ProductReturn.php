@@ -16,6 +16,8 @@ use ClicShopping\Sites\Shop\Pages\Account\Classes\HistoryInfo as Info;
 
 class ProductReturn extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
+  public $app;
+
   public function execute()
   {
     $CLICSHOPPING_Customer = Registry::get('Customer');

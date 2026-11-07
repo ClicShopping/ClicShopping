@@ -39,7 +39,7 @@ class Cron
    *               including fields like cron_id, code, cycle, action, status,
    *               date_added, and date_modified.
    */
-  public static function getCrons(?array $data = [],  int|null $id): array
+  public static function getCrons(?array $data, int|null $id): array
   {
     $CLICSHOPPING_Db = Registry::get('Db');
 

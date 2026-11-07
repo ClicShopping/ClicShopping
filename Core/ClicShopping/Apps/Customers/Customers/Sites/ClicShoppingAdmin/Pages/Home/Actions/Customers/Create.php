@@ -15,7 +15,7 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -243,7 +243,7 @@ class Create extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Customers->getDef('error_lastname'), 'error');
     }
 
-    if (!Is::EmailAddress($customers_email_address)) {
+    if (!IsValid::EmailAddress($customers_email_address)) {
       $error = true;
       $CLICSHOPPING_MessageStack->add($CLICSHOPPING_Customers->getDef('error_email'), 'error');
     }

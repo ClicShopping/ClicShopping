@@ -13,7 +13,7 @@ use ClicShopping\Apps\Configuration\TemplateEmail\Classes\Shop\TemplateEmail;
 use ClicShopping\Apps\Tools\ActionsRecorder\Classes\Shop\ActionRecorder;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -95,7 +95,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         }
       }
 
-      if (Is::EmailAddress($email_address) === false) {
+      if (IsValid::EmailAddress($email_address) === false) {
         $error = true;
         $CLICSHOPPING_MessageStack->add($CLICSHOPPING_PageManager->getDef('entry_email_address_check_error'), 'warning');
       }

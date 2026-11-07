@@ -13,7 +13,7 @@ use ClicShopping\Apps\Tools\ActionsRecorder\Classes\Shop\ActionRecorder;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -27,7 +27,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
     if (isset($_GET['action']) && ($_GET['action'] == 'process') && isset($_POST['formid']) && ($_POST['formid'] === $_SESSION['sessiontoken'])) {
       $email_address = HTML::sanitize($_POST['email_address']);
 
-      if (Is::EmailAddress($email_address) === true && !empty($email_address)) {
+      if (IsValid::EmailAddress($email_address) === true && !empty($email_address)) {
         $Qcheck = $CLICSHOPPING_Db->prepare('select customers_id,
                                                       customers_firstname,
                                                       customers_lastname,

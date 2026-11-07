@@ -14,6 +14,8 @@ use ClicShopping\OM\Registry;
 
 class Delete extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
+  public $app;
+
   private int $cronId;
 
   public function __construct()

@@ -131,7 +131,8 @@ entry_zone_id = Zone
 
 text_info_delete_intro = Are you sure you want to delete this order?
 text_info_restock_product_quantity = Restock product quantity
-entry_restock_on_cancel = Restock the order products if the status is set to Cancelled
+error_form_token = Error: the form has expired or did not come from this administration. Reload the page and try again.
+entry_restock_on_cancel =Restock the order products if the status is set to Cancelled
 success_order_restocked = Success: the order products have been put back into stock.
 warning_order_restock_refused = Warning: products not restocked - stock management (STOCK_CHECK) is off or this order was already restocked.
 warning_order_restock_missing_products = Warning: {{count}} order line(s) not restocked - the product no longer exists in the catalog.

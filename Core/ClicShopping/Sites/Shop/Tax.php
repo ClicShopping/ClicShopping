@@ -52,6 +52,9 @@ class Tax
       }
     }
 
+    $country_id ??= 0;
+    $zone_id ??= 0;
+
     if (!isset($this->tax_rates[$class_id][$country_id][$zone_id]['rate'])) {
       $Qtax = $CLICSHOPPING_Db->prepare('select sum(tr.tax_rate) as tax_rate
                                           from :table_tax_rates tr left join :table_zones_to_geo_zones za on (tr.tax_zone_id = za.geo_zone_id)
@@ -102,6 +105,9 @@ class Tax
   public function getTaxRateDescription(int $class_id, int|null $country_id, int|null $zone_id)
   {
     $CLICSHOPPING_Db = Registry::get('Db');
+
+    $country_id ??= 0;
+    $zone_id ??= 0;
 
     if (!isset($this->tax_rates[$class_id][$country_id][$zone_id]['description'])) {
       if (\defined('DISPLAY_PRICE_WITH_TAX') && DISPLAY_PRICE_WITH_TAX == 'true') {

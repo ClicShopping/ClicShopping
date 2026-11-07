@@ -25,16 +25,17 @@ class Download extends \ClicShopping\OM\Domains\PagesActionsAbstract
   {
     $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 
-    $extension = substr($_GET['file'], -3);
+    $file = basename($_GET['file']);
+    $extension = substr($file, -3);
     $backup_directory = CLICSHOPPING::BASE_DIR . 'Work/Backups/';
 
     if (($extension == 'zip') || ($extension == '.gz') || ($extension == 'sql')) {
-      if ($fp = fopen($backup_directory . $_GET['file'], 'rb')) {
-        $buffer = fread($fp, filesize($backup_directory . $_GET['file']));
+      if ($fp = fopen($backup_directory . $file, 'rb')) {
+        $buffer = fread($fp, filesize($backup_directory . $file));
         fclose($fp);
 
         header('Content-type: application/x-octet-stream');
-        header('Content-disposition: attachment; filename=' . $_GET['file']);
+        header('Content-disposition: attachment; filename=' . $file);
 
         echo $buffer;
 

@@ -16,6 +16,8 @@ use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
 class Gdpr extends HeaderTagsAbstract
 {
+  public $group;
+
   public mixed $lang;
   public mixed $app;
 

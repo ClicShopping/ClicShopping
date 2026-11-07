@@ -16,7 +16,7 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 use function defined;
 use function is_null;
@@ -238,7 +238,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         }
       }
 
-      if (Is::EmailAddress($email_address) === false) {
+      if (IsValid::EmailAddress($email_address) === false) {
         $error = true;
 
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_email_address_check_error_pro'), 'error');

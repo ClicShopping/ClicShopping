@@ -12,7 +12,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 use ClicShopping\Sites\Shop\Pages\Account\Classes\Edit;
 use function strlen;
@@ -166,7 +166,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         }
       }
 
-      if (Is::EmailAddress($email_address) === false) {
+      if (IsValid::EmailAddress($email_address) === false) {
         $error = true;
 
         if ($CLICSHOPPING_Customer->getCustomersGroupID() == 0) {

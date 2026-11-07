@@ -17,6 +17,8 @@ use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
 class RSS extends HeaderTagsAbstract
 {
+  public $group;
+
   public mixed $lang;
   public mixed $app;
 

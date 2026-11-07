@@ -15,6 +15,8 @@ use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
 class Favorites extends HeaderTagsAbstract
 {
+  public $group;
+
   public mixed $lang;
   public mixed $app;
   private mixed $template;

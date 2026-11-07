@@ -17,6 +17,8 @@ use function is_null;
 
 class ReviewsClass
 {
+  public $getPageSetTotalRows;
+
   protected mixed $productsCommon;
   private mixed $db;
   private mixed $lang;

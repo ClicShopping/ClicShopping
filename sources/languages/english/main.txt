@@ -302,6 +302,7 @@ pull_down_default_manufacturer = Our brands
 
 text_chatbot_ok = Thanks, Here the information about your question: <strong>{{question}}</strong><br /><br />
 text_chatbot_not_ok = I'm sorry but I do not find, the informations. Please give me more context about your product seach (and include the name of the product you want to look).<br /><br />
+text_chatbot_unavailable = I'm sorry, the assistant is temporarily unavailable. Please try again in a moment.<br /><br />
 link_chatbot_page_general_condition = <br /><br /> ==> For more informations, we invite you to consult this page :
 
 

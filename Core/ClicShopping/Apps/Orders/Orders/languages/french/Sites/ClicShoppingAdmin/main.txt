@@ -134,7 +134,8 @@ entry_zone_id = Zone
 
 text_info_delete_intro = Etes vous s&ucirc;r de vouloir supprimer cette commande ?
 text_info_restock_product_quantity = Restaurer la valeur de stock
-entry_restock_on_cancel = Remettre en stock les produits de la commande si le statut passe à Annulé
+error_form_token = Erreur : le formulaire a expiré ou ne vient pas de cette administration. Rechargez la page et recommencez.
+entry_restock_on_cancel =Remettre en stock les produits de la commande si le statut passe à Annulé
 success_order_restocked = Succès : les produits de la commande ont été remis en stock.
 warning_order_restock_refused = Attention : produits non remis en stock - la gestion du stock (STOCK_CHECK) est désactivée ou cette commande a déjà été remise en stock.
 warning_order_restock_missing_products = Attention : {{count}} ligne(s) de commande non remise(s) en stock - le produit n'existe plus dans le catalogue.

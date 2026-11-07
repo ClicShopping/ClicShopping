@@ -13,7 +13,7 @@ use ClicShopping\Apps\Tools\ActionsRecorder\Classes\Shop\ActionRecorder;
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 use function defined;
 
@@ -55,7 +55,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_from_name'), 'error', 'friend');
       }
 
-      if (Is::EmailAddress($from_email_address) === false) {
+      if (IsValid::EmailAddress($from_email_address) === false) {
         $error = true;
 
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_from_address'), 'error', 'friend');
@@ -67,7 +67,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_to_name'), 'error', 'friend');
       }
 
-      if (Is::EmailAddress($to_email_address) === false) {
+      if (IsValid::EmailAddress($to_email_address) === false) {
         $error = true;
 
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_to_address'), 'error', 'friend');
@@ -84,7 +84,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_action_recorder', ['module_action_recorder_tell_a_friend_email_minutes' => (defined('MODULE_ACTION_RECORDER_TELL_A_FRIEND_EMAIL_MINUTES') ? (int)MODULE_ACTION_RECORDER_TELL_A_FRIEND_EMAIL_MINUTES : 15)]), 'danger', 'friend');
       }
 
-      if (Is::EmailAddress($to_email_address) === false) {
+      if (IsValid::EmailAddress($to_email_address) === false) {
         $error = true;
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('error_to_address'), 'error', 'friend');
       }

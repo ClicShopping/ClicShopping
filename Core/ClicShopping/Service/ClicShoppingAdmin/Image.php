@@ -8,7 +8,7 @@
 
 namespace ClicShopping\Service\ClicShoppingAdmin;
 
-use ClicShopping\Apps\Catalog\Products\Classes\ClicShoppingAdmin\Image as ImageClass;
+use ClicShopping\Sites\ClicShoppingAdmin\Image as ImageClass;
 use ClicShopping\OM\Registry;
 
 /**

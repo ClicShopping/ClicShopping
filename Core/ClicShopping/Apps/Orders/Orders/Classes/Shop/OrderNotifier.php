@@ -207,21 +207,14 @@ class OrderNotifier
         $email_text_subject = stripslashes(CLICSHOPPING::getDef('email_text_subject', ['store_name' => STORE_NAME]));
         $email_text_subject = html_entity_decode($email_text_subject);
 
-        if (!empty(SEND_EXTRA_ORDER_EMAILS_TO)) {
-          $email[] = TemplateEmail::getExtractEmailAddress(SEND_EXTRA_ORDER_EMAILS_TO);
+        foreach (TemplateEmail::getExtractEmailAddress(SEND_EXTRA_ORDER_EMAILS_TO) as $to_addr) {
+          $from_name = \defined('STORE_NAME') ? STORE_NAME : '';
+          $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
+          $to_name = null;
+          $subject = $email_text_subject;
 
-          // $email is always an array here (built via $email[] above), so the former
-          // is_array()/else branch was dead code — B9.
-          foreach ($email as $key => $value) {
-            $to_addr = $value[$key];
-            $from_name = \defined('STORE_NAME') ? STORE_NAME : '';
-            $from_addr = \defined('STORE_OWNER_EMAIL_ADDRESS') ? STORE_OWNER_EMAIL_ADDRESS : '';
-            $to_name = null;
-            $subject = $email_text_subject;
-
-            $this->mail->addHtml($email_order);
-            $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
-          }
+          $this->mail->addHtml($email_order);
+          $this->mail->send($to_addr, $from_name, $from_addr, $to_name, $subject);
         }
       }
     }

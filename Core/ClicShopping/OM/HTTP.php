@@ -239,7 +239,7 @@ class HTTP
 
     try {
       $client = new GuzzleClient();
-      $response = $client->request($data['method'], $data['url'], $options);
+      $response = $client->request(strtoupper($data['method']), $data['url'], $options);
 
       $result = $response->getBody()->getContents();
 
@@ -686,7 +686,7 @@ class HTTP
 
       // Create async promise
       try {
-        $promises[$key] = $client->requestAsync($data['method'], $data['url'], $options);
+        $promises[$key] = $client->requestAsync(strtoupper($data['method']), $data['url'], $options);
       } catch (Exception $e) {
         $results[$key] = [
           'success' => false,

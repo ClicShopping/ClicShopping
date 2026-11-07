@@ -307,6 +307,7 @@ pull_down_default_manufacturer = Nos marques
 
 text_chatbot_ok = Merci, Voici les informations concernant votre question : <strong>{{question}}</strong><br /><br />
 text_chatbot_not_ok = Je suis désolé mais je n'ai pas trouvé d'informations à propos de votre demande. Veuillez reformuler votre questionen incluant le nom du produit<br /><br />
+text_chatbot_unavailable = Désolé, l'assistant est momentanément indisponible. Veuillez réessayer dans un instant.<br /><br />
 link_chatbot_page_general_condition = <br /><br /> ==> Pour des informations complémentaires, je vous invite à consulter cette page :
 
 text_install =

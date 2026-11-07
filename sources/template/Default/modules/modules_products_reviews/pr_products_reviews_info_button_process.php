@@ -58,7 +58,7 @@ class pr_products_reviews_info_button_process
       $content_width = \defined('MODULES_PRODUCTS_REVIEWS_INFO_BUTTON_PROCESS_CONTENT_WIDTH') ? (int)MODULES_PRODUCTS_REVIEWS_INFO_BUTTON_PROCESS_CONTENT_WIDTH : 0;
       $text_position = \defined('MODULES_PRODUCTS_REVIEWS_INFO_BUTTON_PROCESS_POSITION') ? MODULES_PRODUCTS_REVIEWS_INFO_BUTTON_PROCESS_POSITION : 'float-none';
 
-      $button_back = HTML::button(CLICSHOPPING::getDef('button_back'), null, CLICSHOPPING::link(null, 'Products&ReviewsInfo&products_id=' . (int)$_GET['products_id']), 'primary');
+      $button_back = HTML::button(CLICSHOPPING::getDef('button_back'), null, CLICSHOPPING::link(null, 'Products&Reviews&products_id=' . (int)$_GET['products_id']), 'primary');
       $button_process = HTML::button(CLICSHOPPING::getDef('button_write_review'), null, CLICSHOPPING::link(null, 'Products&ReviewsWrite&products_id=' . (int)$_GET['products_id']), 'success');
 
       $reviews_button = '<!-- Start products_reviews_info_button_process -->' . "\n";

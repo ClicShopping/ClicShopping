@@ -20,8 +20,6 @@ $CLICSHOPPING_MessageStack = Registry::get('MessageStack');
 $dir_ok = false;
 $backup_directory = CLICSHOPPING::BASE_DIR . 'Work/Backups/';
 
-$restore_file = $backup_directory . $_GET['file'];
-
 $file = basename($_GET['file']);
 
 if (file_exists($backup_directory . $file)) {
@@ -60,7 +58,7 @@ $buInfo = new ObjectInfo($info);
     </div>
   </div>
   <?php
-  if (is_file($backup_directory . $_GET['file'])) {
+  if (is_file($backup_directory . $file)) {
     ?>
     <div class="mt-1"></div>
     <div class="col-md-12 mainTitle"><strong><?php echo $buInfo->date; ?></strong></div>

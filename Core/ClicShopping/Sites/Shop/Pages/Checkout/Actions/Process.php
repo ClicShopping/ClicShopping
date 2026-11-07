@@ -52,7 +52,8 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       CLICSHOPPING::redirect(null, 'Checkout&Shipping');
     }
 
-    if (\defined('MODULE_PAYMENT_INSTALLED') && !is_null(MODULE_PAYMENT_INSTALLED) && !isset($_SESSION['payment'])) {
+// An undefined constant must stop here: no order goes on without a payment choice.
+    if (!isset($_SESSION['payment']) && (!\defined('MODULE_PAYMENT_INSTALLED') || \constant('MODULE_PAYMENT_INSTALLED') !== null)) {
       CLICSHOPPING::redirect(null, 'Checkout&Billing');
     }
 

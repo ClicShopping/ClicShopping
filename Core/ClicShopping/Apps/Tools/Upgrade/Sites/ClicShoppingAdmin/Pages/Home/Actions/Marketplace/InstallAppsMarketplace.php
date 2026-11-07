@@ -17,6 +17,8 @@ use ClicShopping\OM\Upload;
 
 class InstallAppsMarketplace extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
+  public $messageStack;
+
   public mixed $app;
   private mixed $extractFile;
 

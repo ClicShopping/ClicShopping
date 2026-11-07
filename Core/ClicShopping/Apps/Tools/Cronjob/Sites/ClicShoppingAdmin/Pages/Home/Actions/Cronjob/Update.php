@@ -13,6 +13,8 @@ use ClicShopping\OM\Registry;
 
 class Update extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
+  public $app;
+
   public function __construct()
   {
     $this->app = Registry::get('Cronjob');

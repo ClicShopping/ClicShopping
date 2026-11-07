@@ -764,7 +764,7 @@ echo HTML::hiddenField('customers_modify_company');
                       ?>
                       <!-- lien pointant sur le site de vérification -->
                       <a
-                        href="<?php echo 'https://ec.europa.eu/taxation_customs/vies/#/vat-validation?memberStateCode=' . $cInfo->customers_tva_intracom_code_iso . '&number=' . preg_replace('/^' . $cInfo->customers_tva_intracom_code_iso . '/', '', $cInfo->customers_tva_intracom); ?>"
+                        href="<?php echo 'https://ec.europa.eu/taxation_customs/vies/#/vat-validation?memberStateCode=' . $cInfo->customers_tva_intracom_code_iso . '&number=' . preg_replace('/^' . $cInfo->customers_tva_intracom_code_iso . '/', '', $cInfo->customers_tva_intracom ?? ''); ?>"
                         target="_blank"
                         rel="noreferrer"><?php echo $CLICSHOPPING_Customers->getDef('tva_intracom_verify'); ?></a>
                     </div>

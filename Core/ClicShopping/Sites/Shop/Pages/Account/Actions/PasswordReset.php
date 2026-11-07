@@ -10,7 +10,7 @@ namespace ClicShopping\Sites\Shop\Pages\Account\Actions;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 class PasswordReset extends \ClicShopping\OM\Domains\PagesActionsAbstract
@@ -38,7 +38,7 @@ class PasswordReset extends \ClicShopping\OM\Domains\PagesActionsAbstract
       $email_address = $email_address;
       $password_key = HTML::sanitize($_GET['key']);
 
-      if ((Is::EmailAddress($email_address) === false)) {
+      if ((IsValid::EmailAddress($email_address) === false)) {
         $error = true;
 
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('text_no_email_address_found'), 'error');

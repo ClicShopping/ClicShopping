@@ -116,7 +116,7 @@ class CkEditor5 extends HTML
    */
   public static function getElFinderConnector(): string
   {
-    $connector = HTTP::getShopUrlDomain() . 'ext/elFinder-master/php/connector.minimal.php';
+    $connector = CLICSHOPPING::getConfig('http_server', 'ClicShoppingAdmin') . CLICSHOPPING::getConfig('http_path', 'ClicShoppingAdmin') . 'ajax/ElFinder/connector.php';
 
     return $connector;
   }

@@ -13,7 +13,7 @@ use ClicShopping\Apps\Configuration\TemplateEmail\Classes\ClicShoppingAdmin\Temp
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 /**
@@ -26,7 +26,7 @@ class SendEmail
 {
   /**
    * Discriminator value used in the shared work queue.
-   * 0 = EMail app, 1 = Newsletter app (see Schema/MariaDb/newsletters_customers_temp.txt).
+   * 0 = EMail app, 1 = Newsletter app (see Schema/MariaDb/Shared/newsletters_customers_temp.txt).
    */
   public const BATCH_TYPE = 0;
 
@@ -105,7 +105,7 @@ class SendEmail
     }
 
     while ($Qmail->fetch()) {
-      if (Is::EmailAddress($Qmail->value('customers_email_address'))) {
+      if (IsValid::EmailAddress($Qmail->value('customers_email_address'))) {
         $this->db->save('newsletters_customers_temp', [
           'batch_type' => self::BATCH_TYPE,
           'newsletters_id' => 0,

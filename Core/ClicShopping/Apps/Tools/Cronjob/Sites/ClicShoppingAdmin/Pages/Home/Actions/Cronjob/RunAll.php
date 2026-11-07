@@ -13,6 +13,8 @@ use ClicShopping\OM\Registry;
 
 class RunAll extends \ClicShopping\OM\Domains\PagesActionsAbstract
 {
+  public $app;
+
   protected string $code;
   private mixed $hooks;
 

@@ -227,11 +227,11 @@ class HTMLOverrideAdmin extends HTML
     fwrite($fp, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
 
     // I add the array keys as CSV headers
-    fputcsv($fp, array_keys($data[0]), $delimiter, $enclosure);
+    fputcsv($fp, array_keys($data[0]), $delimiter, $enclosure, escape: '');
 
     // Add all the data in the file
     foreach ($data as $fields) {
-      fputcsv($fp, $fields, $delimiter, $enclosure);
+      fputcsv($fp, $fields, $delimiter, $enclosure, escape: '');
     }
 
     fclose($fp);

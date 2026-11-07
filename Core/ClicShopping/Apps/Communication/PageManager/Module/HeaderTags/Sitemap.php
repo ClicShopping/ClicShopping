@@ -16,6 +16,8 @@ use ClicShopping\OM\Domains\HeaderTagsAbstract;
 
 class Sitemap extends HeaderTagsAbstract
 {
+  public $group;
+
   public mixed $lang;
   public mixed $template;
   public mixed $app;

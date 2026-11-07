@@ -32,6 +32,8 @@ use Stripe\Stripe as StripeAPI;
 
 class ST implements PaymentInterface
 {
+  public $order_status;
+
   public string $code;
   public $title;
   public $description;

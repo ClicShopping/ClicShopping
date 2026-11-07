@@ -16,6 +16,8 @@ use ClicShopping\OM\Registry;
 
 class PageTabContent implements HooksInterface
 {
+  public $Report;
+
   public mixed $app;
   private mixed $lang;
   private mixed $db;

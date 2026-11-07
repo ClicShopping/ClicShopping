@@ -15,7 +15,7 @@ use ClicShopping\OM\DateTime;
 use ClicShopping\OM\Hash;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 use function defined;
 use function strlen;
@@ -101,7 +101,7 @@ class Process extends \ClicShopping\OM\Domains\PagesActionsAbstract
       }
 
 // Clients B2C : Controle entree adresse e-mail
-      if (Is::EmailAddress($email_address) === false) {
+      if (IsValid::EmailAddress($email_address) === false) {
         $error = true;
 
         $CLICSHOPPING_MessageStack->add(CLICSHOPPING::getDef('entry_email_address_check_error', ['min_length' => (int)ENTRY_EMAIL_ADDRESS_MIN_LENGTH]), 'error');

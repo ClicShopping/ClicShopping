@@ -639,7 +639,7 @@ class HTML
       $field .= ' required aria-required="true"';
     }
 
-    if (!str_contains($parameters, 'id=')) {
+    if (!str_contains($parameters ?? '', 'id=')) {
       $field .= ' id="' . static::output($name) . '"';
     }
 
@@ -934,7 +934,7 @@ class HTML
   {
     $field = '<input type="hidden" name="' . static::output($name) . '"';
 
-    if (strlen($value) > 0) {
+    if ((string)$value !== '') {
       $field .= ' value="' . static::output($value) . '"';
     } elseif ((isset($_GET[$name]) && is_string($_GET[$name])) || (isset($_POST[$name]) && is_string($_POST[$name]))) {
       if (isset($_GET[$name]) && is_string($_GET[$name])) {
@@ -1039,13 +1039,14 @@ class HTML
   /**
    * Generates a string of star icons based on the provided rating.
    *
-   * @param int $rating The number of stars to display (default is 0).
+   * @param int|float $rating The number of stars to display, an average is truncated (default is 0).
    * @param bool $meta Whether to include a meta tag for the rating (default is true).
    * @param string $style The CSS class to apply to the stars (default is 'text-warning').
    * @return string The rendered HTML string of stars and an optional meta tag.
    */
-  public static function stars(int $rating = 0, bool $meta = true, string $style = 'text-warning'): string
+  public static function stars(int|float $rating = 0, bool $meta = true, string $style = 'text-warning'): string
   {
+    $rating = (int)$rating;
     $stars = str_repeat('<i class="bi bi-star-fill ' . $style . '"></i>', $rating);
 
     if ($meta !== false) {

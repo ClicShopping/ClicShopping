@@ -12,7 +12,7 @@ use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\FileSystem;
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Communication\Newsletter\Newsletter as AppNewsletter;
@@ -293,7 +293,7 @@ class Newsletter
       $this->app->db->delete('newsletters_customers_temp', ['newsletters_id' => (int)$newsletter_id]);
 
       while ($Qmail->fetch()) {
-        if (Is::EmailAddress($Qmail->value('customers_email_address'))) {
+        if (IsValid::EmailAddress($Qmail->value('customers_email_address'))) {
           $data_array = [
             'newsletters_id' => (int)$newsletter_id,
             'customers_firstname' => addslashes($Qmail->value('customers_firstname')),
@@ -325,7 +325,7 @@ class Newsletter
         echo("<meta http-equiv=\"refresh\" content=\"12\">");
       }
 
-      $CLICSHOPPING_Mail->send($QmailNewsletterAccountTemp->value('customers_email_address'), $QmailNewsletterAccountTemp->value('customers_firstname') . ' ' . $QmailNewsletterAccountTemp->value('customers_lastname'), null, $this->emailFrom, $this->title);
+      $CLICSHOPPING_Mail->send($QmailNewsletterAccountTemp->value('customers_email_address'), HTML::sanitize(STORE_NAME), $this->emailFrom, $QmailNewsletterAccountTemp->value('customers_firstname') . ' ' . $QmailNewsletterAccountTemp->value('customers_lastname'), $this->title);
 
       // delete all entry in the table
       $Qdelete = $this->app->db->prepare('delete
@@ -411,7 +411,7 @@ class Newsletter
     $batch_size = 100;
 
     while ($Qmail->fetch()) {
-      if (Is::EmailAddress($Qmail->value('customers_email_address'))) {
+      if (IsValid::EmailAddress($Qmail->value('customers_email_address'))) {
         $batch[] = [
           'newsletters_id' => $newsletter_id,
           'customers_firstname' => $Qmail->value('customers_firstname'),

@@ -10,7 +10,7 @@ namespace ClicShopping\Apps\Communication\Newsletter\Module\ClicShoppingAdmin\Ne
 
 use ClicShopping\OM\HTML;
 use ClicShopping\OM\HTTP;
-use ClicShopping\OM\Is;
+use ClicShopping\OM\IsValid;
 use ClicShopping\OM\Registry;
 
 use ClicShopping\Apps\Communication\Newsletter\Newsletter as AppNewsletter;
@@ -128,7 +128,7 @@ class ProductNotification
     }
 
     while ($Qproducts->fetch()) {
-      if (Is::EmailAddress($Qproducts->value('customers_email_address'))) {
+      if (IsValid::EmailAddress($Qproducts->value('customers_email_address'))) {
         $audience[$Qproducts->valueInt('customers_id')] = [
           'firstname' => $Qproducts->value('customers_firstname'),
           'lastname' => $Qproducts->value('customers_lastname'),
@@ -153,7 +153,7 @@ class ProductNotification
     ]);
 
     while ($Qcustomers->fetch()) {
-      if (Is::EmailAddress($Qcustomers->value('customers_email_address'))) {
+      if (IsValid::EmailAddress($Qcustomers->value('customers_email_address'))) {
         $audience[$Qcustomers->valueInt('customers_id')] = [
           'firstname' => $Qcustomers->value('customers_firstname'),
           'lastname' => $Qcustomers->value('customers_lastname'),
