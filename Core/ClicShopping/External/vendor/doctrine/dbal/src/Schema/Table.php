@@ -146,6 +146,15 @@ class Table extends AbstractNamedObject
         return Parsers::getOptionallyQualifiedNameParser();
     }
 
+    public function getObjectName(): OptionallyQualifiedName
+    {
+        if (! $this->isNameInitialized) {
+            throw InvalidState::objectNameNotInitialized();
+        }
+
+        return $this->name;
+    }
+
     /** @deprecated Pass a {@link TableConfiguration} instance to the constructor instead. */
     public function setSchemaConfig(SchemaConfig $schemaConfig): void
     {
@@ -412,7 +421,7 @@ class Table extends AbstractNamedObject
 
             $this->dropPrimaryKey();
 
-            return $this->setPrimaryKey($oldIndex->getColumns(), $newName ?? null);
+            return $this->setPrimaryKey($oldIndex->getColumns(), $newName);
         }
 
         unset($this->_indexes[$normalizedOldName]);
