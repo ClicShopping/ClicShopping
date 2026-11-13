@@ -18,7 +18,7 @@ class FooterOutputBootStrap
   public function display(): string
   {
     $output = '<!--Bootstrap Script start-->' . "\n";
-    $output .= '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>';
+    $output .= '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js"></script>';
     $output .= '<!--End Bootstrap Script-->' . "\n";
 
     return $output;

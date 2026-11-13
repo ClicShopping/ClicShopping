@@ -25,8 +25,8 @@
         "guzzlehttp/guzzle": "^7.15",
         "stolt/llms-txt-php": "^3.5",
         "theodo-group/llphant": "^1.0",
-        "stripe/stripe-php": "^22.0",
-        "phpmailer/phpmailer": "^7.2"
+        "phpmailer/phpmailer": "^7.2",
+        "stripe/stripe-php": "^23.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest"
