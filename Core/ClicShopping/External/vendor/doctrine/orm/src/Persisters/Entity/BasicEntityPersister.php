@@ -14,9 +14,12 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\TypeProvider;
+use Doctrine\DBAL\Types\TypeRegistry;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Cache\Persister\CompatOrderings;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Internal\TypeProviderLocator;
 use Doctrine\ORM\Mapping\AssociationMapping;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\JoinColumnMapping;
@@ -120,6 +123,8 @@ class BasicEntityPersister implements EntityPersister
      */
     protected Connection $conn;
 
+    private readonly TypeProvider|TypeRegistry $typeProvider;
+
     /**
      * The database platform.
      */
@@ -181,6 +186,7 @@ class BasicEntityPersister implements EntityPersister
     ) {
         $this->conn                  = $em->getConnection();
         $this->platform              = $this->conn->getDatabasePlatform();
+        $this->typeProvider          = TypeProviderLocator::fromConnection($this->conn);
         $this->quoteStrategy         = $em->getConfiguration()->getQuoteStrategy();
         $this->identifierFlattener   = new IdentifierFlattener($em->getUnitOfWork(), $em->getMetadataFactory());
         $this->noLimitsContext       = $this->currentPersisterContext = new CachedPersisterContext(
@@ -203,6 +209,11 @@ class BasicEntityPersister implements EntityPersister
     final protected function updateFilterHash(): void
     {
         $this->filterHash = $this->em->getFilters()->getHash();
+    }
+
+    final protected function getType(string $name): Type
+    {
+        return $this->typeProvider->get($name);
     }
 
     public function getClassMetadata(): ClassMetadata
@@ -292,7 +303,7 @@ class BasicEntityPersister implements EntityPersister
         $values = $this->fetchVersionAndNotUpsertableValues($this->class, $id);
 
         foreach ($values as $field => $value) {
-            $value = Type::getType($this->class->fieldMappings[$field]->type)->convertToPHPValue($value, $this->platform);
+            $value = $this->getType($this->class->fieldMappings[$field]->type)->convertToPHPValue($value, $this->platform);
 
             $this->class->setFieldValue($entity, $field, $value);
         }
@@ -418,7 +429,7 @@ class BasicEntityPersister implements EntityPersister
                     $column    = $this->quoteStrategy->getColumnName($fieldName, $this->class, $this->platform);
 
                     if (isset($this->class->fieldMappings[$fieldName])) {
-                        $type        = Type::getType($this->columnTypes[$columnName]);
+                        $type        = $this->getType($this->columnTypes[$columnName]);
                         $placeholder = $type->convertToDatabaseValueSQL('?', $this->platform);
                     }
 
@@ -906,7 +917,7 @@ class BasicEntityPersister implements EntityPersister
 
         $valueVisitor = new SqlValueVisitor();
 
-        $valueVisitor->dispatch($expression);
+        $expression->visit($valueVisitor);
 
         [, $types] = $valueVisitor->getParamsAndTypes();
 
@@ -933,15 +944,25 @@ class BasicEntityPersister implements EntityPersister
                         continue;
                     }
 
-                    $sqlParams = [...$sqlParams, ...PersisterHelper::convertToParameterValue($item, $this->em)];
-                    $sqlTypes  = [...$sqlTypes, ...PersisterHelper::inferParameterTypes($field, $item, $this->class, $this->em)];
+                    foreach (PersisterHelper::convertToParameterValue($item, $this->em) as $parameter) {
+                        $sqlParams[] = $parameter;
+                    }
+
+                    foreach (PersisterHelper::inferParameterTypes($field, $item, $this->class, $this->em) as $parameterType) {
+                        $sqlTypes[] = $parameterType;
+                    }
                 }
 
                 continue;
             }
 
-            $sqlParams = [...$sqlParams, ...PersisterHelper::convertToParameterValue($value, $this->em)];
-            $sqlTypes  = [...$sqlTypes, ...PersisterHelper::inferParameterTypes($field, $value, $this->class, $this->em)];
+            foreach (PersisterHelper::convertToParameterValue($value, $this->em) as $parameter) {
+                $sqlParams[] = $parameter;
+            }
+
+            foreach (PersisterHelper::inferParameterTypes($field, $value, $this->class, $this->em) as $parameterType) {
+                $sqlTypes[] = $parameterType;
+            }
         }
 
         return [$sqlParams, $sqlTypes];
@@ -1457,7 +1478,7 @@ class BasicEntityPersister implements EntityPersister
                 && isset($this->columnTypes[$this->class->fieldNames[$column]])
                 && isset($this->class->fieldMappings[$this->class->fieldNames[$column]])
             ) {
-                $type        = Type::getType($this->columnTypes[$this->class->fieldNames[$column]]);
+                $type        = $this->getType($this->columnTypes[$this->class->fieldNames[$column]]);
                 $placeholder = $type->convertToDatabaseValueSQL('?', $this->platform);
             }
 
@@ -1543,7 +1564,7 @@ class BasicEntityPersister implements EntityPersister
             $this->currentPersisterContext->rsm->addEnumResult($columnAlias, $fieldMapping->enumType);
         }
 
-        $type = Type::getType($fieldMapping->type);
+        $type = $this->getType($fieldMapping->type);
         $sql  = $type->convertToPHPValueSQL($sql, $this->platform);
 
         return $sql . ' AS ' . $columnAlias;
@@ -1624,7 +1645,7 @@ class BasicEntityPersister implements EntityPersister
 
         $visitor = new SqlExpressionVisitor($this, $this->class);
 
-        return $visitor->dispatch($expression);
+        return $expression->visit($visitor);
     }
 
     public function getSelectConditionStatementSQL(
@@ -1650,7 +1671,7 @@ class BasicEntityPersister implements EntityPersister
             $placeholder = '?';
 
             if (isset($this->class->fieldMappings[$field])) {
-                $type        = Type::getType($this->class->fieldMappings[$field]->type);
+                $type        = $this->getType($this->class->fieldMappings[$field]->type);
                 $placeholder = $type->convertToDatabaseValueSQL($placeholder, $this->platform);
             }
 
@@ -1892,15 +1913,25 @@ class BasicEntityPersister implements EntityPersister
             if (is_array($value)) {
                 $nonNullValues = array_diff_key($value, array_flip(array_keys($value, null, true)));
                 foreach ($nonNullValues as $item) {
-                    $types  = [...$types, ...PersisterHelper::inferParameterTypes($field, $item, $this->class, $this->em)];
-                    $params = [...$params, ...PersisterHelper::convertToParameterValue($item, $this->em)];
+                    foreach (PersisterHelper::inferParameterTypes($field, $item, $this->class, $this->em) as $type) {
+                        $types[] = $type;
+                    }
+
+                    foreach (PersisterHelper::convertToParameterValue($item, $this->em) as $parameter) {
+                        $params[] = $parameter;
+                    }
                 }
 
                 continue;
             }
 
-            $types  = [...$types, ...PersisterHelper::inferParameterTypes($field, $value, $this->class, $this->em)];
-            $params = [...$params, ...PersisterHelper::convertToParameterValue($value, $this->em)];
+            foreach (PersisterHelper::inferParameterTypes($field, $value, $this->class, $this->em) as $type) {
+                $types[] = $type;
+            }
+
+            foreach (PersisterHelper::convertToParameterValue($value, $this->em) as $parameter) {
+                $params[] = $parameter;
+            }
         }
 
         return [$params, $types];

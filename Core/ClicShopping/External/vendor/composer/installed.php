@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '3c41c547f3920b875b09e7d7938bf26092a802a9',
+        'reference' => 'b9c5ec1d241d1fe267dc08728fa6573dee1cedcd',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../../../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '3c41c547f3920b875b09e7d7938bf26092a802a9',
+            'reference' => 'b9c5ec1d241d1fe267dc08728fa6573dee1cedcd',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../../../../',
             'aliases' => array(),
@@ -47,9 +47,9 @@
             'dev_requirement' => false,
         ),
         'doctrine/dbal' => array(
-            'pretty_version' => '4.5.1',
-            'version' => '4.5.1.0',
-            'reference' => 'b2815456989aa41964ee66d7ab47b7885264acf3',
+            'pretty_version' => '4.6.0',
+            'version' => '4.6.0.0',
+            'reference' => '1b56fbfb22704712786fea81ff4bb156fcc6427e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../doctrine/dbal',
             'aliases' => array(),
@@ -110,9 +110,9 @@
             'dev_requirement' => false,
         ),
         'doctrine/orm' => array(
-            'pretty_version' => '3.7.6',
-            'version' => '3.7.6.0',
-            'reference' => '4487f850401c0e1f27891cce5897fa90b3055c2a',
+            'pretty_version' => '3.8.0',
+            'version' => '3.8.0.0',
+            'reference' => '243f25157055d553da52d7c4bbe73c4623dadc61',
             'type' => 'library',
             'install_path' => __DIR__ . '/../doctrine/orm',
             'aliases' => array(),
@@ -358,7 +358,7 @@
         'roave/security-advisories' => array(
             'pretty_version' => 'dev-latest',
             'version' => 'dev-latest',
-            'reference' => '2b9aa1b57ba2a8320aff9e3e9041ef28205a33e6',
+            'reference' => '57a2e6c5a84ea71f685b5b586e6ef32ba7bcf5cc',
             'type' => 'metapackage',
             'install_path' => null,
             'aliases' => array(

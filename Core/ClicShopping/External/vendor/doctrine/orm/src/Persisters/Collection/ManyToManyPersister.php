@@ -21,7 +21,6 @@ use Doctrine\ORM\Utility\PersisterHelper;
 use SortDirection;
 
 use function array_fill;
-use function array_merge;
 use function array_pop;
 use function assert;
 use function count;
@@ -151,7 +150,7 @@ class ManyToManyPersister extends AbstractCollectionPersister
             // And criteria conditions needs to be added
             $persister    = $this->uow->getEntityPersister($targetClass->name);
             $visitor      = new SqlExpressionVisitor($persister, $targetClass);
-            $conditions[] = $visitor->dispatch($expression);
+            $conditions[] = $expression->visit($visitor);
 
             $joinTargetEntitySQL = $targetJoinSql . $joinTargetEntitySQL;
         }*/
@@ -256,8 +255,13 @@ class ManyToManyPersister extends AbstractCollectionPersister
             } elseif ($operator === Comparison::IN || $operator === Comparison::NIN) {
                 $whereClauses[] = sprintf('te.%s %s (%s)', $field, $operator === Comparison::IN ? 'IN' : 'NOT IN', implode(', ', array_fill(0, count($value), '?')));
                 foreach ($value as $item) {
-                    $params     = array_merge($params, PersisterHelper::convertToParameterValue($item, $this->em));
-                    $paramTypes = array_merge($paramTypes, PersisterHelper::inferParameterTypes($name, $item, $targetClass, $this->em));
+                    foreach (PersisterHelper::convertToParameterValue($item, $this->em) as $itemValue) {
+                        $params[] = $itemValue;
+                    }
+
+                    foreach (PersisterHelper::inferParameterTypes($name, $item, $targetClass, $this->em) as $itemType) {
+                        $paramTypes[] = $itemType;
+                    }
                 }
             } else {
                 $whereClauses[] = sprintf('te.%s %s ?', $field, $operator);
@@ -736,7 +740,7 @@ class ManyToManyPersister extends AbstractCollectionPersister
 
         $valueVisitor = new SqlValueVisitor();
 
-        $valueVisitor->dispatch($expression);
+        $expression->visit($valueVisitor);
 
         [, $types] = $valueVisitor->getParamsAndTypes();
 
