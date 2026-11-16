@@ -291,7 +291,7 @@ class ComposerStaticInit559d5c9b702bf740c3f0e192226eea14
         ),
         'Doctrine\\Instantiator\\' =>
         array (
-            0 => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator',
+            0 => __DIR__ . '/..' . '/doctrine/instantiator/src',
         ),
         'Doctrine\\Inflector\\' =>
         array (
