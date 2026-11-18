@@ -3,6 +3,31 @@
 Please refer to [UPGRADING](UPGRADING.md) guide for upgrading to a major version.
 
 
+## 7.16.3 - 2026-11-17
+
+### Security
+
+- Exclude URI fragments from stream handler request targets (GHSA-gqx6-m769-3x35)
+- Reject bracketed request URI hosts that are not IP literals (GHSA-hpvq-6rrx-pc47)
+
+### Changed
+
+- Adjusted `guzzlehttp/psr7` version constraint to `^2.13.4`
+
+
+## 7.16.2 - 2026-11-17
+
+### Fixed
+
+- Cancel cURL multi transfers whose synchronous wait throws instead of leaving them running
+- Reject CR, LF, and NUL in request header fields in the built-in handlers
+- Reject CR, LF, and NUL in request methods in the built-in handlers
+
+### Changed
+
+- Adjusted `guzzlehttp/psr7` version constraint to `^2.13.3`
+
+
 ## 7.16.1 - 2026-10-25
 
 ### Fixed
