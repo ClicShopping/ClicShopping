@@ -3,6 +3,28 @@
 Please refer to [UPGRADING](UPGRADING.md) guide for upgrading to a major version.
 
 
+## 7.16.5 - 2026-11-20
+
+### Security
+
+- Reject proxy credentials with percent-encoded control characters in the cURL handlers (GHSA-q8h8-pjjq-cq2h)
+- Reject malformed proxy URLs that older libcurl silently skips or misreads (GHSA-q8h8-pjjq-cq2h)
+
+
+## 7.16.4 - 2026-11-20
+
+### Fixed
+
+- Reject hosts longer than 4096 bytes when `idn_conversion` is enabled
+- Fix `idn_conversion` failures escaping as `IntlException` or a PSR-7 exception
+- Redact proxy credentials in cURL errors when the proxy scheme has a plus sign
+
+### Changed
+
+- Adjusted `guzzlehttp/promises` version constraint to `^2.6.1`
+- Adjusted `guzzlehttp/psr7` version constraint to `^2.13.5`
+
+
 ## 7.16.3 - 2026-11-17
 
 ### Security
