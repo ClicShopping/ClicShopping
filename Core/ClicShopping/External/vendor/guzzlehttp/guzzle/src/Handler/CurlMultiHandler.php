@@ -295,10 +295,6 @@ class CurlMultiHandler
 
         $multiHandle = \curl_multi_init();
 
-        if (false === $multiHandle) {
-            throw new \RuntimeException('Can not initialize curl multi handle.');
-        }
-
         try {
             foreach ($this->options as $option => $value) {
                 if (true === @curl_multi_setopt($multiHandle, $option, $value)) {
@@ -341,6 +337,14 @@ class CurlMultiHandler
                 unset($this->_mh);
             }
         }
+
+        // Nothing can drive these transfers once the multi handle is gone.
+        $this->handles = [];
+        $this->delays = [];
+        $this->deferredAdds = [];
+        $this->activeProxyTunnelSignatures = [];
+        $this->activeProxyTunnelHandles = [];
+        $this->active = 0;
     }
 
     public function __invoke(RequestInterface $request, array $options): PromiseInterface

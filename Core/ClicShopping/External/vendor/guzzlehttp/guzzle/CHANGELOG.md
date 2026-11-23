@@ -3,6 +3,27 @@
 Please refer to [UPGRADING](UPGRADING.md) guide for upgrading to a major version.
 
 
+## 7.17.0 - 2026-11-22
+
+### Changed
+
+- Adjusted `guzzlehttp/promises` version constraint to `^2.6.2`
+- Adjusted `guzzlehttp/psr7` version constraint to `^2.13.6`
+- Remove every case variant when the cURL handlers remove a request header
+- Reject third-party URIs whose string form is malformed or names another origin
+- Reject request header names that are not HTTP tokens in the built-in handlers
+- Redact proxy credentials that libcurl cuts off in cURL errors
+- Redact raw `CURLOPT_PRE_PROXY` credentials in cURL errors
+- Redact proxy credentials that libcurl names as the proxy host in cURL errors
+- Redact proxy passwords that begin with a raw `/`, `?` or `#` in cURL errors
+- Decode percent-encoded proxy credentials in the stream handler
+- Remove deprecation for the raw cURL `CURLOPT_SSL_OPTIONS` option on libcurl 7.83.1 or newer
+
+### Fixed
+
+- Stop cURL multi handler waits looping forever after its destructor has run
+
+
 ## 7.16.5 - 2026-11-20
 
 ### Security
