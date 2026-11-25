@@ -10,7 +10,7 @@ namespace ClicShopping\Sites\ClicShoppingAdmin;
 
 use ClicShopping\OM\CLICSHOPPING;
 use ClicShopping\OM\HTML;
-use ClicShopping\OM\HTTP;
+use ClicShopping\Sites\ClicShoppingAdmin\TemplateAdmin;
 use ClicShopping\OM\Registry;
 use DOMDocument;
 use DOMXPath;
@@ -24,6 +24,9 @@ use function is_string;
  */
 class CkEditor5 extends HTML
 {
+  // ponytail: last CDN release usable without a license key; v44+ needs licenseKey (CKE5-UPGRADE1 step 2)
+  private const string CKEDITOR_VERSION = '43.3.1';
+
   /**
    * Combines and returns JavaScript code for initializing CKEditor and elFinder.
    *
@@ -31,6 +34,15 @@ class CkEditor5 extends HTML
    */
   public static function getWysiwyg(): string
   {
+    // Loading the libraries twice on one page breaks CKEditor (ckeditor-duplicated-modules).
+    static $loaded = false;
+
+    if ($loaded) {
+      return '';
+    }
+
+    $loaded = true;
+
     $output = self::getJsCkEditor();
     $output .= self::getJsElFinder();
 
@@ -45,14 +57,39 @@ class CkEditor5 extends HTML
   public static function getJsCkEditor(): string
   {
     $code = self::getWysiwygLanguage();
+    $cdn = 'https://cdn.ckeditor.com/ckeditor5/' . self::CKEDITOR_VERSION . '/';
 
-    $script = '<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script><br />' . "\n";
+    $script = '<link rel="stylesheet" href="' . $cdn . 'ckeditor5.css">' . "\n";
+    $script .= '<script src="' . $cdn . 'ckeditor5.umd.js"></script>' . "\n";
 
-    if ($code != 'en') {
-      if (!empty($code)) {
-        $script = '<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script><br />' . "\n";
-      }
+    if ($code !== 'en' && preg_match('/^[a-z]{2}(-[a-z]{2})?$/i', $code)) {
+      $script .= '<script src="' . $cdn . 'translations/' . strtolower($code) . '.umd.js"></script>' . "\n";
     }
+
+    // Rebuilds the former "classic" build as a global ClassicEditor: callers keep ClassicEditor.create().
+    $script .= <<<'JS'
+<script>
+(() => {
+  const names = ['Essentials', 'Autoformat', 'Bold', 'Italic', 'BlockQuote', 'CKFinder', 'CKFinderUploadAdapter',
+    'Heading', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload', 'Indent', 'Link', 'List',
+    'MediaEmbed', 'Paragraph', 'PasteFromOffice', 'PictureEditing', 'Table', 'TableToolbar', 'TextTransformation'];
+  const missing = names.filter(n => !CKEDITOR[n]);
+  if (missing.length) {
+    console.error('CKEditor 5: missing plugins', missing);
+  }
+
+  class ClassicEditor extends CKEDITOR.ClassicEditor {}
+  ClassicEditor.builtinPlugins = names.filter(n => CKEDITOR[n]).map(n => CKEDITOR[n]);
+  ClassicEditor.defaultConfig = {
+    translations: window.CKEDITOR_TRANSLATIONS ? [window.CKEDITOR_TRANSLATIONS] : [],
+    image: {toolbar: ['imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'toggleImageCaption', 'imageTextAlternative']},
+    table: {contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']}
+  };
+  window.ClassicEditor = ClassicEditor;
+})();
+</script>
+
+JS;
 
     return $script;
   }
@@ -68,10 +105,10 @@ class CkEditor5 extends HTML
     $script = '
             <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
             <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css"/>
-            <link rel="stylesheet" type="text/css" href="' . HTTP::getShopUrlDomain() . 'ext/elFinder-master/css/elfinder.min.css"/>
-            <link rel="stylesheet" type="text/css" href="' . HTTP::getShopUrlDomain() . 'ext/elFinder-master/css/theme.css"/>
+            <link rel="stylesheet" type="text/css" href="' . TemplateAdmin::assetLink('Shop/ext/elFinder-master/css/elfinder.min.css') . '"/>
+            <link rel="stylesheet" type="text/css" href="' . TemplateAdmin::assetLink('Shop/ext/elFinder-master/css/theme.css') . '"/>
         ';
-    $script .= '<script src="' . HTTP::getShopUrlDomain() . 'ext/elFinder-master/js/elfinder.min.js"></script>' . "\n";
+    $script .= '<script src="' . TemplateAdmin::assetLink('Shop/ext/elFinder-master/js/elfinder.min.js') . '"></script>' . "\n";
 
     return $script;
   }
@@ -146,7 +183,7 @@ class CkEditor5 extends HTML
       $field .= ' ' . $parameters;
     }
 
-    $field .= ' />';
+    $field .= '>';
 
     if (($override === true) && ((isset($_GET[$name]) && is_string($_GET[$name])) || (isset($_POST[$name]) && is_string($_POST[$name])))) {
       if (isset($_GET[$name]) && is_string($_GET[$name])) {
@@ -398,7 +435,7 @@ class CkEditor5 extends HTML
     $connector = static::getElFinderConnector();
     $language_code = static::getWysiwygLanguage();
 
-    $field = '<textarea name="' . $name . '"  id="' . $ckeditor_id . '" /></textarea>';
+    $field = '<textarea name="' . $name . '"  id="' . $ckeditor_id . '"></textarea>';
 
     $field .= "<script>
               // elfinder folder hash of the destination folder to be uploaded in this CKeditor 5

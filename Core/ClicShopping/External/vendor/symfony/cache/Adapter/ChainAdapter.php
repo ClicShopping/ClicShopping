@@ -16,6 +16,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Cache\Exception\BadMethodCallException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
+use Symfony\Component\Cache\Internal\ChainAdapterCallback;
 use Symfony\Component\Cache\PruneableInterface;
 use Symfony\Component\Cache\ResettableInterface;
 use Symfony\Component\Cache\Traits\ContractsTrait;
@@ -39,6 +40,7 @@ class ChainAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
     private int $adapterCount;
 
     private static \Closure $syncItem;
+    private static \Closure $setExpiryMetadata;
 
     /**
      * @param CacheItemPoolInterface[] $adapters        The ordered list of adapters used to fetch cached items
@@ -89,6 +91,22 @@ class ChainAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
             null,
             CacheItem::class
         );
+        self::$setExpiryMetadata ??= \Closure::bind(
+            static function (CacheItemInterface $item) {
+                if (!$item instanceof CacheItem) {
+                    return;
+                }
+
+                if ($item->expiry) {
+                    // keep the expiry so that it can be restored when the item is propagated to previous adapters
+                    $item->newMetadata[CacheItem::METADATA_EXPIRY] = $item->expiry;
+                } else {
+                    unset($item->newMetadata[CacheItem::METADATA_EXPIRY]);
+                }
+            },
+            null,
+            CacheItem::class
+        );
     }
 
     /**
@@ -96,15 +114,10 @@ class ChainAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
      */
     public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
     {
-        $doSave = true;
-        $callback = static function (CacheItem $item, bool &$save) use ($callback, &$doSave) {
-            $value = $callback($item, $save);
-            $doSave = $save;
+        $chainCallback = new ChainAdapterCallback($callback, $this);
+        $callback = $chainCallback(...);
 
-            return $value;
-        };
-
-        $wrap = function (?CacheItem $item = null, bool &$save = true) use ($key, $callback, $beta, &$wrap, &$doSave, &$metadata) {
+        $wrap = function (?CacheItem $item = null, bool &$save = true) use ($key, $callback, $beta, &$wrap, $chainCallback, &$metadata) {
             static $lastItem;
             static $i = 0;
             $adapter = $this->adapters[$i];
@@ -120,7 +133,7 @@ class ChainAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
             if (null !== $item) {
                 (self::$syncItem)($lastItem ??= $item, $item, $this->defaultLifetime, $metadata);
             }
-            $save = $doSave;
+            $save = $chainCallback->save;
 
             return $value;
         };
@@ -239,6 +252,7 @@ class ChainAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
 
     public function save(CacheItemInterface $item): bool
     {
+        (self::$setExpiryMetadata)($item);
         $saved = true;
         $i = $this->adapterCount;
 
@@ -251,6 +265,7 @@ class ChainAdapter implements AdapterInterface, CacheInterface, NamespacedPoolIn
 
     public function saveDeferred(CacheItemInterface $item): bool
     {
+        (self::$setExpiryMetadata)($item);
         $saved = true;
         $i = $this->adapterCount;
 

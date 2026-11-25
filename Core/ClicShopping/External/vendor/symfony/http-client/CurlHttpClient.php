@@ -249,7 +249,13 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             }
 
             if (\is_resource($body)) {
-                $curlopts[\CURLOPT_READDATA] = $body;
+                // Not CURLOPT_READDATA: curl would then read streams such as php://temp through a FILE* that PHP creates once and that ignores later rewinds
+                $curlopts[\CURLOPT_READFUNCTION] = static fn ($ch, $fd, $length) => false !== ($data = fread($body, $length)) ? $data : '';
+
+                if (\defined('CURLOPT_SEEKFUNCTION') && stream_get_meta_data($body)['seekable']) {
+                    $start = ftell($body);
+                    $curlopts[\CURLOPT_SEEKFUNCTION] = static fn ($ch, $offset, $origin) => \SEEK_SET === $origin && 0 === fseek($body, $start + $offset) ? \CURL_SEEKFUNC_OK : \CURL_SEEKFUNC_CANTSEEK;
+                }
             } else {
                 $curlopts[\CURLOPT_READFUNCTION] = static function ($ch, $fd, $length) use ($body) {
                     static $eof = false;
@@ -341,7 +347,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             }
         }
 
-        return $pushedResponse ?? new CurlResponse($this->multi, $ch, $options, $this->logger, $method, self::createRedirectResolver($options, $scheme, $authority, $noProxy), CurlClientState::$curlVersion['version_number'], $url, $ntlmOriginKey);
+        return $pushedResponse ?? new CurlResponse($this->multi, $ch, $options, $this->logger, $method, self::createRedirectResolver($options, $curlopts[\CURLOPT_HTTPHEADER], $scheme, $authority, $noProxy), CurlClientState::$curlVersion['version_number'], $url, $ntlmOriginKey);
     }
 
     public function stream(ResponseInterface|iterable $responses, ?float $timeout = null): ResponseStreamInterface
@@ -429,13 +435,13 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
      *
      * Work around CVE-2018-1000007: Authorization and Cookie headers should not follow redirects - fixed in Curl 7.64
      */
-    private static function createRedirectResolver(array $options, string $scheme, string $authority, string $noProxy): \Closure
+    private static function createRedirectResolver(array $options, array $headers, string $scheme, string $authority, string $noProxy): \Closure
     {
         $redirectHeaders = [];
         if (0 < $options['max_redirects']) {
             $redirectHeaders['scheme'] = $scheme;
             $redirectHeaders['authority'] = $authority;
-            $redirectHeaders['with_auth'] = $redirectHeaders['no_auth'] = array_filter($options['headers'], static fn ($h) => 0 !== stripos($h, 'Host:'));
+            $redirectHeaders['with_auth'] = $redirectHeaders['no_auth'] = array_filter($headers, static fn ($h) => 0 !== stripos($h, 'Host:'));
 
             if (isset($options['normalized_headers']['authorization'][0]) || isset($options['normalized_headers']['cookie'][0])) {
                 $redirectHeaders['no_auth'] = array_filter($redirectHeaders['no_auth'], static fn ($h) => 0 !== stripos($h, 'Authorization:') && 0 !== stripos($h, 'Cookie:'));
@@ -459,10 +465,11 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
 
             if ($redirectHeaders && isset($location['authority'])) {
                 // Authorization and Cookie headers MUST NOT follow except for the initial scheme and authority
-                $requestHeaders = $url['scheme'] === $redirectHeaders['scheme'] && $location['authority'] === $redirectHeaders['authority'] ? $redirectHeaders['with_auth'] : $redirectHeaders['no_auth'];
-                curl_setopt($ch, \CURLOPT_HTTPHEADER, $requestHeaders);
+                $redirectHeaders['current'] = $url['scheme'] === $redirectHeaders['scheme'] && $location['authority'] === $redirectHeaders['authority'] ? 'with_auth' : 'no_auth';
+                curl_setopt($ch, \CURLOPT_HTTPHEADER, $redirectHeaders[$redirectHeaders['current']]);
             } elseif ($noContent && $redirectHeaders) {
-                curl_setopt($ch, \CURLOPT_HTTPHEADER, $redirectHeaders['with_auth']);
+                // A relative redirect stays on the origin of the previous request
+                curl_setopt($ch, \CURLOPT_HTTPHEADER, $redirectHeaders[$redirectHeaders['current'] ?? 'with_auth']);
             }
 
             $proxy = self::getProxyUrl($options['proxy'], $url);
@@ -549,6 +556,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             \CURLOPT_CERTINFO => 'capture_peer_cert_chain',
             \CURLOPT_USERAGENT => 'normalized_headers',
             \CURLOPT_REFERER => 'headers',
+            \CURLOPT_COOKIE => 'headers',
             // options used in CurlResponse
             \CURLOPT_NOPROGRESS => 'on_progress',
             \CURLOPT_PROGRESSFUNCTION => 'on_progress',
@@ -578,6 +586,7 @@ final class CurlHttpClient implements HttpClientInterface, LoggerAwareInterface,
             \CURLOPT_PROTOCOLS,
             \CURLOPT_REDIR_PROTOCOLS,
             \CURLOPT_COOKIEFILE,
+            \CURLOPT_UNRESTRICTED_AUTH,
             \CURLINFO_REDIRECT_COUNT,
         ];
 

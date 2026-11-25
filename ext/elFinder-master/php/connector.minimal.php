@@ -7,33 +7,16 @@ error_reporting(0); // Set E_ALL for debuging
 // ===============================================
 
 // Configuration sécurisée simplifiée
-$secure_upload_allow = ['image', 'text/plain'];
+// Explicit types: `image` would also admit image/svg+xml, which carries scripts.
+$secure_upload_allow = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/x-icon', 'text/plain'];
 $secure_upload_deny = ['all'];
 
-// Vérification de sécurité - Plus permissive pour elFinder
-// Vérifier si on est dans le contexte ClicShopping
-$is_clicshopping_context = (
-    (isset($_GET['Admin']) && $_GET['Admin'] === 'ClicShoppingAdmin') ||
-    (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'ClicShoppingAdmin') !== false) ||
-    (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'ClicShoppingAdmin') !== false)
-);
 
-if (!$is_clicshopping_context) {
-    // Log de sécurité mais ne pas bloquer complètement
-    error_log('elFinder: Tentative d\'accès non autorisée depuis: ' . ($_SERVER['HTTP_REFERER'] ?? 'Direct'));
-}
-
-// Validation des paramètres de requête - Temporairement désactivée pour debug
-// Log des commandes pour voir ce qu'elFinder utilise
-if (isset($_GET['cmd'])) {
-    error_log('elFinder command: ' . $_GET['cmd']);
-}
-
-// Validation basique - seulement bloquer les commandes vraiment dangereuses
-$dangerous_commands = ['exec', 'system', 'shell_exec', 'eval', 'passthru'];
-if (isset($_GET['cmd']) && in_array($_GET['cmd'], $dangerous_commands)) {
-    http_response_code(400);
-    exit('Dangerous command blocked');
+// do not remove these lines
+// Reached only through ClicShoppingAdmin/ajax/ElFinder/connector.php, which requires an admin session.
+if (!defined('CLICSHOPPING_ELFINDER_GATE')) {
+    http_response_code(403);
+    exit;
 }
 
 // Headers de sécurité
@@ -281,15 +264,10 @@ $opts = array(
 //                     'tmbURL'        => dirname($_SERVER['PHP_SELF']) . '/../files/.trash/.tmb/',
      'tmbURL'        => DIR_WS_CATALOG_IMAGES . '.tmb/',
      'winHashFix'    => DIRECTORY_SEPARATOR !== '/', // to make hash same to Linux one on windows too
-     'uploadDeny'    => array('all'),                // Recomend the same settings as the original volume that uses the trash
-     'uploadAllow'   => array('image', 'text/plain'),// Same as above
+     'uploadDeny'    => $secure_upload_deny,         // Recomend the same settings as the original volume that uses the trash
+     'uploadAllow'   => $secure_upload_allow,        // Same as above
      'uploadOrder'   => array('deny', 'allow'),      // Same as above
      'accessControl' => 'access',                    // Same as above
-    ),
-
-    array(
-      'dirMode'       => 0755,
-      'fileMode'      => 0644
     )
   )
 );
